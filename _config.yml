@@ -12,15 +12,16 @@ github_repo: "https://github.com/SGDBS/SGDBS.github.io" # you code repository
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "人一定要有梦想！"
-sidebar-avatar: /img/XKN.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: /img/hanser.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
 # SNS settings
 RSS: false
 # weibo_username:     qiubaiying
-#zhihu_username:     qiubaiying
-#github_username:    qiubaiying
+zhihu_username:     水蓝
+github_username:    SGDBS
+bilibili_username:  2233是我哒了
 #facebook_username:  baiying.qiu.7
 #jianshu_username:   e71990ada2fd
 #twitter_username:   qiubaiying
