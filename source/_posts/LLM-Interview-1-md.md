@@ -1,6 +1,7 @@
 ---
 title: LLM基础知识 1
 date: 2026-03-27 12:48:00
+mathjax: true
 tags:
     - LLM
 ---
