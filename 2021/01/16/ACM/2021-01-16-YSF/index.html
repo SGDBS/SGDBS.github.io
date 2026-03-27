@@ -473,11 +473,10 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h3 id="题目大意："><a href="#题目大意：" class="headerlink" title="题目大意："></a>题目大意：</h3><p>N个人坐成一个圆环（编号为1 - N），从第1个人开始报数，数到K的人出列，后面的人重新从1开始报数。问最后剩下的人的编号。<br>例如：N &#x3D; 3，K &#x3D; 2。2号先出列，然后是1号，最后剩下的是3号。<br>（其实这是一段非常悲惨的历史故事的改编，愿世界永无战争，虽然这是个幻想）</p>
+                <h3 id="题目大意："><a href="#题目大意：" class="headerlink" title="题目大意："></a>题目大意：</h3><p>N个人坐成一个圆环（编号为1 - N），从第1个人开始报数，数到K的人出列，后面的人重新从1开始报数。问最后剩下的人的编号。<br>例如：N = 3，K = 2。2号先出列，然后是1号，最后剩下的是3号。<br>（其实这是一段非常悲惨的历史故事的改编，愿世界永无战争，虽然这是个幻想）</p>
 <h3 id="具体思路："><a href="#具体思路：" class="headerlink" title="具体思路："></a>具体思路：</h3><p>暴力的方法就不讨论了，我想从递推这个角度考虑 <del>（万物皆可递推）</del><br>假设我们知道x个人，每次报数k个人，最终出列的人的编号是Y，那么是否可以推出x+1个人的时候呢？<br>仔细想一想，<strong>x+1个人的时候，出列一个人之后，就变成了x个人</strong>，而且知道第一个出列的人的编号是k，<strong>那么k之后的所有人的位置就都向前k位（因为k+1成了第一个人）</strong>，<strong>那么结果显然就是在新的序列里面的第Y个人</strong>。为了防止越界，只需取模就好了。</p>
 <h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> n,k;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d%d&quot;</span>,&amp;n,&amp;k);</span><br><span class="line">    <span class="type">int</span> p=<span class="number">0</span>;<span class="comment">//为了方便取模，从0开始，最后再加1</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">2</span>;i&lt;=n;++i)&#123;</span><br><span class="line">        p=(p+k)%i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,p<span class="number">+1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="一些思考："><a href="#一些思考：" class="headerlink" title="一些思考："></a>一些思考：</h3><p>在比赛的时候，我想到了用递推这个解法，但是始终觉得思路少了点什么。后来发现这种不想自信感来源于对这个递推式的理解不够透彻，其实这个递推式的来源，是分为两步的：<br>**1.**我们已经知道了x个人，最终剩下的人的位置是多少（从第一个往后数）<br>**2.**我们知道了x+1个人第一次出列后，剩下的人的排列顺序。<br>所以我们的任务就变成了，<strong>在新的序列里面，找到最终剩下的位置上那个人的编号</strong>，就是那个递推式的意义。<br>个人感觉，弄清楚了这个关系，可能会更好理解这个递推式。<br>以后 递推也可以仿照这个思路，一步步来。</p>
+<h3 id="一些思考："><a href="#一些思考：" class="headerlink" title="一些思考："></a>一些思考：</h3><p>在比赛的时候，我想到了用递推这个解法，但是始终觉得思路少了点什么。后来发现这种不想自信感来源于对这个递推式的理解不够透彻，其实这个递推式的来源，是分为两步的：<br><strong>1.</strong>我们已经知道了x个人，最终剩下的人的位置是多少（从第一个往后数）<br><strong>2.</strong>我们知道了x+1个人第一次出列后，剩下的人的排列顺序。<br>所以我们的任务就变成了，<strong>在新的序列里面，找到最终剩下的位置上那个人的编号</strong>，就是那个递推式的意义。<br>个人感觉，弄清楚了这个关系，可能会更好理解这个递推式。<br>以后 递推也可以仿照这个思路，一步步来。</p>
 
                 
             </div>
@@ -721,13 +720,13 @@
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
-                <a href="/2021/01/23/Python/2021-01-23-markcalc/">
+                <a href="/2021/01/23/Python/2021-01-23-xlrd/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="利用python统计excel中的数据">
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="Python xlrd库常用函数">
                         
-                        <span class="card-title">利用python统计excel中的数据</span>
+                        <span class="card-title">Python xlrd库常用函数</span>
                     </div>
                 </a>
                 <div class="card-content article-content">

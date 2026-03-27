@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Python os.path 中常用函数, YANG&#39;s Blog">
+    <meta name="keywords" content="LLM基础知识 1, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Python os.path 中常用函数 | YANG&#39;s Blog</title>
+    <title>LLM基础知识 1 | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -316,7 +316,7 @@
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Python os.path 中常用函数</h1>
+                    <h1 class="description center-align post-title">LLM基础知识 1</h1>
                 </div>
             </div>
         </div>
@@ -432,8 +432,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/Python/">
-                                <span class="chip bg-color">Python</span>
+                            <a href="/tags/LLM/">
+                                <span class="chip bg-color">LLM</span>
                             </a>
                         
                     </div>
@@ -448,7 +448,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2021-01-23
+                    2026-03-27
                 </div>
                 
 
@@ -469,11 +469,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="简要介绍"><a href="#简要介绍" class="headerlink" title="简要介绍"></a>简要介绍</h2><p>1.os库属于外部库，需要进行导入</p>
-<p>2.一般情况下，os库在安装python解释器的时候就已经安装好了</p>
-<h2 id="具体函数"><a href="#具体函数" class="headerlink" title="具体函数"></a>具体函数</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">os.path.abspath(path) <span class="comment">#返回绝对路径</span></span><br><span class="line"></span><br><span class="line">os.path.basename(path) <span class="comment">#返回文件名  </span></span><br><span class="line"></span><br><span class="line">os.path.commonprefix(<span class="built_in">list</span>) <span class="comment">#返回多个路径中，所有path共有的最长的路径。</span></span><br><span class="line"></span><br><span class="line">os.path.dirname(path) <span class="comment">#返回文件路径</span></span><br><span class="line"></span><br><span class="line">os.path.exists(path)  <span class="comment">#路径存在则返回True,路径损坏返回False</span></span><br><span class="line"></span><br><span class="line">os.path.lexists  <span class="comment">#路径存在则返回True,路径损坏也返回True</span></span><br><span class="line"></span><br><span class="line">os.path.expanduser(path)  <span class="comment">#把path中包含的&quot;~&quot;和&quot;~user&quot;转换成用户目录</span></span><br><span class="line"></span><br><span class="line">os.path.expandvars(path)  <span class="comment">#根据环境变量的值替换path中包含的”$name”和”$&#123;name&#125;”</span></span><br><span class="line"></span><br><span class="line">os.path.getatime(path)  <span class="comment">#返回最后一次进入此path的时间。</span></span><br><span class="line"></span><br><span class="line">os.path.getmtime(path)  <span class="comment">#返回在此path下最后一次修改的时间。</span></span><br><span class="line"></span><br><span class="line">os.path.getctime(path)  <span class="comment">#返回path的大小</span></span><br><span class="line"></span><br><span class="line">os.path.getsize(path)  <span class="comment">#返回文件大小，如果文件不存在就返回错误</span></span><br><span class="line"></span><br><span class="line">os.path.isabs(path)  <span class="comment">#判断是否为绝对路径</span></span><br><span class="line"></span><br><span class="line">os.path.isfile(path)  <span class="comment">#判断路径是否为文件</span></span><br><span class="line"></span><br><span class="line">os.path.isdir(path)  <span class="comment">#判断路径是否为目录</span></span><br><span class="line"></span><br><span class="line">os.path.islink(path)  <span class="comment">#判断路径是否为链接</span></span><br><span class="line"></span><br><span class="line">os.path.ismount(path)  <span class="comment">#判断路径是否为挂载点</span></span><br><span class="line"></span><br><span class="line">os.path.join(path1[, path2[, ...]])  <span class="comment">#把目录和文件名合成一个路径</span></span><br><span class="line"></span><br><span class="line">os.path.normcase(path)  <span class="comment">#转换path的大小写和斜杠</span></span><br><span class="line"></span><br><span class="line">os.path.normpath(path)  <span class="comment">#规范path字符串形式</span></span><br><span class="line"></span><br><span class="line">os.path.realpath(path)  <span class="comment">#返回path的真实路径</span></span><br><span class="line"></span><br><span class="line">os.path.relpath(path[, start])  <span class="comment">#从start开始计算相对路径</span></span><br><span class="line"></span><br><span class="line">os.path.samefile(path1, path2)  <span class="comment">#判断目录或文件是否相同</span></span><br><span class="line"></span><br><span class="line">os.path.sameopenfile(fp1, fp2)  <span class="comment">#判断fp1和fp2是否指向同一文件</span></span><br><span class="line"></span><br><span class="line">os.path.samestat(stat1, stat2)  <span class="comment">#判断stat tuple stat1和stat2是否指向同一个文件</span></span><br><span class="line"></span><br><span class="line">os.path.split(path)  <span class="comment">#把路径分割成dirname和basename，返回一个元组</span></span><br><span class="line"></span><br><span class="line">os.path.splitdrive(path)   <span class="comment">#一般用在windows下，返回驱动器名和路径组成的元组</span></span><br><span class="line"></span><br><span class="line">os.path.splitext(path)  <span class="comment">#分割路径，返回路径名和文件扩展名的元组</span></span><br><span class="line"></span><br><span class="line">os.path.splitunc(path)  <span class="comment">#把路径分割为加载点与文件</span></span><br><span class="line"></span><br><span class="line">os.path.walk(path, visit, arg)  <span class="comment">#遍历path，进入每个目录都调用visit函数，visit函数必须有3个参数(arg, dirname, names)，dirname表示当前目录的目录名，names代表当前目录下的所有文件名，args则为walk的第三个参数</span></span><br><span class="line"></span><br><span class="line">os.path.supports_unicode_filenames  <span class="comment">#设置是否支持unicode路径名</span></span><br></pre></td></tr></table></figure>
-<h2 id="使用例"><a href="#使用例" class="headerlink" title="使用例"></a>使用例</h2><p>比如说,我想把一个文件夹中的所有文件地址储存起来(方便直接在程序中调用)<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line">files_address = []</span><br><span class="line">origin_address = <span class="string">r&quot;E:\.....&quot;</span></span><br><span class="line">list_address = os.listdir(origin_address)  <span class="comment"># 将该文件夹下的目录与文件全部导入list_address中</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> list_address:</span><br><span class="line">    file_path = os.path.join(origin_address, list_address[i])  <span class="comment"># 将所属文件夹路径与文件名组合，以便得到这个文件的地址</span></span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> os.path.isfile(file_path):  <span class="comment"># 如果是文件  </span></span><br><span class="line"></span><br><span class="line">        files_address.append(file_path)  <span class="comment"># 将该文件路径添加到file_address中  </span></span><br></pre></td></tr></table></figure></p>
-<p>有兴趣的可以参考一下<a href="https://sgdbs.github.io/2021/01/23/markcalc/">这篇博客</a></p>
+                <p>$x_i + y_j = z_{k+1}$</p>
 
                 
             </div>
@@ -490,7 +486,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="/about" rel="external nofollow noreferrer">BY 水蓝</a>
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
                 </span>
             </div>
             <div class="reprint__type">
@@ -500,7 +496,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2021/01/23/Python/2021-01-23-markcalc1/">https://SGDBS.github.io/2021/01/23/Python/2021-01-23-markcalc1/</a>
+                    <a href="https://SGDBS.github.io/2026/03/27/LLM-Interview-1-md/">https://SGDBS.github.io/2026/03/27/LLM-Interview-1-md/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -513,7 +509,7 @@
                     All articles in this blog are used except for special statements
                     <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
                     reprint polocy. If reproduced, please indicate source
-                    <a href="/about" target="_blank">BY 水蓝</a>
+                    <a href="/about" target="_blank">YANG</a>
                     !
                 </span>
             </div>
@@ -538,8 +534,8 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/Python/">
-                                    <span class="chip bg-color">Python</span>
+                                <a href="/tags/LLM/">
+                                    <span class="chip bg-color">LLM</span>
                                 </a>
                             
                         </div>
@@ -709,17 +705,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
-                <a href="/2021/01/23/Python/2021-01-23-markcalc/">
+                <a href="/2026/03/27/LLM-Interview-1-md/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="利用python统计excel中的数据">
+                        <img src="/medias/featureimages/19.jpg" class="responsive-img" alt="LLM基础知识 1">
                         
-                        <span class="card-title">利用python统计excel中的数据</span>
+                        <span class="card-title">LLM基础知识 1</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -729,22 +726,23 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-01-23
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
+                            YANG
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/Python/">
-                        <span class="chip bg-color">Python</span>
+                    <a href="/tags/LLM/">
+                        <span class="chip bg-color">LLM</span>
                     </a>
                     
                 </div>
@@ -758,13 +756,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/01/23/Python/2021-01-23-xlrd/">
+                <a href="/2022/07/21/ACM/2022-NK-33186-C/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="Python xlrd库常用函数">
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Grab the Seat!">
                         
-                        <span class="card-title">Python xlrd库常用函数</span>
+                        <span class="card-title">Grab the Seat!</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -775,7 +773,7 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-01-23
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-07-21
                             </span>
                         <span class="publish-author">
                             
@@ -788,8 +786,12 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/Python/">
-                        <span class="chip bg-color">Python</span>
+                    <a href="/tags/ACM-OI/">
+                        <span class="chip bg-color">ACM/OI</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%87%A0%E4%BD%95/">
+                        <span class="chip bg-color">几何</span>
                     </a>
                     
                 </div>
