@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="LLM面试基础知识 1, YANG&#39;s Blog">
+    <meta name="keywords" content="相似度度量（Similarity Measures）, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>LLM面试基础知识 1 | YANG&#39;s Blog</title>
+    <title>相似度度量（Similarity Measures） | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/12.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">LLM面试基础知识 1</h1>
+                    <h1 class="description center-align post-title">相似度度量（Similarity Measures）</h1>
                 </div>
             </div>
         </div>
@@ -432,8 +432,12 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/LLM/">
-                                <span class="chip bg-color">LLM</span>
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
                             </a>
                         
                     </div>
@@ -469,7 +473,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="Chapter-1-深度理解-AI-中的相似度度量（Similarity-Measures）"><a href="#Chapter-1-深度理解-AI-中的相似度度量（Similarity-Measures）" class="headerlink" title="Chapter 1 深度理解 AI 中的相似度度量（Similarity Measures）"></a>Chapter 1 深度理解 AI 中的相似度度量（Similarity Measures）</h1><h2 id="1-欧氏距离-Euclidean-Distance-——-绝对位置的度量"><a href="#1-欧氏距离-Euclidean-Distance-——-绝对位置的度量" class="headerlink" title="1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量"></a>1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量</h2><p>欧氏距离是最基础的 $L_2$ 范数。它衡量的是 $n$ 维空间中两个点之间的直线距离。</p>
+                <h1 id="Chapter-相似度度量（Similarity-Measures）"><a href="#Chapter-相似度度量（Similarity-Measures）" class="headerlink" title="Chapter 相似度度量（Similarity Measures）"></a>Chapter 相似度度量（Similarity Measures）</h1><h2 id="1-欧氏距离-Euclidean-Distance-——-绝对位置的度量"><a href="#1-欧氏距离-Euclidean-Distance-——-绝对位置的度量" class="headerlink" title="1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量"></a>1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量</h2><p>欧氏距离是最基础的 $L_2$ 范数。它衡量的是 $n$ 维空间中两个点之间的直线距离。</p>
 <h3 id="数学表达"><a href="#数学表达" class="headerlink" title="数学表达"></a>数学表达</h3><script type="math/tex; mode=display">d(\mathbf{x}, \mathbf{y}) = \|\mathbf{x} - \mathbf{y}\|_2 = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2}</script><h3 id="深度理解"><a href="#深度理解" class="headerlink" title="深度理解"></a>深度理解</h3><ul>
 <li><strong>物理意义</strong>：两点间的位移矢量长度。</li>
 <li><strong>局限性</strong>：对特征的<strong>量级（Scale）</strong>极其敏感。如果特征未经过归一化，数值大的维度将主导距离计算。</li>
@@ -533,74 +537,6 @@
 </table>
 </div>
 <hr>
-<h1 id="深度进阶：对比学习（Contrastive-Learning）的核心机理"><a href="#深度进阶：对比学习（Contrastive-Learning）的核心机理" class="headerlink" title="深度进阶：对比学习（Contrastive Learning）的核心机理"></a>深度进阶：对比学习（Contrastive Learning）的核心机理</h1><p>对比学习（Contrastive Learning）是自监督学习（Self-supervised Learning）的明珠。其核心思想是通过构造<strong>正负样本对</strong>，在没有人工标注的情况下学习到具有判别力的特征表示。</p>
-<hr>
-<h2 id="1-数学本质：InfoNCE-损失函数"><a href="#1-数学本质：InfoNCE-损失函数" class="headerlink" title="1. 数学本质：InfoNCE 损失函数"></a>1. 数学本质：InfoNCE 损失函数</h2><p>现代对比学习（如 SimCLR, MoCo）大多基于 InfoNCE 损失。它本质上是一个 <strong>$K+1$ 路分类问题</strong>，目标是从一堆样本中准确识别出那个“正样本”。</p>
-<h3 id="公式定义"><a href="#公式定义" class="headerlink" title="公式定义"></a>公式定义</h3><script type="math/tex; mode=display">\mathcal{L}_{q, k_+} = -\log \frac{\exp(\text{sim}(q, k_+) / \tau)}{\sum_{i=0}^{K} \exp(\text{sim}(q, k_i) / \tau)}</script><p>其中：</p>
-<ul>
-<li>$\text{sim}(u, v) = \frac{u^T v}{|u| |v|}$ 通常使用<strong>余弦相似度</strong>。</li>
-<li>$\tau$ 为<strong>温度参数 (Temperature)</strong>。</li>
-</ul>
-<h3 id="深度追问：为什么余弦相似度要配合温度参数-tau-？"><a href="#深度追问：为什么余弦相似度要配合温度参数-tau-？" class="headerlink" title="深度追问：为什么余弦相似度要配合温度参数 $\tau$？"></a>深度追问：为什么余弦相似度要配合温度参数 $\tau$？</h3><ol>
-<li><strong>平滑概率分布</strong>：余弦值的范围是 $[-1, 1]$，直接放入 Softmax 会导致概率分布过于集中，梯度消失。</li>
-<li><strong>难样本挖掘</strong>：较小的 $\tau$ 会放大正负样本间的差异，迫使模型关注那些距离 $q$ 很近的“困难负样本”，从而学习到更精细的特征。</li>
-</ol>
-<hr>
-<h2 id="2-三种演进范式"><a href="#2-三种演进范式" class="headerlink" title="2. 三种演进范式"></a>2. 三种演进范式</h2><h3 id="2-1-Triplet-Loss-三元组损失"><a href="#2-1-Triplet-Loss-三元组损失" class="headerlink" title="2.1 Triplet Loss (三元组损失)"></a>2.1 Triplet Loss (三元组损失)</h3><p>早期对比学习的代表。目标是拉近 $(a, p)$，推开 $(a, n)$。</p>
-<script type="math/tex; mode=display">\mathcal{L} = \max(d(a, p) - d(a, n) + \alpha, 0)</script><ul>
-<li><strong>局限</strong>：对超参数 $\alpha$ (margin) 敏感，且挖掘“有意义”的三元组计算成本极高。</li>
-</ul>
-<h3 id="2-2-SimCLR-Large-Batch-Size"><a href="#2-2-SimCLR-Large-Batch-Size" class="headerlink" title="2.2 SimCLR (Large Batch Size)"></a>2.2 SimCLR (Large Batch Size)</h3><p>通过强力数据增强（Crop, Color Jitter 等）产生正样本对。</p>
-<ul>
-<li><strong>核心策略</strong>：通过极大的 Batch Size（如 4096）来提供成千上万个负样本。</li>
-<li><strong>工程难点</strong>：对显存要求极高。</li>
-</ul>
-<h3 id="2-3-MoCo-Momentum-Contrast"><a href="#2-3-MoCo-Momentum-Contrast" class="headerlink" title="2.3 MoCo (Momentum Contrast)"></a>2.3 MoCo (Momentum Contrast)</h3><p>将对比学习看作一个<strong>字典查询（Dictionary Lookup）</strong>任务。</p>
-<ul>
-<li><strong>创新点 1：Queue</strong>。用一个队列维护负样本，不再受 Batch Size 限制。</li>
-<li><strong>创新点 2：Momentum Encoder</strong>。<script type="math/tex; mode=display">\theta_k \leftarrow m\theta_k + (1-m)\theta_q</script>  通过动量更新 Encoder，确保队列中不同时间步存入的特征具有<strong>一致性（Consistency）</strong>。</li>
-</ul>
-<hr>
-<h2 id="3-面试核心考点：模型坍塌（Collapse）"><a href="#3-面试核心考点：模型坍塌（Collapse）" class="headerlink" title="3. 面试核心考点：模型坍塌（Collapse）"></a>3. 面试核心考点：模型坍塌（Collapse）</h2><p><strong>问题</strong>：如果模型为了偷懒，给所有图片都输出相同的常数向量，此时 Loss 会很低，但模型废了。这就是“模型坍塌”。</p>
-<p><strong>解决方案</strong>：</p>
-<ul>
-<li><strong>InfoNCE</strong>：通过负样本（Denominator）提供的“排斥力”强行推开样本。</li>
-<li><strong>BYOL / SimSiam</strong>：这类算法不需要负样本。它们通过 <strong>Stop-gradient (停止梯度回传)</strong> 和 <strong>Predictor MLP</strong> 打破对称性，从数学上避免了常数解。</li>
-</ul>
-<hr>
-<h2 id="4-总结对比"><a href="#4-总结对比" class="headerlink" title="4. 总结对比"></a>4. 总结对比</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:left">方法</th>
-<th style="text-align:left">负样本需求</th>
-<th style="text-align:left">核心技巧</th>
-<th style="text-align:left">解决坍塌的方式</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left"><strong>SimCLR</strong></td>
-<td style="text-align:left">大量 (Batch-based)</td>
-<td style="text-align:left">Data Augmentation</td>
-<td style="text-align:left">显式负样本排斥</td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>MoCo</strong></td>
-<td style="text-align:left">大量 (Queue-based)</td>
-<td style="text-align:left">Momentum Encoder</td>
-<td style="text-align:left">显式负样本排斥</td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>BYOL</strong></td>
-<td style="text-align:left"><strong>不需要</strong></td>
-<td style="text-align:left">Dual Networks + EMA</td>
-<td style="text-align:left">停止梯度 (Stop-gradient)</td>
-</tr>
-</tbody>
-</table>
-</div>
-<hr>
 
                 
             </div>
@@ -627,7 +563,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2026/03/27/LLM-Interview-1-md/">https://SGDBS.github.io/2026/03/27/LLM-Interview-1-md/</a>
+                    <a href="https://SGDBS.github.io/2026/03/27/AI/Chapter1/">https://SGDBS.github.io/2026/03/27/AI/Chapter1/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -665,8 +601,12 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/LLM/">
-                                    <span class="chip bg-color">LLM</span>
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
                                 </a>
                             
                         </div>
@@ -836,18 +776,17 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;Current
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
-                <a href="/2026/03/27/LLM-Interview-1-md/">
+                <a href="/2026/03/27/AI/Chapter2/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="LLM面试基础知识 1">
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="Chapter2 对比学习（Contrastive Learning）的核心机理">
                         
-                        <span class="card-title">LLM面试基础知识 1</span>
+                        <span class="card-title">Chapter2 对比学习（Contrastive Learning）的核心机理</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -857,9 +796,9 @@
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -868,12 +807,19 @@
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/LLM/">
-                        <span class="chip bg-color">LLM</span>
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/Self-Supervised-Learning/">
+                        <span class="chip bg-color">Self-Supervised Learning</span>
                     </a>
                     
                 </div>

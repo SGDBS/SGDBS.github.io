@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="点一成零, YANG&#39;s Blog">
+    <meta name="keywords" content="Chapter2 对比学习（Contrastive Learning）的核心机理, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>点一成零 | YANG&#39;s Blog</title>
+    <title>Chapter2 对比学习（Contrastive Learning）的核心机理 | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/22.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">点一成零</h1>
+                    <h1 class="description center-align post-title">Chapter2 对比学习（Contrastive Learning）的核心机理</h1>
                 </div>
             </div>
         </div>
@@ -432,16 +432,16 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/ACM/">
-                                <span class="chip bg-color">ACM,</span>
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
                             </a>
                         
-                            <a href="/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/">
-                                <span class="chip bg-color">并查集</span>
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
                             </a>
                         
-                            <a href="/tags/ACM%E7%BB%84%E5%90%88%E8%AE%A1%E6%95%B0/">
-                                <span class="chip bg-color">ACM组合计数</span>
+                            <a href="/tags/Self-Supervised-Learning/">
+                                <span class="chip bg-color">Self-Supervised Learning</span>
                             </a>
                         
                     </div>
@@ -456,7 +456,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2021-02-20
+                    2026-03-27
                 </div>
                 
 
@@ -477,25 +477,129 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>链接：<a target="_blank" rel="noopener" href="https://ac.nowcoder.com/acm/contest/9981/D">https://ac.nowcoder.com/acm/contest/9981/D</a></p>
-<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p>牛牛拿到了一个n*n的方阵，每个格子上面有一个数字：0或1<br>行和列的编号都是从0到n-1<br>现在牛牛每次操作可以点击一个写着1的格子，将这个格子所在的1连通块全部变成0。<br>牛牛想知道，自己有多少种不同的方案，可以把全部格子的1都变成0？<br>所谓连通块，是指方阵中的两个正方形共用一条边，即(x,y)和以下4个坐标的数是连通的：(x-1,y)、(x+1,y)、(x,y-1)、(x,y+1)<br>这个问题对于牛牛来说可能太简单了。于是他将这个问题变得更加复杂：<br>他会选择一个格子，将这个格子上的数字修改成1（如果本来就是1，那么不进行任何改变），再去考虑“点一成零”的方案数。<br>牛牛想知道，每次“将某个格子修改成1”之后，“把全部格子的1都变成0”的方案数量。<br>ps：请注意，每次“将某个格子修改成1”之后，状态会保留到接下来的询问。具体请参考样例描述。<br>由于方案数可能过大，请对1e9+7取模</p>
-<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>假设一共用 m 个 1 的连通块,每个块的大小为siz[i]</p>
-<p>每个连通块的点击顺序随意,所以有n!中方案,每个连通块需要选择其中一个进行点击,所以总方案数为<br><img src="/2021/02/20/ACM/2021-02-21-niuke01_D/"  title="http://latex.codecogs.com/gif.latex?\dpi{110} n!\times \prod_{1}^{n}siz[i]" /><br>考虑把 0 变成 1 的操作,分为四种情况:</p>
-<ol>
-<li><p>如果本来就是 1 那么无事发生</p>
-</li>
-<li><p>单独的一个 1,就相当于多加了一个连通块</p>
-</li>
-<li><p>某个连通块变大</p>
-</li>
-<li><p>两个连通块连在了一起,即连通块总数先减二,再增加一个大的连通块</p>
-</li>
+                <h1 id="深度进阶：对比学习（Contrastive-Learning）的核心机理"><a href="#深度进阶：对比学习（Contrastive-Learning）的核心机理" class="headerlink" title="深度进阶：对比学习（Contrastive Learning）的核心机理"></a>深度进阶：对比学习（Contrastive Learning）的核心机理</h1><p>对比学习的核心思想是 <strong>“Instance Discrimination” (个体判别)</strong>：通过构造正负样本对，在无标注数据下学习“物以类聚，人以群分”的特征表示。</p>
+<hr>
+<h2 id="1-样本生成：数据增强（Data-Augmentation）"><a href="#1-样本生成：数据增强（Data-Augmentation）" class="headerlink" title="1. 样本生成：数据增强（Data Augmentation）"></a>1. 样本生成：数据增强（Data Augmentation）</h2><p>对比学习并不依赖标签，而是通过对同一张原始图片 $x$ 应用两次随机增强函数 $t, t’ \sim \mathcal{T}$，生成正样本对 $(x_i, x_j)$。</p>
+<h3 id="核心增强算子"><a href="#核心增强算子" class="headerlink" title="核心增强算子"></a>核心增强算子</h3><ul>
+<li><strong>Random Resized Crop (最关键)</strong>：强迫模型学习局部与整体、不同尺度下的语义一致性。</li>
+<li><strong>Color Jitter &amp; Grayscale</strong>：打破模型对色彩统计特性的依赖，防止模型通过颜色直方图“作弊”。</li>
+<li><strong>Gaussian Blur</strong>：模糊纹理细节，促使模型关注高层轮廓。</li>
+</ul>
+<hr>
+<h2 id="2-数学本质：InfoNCE-损失函数"><a href="#2-数学本质：InfoNCE-损失函数" class="headerlink" title="2. 数学本质：InfoNCE 损失函数"></a>2. 数学本质：InfoNCE 损失函数</h2><p>对比学习本质上是在高维球面上进行 <strong>$K+1$ 路分类</strong>。</p>
+<h3 id="公式定义"><a href="#公式定义" class="headerlink" title="公式定义"></a>公式定义</h3><script type="math/tex; mode=display">\mathcal{L}_{q, k_+} = -\log \frac{\exp(q \cdot k_+ / \tau)}{\exp(q \cdot k_+ / \tau) + \sum_{i=1}^{K} \exp(q \cdot k_i / \tau)}</script><ul>
+<li><strong>$\tau$ (温度参数)</strong>：<ol>
+<li><strong>平滑分布</strong>：防止 Softmax 过早饱和导致梯度消失。</li>
+<li><strong>Hard Negative Mining</strong>：较小的 $\tau$ 会让模型对“长得像但不是”的困难负样本产生极大的 Loss，迫使编码器学到更细致的判别特征。</li>
 </ol>
-<h4 id="具体做法"><a href="#具体做法" class="headerlink" title="具体做法"></a>具体做法</h4><p>用并查集进行统计,设初始结果为ans</p>
-<p>情况 2 : ans = ans * (m+1) % mod</p>
-<p>情况 4 : 假设是 x 和 y 两个连通块合并了 ans =  (siz[x] + siz[y]) <em> ans / (m </em> siz[x] * siz[y])<br>(这个地方要用到费马小定理,如果模数mod是质数,那么一个数a的0乘法逆元就是a的(mod-2)次方)</p>
-<p>情况 3 : 我的做法是,只要不是情况 1,就按情况 2 处理,然后扫描周边,检查是否会出现情况 4,在这个过程中,就会处理好这三种情况</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ll long long</span></span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> maxn = <span class="number">505</span>, mod = <span class="number">1e9</span> + <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> mp[maxn][maxn];</span><br><span class="line"><span class="type">int</span> n, k, fa[maxn*maxn], siz[maxn*maxn];</span><br><span class="line"><span class="type">int</span> dx[<span class="number">5</span>] = &#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">-1</span>&#125;, dy[<span class="number">5</span>] = &#123;<span class="number">1</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">Find</span><span class="params">(<span class="type">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> fa[x] == x ? x : fa[x] = <span class="built_in">Find</span>(fa[x]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">merge</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> fx = <span class="built_in">Find</span>(x), fy = <span class="built_in">Find</span>(y);</span><br><span class="line">    <span class="keyword">if</span>(fx != fy) &#123;</span><br><span class="line">        siz[fx] += siz[fy];</span><br><span class="line">        fa[fy] = fx;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">ll <span class="title">Pow</span><span class="params">(ll bas,ll pw)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ll tmp = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span>(pw) &#123;</span><br><span class="line">        <span class="keyword">if</span>(pw &amp; <span class="number">1</span>)</span><br><span class="line">            tmp = tmp * bas % mod;</span><br><span class="line">        bas = bas * bas % mod;</span><br><span class="line">        pw &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tmp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;n);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i)</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%s&quot;</span> ,mp[i] + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt;= (n<span class="number">+1</span>) * (n<span class="number">+1</span>); ++i)</span><br><span class="line">        fa[i] = i, siz[i] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt;= n; ++j) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mp[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt;= <span class="number">3</span>; ++k) &#123;</span><br><span class="line">                    <span class="type">int</span> nx = i + dx[k], ny = j + dy[k];</span><br><span class="line">                    <span class="keyword">if</span> (mp[nx][ny] == <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">                        <span class="built_in">merge</span>(j * (n + <span class="number">1</span>) + i, ny * (n + <span class="number">1</span>) + nx);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> blockNum = <span class="number">0</span>;</span><br><span class="line">    ll ans = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt;= n; ++j) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mp[i][j] == <span class="string">&#x27;1&#x27;</span> &amp;&amp; fa[j*(n<span class="number">+1</span>)+i] == j*(n<span class="number">+1</span>)+i) &#123;</span><br><span class="line">                ++blockNum;</span><br><span class="line">                ans = (ans * siz[j*(n<span class="number">+1</span>) + i]) % mod;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= blockNum; ++i)</span><br><span class="line">        ans = ans * i % mod;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;k);</span><br><span class="line">    <span class="keyword">while</span>(k--) &#123;</span><br><span class="line">        <span class="type">int</span> x , y;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d%d&quot;</span>, &amp;x, &amp;y);</span><br><span class="line">        ++x; ++y;</span><br><span class="line">        <span class="keyword">if</span>(mp[x][y] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;%lld\n&quot;</span>, ans);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        mp[x][y] = <span class="string">&#x27;1&#x27;</span>;</span><br><span class="line">        ++blockNum;</span><br><span class="line">        ans = ans * blockNum % mod;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt;= <span class="number">3</span>; ++i) &#123;</span><br><span class="line">            <span class="type">int</span> nx = x + dx[i], ny = y + dy[i];</span><br><span class="line">            <span class="keyword">if</span>(mp[nx][ny] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">                <span class="type">int</span> fx = <span class="built_in">Find</span>(y*(n<span class="number">+1</span>) + x), fnx = <span class="built_in">Find</span>(ny*(n<span class="number">+1</span>) + nx);</span><br><span class="line">                <span class="keyword">if</span>(fx != fnx) &#123;</span><br><span class="line">                    ans = ans * <span class="built_in">Pow</span>(blockNum, mod - <span class="number">2</span>) % mod;</span><br><span class="line">                    ans = ans * <span class="built_in">Pow</span>(siz[fx], mod - <span class="number">2</span>) % mod;</span><br><span class="line">                    ans = ans * <span class="built_in">Pow</span>(siz[fnx], mod - <span class="number">2</span>) % mod;</span><br><span class="line">                    ans = ans * (siz[fnx] + siz[fx]) % mod;</span><br><span class="line">                    --blockNum;</span><br><span class="line">                    <span class="built_in">merge</span>(fx, fnx);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%lld\n&quot;</span>, ans);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="3-算法全流程详解"><a href="#3-算法全流程详解" class="headerlink" title="3. 算法全流程详解"></a>3. 算法全流程详解</h2><h3 id="3-1-SimCLR：端到端对称对比-End-to-End"><a href="#3-1-SimCLR：端到端对称对比-End-to-End" class="headerlink" title="3.1 SimCLR：端到端对称对比 (End-to-End)"></a>3.1 SimCLR：端到端对称对比 (End-to-End)</h3><p>SimCLR 的核心逻辑是 <strong>“在大 Batch 中寻找自己”</strong>。</p>
+<p><strong>具体步骤：</strong></p>
+<ol>
+<li><strong>输入分配</strong>：取一个 Batch 的原始图像 ${x_k}_{k=1}^N$。</li>
+<li><strong>双路增强</strong>：对每张图 $x_k$ 进行两次随机增强，生成 $2N$ 张图。其中 $x_{2k-1}$ 和 $x_{2k}$ 互为<strong>正样本对</strong>。</li>
+<li><strong>前向传播</strong>：<ul>
+<li><strong>提取特征</strong>：所有图片通过同一个编码器 $f(\cdot)$，得到特征 $h = f(x)$。</li>
+<li><strong>非线性投影</strong>：通过投影头 $g(\cdot)$（MLP）映射到对比空间：$z = g(h)$。</li>
+</ul>
+</li>
+<li><strong>计算相似度矩阵</strong>：计算这 $2N$ 个向量两两之间的余弦相似度，形成一个 $2N \times 2N$ 的矩阵。</li>
+<li><strong>损失计算</strong>：对于每一个向量 $z_i$，其正样本只有一个（对应的增强版本），其余 $2N-2$ 个向量均为负样本。</li>
+<li><strong>更新</strong>：梯度同时流经 $g$ 和 $f$，同步更新全网参数。</li>
+</ol>
+<hr>
+<h3 id="3-2-MoCo：动量字典查询-Dictionary-Lookup"><a href="#3-2-MoCo：动量字典查询-Dictionary-Lookup" class="headerlink" title="3.2 MoCo：动量字典查询 (Dictionary Lookup)"></a>3.2 MoCo：动量字典查询 (Dictionary Lookup)</h3><p>MoCo 的核心逻辑是 <strong>“维护一个平滑演变的负样本库”</strong>。</p>
+<p><strong>具体步骤：</strong></p>
+<ol>
+<li><strong>双编码器输入</strong>：<ul>
+<li>输入 $x$，增强得到 $x_q$ 和 $x_k$。</li>
+<li>$x_q$ 进入 <strong>Query Encoder ($\theta_q$)</strong>，得到向量 $q$。</li>
+<li>$x_k$ 进入 <strong>Key Encoder ($\theta_k$)</strong>，得到向量 $k_+$。</li>
+</ul>
+</li>
+<li><strong>归一化 (L2 Norm)</strong>：将 $q, k_+$ 以及队列中所有的 $k$ 映射到单位超球面上。</li>
+<li><strong>度量计算 (Logits)</strong>：<ul>
+<li><strong>正对</strong>：计算 $q \cdot k_+$。</li>
+<li><strong>负对</strong>：计算 $q$ 与 <strong>Queue (队列)</strong> 中存储的 $K$ 个历史特征的点积。</li>
+</ul>
+</li>
+<li><strong>对比损失</strong>：将正对和 $K$ 个负对看作一个 $K+1$ 类的分类问题，计算 InfoNCE。</li>
+<li><strong>动量更新 (核心)</strong>：<ul>
+<li><strong>梯度更新</strong>：只对 $\theta_q$ 进行反向传播。</li>
+<li><strong>平滑跟随</strong>：$\theta_k \leftarrow m\theta_k + (1-m)\theta_q$。保证了 Key Encoder 生成的特征在队列中具有时空一致性。</li>
+</ul>
+</li>
+<li><strong>队列维护</strong>：将当前 Batch 的 $k_+$ 加入队列（Enqueue），并剔除最老的特征（Dequeue, FIFO）。</li>
+</ol>
+<hr>
+<h2 id="4-核心差异与面试考点"><a href="#4-核心差异与面试考点" class="headerlink" title="4. 核心差异与面试考点"></a>4. 核心差异与面试考点</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">特性</th>
+<th style="text-align:left">SimCLR</th>
+<th style="text-align:left">MoCo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>负样本规模</strong></td>
+<td style="text-align:left">受 Batch Size 限制 (需超大 Batch)</td>
+<td style="text-align:left">由 Queue 决定 (可达 65536)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>负样本一致性</strong></td>
+<td style="text-align:left">实时计算，一致性完美</td>
+<td style="text-align:left">依靠<strong>动量更新</strong>保证一致性</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>解决模型坍塌</strong></td>
+<td style="text-align:left">显式负样本排斥</td>
+<td style="text-align:left">显式负样本排斥</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>硬件要求</strong></td>
+<td style="text-align:left">极高 (TPU/多卡集群)</td>
+<td style="text-align:left">友好 (单卡即可训练大模型)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>面试 Tip</strong>：为什么 SimCLR 需要 Projection Head？<br>因为对比学习任务可能会由于过于关注“不变性”而损害特征的语义。非线性投影层 $g(h)$ 可以作为一个“防火墙”，让信息损失发生在 $z$ 层，从而保护 $h$ 层保留更多的下游任务有用信息（如颜色、形状）。</p>
+</blockquote>
+<hr>
+<h2 id="5-对比学习负样本是否重要？负样本构造成本过高应该怎么解决？"><a href="#5-对比学习负样本是否重要？负样本构造成本过高应该怎么解决？" class="headerlink" title="5. 对比学习负样本是否重要？负样本构造成本过高应该怎么解决？"></a>5. 对比学习负样本是否重要？负样本构造成本过高应该怎么解决？</h2><p>负样本为什么重要？（数学本质）从信息论角度看，对比学习的目标是最大化正样本对之间的<strong>互信息（Mutual Information）</strong>。</p>
+<ul>
+<li>防止模型崩溃（Model Collapse）：如果没有负样本，模型最简单的“偷懒”方式就是让所有图片的输出向量都变成常数（比如全 1），这样相似度永远最大。负样本的存在提供了“推开”的力，迫使模型去寻找能区分不同物体的特征。</li>
+<li>InfoNCE 紧致度：数学上证明了，负样本数量 $K$ 越大，InfoNCE 损失函数对互信息的下界估计就越紧。换句话说，负样本越多，模型对特征空间的分布刻画就越精准。</li>
+</ul>
+<p>负样本构造成本过高的解决方案如果显存不够、算力有限，无法像 SimCLR 那样搞大 Batch，业界有四种主流的演进思路：</p>
+<ul>
+<li>A. <strong>缓存机制（代表作：MoCo</strong>）这是最经典的工程解法。<ul>
+<li>原理：既然一个 Batch 里的负样本不够，我就用一个<strong>队列（Queue）</strong>把之前几十个 Batch 的特征存起来。</li>
+<li>核心：为了解决“特征陈旧”问题，引入<strong>动量更新（Momentum Update）</strong>，让产生负样本的编码器演进得慢一点。这样你只需极小的显存，就能获得成千上万个负样本。</li>
+</ul>
+</li>
+<li>B. 寻找“硬”负样本（<strong>Hard Negative Mining</strong>）与其要一万个没用的负样本，不如要十个极其难区分的。<ul>
+<li>原理：在损失函数中给那些离 Query 很近的负样本更高的权重（通过调小温度系数 $\tau$ 或者主动采样策略）。</li>
+<li>例子：CUZA 等算法会动态地挑选那些模型容易搞混的样本作为负样本进行训练。</li>
+</ul>
+</li>
+<li>C. 改变对称性：预测机制（代表作：BYOL, SimSiam）这是目前的“黑科技”方向：完全不要负样本！<br>  BYOL 的做法：它通过两个不对称的网络（一个 Online，一个 Target），让 Online 网络去预测 Target 网络的输出。<ul>
+<li>数学直觉：通过引入 Predictor（非线性层） 和 Stop-gradient（停止梯度回传），即使没有负样本，模型也不会崩溃到常数解。</li>
+<li>这证明了：只要架构不对称，负样本不是必须的。</li>
+</ul>
+</li>
+<li>D. 特征去相关（代表作：Barlow Twins）<ul>
+<li>原理：既然负样本是为了防止特征塌陷，那我们直接在特征的协方差矩阵上做文章。</li>
+<li>目标：让正样本对的特征互相关矩阵趋近于单位矩阵（Identity Matrix）。这意味着特征内部的每个维度都在表达不同的信息，且不同样本之间尽量不重复。这种方法也不需要显式的负样本对。</li>
+</ul>
+</li>
+</ul>
+
                 
             </div>
             <hr/>
@@ -511,7 +615,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="/about" rel="external nofollow noreferrer">BY 水蓝</a>
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
                 </span>
             </div>
             <div class="reprint__type">
@@ -521,7 +625,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2021/02/20/ACM/2021-02-21-niuke01_D/">https://SGDBS.github.io/2021/02/20/ACM/2021-02-21-niuke01_D/</a>
+                    <a href="https://SGDBS.github.io/2026/03/27/AI/Chapter2/">https://SGDBS.github.io/2026/03/27/AI/Chapter2/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -534,7 +638,7 @@
                     All articles in this blog are used except for special statements
                     <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
                     reprint polocy. If reproduced, please indicate source
-                    <a href="/about" target="_blank">BY 水蓝</a>
+                    <a href="/about" target="_blank">YANG</a>
                     !
                 </span>
             </div>
@@ -559,16 +663,16 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/ACM/">
-                                    <span class="chip bg-color">ACM,</span>
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
                                 </a>
                             
-                                <a href="/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/">
-                                    <span class="chip bg-color">并查集</span>
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
                                 </a>
                             
-                                <a href="/tags/ACM%E7%BB%84%E5%90%88%E8%AE%A1%E6%95%B0/">
-                                    <span class="chip bg-color">ACM组合计数</span>
+                                <a href="/tags/Self-Supervised-Learning/">
+                                    <span class="chip bg-color">Self-Supervised Learning</span>
                                 </a>
                             
                         </div>
@@ -738,17 +842,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
-                <a href="/2021/02/20/ACM/2021-02-20-niuke01_A/">
+                <a href="/2026/03/27/AI/Chapter2/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="串">
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="Chapter2 对比学习（Contrastive Learning）的核心机理">
                         
-                        <span class="card-title">串</span>
+                        <span class="card-title">Chapter2 对比学习（Contrastive Learning）的核心机理</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -758,26 +863,31 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-02-20
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
+                            YANG
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E9%80%92%E6%8E%A8/">
-                        <span class="chip bg-color">递推</span>
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
                     </a>
                     
-                    <a href="/tags/ACM/">
-                        <span class="chip bg-color">ACM</span>
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/Self-Supervised-Learning/">
+                        <span class="chip bg-color">Self-Supervised Learning</span>
                     </a>
                     
                 </div>
@@ -791,13 +901,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/02/20/ACM/2021-05-05-HDU1534/">
+                <a href="/2026/03/27/AI/Chapter1/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="HDU1534 Schedule Problem">
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="相似度度量（Similarity Measures）">
                         
-                        <span class="card-title">HDU1534 Schedule Problem</span>
+                        <span class="card-title">相似度度量（Similarity Measures）</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -808,12 +918,12 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-02-20
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
+                            YANG
                             
                         </span>
                     </div>
@@ -821,12 +931,12 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/ACM/">
-                        <span class="chip bg-color">ACM</span>
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
                     </a>
                     
-                    <a href="/tags/ACM%E5%B7%AE%E5%88%86%E7%BA%A6%E6%9D%9F/">
-                        <span class="chip bg-color">ACM差分约束</span>
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
                     </a>
                     
                 </div>
