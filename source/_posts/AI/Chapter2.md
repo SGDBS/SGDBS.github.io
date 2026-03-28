@@ -1,10 +1,10 @@
 ---
 title: Chapter2 对比学习（Contrastive Learning）的核心机理
 date: 2026-03-27 16:03:34
+categories: AI大学习
 tags:
     - AI
     - AI面试知识
-    - Self-Supervised Learning
 ---
 
 # 深度进阶：对比学习（Contrastive Learning）的核心机理

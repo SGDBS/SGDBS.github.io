@@ -1,13 +1,14 @@
 ---
-title: 相似度度量（Similarity Measures）
+title: Chapter1 相似度度量（Similarity Measures）
 date: 2026-03-27 12:48:00
+categories: AI大学习
 mathjax: true
 tags:
     - AI
     - AI面试知识
 ---
 
-# Chapter 相似度度量（Similarity Measures）
+# 相似度度量（Similarity Measures）
 
 ## 1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量
 
