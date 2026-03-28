@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="串, YANG&#39;s Blog">
+    <meta name="keywords" content="Chapter3 对比学习BYOL， SimSiam, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>串 | YANG&#39;s Blog</title>
+    <title>Chapter3 对比学习BYOL， SimSiam | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -316,7 +316,7 @@
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">串</h1>
+                    <h1 class="description center-align post-title">Chapter3 对比学习BYOL， SimSiam</h1>
                 </div>
             </div>
         </div>
@@ -432,18 +432,27 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/ACM/">
-                                <span class="chip bg-color">ACM</span>
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
                             </a>
                         
-                            <a href="/tags/%E9%80%92%E6%8E%A8/">
-                                <span class="chip bg-color">递推</span>
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
                             </a>
                         
                     </div>
                     
                 </div>
                 <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                AI大学习
+                            </a>
+                        
+                    </div>
                     
                 </div>
             </div>
@@ -452,7 +461,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2021-02-20
+                    2026-03-28
                 </div>
                 
 
@@ -473,17 +482,69 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>链接：<a target="_blank" rel="noopener" href="https://ac.nowcoder.com/acm/contest/9981/A">https://ac.nowcoder.com/acm/contest/9981/A</a></p>
-<h2 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h2><p>长度不超过n，且包含子序列“us”的、只由小写字母构成的字符串有多少个？ 答案对1e9+7取模。<br>所谓子序列，指一个字符串删除部分字符（也可以不删）得到的字符串。<br>例如，”unoacscc”包含子序列”us”，但”scscucu”则不包含子序列”us”</p>
-<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>用递推的方法,通过在已有字符串的末端增加字符,从而逐步得到答案</p>
-<p>f[i][0]表是长度为i的不含u的合法字符串数量</p>
-<p>f[i][1]表示含u但是不含us的</p>
-<p>f[i][2]表示含us的</p>
-<p>那么可以得到</p>
-<p>f[i][0]=f[i-1][0]*25,即在末尾加上一个除了u之外的字符</p>
-<p>f[i][1]=f[i-1][1]*25(含有u了,那么加一个除了s之外的字符)+f[i-1][0] (在末尾加上u)</p>
-<p>f[i][2]=f[i-1][2]*26(含有us了,那么随便加一个字符)+f[i-1][1] (前面有u无s,那么在末尾加上s)</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ll long long</span></span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> maxn = <span class="number">1e6</span> + <span class="number">7</span>;</span><br><span class="line"><span class="type">const</span> ll mod = <span class="number">1e9</span> + <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> n;</span><br><span class="line">ll f[maxn][<span class="number">3</span>], ans;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;n);</span><br><span class="line">    f[<span class="number">1</span>][<span class="number">0</span>] = <span class="number">25</span>;</span><br><span class="line">    f[<span class="number">1</span>][<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">    f[<span class="number">1</span>][<span class="number">2</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; ++i) &#123;</span><br><span class="line">        f[i][<span class="number">0</span>] = f[i<span class="number">-1</span>][<span class="number">0</span>] * <span class="number">25</span> % mod;</span><br><span class="line">        f[i][<span class="number">1</span>] = (f[i<span class="number">-1</span>][<span class="number">1</span>]*<span class="number">25</span> % mod + f[i<span class="number">-1</span>][<span class="number">0</span>]) % mod;</span><br><span class="line">        f[i][<span class="number">2</span>] = (f[i<span class="number">-1</span>][<span class="number">2</span>]*<span class="number">26</span> % mod + f[i<span class="number">-1</span>][<span class="number">1</span>]) % mod;</span><br><span class="line">        ans = (ans + f[i][<span class="number">2</span>]) % mod;<span class="comment">//注意题目要求是”不超过n“</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%lld\n&quot;</span>, ans);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+                <h2 id="BYOL-Bootstrap-Your-Own-Latent"><a href="#BYOL-Bootstrap-Your-Own-Latent" class="headerlink" title="BYOL (Bootstrap Your Own Latent)"></a>BYOL (Bootstrap Your Own Latent)</h2><h3 id="1-核心理念"><a href="#1-核心理念" class="headerlink" title="1. 核心理念"></a>1. 核心理念</h3><p>BYOL 证明了在<strong>完全没有负样本（Negative Pairs）</strong>的情况下，通过构建<strong>非对称结构（Asymmetric Architecture）</strong>和<strong>预测机制</strong>，也能实现有效的自监督学习，并成功避免模型塌缩（Collapse）。</p>
+<h3 id="2-网络架构"><a href="#2-网络架构" class="headerlink" title="2. 网络架构"></a>2. 网络架构</h3><p>BYOL 由两个互动的网络分支组成：</p>
+<ul>
+<li><strong>Online Network（在线网络）</strong>: 参数为 $\theta$。<ul>
+<li>组成：<ul>
+<li>Encoder $f_\theta$：通常是 ResNet-50。它将增强后的图像 $v$ 映射为高维特征向量 $h_\theta$。</li>
+<li>Projector $g_\theta$：一个多层感知机（MLP）。它将 $h_\theta$ 投影到一个更紧凑的空间 $z_\theta$。</li>
+<li>Predictor $q_\theta$（核心层）：又一个 MLP。它试图将 $z_\theta$ 映射到 Target 网络的表示空间，输出 $\hat{z}_\theta$。</li>
+</ul>
+</li>
+<li>更新方式：通过梯度下降（SGD/Adam）实时更新。</li>
+</ul>
+</li>
+<li><strong>Target Network（目标网络）</strong>: 参数为 $\xi$。<ul>
+<li>组成：<ul>
+<li>Encoder $f_\xi$：结构与 $f_\theta$ 完全一致。</li>
+<li>Projector $g_\xi$：结构与 $g_\theta$ 完全一致。</li>
+</ul>
+</li>
+<li>更新方式：<strong>动量更新（EMA）</strong>，不计算梯度。其参数是 Online 参数的历史加权平均。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-具体算法流程-Step-by-Step"><a href="#3-具体算法流程-Step-by-Step" class="headerlink" title="3. 具体算法流程 (Step-by-Step)"></a>3. 具体算法流程 (Step-by-Step)</h3><ol>
+<li><strong>视图生成</strong>: 对原始图片 $x$ 进行两种随机数据增强，得到视图 $v$ 和 $v’$。（例如一张裁剪，一张变色）</li>
+<li><strong>Online 前向传播</strong>: 视图 $v$ 经过编码器、投影层和<strong>预测层</strong>，输出 <script type="math/tex">\hat{z}_\theta = q_\theta(g_\theta(f_\theta(v)))</script></li>
+<li><strong>Target 前向传播</strong>: 视图 $v’$ 经过编码器和投影层，输出目标表示 <script type="math/tex">z_\xi = g_\xi(f_\xi(v'))</script></li>
+<li><strong>损失计算</strong>: <ul>
+<li>对 $\hat{z}_\theta$ 和 $z_\xi$ 进行 $L_2$ 归一化。</li>
+<li>计算均方误差（MSE）：$L = |\bar{q}_\theta(z_\theta) - \bar{z}_\xi|_2^2$（本质上是最大化余弦相似度）。</li>
+</ul>
+</li>
+<li><strong>梯度与参数更新</strong>:<ul>
+<li><strong>Online</strong>: 计算 $L$ 对 $\theta$ 的梯度并执行更新。</li>
+<li><strong>Target</strong>: 不传梯度，执行动量平滑更新：$\xi \leftarrow m\xi + (1-m)\theta$。</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-关键机制深度解析"><a href="#4-关键机制深度解析" class="headerlink" title="4. 关键机制深度解析"></a>4. 关键机制深度解析</h3><h4 id="A-为什么会陷入“平凡解”（塌缩）？"><a href="#A-为什么会陷入“平凡解”（塌缩）？" class="headerlink" title="A. 为什么会陷入“平凡解”（塌缩）？"></a>A. 为什么会陷入“平凡解”（塌缩）？</h4><ul>
+<li><strong>数学本质</strong>: 在没有负样本时，模型为了最小化 Loss，最简单的“捷径”是将所有输入映射为同一个常数向量（常数映射）。此时正样本对相似度为 1，Loss 为 0，但模型失去了特征区分能力。<blockquote>
+<p>假设模型 $f_\theta$ 将所有输入 $x$ 都映射成一个单位向量 $c$（例如 $[1, 0, 0, \dots]$）。</p>
+<ul>
+<li>对于任意一对正样本 $(v, v’)$，它们的输出分别是 $z = c$ 和 $z’ = c$。</li>
+<li>此时，余弦相似度 $\cos(z, z’) = 1$，损失函数 $L = 1 - \cos(z, z’) = 0$。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h4 id="B-为什么-BYOL-能防止塌缩？"><a href="#B-为什么-BYOL-能防止塌缩？" class="headerlink" title="B. 为什么 BYOL 能防止塌缩？"></a>B. 为什么 BYOL 能防止塌缩？</h4><ul>
+<li><strong>Predictor 的预测作用</strong>: Predictor 引入了非线性变换，使得 Online 端必须去“预测” Target 的特征，而不仅仅是简单的恒等拷贝。</li>
+<li><strong>Stop-gradient（停止梯度）</strong>: 关键在于梯度不流向 Target 分支。这使得 Target 在优化过程中是一个“被动观察者”，不会为了减小 Loss 而主动向常数解靠拢。</li>
+<li><strong>动量滞后性</strong>: Target 网络是 Online 网络的一个“缓慢移动的影子”。这种时间上的滞后和不一致性打破了坍缩所需的同步性。</li>
+</ul>
+<h4 id="C-动量更新（EMA）的具体作用"><a href="#C-动量更新（EMA）的具体作用" class="headerlink" title="C. 动量更新（EMA）的具体作用"></a>C. 动量更新（EMA）的具体作用</h4><ul>
+<li><strong>提供稳定目标</strong>: 由于 Target 更新极慢，它为 Online 提供了一个连续且平滑的回归目标，起到了正则化作用。</li>
+<li><strong>信息集成</strong>: Target 实际上是 Online 历史多个版本的集成（Ensemble），包含了更丰富的特征空间信息。</li>
+</ul>
+<h3 id="5-面试考点总结"><a href="#5-面试考点总结" class="headerlink" title="5. 面试考点总结"></a>5. 面试考点总结</h3><ul>
+<li><strong>对比 MoCo</strong>: MoCo 的动量是为了维持负样本队列的一致性；BYOL 的动量是为了在无负样本时稳定目标、防止塌缩。</li>
+<li><strong>Predictor 必要性</strong>: 若去掉预测层，双路结构完全对称，模型会立即陷入平凡解。</li>
+<li><strong>核心结论</strong>: BYOL 证明了“非对称性”是自监督学习中除了“负样本约束”外的另一种有效的防塌缩手段。</li>
+</ul>
+
                 
             </div>
             <hr/>
@@ -499,7 +560,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="/about" rel="external nofollow noreferrer">BY 水蓝</a>
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
                 </span>
             </div>
             <div class="reprint__type">
@@ -509,7 +570,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2021/02/20/ACM/2021-02-20-niuke01_A/">https://SGDBS.github.io/2021/02/20/ACM/2021-02-20-niuke01_A/</a>
+                    <a href="https://SGDBS.github.io/2026/03/28/AI/Chapter3/">https://SGDBS.github.io/2026/03/28/AI/Chapter3/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -522,7 +583,7 @@
                     All articles in this blog are used except for special statements
                     <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
                     reprint polocy. If reproduced, please indicate source
-                    <a href="/about" target="_blank">BY 水蓝</a>
+                    <a href="/about" target="_blank">YANG</a>
                     !
                 </span>
             </div>
@@ -547,12 +608,12 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/ACM/">
-                                    <span class="chip bg-color">ACM</span>
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
                                 </a>
                             
-                                <a href="/tags/%E9%80%92%E6%8E%A8/">
-                                    <span class="chip bg-color">递推</span>
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
                                 </a>
                             
                         </div>
@@ -722,17 +783,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
-                <a href="/2021/02/20/ACM/2021-05-05-HDU1534/">
+                <a href="/2026/03/28/AI/Chapter3/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="HDU1534 Schedule Problem">
+                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="Chapter3 对比学习BYOL， SimSiam">
                         
-                        <span class="card-title">HDU1534 Schedule Problem</span>
+                        <span class="card-title">Chapter3 对比学习BYOL， SimSiam</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -742,26 +804,31 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-02-20
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-28
+                            </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    AI大学习
+                                </a>
+                            
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/ACM/">
-                        <span class="chip bg-color">ACM</span>
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
                     </a>
                     
-                    <a href="/tags/ACM%E5%B7%AE%E5%88%86%E7%BA%A6%E6%9D%9F/">
-                        <span class="chip bg-color">ACM差分约束</span>
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
                     </a>
                     
                 </div>
@@ -775,13 +842,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/01/25/HTML/2021-01-26-html/">
+                <a href="/2026/03/27/AI/Chapter2/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/15.jpg" class="responsive-img" alt="html从0到能看懂">
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="Chapter2 对比学习（Contrastive Learning）的核心机理">
                         
-                        <span class="card-title">html从0到能看懂</span>
+                        <span class="card-title">Chapter2 对比学习（Contrastive Learning）的核心机理</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -792,12 +859,16 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-01-25
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
                             </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    AI大学习
+                                </a>
+                            
                             
                         </span>
                     </div>
@@ -805,8 +876,12 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/HTML/">
-                        <span class="chip bg-color">HTML</span>
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
                     </a>
                     
                 </div>
