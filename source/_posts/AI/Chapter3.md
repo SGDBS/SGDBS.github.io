@@ -2,6 +2,7 @@
 title: Chapter3 对比学习BYOL， SimSiam
 date: 2026-03-28 16:03:34
 categories: AI大学习
+mathjax: true
 tags:
     - AI
     - AI面试知识
