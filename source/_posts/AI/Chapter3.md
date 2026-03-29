@@ -118,7 +118,8 @@ optimizer.step()
     我们的目标是训练一个网络 $\mathcal{F}_\theta$（包含 Encoder, Projector 和 Predictor），使得它能预测出这个 $\eta_x$。
     
     定义损失函数 $E(\theta, \eta)$：
-        $$E(\theta, \eta) = \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]$$
+    
+    $$E(\theta, \eta) = \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]$$
     
     * 这里有两个待优化的变量：$\theta$：网络的参数（我们想要学习的模型）。
     * $\eta$：图像的表示（隐变量，我们并不知道每张图最完美的向量是什么）。
