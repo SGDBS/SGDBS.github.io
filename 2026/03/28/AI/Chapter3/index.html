@@ -548,8 +548,8 @@
 <h3 id="1-SimSiam-的网络结构"><a href="#1-SimSiam-的网络结构" class="headerlink" title="1 SimSiam 的网络结构"></a>1 SimSiam 的网络结构</h3><p>SimSiam 采用的是完全共享权重的<strong>孪生网络（Siamese Network）</strong>结构：</p>
 <ul>
 <li>Encoder (编码器 $f$)：通常是 ResNet。两路输入共享同一套参数 $\theta$。</li>
-<li>Projector (投影层 $g$)：一个 MLP，将高维特征映射到中间空间。</li>
-<li>Predictor (预测层 $p$)：仅在其中一路使用。它是一个非线性 MLP，用于将一路的输出匹配到另一路的表示。</li>
+<li>Projector (投影层 $g$)：一个 MLP，将高维特征映射到中间空间,参数 $\theta$。</li>
+<li>Predictor (预测层 $p$)：仅在其中一路使用。它是一个非线性 MLP，用于将一路的输出匹配到另一路的表示,参数 $\theta$。</li>
 </ul>
 <h3 id="2-具体算法流程"><a href="#2-具体算法流程" class="headerlink" title="2 具体算法流程"></a>2 具体算法流程</h3><p>假设输入一张图像 $x$，流程如下：</p>
 <ol>
@@ -570,7 +570,44 @@
 <li>距离函数 $D$：通常使用负余弦相似度：$D(p, z) = -\frac{p \cdot z}{|p|_2 |z|_2}$。</li>
 </ul>
 </li>
-<li><strong>更新参数</strong>：根据总损失 $L = \frac{1}{2}(L_1 + L_2)$，通过反向传播更新所有共享参数 $\theta$。</li>
+<li><strong>更新参数</strong>：根据总损失 $L = \frac{1}{2}(L_1 + L_2)$，通过反向传播更新所有共享参数 $\theta$：<script type="math/tex; mode=display">\nabla \theta = \frac{1}{2} \frac{\partial D(p_1, z_2)}{\partial \theta} + \frac{1}{2} \frac{\partial D(p_2, z_1)}{\partial \theta}</script></li>
+</ol>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 得到表示 (z) 和 预测 (p)</span></span><br><span class="line">z1, z2 = model.backbone(x1), model.backbone(x2) <span class="comment"># backbone 包含 encoder 和 projector</span></span><br><span class="line">p1, p2 = model.predictor(z1), model.predictor(z2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 计算损失：注意 detach() 就是 stop-gradient 的实现</span></span><br><span class="line"><span class="comment"># D 是余弦相似度</span></span><br><span class="line">loss = (D(p1, z2.detach()) + D(p2, z1.detach())) * <span class="number">0.5</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 统一更新参数</span></span><br><span class="line">loss.backward() <span class="comment"># 梯度只从 p1 传回，不从 z2 传回</span></span><br><span class="line">optimizer.step()</span><br></pre></td></tr></table></figure>
+<h3 id="3-为什么它有效？"><a href="#3-为什么它有效？" class="headerlink" title="3 为什么它有效？"></a>3 为什么它有效？</h3><p>何恺明在论文中做了一个实验：一旦去掉 Stop-gradient，模型会瞬间塌缩。<br>数学上，SimSiam 的优化可以看作是<strong>交替优化（Alternating Optimization）</strong>。<br>如果不加 Stop-gradient，模型是在同时优化 $\theta$ 和表示 $z$，这会产生退化解。加上之后，它变成了一个类似 EM 算法 的过程：</p>
+<ol>
+<li><p>定义目标函数我们假设图像<br> $x$ 有一个“理想的特征表示” $\eta_x$。</p>
+<p> 我们的目标是训练一个网络 $\mathcal{F}_\theta$（包含 Encoder, Projector 和 Predictor），使得它能预测出这个 $\eta_x$。</p>
+<p> 定义损失函数 $E(\theta, \eta)$：</p>
+<pre><code> $$E(\theta, \eta) = \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]$$
+</code></pre><ul>
+<li>这里有两个待优化的变量：$\theta$：网络的参数（我们想要学习的模型）。</li>
+<li>$\eta$：图像的表示（隐变量，我们并不知道每张图最完美的向量是什么）。</li>
+</ul>
+</li>
+<li><p>为什么直接优化会“塌缩”？<br> 如果像普通的端到端训练那样同时对 $\theta$ 和 $\eta$ 求导：</p>
+<script type="math/tex; mode=display">\min_{\theta, \eta} E(\theta, \eta)</script><p> 模型会发现一个超级捷径：让所有的 $\eta_x$ 都等于一个常数 $C$，同时让网络 $\mathcal{F}_\theta$ 对任何输入也输出 $C$。<br> 此时误差为 0，但模型什么也没学到。这就是<strong>塌缩（Collapse）</strong>。</p>
+</li>
+</ol>
+<ol>
+<li><p>引入 EM 思想：交替优化</p>
+<p> 为了防止上述情况，SimSiam（以及 BYOL）实际上将优化拆成了两步，这与 EM 算法 的逻辑完美对应：</p>
+<p> <strong>第一步：E-step（固定 $\theta$，优化 $\eta$）</strong></p>
+<p> 在这一步，我们不更新网络，而是问：“<strong>基于现在的模型，哪种特征表示 $\eta$ 最能代表这张图？</strong>”</p>
+<ul>
+<li>数学上，我们要找一个 $\eta_x$ 使得距离最小。</li>
+<li>在 SimSiam 中，这对应于前向传播。我们取另一个增强视图 $T’(x)$ 经过网络后的输出作为参考：<script type="math/tex">\eta_x \leftarrow \mathcal{F}_{\theta^t}(T'(x))</script></li>
+<li><p>关键点：在这一步，$\eta_x$ 被视为一个观测值（常数）。</p>
+<p><strong>第二步：M-step（固定 $\eta$，优化 $\theta$）</strong><br>在这一步，我们固定刚才找到的 $\eta_x$，去更新网络参数 $\theta$：</p>
+<script type="math/tex; mode=display">\theta^{t+1} \leftarrow \arg\min_{\theta} \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]</script><p>网络试图调整自己，去“追赶”刚才 E-step 确定的那个目标。</p>
+</li>
+</ul>
+</li>
+<li><p>Stop-gradient 如何等效于这个过程？Stop-gradient ($\text{sg}$) 的本质就是强制执行这种“交替”。<br> 在 SimSiam 的损失函数中：</p>
+<script type="math/tex; mode=display">L = \| \mathcal{F}_{\theta}(T(x)) - \text{sg}(\mathcal{F}_{\theta}(T'(x))) \|^2</script><ul>
+<li>右项 $\text{sg}(\dots)$：对应 <strong>E-step</strong>。它把当前网络对 $T’(x)$ 的输出“冻结”住，变成一个不带梯度的常数目标 $\eta$。   </li>
+<li>左项 $\mathcal{F}_{\theta}(\dots)$：对应 <strong>M-step</strong>。梯度只在这里流动，强迫参数 $\theta$ 去拟合右边那个被冻结的目标。</li>
+</ul>
+</li>
 </ol>
 
                 
