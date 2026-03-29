@@ -586,8 +586,6 @@
 <li><p>为什么直接优化会“塌缩”？<br> 如果像普通的端到端训练那样同时对 $\theta$ 和 $\eta$ 求导：</p>
 <script type="math/tex; mode=display">\min_{\theta, \eta} E(\theta, \eta)</script><p> 模型会发现一个超级捷径：让所有的 $\eta_x$ 都等于一个常数 $C$，同时让网络 $\mathcal{F}_\theta$ 对任何输入也输出 $C$。<br> 此时误差为 0，但模型什么也没学到。这就是<strong>塌缩（Collapse）</strong>。</p>
 </li>
-</ol>
-<ol>
 <li><p>引入 EM 思想：交替优化</p>
 <p> 为了防止上述情况，SimSiam（以及 BYOL）实际上将优化拆成了两步，这与 EM 算法 的逻辑完美对应：</p>
 <p> <strong>第一步：E-step（固定 $\theta$，优化 $\eta$）</strong><br> $\eta_x$（样本分配）：就像 K-Means 里的分配标签。我们更新标签，把样本分配给最近的中心。<br> 在这一步，我们不更新网络，而是问：“<strong>基于现在的模型，哪种特征表示 $\eta$ 最能代表这张图？</strong>”</p>
