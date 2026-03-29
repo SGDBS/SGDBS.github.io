@@ -135,20 +135,26 @@ optimizer.step()
     为了防止上述情况，SimSiam（以及 BYOL）实际上将优化拆成了两步，这与 EM 算法 的逻辑完美对应：
     
     **第一步：E-step（固定 $\theta$，优化 $\eta$）**
-    
+    $\eta_x$（样本分配）：就像 K-Means 里的分配标签。我们更新标签，把样本分配给最近的中心。
     在这一步，我们不更新网络，而是问：“**基于现在的模型，哪种特征表示 $\eta$ 最能代表这张图？**”
-    
-    * 数学上，我们要找一个 $\eta_x$ 使得距离最小。
-    * 在 SimSiam 中，这对应于前向传播。我们取另一个增强视图 $T'(x)$ 经过网络后的输出作为参考：$$\eta_x \leftarrow \mathcal{F}_{\theta^t}(T'(x))$$
-    * 关键点：在这一步，$\eta_x$ 被视为一个观测值（常数）。
+    $$\eta^t \leftarrow \arg\min_{\eta} L(\theta^t, \eta)$$
+    为了让 MSE 最小，$\eta_x$ 的最优解应该是该图片在所有可能的数据增强 $T$ 下的平均表示：
+    $$\eta_x^t \leftarrow \mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$$
+    实际上$T$的平均表示很难获取，于是我们用
+    $$\eta_x \leftarrow \mathcal{F}_{\theta^t}(T'(x))$$
+    代替。
     
     **第二步：M-step（固定 $\eta$，优化 $\theta$）**
-    在这一步，我们固定刚才找到的 $\eta_x$，去更新网络参数 $\theta$：
-    $$\theta^{t+1} \leftarrow \arg\min_{\theta} \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]$$
-    网络试图调整自己，去“追赶”刚才 E-step 确定的那个目标。
+    $\theta$（聚类中心）：就像 K-Means 里的中心点。我们更新中心点，让它靠近分配给它的样本。
+    $$\theta^t \leftarrow \arg\min_{\theta} L(\theta, \eta^{t-1})$$
 
-4. Stop-gradient 如何等效于这个过程？Stop-gradient ($\text{sg}$) 的本质就是强制执行这种“交替”。
-    在 SimSiam 的损失函数中：
-    $$L = \| \mathcal{F}_{\theta}(T(x)) - \text{sg}(\mathcal{F}_{\theta}(T'(x))) \|^2$$
-    * 右项 $\text{sg}(\dots)$：对应 **E-step**。它把当前网络对 $T'(x)$ 的输出“冻结”住，变成一个不带梯度的常数目标 $\eta$。   
-    * 左项 $\mathcal{F}_{\theta}(\dots)$：对应 **M-step**。梯度只在这里流动，强迫参数 $\theta$ 去拟合右边那个被冻结的目标。
+
+4. Predictor
+* 理想状态：$\eta_x$ 应该是所有增强视图的期望 $\mathbb{E}_T [\mathcal{F}(T(x))]$。
+* 由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T'(x))$ 来
+代替期望
+    $\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:
+    * 因为我们用“单次采样”代替了“期望”，这引入了巨大的噪声。
+    * 它的目标就是最小化 $\|h(z_1) - z_2\|^2$。
+    * $h(z_1)$ 的最优解在数学上恰好就是 $z_2$ 的期望 $\mathbb{E}[z_2]$
+    * 所以，Predictor 实际上是在“**预判期望**”。它弥补了由于单次采样带来的信息缺失，让模型能够朝着真正的 $\eta$（期望表示）演进。
