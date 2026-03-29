@@ -118,7 +118,7 @@ optimizer.step()
     我们的目标是训练一个网络 $\mathcal{F}_\theta$（包含 Encoder, Projector 和 Predictor），使得它能预测出这个 $\eta_x$。
     
     定义损失函数 $E(\theta, \eta)$：
-    
+
     $$E(\theta, \eta) = \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]$$
     
     * 这里有两个待优化的变量：$\theta$：网络的参数（我们想要学习的模型）。
@@ -149,13 +149,12 @@ optimizer.step()
     $\theta$（聚类中心）：就像 K-Means 里的中心点。我们更新中心点，让它靠近分配给它的样本。
     $$\theta^t \leftarrow \arg\min_{\theta} L(\theta, \eta^{t-1})$$
 
-
 4. Predictor
-* 理想状态：$\eta_x$ 应该是所有增强视图的期望 $\mathbb{E}_T [\mathcal{F}(T(x))]$。
-* 由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T'(x))$ 来
-代替期望
-    $\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:
-    * 因为我们用“单次采样”代替了“期望”，这引入了巨大的噪声。
-    * 它的目标就是最小化 $\|h(z_1) - z_2\|^2$。
-    * $h(z_1)$ 的最优解在数学上恰好就是 $z_2$ 的期望 $\mathbb{E}[z_2]$
-    * 所以，Predictor 实际上是在“**预判期望**”。它弥补了由于单次采样带来的信息缺失，让模型能够朝着真正的 $\eta$（期望表示）演进。
+    * 理想状态：$\eta_x$ 应该是所有增强视图的期望 $\mathbb{E}_T [\mathcal{F}(T(x))]$。
+    * 由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T'(x))$ 来
+    代替期望
+        $\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:
+        * 因为我们用“单次采样”代替了“期望”，这引入了巨大的噪声。
+        * 它的目标就是最小化 $\|h(z_1) - z_2\|^2$。
+        * $h(z_1)$ 的最优解在数学上恰好就是 $z_2$ 的期望 $\mathbb{E}[z_2]$
+        * 所以，Predictor 实际上是在“**预判期望**”。它弥补了由于单次采样带来的信息缺失，让模型能够朝着真正的 $\eta$（期望表示）演进。
