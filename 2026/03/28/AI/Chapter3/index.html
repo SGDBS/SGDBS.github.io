@@ -596,10 +596,7 @@
 <script type="math/tex; mode=display">\eta_x \leftarrow \mathcal{F}_{\theta^t}(T'(x))</script><p> 代替。</p>
 <p> <strong>第二步：M-step（固定 $\eta$，优化 $\theta$）</strong><br> $\theta$（聚类中心）：就像 K-Means 里的中心点。我们更新中心点，让它靠近分配给它的样本。</p>
 <script type="math/tex; mode=display">\theta^t \leftarrow \arg\min_{\theta} L(\theta, \eta^{t-1})</script></li>
-</ol>
-<ol>
-<li>Predictor</li>
-</ol>
+<li><p>Predictor</p>
 <ul>
 <li>理想状态：$\eta_x$ 应该是所有增强视图的期望 $\mathbb{E}_T [\mathcal{F}(T(x))]$。</li>
 <li>由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T’(x))$ 来<br>代替期望<br>  $\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:<ul>
@@ -610,6 +607,8 @@
 </ul>
 </li>
 </ul>
+</li>
+</ol>
 
                 
             </div>
