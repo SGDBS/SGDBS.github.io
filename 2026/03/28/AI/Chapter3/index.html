@@ -544,6 +544,34 @@
 <li><strong>Predictor 必要性</strong>: 若去掉预测层，双路结构完全对称，模型会立即陷入平凡解。</li>
 <li><strong>核心结论</strong>: BYOL 证明了“非对称性”是自监督学习中除了“负样本约束”外的另一种有效的防塌缩手段。</li>
 </ul>
+<h2 id="SimSiam-Simple-Siamese"><a href="#SimSiam-Simple-Siamese" class="headerlink" title="SimSiam (Simple Siamese)"></a>SimSiam (Simple Siamese)</h2><p>SimSiam 是何恺明团队对 BYOL 的极大简化。它证明了：<strong>甚至不需要动量更新（Momentum），只要有 Stop-gradient 就能训练。</strong></p>
+<h3 id="1-SimSiam-的网络结构"><a href="#1-SimSiam-的网络结构" class="headerlink" title="1 SimSiam 的网络结构"></a>1 SimSiam 的网络结构</h3><p>SimSiam 采用的是完全共享权重的<strong>孪生网络（Siamese Network）</strong>结构：</p>
+<ul>
+<li>Encoder (编码器 $f$)：通常是 ResNet。两路输入共享同一套参数 $\theta$。</li>
+<li>Projector (投影层 $g$)：一个 MLP，将高维特征映射到中间空间。</li>
+<li>Predictor (预测层 $p$)：仅在其中一路使用。它是一个非线性 MLP，用于将一路的输出匹配到另一路的表示。</li>
+</ul>
+<h3 id="2-具体算法流程"><a href="#2-具体算法流程" class="headerlink" title="2 具体算法流程"></a>2 具体算法流程</h3><p>假设输入一张图像 $x$，流程如下：</p>
+<ol>
+<li><strong>数据增强</strong>：对 $x$ 进行两次随机增强，得到两个视图 $x_1$ 和 $x_2$。</li>
+<li><strong>提取表示</strong>：<ul>
+<li>两张图都经过相同的 Encoder $f$ 和 Projector $g$。</li>
+<li>得到两个向量：$z_1 = g(f(x_1))$ 和 $z_2 = g(f(x_2))$。</li>
+</ul>
+</li>
+<li><strong>预测映射</strong>：<ul>
+<li>将 $z_1$ 喂入 Predictor $p$，得到预测向量 $p_1 = p(z_1)$。</li>
+<li>同理，将 $z_2$ 喂入 Predictor $p$，得到预测向量 $p_2 = p(z_2)$。</li>
+</ul>
+</li>
+<li><strong>计算对称损失</strong> (Symmetrized Loss)：<br> SimSiam 计算两次损失并取平均。<ul>
+<li>第一部分：$D(p_1, \text{stop_grad}(z_2))$。这里 $p_1$ 去追 $z_2$，但 $z_2$ 不准产生梯度。</li>
+<li>第二部分：$D(p_2, \text{stop_grad}(z_1))$。这里 $p_2$ 去追 $z_1$，但 $z_1$ 不准产生梯度。</li>
+<li>距离函数 $D$：通常使用负余弦相似度：$D(p, z) = -\frac{p \cdot z}{|p|_2 |z|_2}$。</li>
+</ul>
+</li>
+<li><strong>更新参数</strong>：根据总损失 $L = \frac{1}{2}(L_1 + L_2)$，通过反向传播更新所有共享参数 $\theta$。</li>
+</ol>
 
                 
             </div>
