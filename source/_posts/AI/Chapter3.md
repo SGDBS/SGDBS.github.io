@@ -150,9 +150,8 @@ optimizer.step()
 
 4. Predictor
     * 理想状态：$\eta_x$ 应该是所有增强视图的期望 $\mathbb{E}_T [\mathcal{F}(T(x))]$。
-    * 由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T'(x))$ 来
-    代替期望
-        $\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:
+    * 由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T'(x))$ 
+    来代替期望$\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:
         * 因为我们用“单次采样”代替了“期望”，这引入了巨大的噪声。
         * 它的目标就是最小化 $\|h(z_1) - z_2\|^2$。
         * $h(z_1)$ 的最优解在数学上恰好就是 $z_2$ 的期望 $\mathbb{E}[z_2]$
