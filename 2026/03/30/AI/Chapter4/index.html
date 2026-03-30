@@ -483,27 +483,38 @@
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <h1 id="RLHF总览"><a href="#RLHF总览" class="headerlink" title="RLHF总览"></a>RLHF总览</h1><p>我们可以把 RLHF 看作是将人类的“价值观”和“偏好”量化为奖励信号，并指导模型进化的过程。</p>
-<h2 id="RLHF-Reinforcement-Learning-from-Human-Feedback-的三大阶段"><a href="#RLHF-Reinforcement-Learning-from-Human-Feedback-的三大阶段" class="headerlink" title="RLHF (Reinforcement Learning from Human Feedback)的三大阶段"></a>RLHF (Reinforcement Learning from Human Feedback)的三大阶段</h2><h3 id="1-监督微调-SFT-Supervised-Fine-Tuning"><a href="#1-监督微调-SFT-Supervised-Fine-Tuning" class="headerlink" title="1. 监督微调 (SFT - Supervised Fine-Tuning)"></a>1. 监督微调 (SFT - Supervised Fine-Tuning)</h3><pre><code>* 目标：让预训练模型学会“听话”，掌握对话的基本格式。
-* 做法：使用高质量的“指令-回答”数据（由人类编写）对预训练模型进行有监督学习。
-* 数学本质：最大化似然估计 $\max_\theta \mathbb{E}_{(x, y) \sim D} [\log P_\theta(y|x)]$。
-* 产物：SFT 模型（这是后续阶段的起点）。
-</code></pre><h3 id="2-训练奖励模型-RM-Reward-Modeling"><a href="#2-训练奖励模型-RM-Reward-Modeling" class="headerlink" title="2. 训练奖励模型 (RM - Reward Modeling)"></a>2. 训练奖励模型 (RM - Reward Modeling)</h3><pre><code>这是 RLHF 的核心。人类并不擅长给模型打分（打 80 分还是 82 分？），但非常擅长做排序。
-* 做法：
-    1. 让 SFT 模型针对同一个问题 $x$ 生成多个回答 $\{y_1, y_2, \dots\}$。
-    2. 人类根据偏好对回答进行排序（例如 $y_{win} &gt; y_{lose}$）。训练一个奖励模型 $r_\phi(x, y)$，使其对人类喜欢的回答打高分。
-* 损失函数 (Pairwise Ranking Loss)：$$L(\phi) = -\mathbb{E}_{(x, y_w, y_l) \sim D} [\log(\sigma(r_\phi(x, y_w) - r_\phi(x, y_l)))]$$
-* 直觉：两个回答的奖励分差值经过 Sigmoid 后，应该尽可能接近 1。
-* 产物：奖励模型 RM（它代表了人类的审美）。
-</code></pre><h3 id="3-强化学习对齐-PPO-Proximal-Policy-Optimization"><a href="#3-强化学习对齐-PPO-Proximal-Policy-Optimization" class="headerlink" title="3. 强化学习对齐 (PPO - Proximal Policy Optimization)"></a>3. 强化学习对齐 (PPO - Proximal Policy Optimization)</h3><pre><code>这一步是利用 RM 作为“裁判”，通过强化学习算法（通常是 PPO）来榨取模型的潜力。
-* 做法：
-    1. 将 SFT 模型初始化为 Policy 网络。
-    2. 模型生成回答，RM 打分。
-    3. 根据得分更新模型参数。
-* 关键约束：**KL 散度**：
-    为了防止模型为了骗高分而变得“油腔滑调”或产生乱码（即模型坍缩），会在 Reward 中加入一个惩罚项：$$\text{Reward} = r_\phi(x, y) - \beta \cdot \text{KL}(P_{RL}(y|x) \| P_{SFT}(y|x))$$
-    * 意义：强迫对齐后的模型不要偏离原始 SFT 模型太远。
-* 产物：最终的 RLHF 模型。
-</code></pre><h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
+<h2 id="RLHF-Reinforcement-Learning-from-Human-Feedback-的三大阶段"><a href="#RLHF-Reinforcement-Learning-from-Human-Feedback-的三大阶段" class="headerlink" title="RLHF (Reinforcement Learning from Human Feedback)的三大阶段"></a>RLHF (Reinforcement Learning from Human Feedback)的三大阶段</h2><h3 id="1-监督微调-SFT-Supervised-Fine-Tuning"><a href="#1-监督微调-SFT-Supervised-Fine-Tuning" class="headerlink" title="1. 监督微调 (SFT - Supervised Fine-Tuning)"></a>1. 监督微调 (SFT - Supervised Fine-Tuning)</h3><ul>
+<li>目标：让预训练模型学会“听话”，掌握对话的基本格式。</li>
+<li>做法：使用高质量的“指令-回答”数据（由人类编写）对预训练模型进行有监督学习。</li>
+<li>数学本质：最大化似然估计 $\max_\theta \mathbb{E}_{(x, y) \sim D} [\log P_\theta(y|x)]$。</li>
+<li>产物：SFT 模型（这是后续阶段的起点）。</li>
+</ul>
+<h3 id="2-训练奖励模型-RM-Reward-Modeling"><a href="#2-训练奖励模型-RM-Reward-Modeling" class="headerlink" title="2. 训练奖励模型 (RM - Reward Modeling)"></a>2. 训练奖励模型 (RM - Reward Modeling)</h3><p>这是 RLHF 的核心。人类并不擅长给模型打分（打 80 分还是 82 分？），但非常擅长做排序。</p>
+<ul>
+<li>做法：<ol>
+<li>让 SFT 模型针对同一个问题 $x$ 生成多个回答 ${y_1, y_2, \dots}$。</li>
+<li>人类根据偏好对回答进行排序（例如 $y_{win} &gt; y_{lose}$）。训练一个奖励模型 $r_\phi(x, y)$，使其对人类喜欢的回答打高分。</li>
+</ol>
+</li>
+<li>损失函数 (Pairwise Ranking Loss)：<script type="math/tex">L(\phi) = -\mathbb{E}_{(x, y_w, y_l) \sim D} [\log(\sigma(r_\phi(x, y_w) - r_\phi(x, y_l)))]</script></li>
+<li>直觉：两个回答的奖励分差值经过 Sigmoid 后，应该尽可能接近 1。</li>
+<li>产物：奖励模型 RM（它代表了人类的审美）。</li>
+</ul>
+<h3 id="3-强化学习对齐-PPO-Proximal-Policy-Optimization"><a href="#3-强化学习对齐-PPO-Proximal-Policy-Optimization" class="headerlink" title="3. 强化学习对齐 (PPO - Proximal Policy Optimization)"></a>3. 强化学习对齐 (PPO - Proximal Policy Optimization)</h3><p>这一步是利用 RM 作为“裁判”，通过强化学习算法（通常是 PPO）来榨取模型的潜力。</p>
+<ul>
+<li>做法：<ol>
+<li>将 SFT 模型初始化为 Policy 网络。</li>
+<li>模型生成回答，RM 打分。</li>
+<li>根据得分更新模型参数。</li>
+</ol>
+</li>
+<li>关键约束：<strong>KL 散度</strong>：<br>  为了防止模型为了骗高分而变得“油腔滑调”或产生乱码（即模型坍缩），会在 Reward 中加入一个惩罚项：<script type="math/tex">\text{Reward} = r_\phi(x, y) - \beta \cdot \text{KL}(P_{RL}(y|x) \| P_{SFT}(y|x))</script><ul>
+<li>意义：强迫对齐后的模型不要偏离原始 SFT 模型太远。</li>
+</ul>
+</li>
+<li>产物：最终的 RLHF 模型。</li>
+</ul>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
 <li>为什么 RLHF 很重要？</li>
 </ol>
 <ul>
