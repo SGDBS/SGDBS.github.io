@@ -310,3 +310,13 @@ def train_step(model, batch, optimizer):
 
 
 ## 第三阶段：PPO (Proximal Policy Optimization，近端策略优化)
+
+这一步的目标是：利用第二阶段训练好的 RM (奖励模型) 作为判官，采用强化学习算法来更新 SFT 模型，使其生成的回答能够最大化奖励分数。
+
+### 1. PPO 系统的“四模并行”架构
+
+* **Actor Model (Policy)**： 主角，接收 Prompt，生成 Response。最终我们要的成品。更新参数
+* **Critic Model (Value)**： 教练。预估当前状态的价值（Value），辅助 Actor 计算“收益是否超预期”。更新参数
+* **Reference Model**	标杆。SFT 模型的冻结副本，用来限制 Actor 不要跑太远。不更新参数
+* **Reward Model**	判官。阶段二训好的模型，给 Actor 的成品打分。不更新参数
+
