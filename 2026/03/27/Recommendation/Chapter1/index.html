@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="浅谈博弈论-ICG篇, YANG&#39;s Blog">
+    <meta name="keywords" content="Chapter1, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>浅谈博弈论-ICG篇 | YANG&#39;s Blog</title>
+    <title>Chapter1 | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/22.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/12.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">浅谈博弈论-ICG篇</h1>
+                    <h1 class="description center-align post-title">Chapter1</h1>
                 </div>
             </div>
         </div>
@@ -432,26 +432,27 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/ACM/">
-                                <span class="chip bg-color">ACM</span>
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
                             </a>
                         
-                            <a href="/tags/%E5%8D%9A%E5%BC%88%E8%AE%BA/">
-                                <span class="chip bg-color">博弈论</span>
-                            </a>
-                        
-                            <a href="/tags/ICG/">
-                                <span class="chip bg-color">ICG</span>
-                            </a>
-                        
-                            <a href="/tags/SG%E5%87%BD%E6%95%B0/">
-                                <span class="chip bg-color">SG函数</span>
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
                             </a>
                         
                     </div>
                     
                 </div>
                 <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E9%9D%A2%E8%AF%95-%E6%8E%A8%E8%8D%90%E7%AE%97%E6%B3%95/" class="post-category">
+                                面试-推荐算法
+                            </a>
+                        
+                    </div>
                     
                 </div>
             </div>
@@ -460,7 +461,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2021-05-10
+                    2026-03-27
                 </div>
                 
 
@@ -481,55 +482,162 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="公平组合游戏-ICG"><a href="#公平组合游戏-ICG" class="headerlink" title="公平组合游戏(ICG)"></a>公平组合游戏(ICG)</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>游戏由同样很聪明的两个人 参与,二者<strong>轮流</strong>做出决策,且都会做出<strong>最有利于自己的决策</strong>,当有一人无法做出决策时(即无法行动)游戏结束，无法做出决策的人输。<br>无论二者如何做出决策，游戏可以在<strong>有限步内结束</strong>。<br>游戏中的<strong>同一个状态不可能多次抵达</strong>。且游戏<strong>不会有平局出现</strong>。<br>任意一个游戏者在<strong>某一确定状态可以作出的决策集合只与当前的状态有关，而与游戏者无关。</strong></p>
-<p>比如:Nim游戏</p>
-<h2 id="Nim游戏"><a href="#Nim游戏" class="headerlink" title="Nim游戏"></a>Nim游戏</h2><p>取 石 子 游 戏</p>
-<p>桌子上有N堆石子,每一堆石头有ai个，两人轮流取石子。<br>每次只能从一堆中取出任意数目的石子，但不能不取。 取走最后一个石子者胜。</p>
-<h3 id="结论"><a href="#结论" class="headerlink" title="结论:"></a>结论:</h3><p><strong>先手必败:a1 ^ a2 ^ a3 ^ … ^an = 0</strong></p>
-<p>那么先手必胜就是上述结果不为0</p>
-<h3 id="证明"><a href="#证明" class="headerlink" title="证明:"></a>证明:</h3><p>使用<del>不严谨</del>数学归纳法:</p>
-<p>1.最终状态下,异或和为0</p>
-<p>2.对于异或和不为0的状态,我们假设整体异或和为b,找到在二进制下b的最高位的1，在石头堆中找到那一位也是1的石堆a，取出一些石头，使其数量为a^b,这样整体的异或和就又成为0了</p>
-<p>3.对于异或和为0的状态，分为两种，一种是情况1,即已经没有石头了;第二种,还有石头，那么无论怎么取，都会使整体异或和不为0(取某一堆的石头等效于让这堆石<br>头异或上某个不为0的数，而整体异或和为0，0异或一个不为0的数，那么结果一定不为0)</p>
-<p>不难发现,只要双方都采取最优策略,那么先手或后手面对的局面(即异或和是否为0)会一直持续下去,直至游戏结束。</p>
-<p>注: 对于2.中,a^b一定小于a,设 c = a ^ b,二进制下,假设b的最高位1在第k位,那么c中比k高的位数与a相同,而第k位却是0,所以不管比k小的位数是什么,c一定比a小。</p>
-<h2 id="SG函数"><a href="#SG函数" class="headerlink" title="SG函数"></a>SG函数</h2><p>我们把每一个<strong>游戏状态</strong>抽象成一个<strong>自然数值</strong>,称之为该<strong>状态的SG函数值</strong>,且<strong>最终状态的SG函数值为0</strong>。</p>
-<p>且定义以下递进关系:<strong>SG(u) = mex(SG(v),v为所有u的后继状态)</strong></p>
-<p>其中<strong>mex(minimal excludant)是一种运算,其运算结果为不在这个集合中,最小的自然数。</strong></p>
-<p>比如:mex(1,3,4) = 0; mex(0,1,2,4) = 3; mex(0,1,0,2) = 3。</p>
-<h3 id="结论-1"><a href="#结论-1" class="headerlink" title="结论:"></a>结论:</h3><p><strong>必败态的SG值为0,必胜状态SG值不为0</strong></p>
-<h3 id="证明-1"><a href="#证明-1" class="headerlink" title="证明:"></a>证明:</h3><p>同样使用<del>不严谨</del>数学归纳法:</p>
-<p>1.结束状态(必败状态)的SG函数值为0</p>
-<p>2.当前状态的SG值不为0,说明后继状态有SG函数值为0的,那么我们可以走到那个状态(即将SG为0的状态,即必败状态给对手)</p>
-<p>3.当前状态的SG值为0,说明后继状态的SG函数函数值均不为0,那么我们无论怎么走,都会把SG函数值不为0的状态，即必胜状态给对手</p>
-<h3 id="例子"><a href="#例子" class="headerlink" title="例子:"></a>例子:</h3><p>考虑有一堆石头,一共有n个,两个人轮流取,每次只能取1个或者2个,不能不取,谁先取完谁赢(注意这句话与 谁先不能取谁输 等效)。</p>
-<p>那么我们定义如下SG函数:</p>
-<p>SG(x), 其中x为剩余的石头数量(即<strong>当前的游戏状态</strong>),</p>
-<p>那么很显然,当x &gt;= 2时,SG(x) = mex(SG(x-1), SG(x-2)); SG(0) = 0;SG(1) = mex(SG(0)) = 1。</p>
-<p>那么我们可以进行运算: SG(2) = mex(SG(0), SG(1)) = 2。表示有2个石头的时候,先手必胜(与直觉相同)</p>
-<p>SG(3) = mex(SG(2), SG(1)) = mex(2, 1) = 0。表示有3个石头的时候，先手必败。(无论先手取一个还是两个,后手都能把剩下石头取完)</p>
-<p>SG(4) = mex(SG(3), SG(2)) = mex(0, 2) = 1。表示有4个石头的时候,先手必胜。(我们可以取1个，对手面临”先手,有3个石头的必败局面“,这与刚才证明阶段的<br>”当前状态SG值不为0时,则存在后继状态的SG值为0“ 相吻合,而我们说 两个人都会做出最有利于自己的决策,就是为了保证那个人会做出”把必败局面给对手”的决策)</p>
-<p>…</p>
-<p>另外我们容易看出来,<strong>不同状态的SG函数可能相同</strong>(只是说明有这个现象,具体意味着什么本蒟蒻还不清楚orz)。</p>
-<p><strong>进阶:</strong>可以把条件改为一次可以取1,2,3个,再进行mex运算,看看结果会如何<del>(实在是肝不动了,偷个懒)</del>。</p>
-<h2 id="SG定理"><a href="#SG定理" class="headerlink" title="SG定理"></a>SG定理</h2><h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景:"></a>应用场景:</h3><p>SG定理用于多个<strong>同时进行</strong>的SG函数的游戏,就比如刚才的Nim游戏,每一堆石子,都存在<strong>自己的且与其他堆无关的</strong>SG函数。<br>如果把刚才例子中的一堆石子变为多堆石子,那么同样就是要利用SG定理。</p>
-<h3 id="内容"><a href="#内容" class="headerlink" title="内容:"></a>内容:</h3><p>假设当前游戏局面X由子游戏局面X1,X2,…Xn组成,那么SG(X) = SG(X1) ^ SG(X2) ^ … ^ SG(Xn)</p>
-<p>(用Nim游戏举例,子游戏局面的SG值就相当于每一堆的石子的SG函数值)</p>
-<h3 id="证明-2"><a href="#证明-2" class="headerlink" title="证明:"></a>证明:</h3><p>我们使用”类比证明法”(当然这是不严谨的,因为本蒟蒻不会QAQ)</p>
-<p>对于当前游戏局面的任意一个子局面的SG函数,假设为ai,那么显然表明,它的后继状态的SG值可以取0到ai-1,然后率先让所有子局面的SG值都为0的人就会胜利…..</p>
-<p>等等!!!这不是和刚才的取石子游戏一样嘛!!!所以就能直接套用这个模板啦!!</p>
-<h3 id="一些启发"><a href="#一些启发" class="headerlink" title="一些启发:"></a>一些启发:</h3><p>所以拿到一个题目后,如果我们决定要使用SG函数来做,那么就要先分清楚子局面和后继状态:子局面内部SG函数是用mex运算,而子局面之间的运算则是异或。</p>
-<h3 id="例题"><a href="#例题" class="headerlink" title="例题:"></a>例题:</h3><p>POJ - 2311</p>
-<h4 id="题目大意"><a href="#题目大意" class="headerlink" title="题目大意:"></a>题目大意:</h4><p>给定一个有n <em> m格子的纸片,两个人轮流剪，只能沿着格子的线直线剪。率先剪出1 </em> 1格子的人胜利。给定n和m,问先手是否必胜。</p>
-<h4 id="分析"><a href="#分析" class="headerlink" title="分析:"></a>分析:</h4><p>假设当前是n<em>m的,那么考虑它的后继状态,假设我们把它剪成 n</em>r,n<em>(m-r)两个纸片,会发现,它的<em>*后继状态是由两个子状态构成的!</em></em></p>
-<p>所以<strong>SG(n,m)的这个后继状态的SG值应该是由SG(n,r)和nSG(n,m-r)这两个子局面的SG值异或得到的</strong></p>
-<p>除了这种剪法,我们还有其它的剪法,而<strong>SG(n,m)的值就是对它的后继状态取mex操作后得到的。</strong></p>
-<h4 id="代码"><a href="#代码" class="headerlink" title="代码:"></a>代码:</h4><p>(见代码中的标注)</p>
-<p>0.这就是在进行各种剪法,即后继状态,而后继状态是由多个子局面组成的,所以这个后继状态的SG值是子局面的异或和。</p>
-<p>1.这是在求mex运算,vis[x]记录的是当前状态的后继节点的SG值是否有为x的。</p>
-<p>2.SG初始化一定不能为0,因为有的时候,SG函数的值本来就是0。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> maxN = <span class="number">205</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> sg[maxN][maxN];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">SG</span><span class="params">(<span class="type">int</span> r, <span class="type">int</span> c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(sg[r][c] != <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">return</span> sg[r][c];</span><br><span class="line">    <span class="type">int</span> vis[<span class="number">51</span>];</span><br><span class="line">    <span class="built_in">memset</span>(vis, <span class="number">0</span>, <span class="keyword">sizeof</span> vis);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">2</span>; i &lt;= r - i; ++i)<span class="comment">//0.</span></span><br><span class="line">        vis[<span class="built_in">SG</span>(i, c) ^ <span class="built_in">SG</span>(r - i, c)] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">2</span>; i &lt;= c - i; ++i)</span><br><span class="line">        vis[<span class="built_in">SG</span>(r, i) ^ <span class="built_in">SG</span>(r, c - i)] = <span class="number">1</span>;</span><br><span class="line">    sg[r][c] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(vis[sg[r][c]])<span class="comment">// 1.</span></span><br><span class="line">        ++sg[r][c];</span><br><span class="line">    <span class="keyword">return</span> sg[c][r] = sg[r][c];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> n, m;</span><br><span class="line">    <span class="built_in">memset</span>(sg, <span class="number">-1</span>, <span class="keyword">sizeof</span> sg);<span class="comment">//2.</span></span><br><span class="line">    <span class="keyword">while</span>(~<span class="built_in">scanf</span>(<span class="string">&quot;%d%d&quot;</span>, &amp;n, &amp;m)) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">SG</span>(n, m) &gt; <span class="number">0</span>)</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;WIN\n&quot;</span>);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;LOSE\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>希望蒟蒻的这篇博客对你有帮助orz</p>
+                <h2 id="推荐系统面试笔记：用户行为日志字段深度解析"><a href="#推荐系统面试笔记：用户行为日志字段深度解析" class="headerlink" title="推荐系统面试笔记：用户行为日志字段深度解析"></a>推荐系统面试笔记：用户行为日志字段深度解析</h2><p>在推荐系统中，数据决定了模型效果的上限。用户行为日志（User Behavior Logs）不仅是训练数据的来源，更是理解用户意图的唯一窗口。</p>
+<hr>
+<h3 id="1-核心字段总览表"><a href="#1-核心字段总览表" class="headerlink" title="1. 核心字段总览表"></a>1. 核心字段总览表</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段类别</th>
+<th style="text-align:left">关键字段</th>
+<th style="text-align:left">含义</th>
+<th style="text-align:left">面试深度视角 (Deep Dive)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>主体标识</strong></td>
+<td style="text-align:left"><code>User_ID</code></td>
+<td style="text-align:left">唯一标识用户</td>
+<td style="text-align:left"><strong>ID 稀疏性</strong>：高维稀疏特征，通常通过 Embedding 映射到低维空间。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>客体标识</strong></td>
+<td style="text-align:left"><code>Item_ID</code></td>
+<td style="text-align:left">唯一标识物品</td>
+<td style="text-align:left"><strong>冷启动问题</strong>：对于新 Item_ID，需降级到使用 Category/Tag 等属性特征。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>行为类型</strong></td>
+<td style="text-align:left"><code>Action_Type</code></td>
+<td style="text-align:left">点击、购买、点赞等</td>
+<td style="text-align:left"><strong>多目标建模</strong>：不同行为代表不同强度的意图（点击是兴趣，购买是决策）。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>时间维度</strong></td>
+<td style="text-align:left"><code>Timestamp</code></td>
+<td style="text-align:left">行为发生的精确时间</td>
+<td style="text-align:left"><strong>兴趣衰减</strong>：用户 1 分钟前的行为比 1 年前的重要得多。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>环境上下文</strong></td>
+<td style="text-align:left"><code>Context</code></td>
+<td style="text-align:left">设备、地理位置、网络</td>
+<td style="text-align:left"><strong>场景化差异</strong>：Wi-Fi 下用户倾向看长视频，4G 下倾向看图文。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>附加属性</strong></td>
+<td style="text-align:left"><code>Attributes</code></td>
+<td style="text-align:left">播放时长、评分、金额</td>
+<td style="text-align:left"><strong>负反馈挖掘</strong>：播放时长极短的“点击”通常被视为强负反馈（误点）。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="2-知识点深度挖掘"><a href="#2-知识点深度挖掘" class="headerlink" title="2. 知识点深度挖掘"></a>2. 知识点深度挖掘</h3><h4 id="A-行为权重的数学处理-Action-Weighting"><a href="#A-行为权重的数学处理-Action-Weighting" class="headerlink" title="A. 行为权重的数学处理 (Action Weighting)"></a>A. 行为权重的数学处理 (Action Weighting)</h4><p>在计算用户偏好得分时，不能简单地加总行为。通常会根据业务逻辑赋予权重。</p>
+<blockquote>
+<p><strong>公式示例</strong>：用户的综合兴趣得分 $S$ 可以表示为不同行为的加权和：</p>
+<script type="math/tex; mode=display">S_u = \sum_{i \in \text{Actions}} w_i \cdot f(t_i) \cdot \text{Action\_Value}_i</script><p>其中 $w_i$ 是行为权重（如：购买=5.0, 点击=1.0），$f(t_i)$ 是随时间衰减的函数。</p>
+</blockquote>
+<h4 id="B-时序模式与行为序列-Behavior-Sequence"><a href="#B-时序模式与行为序列-Behavior-Sequence" class="headerlink" title="B. 时序模式与行为序列 (Behavior Sequence)"></a>B. 时序模式与行为序列 (Behavior Sequence)</h4><p>现在的 SOTA 模型（如 DIN, BST）不再把用户行为看作独立的点，而是一串<strong>序列</strong>。</p>
+<ul>
+<li><strong>用途</strong>：通过 <code>Timestamp</code> 排序，提取用户最近 50/100 个点击记录。</li>
+<li><strong>面试加分</strong>：提到 <strong>Target Attention</strong> 机制。即利用当前候选物品（Candidate Item）去与历史行为序列做 Attention，找出历史中真正与当前相关的兴趣点。</li>
+</ul>
+<h4 id="C-隐藏的字段：位置偏置-Position-Bias"><a href="#C-隐藏的字段：位置偏置-Position-Bias" class="headerlink" title="C. 隐藏的字段：位置偏置 (Position Bias)"></a>C. 隐藏的字段：位置偏置 (Position Bias)</h4><p>日志中通常还包含一个未被提起的关键字段：<code>Position</code>（物品在页面上的排名）。</p>
+<ul>
+<li><strong>知识点</strong>：用户点击第一名的物品，可能仅仅是因为它排在第一，而不是因为最喜欢。</li>
+<li><strong>工程对策</strong>：在离线训练时将 <code>Position</code> 作为特征输入，在线推理时将其设为默认值（如 0），以此消除位置偏差。</li>
+</ul>
+<hr>
+<h3 id="3-面试官连环炮-Predictive-Q-amp-A"><a href="#3-面试官连环炮-Predictive-Q-amp-A" class="headerlink" title="3. 面试官连环炮 (Predictive Q&amp;A)"></a>3. 面试官连环炮 (Predictive Q&amp;A)</h3><h4 id="Q1-如果日志中-User-ID-缺失（游客模式），推荐系统如何工作？"><a href="#Q1-如果日志中-User-ID-缺失（游客模式），推荐系统如何工作？" class="headerlink" title="Q1: 如果日志中 User_ID 缺失（游客模式），推荐系统如何工作？"></a>Q1: 如果日志中 <code>User_ID</code> 缺失（游客模式），推荐系统如何工作？</h4><ul>
+<li><strong>回答</strong>：<ol>
+<li>利用 <strong>Context（上下文）</strong> 特征：如地理位置、热门趋势。</li>
+<li>利用 <strong>Session-based 推荐</strong>：根据该用户在当前会话（Session）内的前几次点击，利用 RNN 或 Transformer 预测下一次行为。</li>
+<li>利用 <strong>Device_ID</strong>：在合规前提下，通过设备指纹进行跨会话追踪。</li>
+</ol>
+</li>
+</ul>
+<h4 id="Q2-为什么“曝光未点击”的数据在日志中比“点击”的数据更多，且更难处理？"><a href="#Q2-为什么“曝光未点击”的数据在日志中比“点击”的数据更多，且更难处理？" class="headerlink" title="Q2: 为什么“曝光未点击”的数据在日志中比“点击”的数据更多，且更难处理？"></a>Q2: 为什么“曝光未点击”的数据在日志中比“点击”的数据更多，且更难处理？</h4><ul>
+<li><strong>回答</strong>：<ul>
+<li><strong>数据倾斜</strong>：正负样本极度不平衡（1:100 甚至更高）。</li>
+<li><strong>真假负样本</strong>：曝光未点击不代表不喜欢，可能只是用户没看到。处理时通常会采用 <strong>负采样（Negative Sampling）</strong> 策略，或在 Loss 函数中对正负样本进行加权平衡。</li>
+</ul>
+</li>
+</ul>
+<h4 id="Q3-播放时长-Duration-这个字段在短视频推荐里怎么用？"><a href="#Q3-播放时长-Duration-这个字段在短视频推荐里怎么用？" class="headerlink" title="Q3: 播放时长 (Duration) 这个字段在短视频推荐里怎么用？"></a>Q3: 播放时长 (Duration) 这个字段在短视频推荐里怎么用？</h4><ul>
+<li><strong>回答</strong>：<ul>
+<li>不能直接用绝对时长，因为视频长度不同。</li>
+<li>通常使用 <strong>完播率 (Completion Rate)</strong> 或 <strong>时长分位数</strong>。</li>
+<li><strong>深度应用</strong>：将时长作为回归目标（Regression），与点击率（CTR）进行多任务融合（Multi-task Learning），解决“标题党”问题。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-避坑指南：特征穿越-Feature-Leakage"><a href="#4-避坑指南：特征穿越-Feature-Leakage" class="headerlink" title="4. 避坑指南：特征穿越 (Feature Leakage)"></a>4. 避坑指南：特征穿越 (Feature Leakage)</h3><p>在处理行为日志时，最严重的工程错误是<strong>使用了未来的数据预测过去</strong>。</p>
+<ul>
+<li><strong>反思</strong>：在构建特征时，必须确保特征的生成时间戳早于预测行为的时间戳。</li>
+<li><strong>实践</strong>：严格执行 <code>Point-in-time Join</code>（时点关联）。</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> SparkSession</span><br><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> functions <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> pyspark.sql.window <span class="keyword">import</span> Window</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 初始化 Spark</span></span><br><span class="line">spark = SparkSession.builder.appName(<span class="string">&quot;TimeDecayFeatures&quot;</span>).getOrCreate()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 模拟原始日志数据 (用户ID, 行为类型, 时间戳)</span></span><br><span class="line">data = [</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-01 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-05 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 09:00:00&quot;</span>), <span class="comment"># 最近的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-09-01 10:00:00&quot;</span>), <span class="comment"># 很久以前的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 08:00:00&quot;</span>),</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">df = spark.createDataFrame(data, [<span class="string">&quot;user_id&quot;</span>, <span class="string">&quot;action&quot;</span>, <span class="string">&quot;timestamp&quot;</span>]) \</span><br><span class="line">    .withColumn(<span class="string">&quot;timestamp&quot;</span>, F.to_timestamp(<span class="string">&quot;timestamp&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 设置超参数</span></span><br><span class="line"><span class="comment"># 假设当前时间是 2023-10-07 10:00:00</span></span><br><span class="line">current_time = <span class="string">&quot;2023-10-07 10:00:00&quot;</span></span><br><span class="line"><span class="comment"># 衰减因子 lambda: 决定衰减速度。</span></span><br><span class="line"><span class="comment"># 例如：设置半衰期为 3 天，则 lambda = ln(2) / 3 ≈ 0.231</span></span><br><span class="line">decay_lambda = math.log(<span class="number">2</span>) / <span class="number">3</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 计算时间衰减得分</span></span><br><span class="line"><span class="comment"># 公式: Score = exp(-lambda * delta_t)</span></span><br><span class="line"><span class="comment"># 其中 delta_t 是当前时间与行为时间的差值（单位：天）</span></span><br><span class="line">decay_df = df.withColumn(<span class="string">&quot;current_ts&quot;</span>, F.to_timestamp(F.lit(current_time))) \</span><br><span class="line">    .withColumn(<span class="string">&quot;delta_t&quot;</span>, </span><br><span class="line">        (F.unix_timestamp(<span class="string">&quot;current_ts&quot;</span>) - F.unix_timestamp(<span class="string">&quot;timestamp&quot;</span>)) / (<span class="number">3600</span> * <span class="number">24</span>) <span class="comment"># 换算成天</span></span><br><span class="line">    ) \</span><br><span class="line">    .withColumn(<span class="string">&quot;decay_score&quot;</span>, F.exp(F.lit(-decay_lambda) * F.col(<span class="string">&quot;delta_t&quot;</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 按用户聚合，得到最终的活跃度特征</span></span><br><span class="line">user_activity_features = decay_df.groupBy(<span class="string">&quot;user_id&quot;</span>).agg(</span><br><span class="line">    F.count(<span class="string">&quot;action&quot;</span>).alias(<span class="string">&quot;total_click_count&quot;</span>),              <span class="comment"># 原始总计数</span></span><br><span class="line">    F.<span class="built_in">sum</span>(<span class="string">&quot;decay_score&quot;</span>).alias(<span class="string">&quot;weighted_activity_score&quot;</span>),    <span class="comment"># 衰减后的加权得分</span></span><br><span class="line">    F.<span class="built_in">max</span>(<span class="string">&quot;timestamp&quot;</span>).alias(<span class="string">&quot;last_action_time&quot;</span>)               <span class="comment"># 最近一次行为时间</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">user_activity_features.show()</span><br></pre></td></tr></table></figure>
+<h2 id="特征工程之用户活跃度与物品热度"><a href="#特征工程之用户活跃度与物品热度" class="headerlink" title="特征工程之用户活跃度与物品热度"></a>特征工程之用户活跃度与物品热度</h2><p>在推荐系统面试中，特征工程是决定模型上线效果的关键。简单的统计量（如点击次数）往往不足以打动面试官，他们更看重你对<strong>数据分布、统计噪声以及工程落地</strong>的深度思考。</p>
+<hr>
+<h3 id="一、-用户活跃度特征-User-Activity-Features"><a href="#一、-用户活跃度特征-User-Activity-Features" class="headerlink" title="一、 用户活跃度特征 (User Activity Features)"></a>一、 用户活跃度特征 (User Activity Features)</h3><p>用户活跃度旨在刻画用户的“粘性”与“意图强度”。</p>
+<h4 id="1-三维提取框架-RFM-逻辑"><a href="#1-三维提取框架-RFM-逻辑" class="headerlink" title="1. 三维提取框架 (RFM 逻辑)"></a>1. 三维提取框架 (RFM 逻辑)</h4><ul>
+<li><strong>强度 (Intensity)</strong>：总点击、总购买、总收藏。<ul>
+<li><strong>进阶：</strong> 计算“行为转化比”，如 <code>购买次数 / 点击次数</code>，识别高转化精准用户。</li>
+</ul>
+</li>
+<li><strong>频度 (Frequency)</strong>：日均/周均行为次数、访问天数比例。<ul>
+<li><strong>进阶：</strong> 计算 <strong>行为方差</strong>。波动大的用户可能是受营销活动驱动，波动小的用户是忠实老客。</li>
+</ul>
+</li>
+<li><strong>近期性 (Recency)</strong>：距今时间、最近 1h/24h 行为数。<ul>
+<li><strong>进阶：时间衰减 (Exponential Decay)</strong>。<br>  相比滑动窗口，工业界更倾向于使用指数衰减公式来更新用户分数：<script type="math/tex; mode=display">Score_{new} = Score_{old} \cdot e^{-\lambda \cdot \Delta t} + \text{Value}_{current}</script>  <em>其中 $\lambda$ 是衰减因子，$\Delta t$ 是时间差。这种方式无需存储历史明细，对 Flink 流式计算极其友好。</em></li>
+</ul>
+</li>
+</ul>
+<h4 id="2-会话特征-Session-Features"><a href="#2-会话特征-Session-Features" class="headerlink" title="2. 会话特征 (Session Features)"></a>2. 会话特征 (Session Features)</h4><ul>
+<li><strong>会话长度</strong>：单次打开 App 的点击序列长度。</li>
+<li><strong>会话频率</strong>：每天触发多少个 Session。</li>
+<li><strong>用途</strong>：识别用户是“闲逛型”还是“目的明确型”。</li>
+</ul>
+<hr>
+<h3 id="二、-物品热度特征-Item-Popularity-Features"><a href="#二、-物品热度特征-Item-Popularity-Features" class="headerlink" title="二、 物品热度特征 (Item Popularity Features)"></a>二、 物品热度特征 (Item Popularity Features)</h3><p>物品热度决定了系统处理“马太效应”和“冷启动”的能力。</p>
+<h4 id="1-全局与局部热度"><a href="#1-全局与局部热度" class="headerlink" title="1. 全局与局部热度"></a>1. 全局与局部热度</h4><ul>
+<li><strong>全局热度</strong>：历史累计点击、购买。反映物品的长期生命力。</li>
+<li><strong>时效热度</strong>：过去 1 小时、1 天的活跃度。捕捉“突发爆款”。</li>
+</ul>
+<h4 id="2-核心指标：点击率-CTR-的平滑处理"><a href="#2-核心指标：点击率-CTR-的平滑处理" class="headerlink" title="2. 核心指标：点击率 (CTR) 的平滑处理"></a>2. 核心指标：点击率 (CTR) 的平滑处理</h4><p>直接计算 $Clicks / Impressions$ 在小样本下会失效（例如 1 投 1 中）。</p>
+<ul>
+<li><strong>面试加分：贝叶斯平滑 (Bayesian Smoothing)</strong><br>  给分子分母加上先验参数 $\alpha$ 和 $\beta$：<script type="math/tex; mode=display">CTR_{smoothed} = \frac{Clicks + \alpha}{Impressions + \alpha + \beta}</script>  <em>这能让展示量极低的新物品 CTR 趋向于全局平均值，防止其通过高噪声虚假占榜。</em></li>
+</ul>
+<h4 id="3-物品冷启动-Cold-Start"><a href="#3-物品冷启动-Cold-Start" class="headerlink" title="3. 物品冷启动 (Cold Start)"></a>3. 物品冷启动 (Cold Start)</h4><ul>
+<li><strong>类目平滑</strong>：当新物品无数据时，取其所属叶子类目（Category）或标签（Tag）的平均热度。</li>
+<li><strong>相似度传递</strong>：利用内容向量（Embedding）寻找相似物品，借鉴老物品的热度。</li>
+</ul>
+<hr>
+<h3 id="三、-深度思考：分布处理与工程实现"><a href="#三、-深度思考：分布处理与工程实现" class="headerlink" title="三、 深度思考：分布处理与工程实现"></a>三、 深度思考：分布处理与工程实现</h3><h4 id="1-长尾分布与数据归一化"><a href="#1-长尾分布与数据归一化" class="headerlink" title="1. 长尾分布与数据归一化"></a>1. 长尾分布与数据归一化</h4><p>用户活跃度和物品热度通常服从<strong>长尾分布（Power Law）</strong>。</p>
+<ul>
+<li><strong>技巧</strong>：直接输入原始大数值会导致模型梯度爆炸。通常使用 <strong>Log 变换</strong> 处理：<script type="math/tex; mode=display">X_{feature} = \ln(X_{original} + 1)</script></li>
+</ul>
+<h4 id="2-工程落地：Lambda-架构"><a href="#2-工程落地：Lambda-架构" class="headerlink" title="2. 工程落地：Lambda 架构"></a>2. 工程落地：Lambda 架构</h4><ul>
+<li><strong>离线层 (Spark)</strong>：利用 <code>Window Functions</code> 或 <code>GroupBy</code> 计算 T+1 的长期统计特征（如过去 30 天点击量）。</li>
+<li><strong>实时层 (Flink)</strong>：维护 <code>State</code> 计算实时特征（如过去 5 分钟热度）。</li>
+<li><strong>存储层</strong>：特征存入 Redis 或 Feature Store，供模型推理服务（Inference）毫秒级查询。</li>
+</ul>
+<hr>
+<h3 id="四、-面试高频追问预测"><a href="#四、-面试高频追问预测" class="headerlink" title="四、 面试高频追问预测"></a>四、 面试高频追问预测</h3><ul>
+<li><strong>Q：如果热度特征非常强，模型总是推荐热门物品怎么办？</strong><ul>
+<li><strong>A</strong>：这叫“马太效应”。可以在训练时对热门样本降采样，或者在特征中引入 <code>Position Bias</code>（位置偏置）并进行校准，或者在排序后增加 <code>Diversity</code>（多样性）打散算子。</li>
+</ul>
+</li>
+<li><strong>Q：如何定义“活跃用户”？</strong><ul>
+<li><strong>A</strong>：不能只看点击。通常结合 <strong>活跃天数 (DAU)</strong> 和 <strong>核心动作（如播放完、购买）</strong>。在短视频中，完播率高于 80% 的用户行为权重大于单纯的点击。</li>
+</ul>
+</li>
+</ul>
 
                 
             </div>
@@ -546,7 +654,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="/about" rel="external nofollow noreferrer">BY 水蓝络合物</a>
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
                 </span>
             </div>
             <div class="reprint__type">
@@ -556,7 +664,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2021/05/10/ACM/2021-05-10-ICG/">https://SGDBS.github.io/2021/05/10/ACM/2021-05-10-ICG/</a>
+                    <a href="https://SGDBS.github.io/2026/03/27/Recommendation/Chapter1/">https://SGDBS.github.io/2026/03/27/Recommendation/Chapter1/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -569,7 +677,7 @@
                     All articles in this blog are used except for special statements
                     <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
                     reprint polocy. If reproduced, please indicate source
-                    <a href="/about" target="_blank">BY 水蓝络合物</a>
+                    <a href="/about" target="_blank">YANG</a>
                     !
                 </span>
             </div>
@@ -594,20 +702,12 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/ACM/">
-                                    <span class="chip bg-color">ACM</span>
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
                                 </a>
                             
-                                <a href="/tags/%E5%8D%9A%E5%BC%88%E8%AE%BA/">
-                                    <span class="chip bg-color">博弈论</span>
-                                </a>
-                            
-                                <a href="/tags/ICG/">
-                                    <span class="chip bg-color">ICG</span>
-                                </a>
-                            
-                                <a href="/tags/SG%E5%87%BD%E6%95%B0/">
-                                    <span class="chip bg-color">SG函数</span>
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
                                 </a>
                             
                         </div>
@@ -781,6 +881,59 @@
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
+                <a href="/2026/03/27/AI/Chapter1/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="Chapter1 相似度度量（Similarity Measures）">
+                        
+                        <span class="card-title">Chapter1 相似度度量（Similarity Measures）</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    AI大学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
                 <a href="/2022/07/21/ACM/2022-NK-33186-C/">
                     <div class="card-image">
                         
@@ -797,9 +950,9 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-07-21
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-07-21
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -817,55 +970,6 @@
                     
                     <a href="/tags/%E5%87%A0%E4%BD%95/">
                         <span class="chip bg-color">几何</span>
-                    </a>
-                    
-                </div>
-                
-            </div>
-        </div>
-        
-        
-        <div class="article col s12 m6" data-aos="fade-up">
-            <div class="article-badge right-badge text-color">
-                Next&nbsp;<i class="fas fa-chevron-right"></i>
-            </div>
-            <div class="card">
-                <a href="/2021/02/20/ACM/2021-02-20-niuke01_A/">
-                    <div class="card-image">
-                        
-                        
-                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="串">
-                        
-                        <span class="card-title">串</span>
-                    </div>
-                </a>
-                <div class="card-content article-content">
-                    <div class="summary block-with-text">
-                        
-                            
-                        
-                    </div>
-                    <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-02-20
-                            </span>
-                        <span class="publish-author">
-                            
-                            <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
-                            
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/%E9%80%92%E6%8E%A8/">
-                        <span class="chip bg-color">递推</span>
-                    </a>
-                    
-                    <a href="/tags/ACM/">
-                        <span class="chip bg-color">ACM</span>
                     </a>
                     
                 </div>
@@ -996,6 +1100,13 @@
 
 </main>
 
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
 
 
 
