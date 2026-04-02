@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Chapter1, YANG&#39;s Blog">
+    <meta name="keywords" content="Chapter1 数据预处理与特征工程, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Chapter1 | YANG&#39;s Blog</title>
+    <title>Chapter1 数据预处理与特征工程 | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/12.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/16.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Chapter1</h1>
+                    <h1 class="description center-align post-title">Chapter1 数据预处理与特征工程</h1>
                 </div>
             </div>
         </div>
@@ -461,7 +461,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2026-03-27
+                    2026-04-02
                 </div>
                 
 
@@ -580,7 +580,7 @@
 <li><strong>反思</strong>：在构建特征时，必须确保特征的生成时间戳早于预测行为的时间戳。</li>
 <li><strong>实践</strong>：严格执行 <code>Point-in-time Join</code>（时点关联）。</li>
 </ul>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> SparkSession</span><br><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> functions <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> pyspark.sql.window <span class="keyword">import</span> Window</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 初始化 Spark</span></span><br><span class="line">spark = SparkSession.builder.appName(<span class="string">&quot;TimeDecayFeatures&quot;</span>).getOrCreate()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 模拟原始日志数据 (用户ID, 行为类型, 时间戳)</span></span><br><span class="line">data = [</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-01 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-05 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 09:00:00&quot;</span>), <span class="comment"># 最近的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-09-01 10:00:00&quot;</span>), <span class="comment"># 很久以前的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 08:00:00&quot;</span>),</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">df = spark.createDataFrame(data, [<span class="string">&quot;user_id&quot;</span>, <span class="string">&quot;action&quot;</span>, <span class="string">&quot;timestamp&quot;</span>]) \</span><br><span class="line">    .withColumn(<span class="string">&quot;timestamp&quot;</span>, F.to_timestamp(<span class="string">&quot;timestamp&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 设置超参数</span></span><br><span class="line"><span class="comment"># 假设当前时间是 2023-10-07 10:00:00</span></span><br><span class="line">current_time = <span class="string">&quot;2023-10-07 10:00:00&quot;</span></span><br><span class="line"><span class="comment"># 衰减因子 lambda: 决定衰减速度。</span></span><br><span class="line"><span class="comment"># 例如：设置半衰期为 3 天，则 lambda = ln(2) / 3 ≈ 0.231</span></span><br><span class="line">decay_lambda = math.log(<span class="number">2</span>) / <span class="number">3</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 计算时间衰减得分</span></span><br><span class="line"><span class="comment"># 公式: Score = exp(-lambda * delta_t)</span></span><br><span class="line"><span class="comment"># 其中 delta_t 是当前时间与行为时间的差值（单位：天）</span></span><br><span class="line">decay_df = df.withColumn(<span class="string">&quot;current_ts&quot;</span>, F.to_timestamp(F.lit(current_time))) \</span><br><span class="line">    .withColumn(<span class="string">&quot;delta_t&quot;</span>, </span><br><span class="line">        (F.unix_timestamp(<span class="string">&quot;current_ts&quot;</span>) - F.unix_timestamp(<span class="string">&quot;timestamp&quot;</span>)) / (<span class="number">3600</span> * <span class="number">24</span>) <span class="comment"># 换算成天</span></span><br><span class="line">    ) \</span><br><span class="line">    .withColumn(<span class="string">&quot;decay_score&quot;</span>, F.exp(F.lit(-decay_lambda) * F.col(<span class="string">&quot;delta_t&quot;</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 按用户聚合，得到最终的活跃度特征</span></span><br><span class="line">user_activity_features = decay_df.groupBy(<span class="string">&quot;user_id&quot;</span>).agg(</span><br><span class="line">    F.count(<span class="string">&quot;action&quot;</span>).alias(<span class="string">&quot;total_click_count&quot;</span>),              <span class="comment"># 原始总计数</span></span><br><span class="line">    F.<span class="built_in">sum</span>(<span class="string">&quot;decay_score&quot;</span>).alias(<span class="string">&quot;weighted_activity_score&quot;</span>),    <span class="comment"># 衰减后的加权得分</span></span><br><span class="line">    F.<span class="built_in">max</span>(<span class="string">&quot;timestamp&quot;</span>).alias(<span class="string">&quot;last_action_time&quot;</span>)               <span class="comment"># 最近一次行为时间</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">user_activity_features.show()</span><br></pre></td></tr></table></figure>
+<h4 id="5-算带时间衰减的用户点击特征"><a href="#5-算带时间衰减的用户点击特征" class="headerlink" title="5. 算带时间衰减的用户点击特征"></a>5. 算带时间衰减的用户点击特征</h4><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> SparkSession</span><br><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> functions <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> pyspark.sql.window <span class="keyword">import</span> Window</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 初始化 Spark</span></span><br><span class="line">spark = SparkSession.builder.appName(<span class="string">&quot;TimeDecayFeatures&quot;</span>).getOrCreate()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 模拟原始日志数据 (用户ID, 行为类型, 时间戳)</span></span><br><span class="line">data = [</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-01 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-05 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 09:00:00&quot;</span>), <span class="comment"># 最近的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-09-01 10:00:00&quot;</span>), <span class="comment"># 很久以前的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 08:00:00&quot;</span>),</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">df = spark.createDataFrame(data, [<span class="string">&quot;user_id&quot;</span>, <span class="string">&quot;action&quot;</span>, <span class="string">&quot;timestamp&quot;</span>]) \</span><br><span class="line">    .withColumn(<span class="string">&quot;timestamp&quot;</span>, F.to_timestamp(<span class="string">&quot;timestamp&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 设置超参数</span></span><br><span class="line"><span class="comment"># 假设当前时间是 2023-10-07 10:00:00</span></span><br><span class="line">current_time = <span class="string">&quot;2023-10-07 10:00:00&quot;</span></span><br><span class="line"><span class="comment"># 衰减因子 lambda: 决定衰减速度。</span></span><br><span class="line"><span class="comment"># 例如：设置半衰期为 3 天，则 lambda = ln(2) / 3 ≈ 0.231</span></span><br><span class="line">decay_lambda = math.log(<span class="number">2</span>) / <span class="number">3</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 计算时间衰减得分</span></span><br><span class="line"><span class="comment"># 公式: Score = exp(-lambda * delta_t)</span></span><br><span class="line"><span class="comment"># 其中 delta_t 是当前时间与行为时间的差值（单位：天）</span></span><br><span class="line">decay_df = df.withColumn(<span class="string">&quot;current_ts&quot;</span>, F.to_timestamp(F.lit(current_time))) \</span><br><span class="line">    .withColumn(<span class="string">&quot;delta_t&quot;</span>, </span><br><span class="line">        (F.unix_timestamp(<span class="string">&quot;current_ts&quot;</span>) - F.unix_timestamp(<span class="string">&quot;timestamp&quot;</span>)) / (<span class="number">3600</span> * <span class="number">24</span>) <span class="comment"># 换算成天</span></span><br><span class="line">    ) \</span><br><span class="line">    .withColumn(<span class="string">&quot;decay_score&quot;</span>, F.exp(F.lit(-decay_lambda) * F.col(<span class="string">&quot;delta_t&quot;</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 按用户聚合，得到最终的活跃度特征</span></span><br><span class="line">user_activity_features = decay_df.groupBy(<span class="string">&quot;user_id&quot;</span>).agg(</span><br><span class="line">    F.count(<span class="string">&quot;action&quot;</span>).alias(<span class="string">&quot;total_click_count&quot;</span>),              <span class="comment"># 原始总计数</span></span><br><span class="line">    F.<span class="built_in">sum</span>(<span class="string">&quot;decay_score&quot;</span>).alias(<span class="string">&quot;weighted_activity_score&quot;</span>),    <span class="comment"># 衰减后的加权得分</span></span><br><span class="line">    F.<span class="built_in">max</span>(<span class="string">&quot;timestamp&quot;</span>).alias(<span class="string">&quot;last_action_time&quot;</span>)               <span class="comment"># 最近一次行为时间</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">user_activity_features.show()</span><br></pre></td></tr></table></figure>
 <h2 id="特征工程之用户活跃度与物品热度"><a href="#特征工程之用户活跃度与物品热度" class="headerlink" title="特征工程之用户活跃度与物品热度"></a>特征工程之用户活跃度与物品热度</h2><p>在推荐系统面试中，特征工程是决定模型上线效果的关键。简单的统计量（如点击次数）往往不足以打动面试官，他们更看重你对<strong>数据分布、统计噪声以及工程落地</strong>的深度思考。</p>
 <hr>
 <h3 id="一、-用户活跃度特征-User-Activity-Features"><a href="#一、-用户活跃度特征-User-Activity-Features" class="headerlink" title="一、 用户活跃度特征 (User Activity Features)"></a>一、 用户活跃度特征 (User Activity Features)</h3><p>用户活跃度旨在刻画用户的“粘性”与“意图强度”。</p>
@@ -638,6 +638,95 @@
 </ul>
 </li>
 </ul>
+<h2 id="多模态特征融合与增强用户表征"><a href="#多模态特征融合与增强用户表征" class="headerlink" title="多模态特征融合与增强用户表征"></a>多模态特征融合与增强用户表征</h2><p>在多模态推荐中，核心挑战在于如何将<strong>非结构化数据（文本/图像）</strong>的语义信息与<strong>结构化数据（用户行为/ID）</strong>的统计信息有机结合，以解决冷启动和兴趣泛化问题。</p>
+<hr>
+<h3 id="1-整体架构方案-Three-Stage-Framework"><a href="#1-整体架构方案-Three-Stage-Framework" class="headerlink" title="1. 整体架构方案 (Three-Stage Framework)"></a>1. 整体架构方案 (Three-Stage Framework)</h3><p>一个工业级方案通常分为三个核心阶段：</p>
+<h4 id="第一阶段：多模态特征预处理-Feature-Extraction"><a href="#第一阶段：多模态特征预处理-Feature-Extraction" class="headerlink" title="第一阶段：多模态特征预处理 (Feature Extraction)"></a>第一阶段：多模态特征预处理 (Feature Extraction)</h4><ul>
+<li><strong>文本编码器</strong>：使用预训练的 <strong>BERT</strong> 或 <strong>Sentence-BERT</strong> 将物品标题/描述编码为稠密向量（如 768 维）。<ul>
+<li><strong>深度优化</strong>：由于 BERT 向量维度较高且与 ID Embedding 空间不一致，需通过一个<strong>投影层 (Linear Projection Layer)</strong> 将其映射到低维空间（如 32 或 64 维）。</li>
+</ul>
+</li>
+<li><strong>ID 嵌入</strong>：随机初始化 <code>Item_ID</code> 的 Embedding，随推荐任务端到端训练，捕捉协同过滤信号。</li>
+</ul>
+<h4 id="第二阶段：行为序列增强建模-Sequence-Modeling"><a href="#第二阶段：行为序列增强建模-Sequence-Modeling" class="headerlink" title="第二阶段：行为序列增强建模 (Sequence Modeling)"></a>第二阶段：行为序列增强建模 (Sequence Modeling)</h4><ul>
+<li><strong>特征融合 (Early Fusion)</strong>：对于用户历史序列中的每个物品，将 <code>ID_Embedding</code> 与 <code>Text_Vector</code> 进行<strong>拼接 (Concat)</strong> 或 <strong>相加 (Add)</strong>。<ul>
+<li><strong>公式推导</strong>：增强物品表征 $E_t = \text{MLP}([V_{id} \oplus V_{text}])$。</li>
+</ul>
+</li>
+<li><strong>时序建模</strong>：将增强后的物品序列送入序列模型：<ul>
+<li><strong>Transformer (BST)</strong>：利用 Self-Attention 捕捉物品间的语义相关性。</li>
+<li><strong>GRU (DIEN)</strong>：利用兴趣进化层捕捉用户动态兴趣的流转。</li>
+</ul>
+</li>
+</ul>
+<h4 id="第三阶段：深度交互与多塔融合-Deep-Fusion"><a href="#第三阶段：深度交互与多塔融合-Deep-Fusion" class="headerlink" title="第三阶段：深度交互与多塔融合 (Deep Fusion)"></a>第三阶段：深度交互与多塔融合 (Deep Fusion)</h4><ul>
+<li><strong>目标注意力 (Target Attention)</strong>：利用<strong>当前候选物品的文本特征</strong>作为 Query，去计算历史行为序列中各物品的权重。<ul>
+<li><strong>业务逻辑</strong>：即使 ID 不匹配，如果文本语义接近（如都是“轻薄、透气”），注意力权重也会升高。</li>
+</ul>
+</li>
+<li><strong>多塔结构</strong>：将序列模型输出、用户静态特征、上下文特征拼接，通过 MLP 映射为最终的<strong>增强用户表征向量</strong>。</li>
+</ul>
+<hr>
+<h3 id="2-工业界核心挑战与对策-Deep-Dive"><a href="#2-工业界核心挑战与对策-Deep-Dive" class="headerlink" title="2. 工业界核心挑战与对策 (Deep Dive)"></a>2. 工业界核心挑战与对策 (Deep Dive)</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">挑战</th>
+<th style="text-align:left">核心痛点</th>
+<th style="text-align:left">工业界解决方案 (面试加分项)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>实时性/推理延迟</strong></td>
+<td style="text-align:left">BERT 等大模型在线推理极慢（&gt;50ms）。</td>
+<td style="text-align:left"><strong>离线向量化</strong>：预先计算所有物品的文本向量存入 Feature Store，在线仅进行 <strong>Embedding Lookup</strong>。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>语义偏移</strong></td>
+<td style="text-align:left">预训练文本向量与推荐任务目标不完全对齐。</td>
+<td style="text-align:left"><strong>微调/投影层</strong>：在推荐模型内部加入投影层，让文本向量在推荐任务的 Loss 指引下进行微调（Fine-tune）。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>特征冲突 (Overshadowing)</strong></td>
+<td style="text-align:left">强 ID 特征可能让模型忽略弱文本特征。</td>
+<td style="text-align:left"><strong>门控融合 (Gated Fusion)</strong>：引入类似 GRU 的门控单元，由模型动态学习 ID 和文本的融合比例。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>冷启动</strong></td>
+<td style="text-align:left">新物品缺失 ID Embedding。</td>
+<td style="text-align:left"><strong>语义退化策略</strong>：当 ID Embedding 缺失时，完全依赖文本向量进行表征，实现 <strong>Zero-shot 推荐</strong>。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="3-方案评估与迭代"><a href="#3-方案评估与迭代" class="headerlink" title="3. 方案评估与迭代"></a>3. 方案评估与迭代</h3><h3 id="离线评估-Offline"><a href="#离线评估-Offline" class="headerlink" title="离线评估 (Offline)"></a>离线评估 (Offline)</h3><ul>
+<li><strong>指标</strong>：在测试集上对比引入多模态特征前后的 <strong>AUC</strong>、<strong>GAUC</strong> 和 <strong>NDCG</strong>。</li>
+<li><strong>消融实验</strong>：分别验证“纯 ID”、“纯文本”、“融合方案”的效果，确保文本特征确实带来了增益。</li>
+</ul>
+<h4 id="线上实验-Online-A-B-Test"><a href="#线上实验-Online-A-B-Test" class="headerlink" title="线上实验 (Online A/B Test)"></a>线上实验 (Online A/B Test)</h4><ul>
+<li><strong>核心指标</strong>：CTR（点击率）、CVR（转化率）。</li>
+<li><strong>长尾指标</strong>：重点关注<strong>冷启动物品的曝光量和点击率</strong>，这通常是多模态方案提升最明显的地方。</li>
+</ul>
+<hr>
+<h3 id="四、-面试高频追问预测-1"><a href="#四、-面试高频追问预测-1" class="headerlink" title="四、 面试高频追问预测"></a>四、 面试高频追问预测</h3><ul>
+<li><strong>Q：如果除了文本还有图像（如商品主图），你会如何扩展这个方案</strong><ul>
+<li><strong>A</strong>：采用类似的思路。使用预训练的 ResNet 或 Vision Transformer (ViT) 提取视觉向量。可以采用 张量融合 (Tensor Fusion) 或者简单的 Concat。更进阶的方法是使用 CLIP 这种图文对齐模型，天然地将图像和文本映射到同一个语义空间。</li>
+</ul>
+</li>
+<li><strong>Q：加入文本特征后，模型收敛变慢了，可能是什么原因</strong><ul>
+<li><strong>A</strong>：可能是两种特征的学习率（Learning Rate）不一致。预训练向量通常已经很成熟，只需要微调；而 ID Embedding 需要从头学习。可以尝试给不同的特征组设置不同的优化器参数。</li>
+</ul>
+</li>
+<li><strong>Q：文本特征对解决“冷启动”具体是怎么起作用的</strong><ul>
+<li><strong>A</strong>：新物品没有历史交互，其 ID Embedding 是随机初始化的，没有信息量。但新物品一定有标题和描述。通过文本表征，模型可以发现“这个新物品的描述与用户喜欢的某个老物品非常接近”，从而实现语义上的精准分发。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-总结：为什么要这么设计？"><a href="#5-总结：为什么要这么设计？" class="headerlink" title="5. 总结：为什么要这么设计？"></a>5. 总结：为什么要这么设计？</h3><blockquote>
+<p><strong>金句总结</strong>：<br>“多模态融合的本质是利用预训练模型的<strong>先验语义知识</strong>来弥补推荐场景中行为数据的<strong>稀疏性</strong>。通过将非结构化文本映射到统一的表征空间，我们让模型具备了‘理解’物品的能力，而不仅仅是‘记录’点击。”</p>
+</blockquote>
 
                 
             </div>
@@ -664,7 +753,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2026/03/27/Recommendation/Chapter1/">https://SGDBS.github.io/2026/03/27/Recommendation/Chapter1/</a>
+                    <a href="https://SGDBS.github.io/2026/04/02/Recommendation/Chapter1/">https://SGDBS.github.io/2026/04/02/Recommendation/Chapter1/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -877,17 +966,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
-                <a href="/2026/03/27/AI/Chapter1/">
+                <a href="/2026/04/02/Recommendation/Chapter1/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="Chapter1 相似度度量（Similarity Measures）">
+                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="Chapter1 数据预处理与特征工程">
                         
-                        <span class="card-title">Chapter1 相似度度量（Similarity Measures）</span>
+                        <span class="card-title">Chapter1 数据预处理与特征工程</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -897,21 +987,22 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-04-02
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    AI大学习
+                            <a href="/categories/%E9%9D%A2%E8%AF%95-%E6%8E%A8%E8%8D%90%E7%AE%97%E6%B3%95/" class="post-category">
+                                    面试-推荐算法
                                 </a>
                             
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -934,13 +1025,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2022/07/21/ACM/2022-NK-33186-C/">
+                <a href="/2026/03/30/AI/Chapter4/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Grab the Seat!">
+                        <img src="/medias/featureimages/17.jpg" class="responsive-img" alt="Chapter4 强化学习 RLHF">
                         
-                        <span class="card-title">Grab the Seat!</span>
+                        <span class="card-title">Chapter4 强化学习 RLHF</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -951,12 +1042,16 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-07-21
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-30
                             </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            BY 水蓝
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    AI大学习
+                                </a>
+                            
                             
                         </span>
                     </div>
@@ -964,12 +1059,12 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/ACM-OI/">
-                        <span class="chip bg-color">ACM/OI</span>
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
                     </a>
                     
-                    <a href="/tags/%E5%87%A0%E4%BD%95/">
-                        <span class="chip bg-color">几何</span>
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
                     </a>
                     
                 </div>
