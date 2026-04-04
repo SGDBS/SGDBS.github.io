@@ -828,6 +828,103 @@
 <li>对大表进行采样，找出 Top N 个倾斜 Key。</li>
 <li>对另一张表中这些 Key 对应的数据进行<strong>“膨胀”</strong>（拷贝多份），从而配合大表加盐后的并行计算。</li>
 </ul>
+<details><summary>示例：用户行为表 Join 用户属性表</summary><p><strong>场景设定</strong>：推荐系统中，将行为日志表（A）与用户属性表（B）关联，目的是给每条行为记录打上年龄段标签，供模型做特征增强。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">表</th>
+<th style="text-align:left">字段</th>
+<th style="text-align:left">规模</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">行为日志表 A</td>
+<td style="text-align:left"><code>user_id</code>, <code>item_id</code></td>
+<td style="text-align:left">1 亿条</td>
+</tr>
+<tr>
+<td style="text-align:left">用户属性表 B</td>
+<td style="text-align:left"><code>user_id</code>, <code>age_group</code></td>
+<td style="text-align:left">每人 1 行</td>
+</tr>
+</tbody>
+</table>
+<p><strong>热点问题</strong>：<code>User_999</code> 是一个爬虫账号，在表 A 中产生了 <strong>200 万条</strong>点击。单 Task 内存上限为 <strong>50 万条</strong>。若直接 Shuffle Join，处理 <code>User_999</code> 的 Task 必然 OOM。</p>
+<h4 id="%E5%B8%B8%E8%A7%84-join-%E7%9A%84%E5%A4%B1%E8%B4%A5%E8%BF%87%E7%A8%8B">常规 Join 的失败过程</h4>
+<p>Shuffle 阶段以 <code>hash(user_id) % 分区数</code> 分发数据，所有 <code>User_999</code> 的 200 万条行为与属性表中的 1 条画像，全部被路由到同一个 <strong>Task X</strong>，远超 50 万条上限，任务崩溃。</p>
+<h4 id="%E5%8A%A0%E7%9B%90%E6%89%A9%E5%AE%B9-join%EF%BC%88salting-expansion-join%EF%BC%89">加盐扩容 Join（Salting &amp; Expansion Join）</h4>
+<p><strong>第一步：对大表加盐</strong></p>
+<p>预先识别 <code>User_999</code> 为倾斜键，给其 200 万条记录随机打上 $0 \sim 3$ 的盐值（扩容因子 $k=4$）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">加盐后的 Key</th>
+<th style="text-align:center">Task</th>
+<th style="text-align:right">数据量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>User_999_0</code></td>
+<td style="text-align:center">Task 0</td>
+<td style="text-align:right">~50 万条</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>User_999_1</code></td>
+<td style="text-align:center">Task 1</td>
+<td style="text-align:right">~50 万条</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>User_999_2</code></td>
+<td style="text-align:center">Task 2</td>
+<td style="text-align:right">~50 万条</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>User_999_3</code></td>
+<td style="text-align:center">Task 3</td>
+<td style="text-align:right">~50 万条</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第二步：对小表扩容</strong></p>
+<p>属性表中 <code>User_999</code> 的那 1 行记录<strong>复制 4 份</strong>，分别命名为 <code>User_999_0</code> 到 <code>User_999_3</code>，确保每个加盐 Key 都能找到匹配项。</p>
+<p><strong>第三步：并行执行 Join</strong></p>
+<p>每个 Task 处理约 50 万 + 1 条，全部在内存上限以内，任务顺利完成。最终合并结果时去掉盐值前缀，输出与常规 Join 完全相同。</p>
+<h4 id="%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94">方案对比</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">常规 Shuffle Join</th>
+<th style="text-align:left">加盐扩容 Join</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>单点最大压力</strong></td>
+<td style="text-align:left">2,000,001 条（OOM）</td>
+<td style="text-align:left">500,001 条（平稳）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>小表存储代价</strong></td>
+<td style="text-align:left">$1 \times \text{Size}_B$</td>
+<td style="text-align:left">$(1 + k) \times \text{Size}_B$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>计算复杂度</strong></td>
+<td style="text-align:left">$O(N \log N)$（单点瓶颈）</td>
+<td style="text-align:left">$O!\left(\frac{N}{k} \log \frac{N}{k}\right)$（全并行）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心模式</strong></td>
+<td style="text-align:left">多对一 Shuffle</td>
+<td style="text-align:left"><strong>加盐分散 + 小表膨胀</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>加盐扩容的代价是小表存储量增加了 $k$ 倍。实践中 $k$ 通常取 4~10，小表一般远小于大表，这个代价完全可以接受。</em></p>
+</details>
 <hr>
 <h3 id="三、-特征编码引起的倾斜-Encoding-Skew"><a href="#三、-特征编码引起的倾斜-Encoding-Skew" class="headerlink" title="三、 特征编码引起的倾斜 (Encoding Skew)"></a>三、 特征编码引起的倾斜 (Encoding Skew)</h3><p><strong>现象</strong>：地理位置中的”未知”或兴趣标签中的”其他”占比过高，导致特征工程（如 One-Hot 编码或频率统计）时计算压力集中在少数分区。</p>
 <h4 id="1-类别重组"><a href="#1-类别重组" class="headerlink" title="1. 类别重组"></a>1. 类别重组</h4><ul>
