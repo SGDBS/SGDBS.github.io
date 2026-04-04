@@ -580,7 +580,8 @@
 <li><strong>反思</strong>：在构建特征时，必须确保特征的生成时间戳早于预测行为的时间戳。</li>
 <li><strong>实践</strong>：严格执行 <code>Point-in-time Join</code>（时点关联）。</li>
 </ul>
-<h4 id="5-算带时间衰减的用户点击特征"><a href="#5-算带时间衰减的用户点击特征" class="headerlink" title="5. 算带时间衰减的用户点击特征"></a>5. 算带时间衰减的用户点击特征</h4><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> SparkSession</span><br><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> functions <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> pyspark.sql.window <span class="keyword">import</span> Window</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 初始化 Spark</span></span><br><span class="line">spark = SparkSession.builder.appName(<span class="string">&quot;TimeDecayFeatures&quot;</span>).getOrCreate()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 模拟原始日志数据 (用户ID, 行为类型, 时间戳)</span></span><br><span class="line">data = [</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-01 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-05 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 09:00:00&quot;</span>), <span class="comment"># 最近的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-09-01 10:00:00&quot;</span>), <span class="comment"># 很久以前的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 08:00:00&quot;</span>),</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">df = spark.createDataFrame(data, [<span class="string">&quot;user_id&quot;</span>, <span class="string">&quot;action&quot;</span>, <span class="string">&quot;timestamp&quot;</span>]) \</span><br><span class="line">    .withColumn(<span class="string">&quot;timestamp&quot;</span>, F.to_timestamp(<span class="string">&quot;timestamp&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 设置超参数</span></span><br><span class="line"><span class="comment"># 假设当前时间是 2023-10-07 10:00:00</span></span><br><span class="line">current_time = <span class="string">&quot;2023-10-07 10:00:00&quot;</span></span><br><span class="line"><span class="comment"># 衰减因子 lambda: 决定衰减速度。</span></span><br><span class="line"><span class="comment"># 例如：设置半衰期为 3 天，则 lambda = ln(2) / 3 ≈ 0.231</span></span><br><span class="line">decay_lambda = math.log(<span class="number">2</span>) / <span class="number">3</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 计算时间衰减得分</span></span><br><span class="line"><span class="comment"># 公式: Score = exp(-lambda * delta_t)</span></span><br><span class="line"><span class="comment"># 其中 delta_t 是当前时间与行为时间的差值（单位：天）</span></span><br><span class="line">decay_df = df.withColumn(<span class="string">&quot;current_ts&quot;</span>, F.to_timestamp(F.lit(current_time))) \</span><br><span class="line">    .withColumn(<span class="string">&quot;delta_t&quot;</span>, </span><br><span class="line">        (F.unix_timestamp(<span class="string">&quot;current_ts&quot;</span>) - F.unix_timestamp(<span class="string">&quot;timestamp&quot;</span>)) / (<span class="number">3600</span> * <span class="number">24</span>) <span class="comment"># 换算成天</span></span><br><span class="line">    ) \</span><br><span class="line">    .withColumn(<span class="string">&quot;decay_score&quot;</span>, F.exp(F.lit(-decay_lambda) * F.col(<span class="string">&quot;delta_t&quot;</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 按用户聚合，得到最终的活跃度特征</span></span><br><span class="line">user_activity_features = decay_df.groupBy(<span class="string">&quot;user_id&quot;</span>).agg(</span><br><span class="line">    F.count(<span class="string">&quot;action&quot;</span>).alias(<span class="string">&quot;total_click_count&quot;</span>),              <span class="comment"># 原始总计数</span></span><br><span class="line">    F.<span class="built_in">sum</span>(<span class="string">&quot;decay_score&quot;</span>).alias(<span class="string">&quot;weighted_activity_score&quot;</span>),    <span class="comment"># 衰减后的加权得分</span></span><br><span class="line">    F.<span class="built_in">max</span>(<span class="string">&quot;timestamp&quot;</span>).alias(<span class="string">&quot;last_action_time&quot;</span>)               <span class="comment"># 最近一次行为时间</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">user_activity_features.show()</span><br></pre></td></tr></table></figure>
+<details><summary>计算带时间衰减的用户点击特征</summary><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> SparkSession</span><br><span class="line"><span class="keyword">from</span> pyspark.sql <span class="keyword">import</span> functions <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> pyspark.sql.window <span class="keyword">import</span> Window</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 初始化 Spark</span></span><br><span class="line">spark = SparkSession.builder.appName(<span class="string">&quot;TimeDecayFeatures&quot;</span>).getOrCreate()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 模拟原始日志数据 (用户ID, 行为类型, 时间戳)</span></span><br><span class="line">data = [</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-01 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-05 10:00:00&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;user_A&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 09:00:00&quot;</span>), <span class="comment"># 最近的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-09-01 10:00:00&quot;</span>), <span class="comment"># 很久以前的一次</span></span><br><span class="line">    (<span class="string">&quot;user_B&quot;</span>, <span class="string">&quot;click&quot;</span>, <span class="string">&quot;2023-10-07 08:00:00&quot;</span>),</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">df = spark.createDataFrame(data, [<span class="string">&quot;user_id&quot;</span>, <span class="string">&quot;action&quot;</span>, <span class="string">&quot;timestamp&quot;</span>]) \</span><br><span class="line">    .withColumn(<span class="string">&quot;timestamp&quot;</span>, F.to_timestamp(<span class="string">&quot;timestamp&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 设置超参数</span></span><br><span class="line"><span class="comment"># 假设当前时间是 2023-10-07 10:00:00</span></span><br><span class="line">current_time = <span class="string">&quot;2023-10-07 10:00:00&quot;</span></span><br><span class="line"><span class="comment"># 衰减因子 lambda: 决定衰减速度。</span></span><br><span class="line"><span class="comment"># 例如：设置半衰期为 3 天，则 lambda = ln(2) / 3 ≈ 0.231</span></span><br><span class="line">decay_lambda = math.log(<span class="number">2</span>) / <span class="number">3</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 计算时间衰减得分</span></span><br><span class="line"><span class="comment"># 公式: Score = exp(-lambda * delta_t)</span></span><br><span class="line"><span class="comment"># 其中 delta_t 是当前时间与行为时间的差值（单位：天）</span></span><br><span class="line">decay_df = df.withColumn(<span class="string">&quot;current_ts&quot;</span>, F.to_timestamp(F.lit(current_time))) \</span><br><span class="line">    .withColumn(<span class="string">&quot;delta_t&quot;</span>, </span><br><span class="line">        (F.unix_timestamp(<span class="string">&quot;current_ts&quot;</span>) - F.unix_timestamp(<span class="string">&quot;timestamp&quot;</span>)) / (<span class="number">3600</span> * <span class="number">24</span>) <span class="comment"># 换算成天</span></span><br><span class="line">    ) \</span><br><span class="line">    .withColumn(<span class="string">&quot;decay_score&quot;</span>, F.exp(F.lit(-decay_lambda) * F.col(<span class="string">&quot;delta_t&quot;</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 按用户聚合，得到最终的活跃度特征</span></span><br><span class="line">user_activity_features = decay_df.groupBy(<span class="string">&quot;user_id&quot;</span>).agg(</span><br><span class="line">    F.count(<span class="string">&quot;action&quot;</span>).alias(<span class="string">&quot;total_click_count&quot;</span>),              <span class="comment"># 原始总计数</span></span><br><span class="line">    F.<span class="built_in">sum</span>(<span class="string">&quot;decay_score&quot;</span>).alias(<span class="string">&quot;weighted_activity_score&quot;</span>),    <span class="comment"># 衰减后的加权得分</span></span><br><span class="line">    F.<span class="built_in">max</span>(<span class="string">&quot;timestamp&quot;</span>).alias(<span class="string">&quot;last_action_time&quot;</span>)               <span class="comment"># 最近一次行为时间</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">user_activity_features.show()</span><br></pre></td></tr></table></figure>
+</details>
 <h2 id="2-特征工程之用户活跃度与物品热度"><a href="#2-特征工程之用户活跃度与物品热度" class="headerlink" title="2.特征工程之用户活跃度与物品热度"></a>2.特征工程之用户活跃度与物品热度</h2><p>在推荐系统面试中，特征工程是决定模型上线效果的关键。简单的统计量（如点击次数）往往不足以打动面试官，他们更看重你对<strong>数据分布、统计噪声以及工程落地</strong>的深度思考。</p>
 <hr>
 <h3 id="一、-用户活跃度特征-User-Activity-Features"><a href="#一、-用户活跃度特征-User-Activity-Features" class="headerlink" title="一、 用户活跃度特征 (User Activity Features)"></a>一、 用户活跃度特征 (User Activity Features)</h3><p>用户活跃度旨在刻画用户的“粘性”与“意图强度”。</p>
@@ -738,9 +739,9 @@
 </ul>
 </li>
 </ul>
-<details><summary>图解示例：双十一 iPhone 点击统计</summary><p><strong>场景设定</strong>：双十一期间统计各商品点击总数。<code>iPhone_17</code> 是超级爆款，产生了 <strong>100 万次</strong>点击；普通商品（如充电线）只有 10 次。假设每个 Task 的处理上限为 <strong>20 万条</strong>，若直接聚合，处理 <code>iPhone_17</code> 的 Task 必然崩溃（OOM）。</p>
-<h4 id="阶段一：局部聚合（加盐分散压力）"><a href="#阶段一：局部聚合（加盐分散压力）" class="headerlink" title="阶段一：局部聚合（加盐分散压力）"></a>阶段一：局部聚合（加盐分散压力）</h4><p>给每条 <code>iPhone_17</code> 记录随机附加 $0 \sim 4$ 的盐值（$k=5$），Key 改变后，100 万条数据被哈希分散到 5 个不同的 Task：</p>
-<div class="table-container">
+<details><summary>示例：双十一 iPhone 点击统计</summary><p><strong>场景设定</strong>：双十一期间统计各商品点击总数。<code>iPhone_17</code> 是超级爆款，产生了 <strong>100 万次</strong>点击；普通商品（如充电线）只有 10 次。假设每个 Task 的处理上限为 <strong>20 万条</strong>，若直接聚合，处理 <code>iPhone_17</code> 的 Task 必然崩溃（OOM）。</p>
+<h4 id="%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E5%B1%80%E9%83%A8%E8%81%9A%E5%90%88%EF%BC%88%E5%8A%A0%E7%9B%90%E5%88%86%E6%95%A3%E5%8E%8B%E5%8A%9B%EF%BC%89">阶段一：局部聚合（加盐分散压力）</h4>
+<p>给每条 <code>iPhone_17</code> 记录随机附加 $0 \sim 4$ 的盐值（$k=5$），Key 改变后，100 万条数据被哈希分散到 5 个不同的 Task：</p>
 <table>
 <thead>
 <tr>
@@ -777,10 +778,10 @@
 </tr>
 </tbody>
 </table>
-</div>
 <p><em>此时，没有任何一个 Task 超过 20 万条的负载上限，任务全部成功完成。</em></p>
-<h4 id="阶段二：全局聚合（去盐还原结果）"><a href="#阶段二：全局聚合（去盐还原结果）" class="headerlink" title="阶段二：全局聚合（去盐还原结果）"></a>阶段二：全局聚合（去盐还原结果）</h4><p>将 5 条中间结果去掉前缀，还原为 <code>iPhone_17</code>，再由单个 Task 进行最终加法：</p>
-<script type="math/tex; mode=display">200050 + 199980 + 200010 + 199950 + 200010 = 1{,}000{,}000</script><h4 id="方案对比"><a href="#方案对比" class="headerlink" title="方案对比"></a>方案对比</h4><div class="table-container">
+<h4 id="%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9A%E5%85%A8%E5%B1%80%E8%81%9A%E5%90%88%EF%BC%88%E5%8E%BB%E7%9B%90%E8%BF%98%E5%8E%9F%E7%BB%93%E6%9E%9C%EF%BC%89">阶段二：全局聚合（去盐还原结果）</h4>
+<p>将 5 条中间结果去掉前缀，还原为 <code>iPhone_17</code>，再由单个 Task 进行最终加法：</p>
+<script type="math/tex; mode=display">200050 + 199980 + 200010 + 199950 + 200010 = 1{,}000{,}000</script><h4 id="%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94">方案对比</h4>
 <table>
 <thead>
 <tr>
@@ -812,7 +813,6 @@
 </tr>
 </tbody>
 </table>
-</div>
 </details>
 <hr>
 <h3 id="二、-连接操作引起的倾斜-Join-Sequence-Skew"><a href="#二、-连接操作引起的倾斜-Join-Sequence-Skew" class="headerlink" title="二、 连接操作引起的倾斜 (Join/Sequence Skew)"></a>二、 连接操作引起的倾斜 (Join/Sequence Skew)</h3><p><strong>现象</strong>：按 <code>User_ID</code> 分组提取行为序列时，爬虫或超级活跃用户产生的日志成千上万，导致 Shuffle 过程极慢。</p>
@@ -1139,18 +1139,17 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;Current
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
-                <a href="/2026/04/02/Recommendation/Chapter1/">
+                <a href="/2026/04/04/Blog/blog-guide/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="Chapter1 数据预处理与特征工程">
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="博客工程全解析：项目结构与自定义样式指南">
                         
-                        <span class="card-title">Chapter1 数据预处理与特征工程</span>
+                        <span class="card-title">博客工程全解析：项目结构与自定义样式指南</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1160,31 +1159,34 @@
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2026-04-02
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-04-04
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E8%8D%90%E7%AE%97%E6%B3%95/" class="post-category">
-                                    学习笔记-大模型推荐算法
+                            <a href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/" class="post-category">
+                                    博客搭建
                                 </a>
                             
                             
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/AI/">
-                        <span class="chip bg-color">AI</span>
+                    <a href="/tags/Hexo/">
+                        <span class="chip bg-color">Hexo</span>
                     </a>
                     
-                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
-                        <span class="chip bg-color">AI面试知识</span>
+                    <a href="/tags/%E5%8D%9A%E5%AE%A2/">
+                        <span class="chip bg-color">博客</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%95%99%E7%A8%8B/">
+                        <span class="chip bg-color">教程</span>
                     </a>
                     
                 </div>
