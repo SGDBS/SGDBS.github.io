@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Chapter2 对比学习（Contrastive Learning）的核心机理, YANG&#39;s Blog">
+    <meta name="keywords" content="Chapter1 相似度度量（Similarity Measures）, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Chapter2 对比学习（Contrastive Learning）的核心机理 | YANG&#39;s Blog</title>
+    <title>Chapter1 相似度度量（Similarity Measures） | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/22.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/16.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Chapter2 对比学习（Contrastive Learning）的核心机理</h1>
+                    <h1 class="description center-align post-title">Chapter1 相似度度量（Similarity Measures）</h1>
                 </div>
             </div>
         </div>
@@ -448,8 +448,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                AI大学习
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                学习笔记-大模型
                             </a>
                         
                     </div>
@@ -482,128 +482,70 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="深度进阶：对比学习（Contrastive-Learning）的核心机理"><a href="#深度进阶：对比学习（Contrastive-Learning）的核心机理" class="headerlink" title="深度进阶：对比学习（Contrastive Learning）的核心机理"></a>深度进阶：对比学习（Contrastive Learning）的核心机理</h1><p>对比学习的核心思想是 <strong>“Instance Discrimination” (个体判别)</strong>：通过构造正负样本对，在无标注数据下学习“物以类聚，人以群分”的特征表示。</p>
-<hr>
-<h2 id="1-样本生成：数据增强（Data-Augmentation）"><a href="#1-样本生成：数据增强（Data-Augmentation）" class="headerlink" title="1. 样本生成：数据增强（Data Augmentation）"></a>1. 样本生成：数据增强（Data Augmentation）</h2><p>对比学习并不依赖标签，而是通过对同一张原始图片 $x$ 应用两次随机增强函数 $t, t’ \sim \mathcal{T}$，生成正样本对 $(x_i, x_j)$。</p>
-<h3 id="核心增强算子"><a href="#核心增强算子" class="headerlink" title="核心增强算子"></a>核心增强算子</h3><ul>
-<li><strong>Random Resized Crop (最关键)</strong>：强迫模型学习局部与整体、不同尺度下的语义一致性。</li>
-<li><strong>Color Jitter &amp; Grayscale</strong>：打破模型对色彩统计特性的依赖，防止模型通过颜色直方图“作弊”。</li>
-<li><strong>Gaussian Blur</strong>：模糊纹理细节，促使模型关注高层轮廓。</li>
+                <h1 id="相似度度量（Similarity-Measures）"><a href="#相似度度量（Similarity-Measures）" class="headerlink" title="相似度度量（Similarity Measures）"></a>相似度度量（Similarity Measures）</h1><h2 id="1-欧氏距离-Euclidean-Distance-——-绝对位置的度量"><a href="#1-欧氏距离-Euclidean-Distance-——-绝对位置的度量" class="headerlink" title="1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量"></a>1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量</h2><p>欧氏距离是最基础的 $L_2$ 范数。它衡量的是 $n$ 维空间中两个点之间的直线距离。</p>
+<h3 id="数学表达"><a href="#数学表达" class="headerlink" title="数学表达"></a>数学表达</h3><script type="math/tex; mode=display">d(\mathbf{x}, \mathbf{y}) = \|\mathbf{x} - \mathbf{y}\|_2 = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2}</script><h3 id="深度理解"><a href="#深度理解" class="headerlink" title="深度理解"></a>深度理解</h3><ul>
+<li><strong>物理意义</strong>：两点间的位移矢量长度。</li>
+<li><strong>局限性</strong>：对特征的<strong>量级（Scale）</strong>极其敏感。如果特征未经过归一化，数值大的维度将主导距离计算。</li>
+<li><strong>面试陷阱</strong>：在高维空间下，由于数据分布稀疏，欧氏距离的区分度会显著下降（维度灾难）。</li>
 </ul>
 <hr>
-<h2 id="2-数学本质：InfoNCE-损失函数"><a href="#2-数学本质：InfoNCE-损失函数" class="headerlink" title="2. 数学本质：InfoNCE 损失函数"></a>2. 数学本质：InfoNCE 损失函数</h2><p>对比学习本质上是在高维球面上进行 <strong>$K+1$ 路分类</strong>。</p>
-<h3 id="公式定义"><a href="#公式定义" class="headerlink" title="公式定义"></a>公式定义</h3><script type="math/tex; mode=display">\mathcal{L}_{q, k_+} = -\log \frac{\exp(q \cdot k_+ / \tau)}{\exp(q \cdot k_+ / \tau) + \sum_{i=1}^{K} \exp(q \cdot k_i / \tau)}</script><ul>
-<li><strong>$\tau$ (温度参数)</strong>：<ol>
-<li><strong>平滑分布</strong>：防止 Softmax 过早饱和导致梯度消失。</li>
-<li><strong>Hard Negative Mining</strong>：较小的 $\tau$ 会让模型对“长得像但不是”的困难负样本产生极大的 Loss，迫使编码器学到更细致的判别特征。</li>
-</ol>
-</li>
+<h2 id="2-余弦相似度-Cosine-Similarity-——-方向的共鸣"><a href="#2-余弦相似度-Cosine-Similarity-——-方向的共鸣" class="headerlink" title="2. 余弦相似度 (Cosine Similarity) —— 方向的共鸣"></a>2. 余弦相似度 (Cosine Similarity) —— 方向的共鸣</h2><p>余弦相似度通过计算向量夹角的余弦值，衡量两个向量在方向上的指向是否一致。</p>
+<h3 id="数学表达-1"><a href="#数学表达-1" class="headerlink" title="数学表达"></a>数学表达</h3><script type="math/tex; mode=display">S_{cos}(\mathbf{x}, \mathbf{y}) = \frac{\mathbf{x} \cdot \mathbf{y}}{\|\mathbf{x}\| \|\mathbf{y}\|} = \frac{\sum_{i=1}^{n} x_i y_i}{\sqrt{\sum_{i=1}^{n} x_i^2} \sqrt{\sum_{i=1}^{n} y_i^2}}</script><h3 id="深度理解-1"><a href="#深度理解-1" class="headerlink" title="深度理解"></a>深度理解</h3><ul>
+<li><strong>物理意义</strong>：衡量的是“形状”而非“大小”。在文本处理中，它能有效忽略文档长度（词频总量）的差异。</li>
+<li><strong>与欧氏距离的转换</strong>：<br>  若对向量进行 $L_2$ 归一化（即 $|\mathbf{x}| = 1, |\mathbf{y}| = 1$），则欧氏距离的平方为：<script type="math/tex; mode=display">\|\mathbf{x} - \mathbf{y}\|^2 = \|\mathbf{x}\|^2 + \|\mathbf{y}\|^2 - 2\mathbf{x}^T\mathbf{y} = 2(1 - \cos(\theta))</script>  <strong>结论</strong>：归一化后，最小化欧氏距离等价于最大化余弦相似度。</li>
 </ul>
 <hr>
-<h2 id="3-算法全流程详解"><a href="#3-算法全流程详解" class="headerlink" title="3. 算法全流程详解"></a>3. 算法全流程详解</h2><h3 id="3-1-SimCLR：端到端对称对比-End-to-End"><a href="#3-1-SimCLR：端到端对称对比-End-to-End" class="headerlink" title="3.1 SimCLR：端到端对称对比 (End-to-End)"></a>3.1 SimCLR：端到端对称对比 (End-to-End)</h3><p>SimCLR 的核心逻辑是 <strong>“在大 Batch 中寻找自己”</strong>。</p>
-<p><strong>具体步骤：</strong></p>
-<ol>
-<li><strong>输入分配</strong>：取一个 Batch 的原始图像 ${x_k}_{k=1}^N$。</li>
-<li><strong>双路增强</strong>：对每张图 $x_k$ 进行两次随机增强，生成 $2N$ 张图。其中 $x_{2k-1}$ 和 $x_{2k}$ 互为<strong>正样本对</strong>。</li>
-<li><strong>前向传播</strong>：<ul>
-<li><strong>提取特征</strong>：所有图片通过同一个编码器 $f(\cdot)$，得到特征 $h = f(x)$。</li>
-<li><strong>非线性投影</strong>：通过投影头 $g(\cdot)$（MLP）映射到对比空间：$z = g(h)$。</li>
+<h2 id="3-皮尔逊相关系数-Pearson-Correlation-——-消除偏见的利器"><a href="#3-皮尔逊相关系数-Pearson-Correlation-——-消除偏见的利器" class="headerlink" title="3. 皮尔逊相关系数 (Pearson Correlation) —— 消除偏见的利器"></a>3. 皮尔逊相关系数 (Pearson Correlation) —— 消除偏见的利器</h2><p>皮尔逊系数用于衡量两个变量之间的线性相关性，是推荐系统（如协同过滤）的首选。</p>
+<h3 id="数学表达-2"><a href="#数学表达-2" class="headerlink" title="数学表达"></a>数学表达</h3><script type="math/tex; mode=display">\rho_{x,y} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^{n} (y_i - \bar{y})^2}}</script><h3 id="深度理解-2"><a href="#深度理解-2" class="headerlink" title="深度理解"></a>深度理解</h3><ul>
+<li><strong>数学本质</strong>：<strong>中心化（Mean-centering）后的余弦相似度</strong>。</li>
+<li><strong>平移不变性</strong>：通过减去均值 $\bar{x}$，它能自动校准不同用户的打分尺度（例如：打分严苛的用户 vs 打分宽松的用户）。</li>
 </ul>
-</li>
-<li><strong>计算相似度矩阵</strong>：计算这 $2N$ 个向量两两之间的余弦相似度，形成一个 $2N \times 2N$ 的矩阵。</li>
-<li><strong>损失计算</strong>：对于每一个向量 $z_i$，其正样本只有一个（对应的增强版本），其余 $2N-2$ 个向量均为负样本。</li>
-<li><strong>更新</strong>：梯度同时流经 $g$ 和 $f$，同步更新全网参数。</li>
-</ol>
 <hr>
-<h3 id="3-2-MoCo：动量字典查询-Dictionary-Lookup"><a href="#3-2-MoCo：动量字典查询-Dictionary-Lookup" class="headerlink" title="3.2 MoCo：动量字典查询 (Dictionary Lookup)"></a>3.2 MoCo：动量字典查询 (Dictionary Lookup)</h3><p>MoCo 的核心逻辑是 <strong>“维护一个平滑演变的负样本库”</strong>。</p>
-<p><strong>具体步骤：</strong></p>
-<ol>
-<li><strong>双编码器输入</strong>：<ul>
-<li>输入 $x$，增强得到 $x_q$ 和 $x_k$。</li>
-<li>$x_q$ 进入 <strong>Query Encoder ($\theta_q$)</strong>，得到向量 $q$。</li>
-<li>$x_k$ 进入 <strong>Key Encoder ($\theta_k$)</strong>，得到向量 $k_+$。</li>
+<h2 id="4-Jaccard-相似度-——-集合重叠的艺术"><a href="#4-Jaccard-相似度-——-集合重叠的艺术" class="headerlink" title="4. Jaccard 相似度 —— 集合重叠的艺术"></a>4. Jaccard 相似度 —— 集合重叠的艺术</h2><p>用于衡量离散集合之间的相似性。</p>
+<h3 id="数学表达-3"><a href="#数学表达-3" class="headerlink" title="数学表达"></a>数学表达</h3><script type="math/tex; mode=display">J(A, B) = \frac{|A \cap B|}{|A \cup B|}</script><h3 id="深度理解-3"><a href="#深度理解-3" class="headerlink" title="深度理解"></a>深度理解</h3><ul>
+<li><strong>典型应用</strong>：在目标检测（Object Detection）中，衡量预测框 (BBox) 与真实框相似度的 <strong>IoU</strong> 指标，其数学本质就是 Jaccard 相似度。</li>
+<li><strong>适用场景</strong>：One-hot 编码的稀疏特征、用户购买物品清单的相似度。</li>
 </ul>
-</li>
-<li><strong>归一化 (L2 Norm)</strong>：将 $q, k_+$ 以及队列中所有的 $k$ 映射到单位超球面上。</li>
-<li><strong>度量计算 (Logits)</strong>：<ul>
-<li><strong>正对</strong>：计算 $q \cdot k_+$。</li>
-<li><strong>负对</strong>：计算 $q$ 与 <strong>Queue (队列)</strong> 中存储的 $K$ 个历史特征的点积。</li>
-</ul>
-</li>
-<li><strong>对比损失</strong>：将正对和 $K$ 个负对看作一个 $K+1$ 类的分类问题，计算 InfoNCE。</li>
-<li><strong>动量更新 (核心)</strong>：<ul>
-<li><strong>梯度更新</strong>：只对 $\theta_q$ 进行反向传播。</li>
-<li><strong>平滑跟随</strong>：$\theta_k \leftarrow m\theta_k + (1-m)\theta_q$。保证了 Key Encoder 生成的特征在队列中具有时空一致性。</li>
-</ul>
-</li>
-<li><strong>队列维护</strong>：将当前 Batch 的 $k_+$ 加入队列（Enqueue），并剔除最老的特征（Dequeue, FIFO）。</li>
-</ol>
 <hr>
-<h2 id="4-核心差异与面试考点"><a href="#4-核心差异与面试考点" class="headerlink" title="4. 核心差异与面试考点"></a>4. 核心差异与面试考点</h2><div class="table-container">
+<h2 id="5-总结与选型指南"><a href="#5-总结与选型指南" class="headerlink" title="5. 总结与选型指南"></a>5. 总结与选型指南</h2><div class="table-container">
 <table>
 <thead>
 <tr>
-<th style="text-align:left">特性</th>
-<th style="text-align:left">SimCLR</th>
-<th style="text-align:left">MoCo</th>
+<th style="text-align:left">度量方法</th>
+<th style="text-align:left">核心属性</th>
+<th style="text-align:left">对量级敏感？</th>
+<th style="text-align:left">典型场景</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left"><strong>负样本规模</strong></td>
-<td style="text-align:left">受 Batch Size 限制 (需超大 Batch)</td>
-<td style="text-align:left">由 Queue 决定 (可达 65536)</td>
+<td style="text-align:left"><strong>欧氏距离</strong></td>
+<td style="text-align:left">空间位移</td>
+<td style="text-align:left"><strong>是</strong></td>
+<td style="text-align:left">聚类、低维几何数据</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>负样本一致性</strong></td>
-<td style="text-align:left">实时计算，一致性完美</td>
-<td style="text-align:left">依靠<strong>动量更新</strong>保证一致性</td>
+<td style="text-align:left"><strong>余弦相似度</strong></td>
+<td style="text-align:left">向量方向</td>
+<td style="text-align:left">否</td>
+<td style="text-align:left">NLP、Embedding 检索</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>解决模型坍塌</strong></td>
-<td style="text-align:left">显式负样本排斥</td>
-<td style="text-align:left">显式负样本排斥</td>
+<td style="text-align:left"><strong>皮尔逊系数</strong></td>
+<td style="text-align:left">线性趋势</td>
+<td style="text-align:left">否</td>
+<td style="text-align:left">协同过滤、消除用户偏好偏置</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>硬件要求</strong></td>
-<td style="text-align:left">极高 (TPU/多卡集群)</td>
-<td style="text-align:left">友好 (单卡即可训练大模型)</td>
+<td style="text-align:left"><strong>Jaccard</strong></td>
+<td style="text-align:left">集合重叠度</td>
+<td style="text-align:left">否</td>
+<td style="text-align:left">文本去重、目标检测 IoU</td>
 </tr>
 </tbody>
 </table>
 </div>
-<blockquote>
-<p><strong>面试 Tip</strong>：为什么 SimCLR 需要 Projection Head？<br>因为对比学习任务可能会由于过于关注“不变性”而损害特征的语义。非线性投影层 $g(h)$ 可以作为一个“防火墙”，让信息损失发生在 $z$ 层，从而保护 $h$ 层保留更多的下游任务有用信息（如颜色、形状）。</p>
-</blockquote>
 <hr>
-<h2 id="5-对比学习负样本是否重要？负样本构造成本过高应该怎么解决？"><a href="#5-对比学习负样本是否重要？负样本构造成本过高应该怎么解决？" class="headerlink" title="5. 对比学习负样本是否重要？负样本构造成本过高应该怎么解决？"></a>5. 对比学习负样本是否重要？负样本构造成本过高应该怎么解决？</h2><p>负样本为什么重要？（数学本质）从信息论角度看，对比学习的目标是最大化正样本对之间的<strong>互信息（Mutual Information）</strong>。</p>
-<ul>
-<li>防止模型崩溃（Model Collapse）：如果没有负样本，模型最简单的“偷懒”方式就是让所有图片的输出向量都变成常数（比如全 1），这样相似度永远最大。负样本的存在提供了“推开”的力，迫使模型去寻找能区分不同物体的特征。</li>
-<li>InfoNCE 紧致度：数学上证明了，负样本数量 $K$ 越大，InfoNCE 损失函数对互信息的下界估计就越紧。换句话说，负样本越多，模型对特征空间的分布刻画就越精准。</li>
-</ul>
-<p>负样本构造成本过高的解决方案如果显存不够、算力有限，无法像 SimCLR 那样搞大 Batch，业界有四种主流的演进思路：</p>
-<ul>
-<li>A. <strong>缓存机制（代表作：MoCo</strong>）这是最经典的工程解法。<ul>
-<li>原理：既然一个 Batch 里的负样本不够，我就用一个<strong>队列（Queue）</strong>把之前几十个 Batch 的特征存起来。</li>
-<li>核心：为了解决“特征陈旧”问题，引入<strong>动量更新（Momentum Update）</strong>，让产生负样本的编码器演进得慢一点。这样你只需极小的显存，就能获得成千上万个负样本。</li>
-</ul>
-</li>
-<li>B. 寻找“硬”负样本（<strong>Hard Negative Mining</strong>）与其要一万个没用的负样本，不如要十个极其难区分的。<ul>
-<li>原理：在损失函数中给那些离 Query 很近的负样本更高的权重（通过调小温度系数 $\tau$ 或者主动采样策略）。</li>
-<li>例子：CUZA 等算法会动态地挑选那些模型容易搞混的样本作为负样本进行训练。</li>
-</ul>
-</li>
-<li>C. 改变对称性：预测机制（代表作：BYOL, SimSiam）这是目前的“黑科技”方向：完全不要负样本！<br>  BYOL 的做法：它通过两个不对称的网络（一个 Online，一个 Target），让 Online 网络去预测 Target 网络的输出。<ul>
-<li>数学直觉：通过引入 Predictor（非线性层） 和 Stop-gradient（停止梯度回传），即使没有负样本，模型也不会崩溃到常数解。</li>
-<li>这证明了：只要架构不对称，负样本不是必须的。</li>
-</ul>
-</li>
-<li>D. 特征去相关（代表作：Barlow Twins）<ul>
-<li>原理：既然负样本是为了防止特征塌陷，那我们直接在特征的协方差矩阵上做文章。</li>
-<li>目标：让正样本对的特征互相关矩阵趋近于单位矩阵（Identity Matrix）。这意味着特征内部的每个维度都在表达不同的信息，且不同样本之间尽量不重复。这种方法也不需要显式的负样本对。</li>
-</ul>
-</li>
-</ul>
 
                 
             </div>
@@ -630,7 +572,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2026/03/27/AI/Chapter2/">https://SGDBS.github.io/2026/03/27/AI/Chapter2/</a>
+                    <a href="https://SGDBS.github.io/2026/03/27/Note_LLM/Chapter1/">https://SGDBS.github.io/2026/03/27/Note_LLM/Chapter1/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -847,13 +789,13 @@
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
-                <a href="/2026/03/28/AI/Chapter3/">
+                <a href="/2026/03/27/Note_LLM/Chapter2/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="Chapter3 对比学习BYOL， SimSiam">
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="Chapter2 对比学习（Contrastive Learning）的核心机理">
                         
-                        <span class="card-title">Chapter3 对比学习BYOL， SimSiam</span>
+                        <span class="card-title">Chapter2 对比学习（Contrastive Learning）的核心机理</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -864,14 +806,14 @@
                     </div>
                     <div class="publish-info">
                         <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-28
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
                         </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    AI大学习
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                    学习笔记-大模型
                                 </a>
                             
                             
@@ -900,13 +842,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2026/03/27/AI/Chapter1/">
+                <a href="/2022/07/21/ACM/2022-NK-33186-C/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="Chapter1 相似度度量（Similarity Measures）">
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Grab the Seat!">
                         
-                        <span class="card-title">Chapter1 相似度度量（Similarity Measures）</span>
+                        <span class="card-title">Grab the Seat!</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -917,14 +859,14 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-07-21
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    AI大学习
+                            <a href="/categories/ACM-ICPC/" class="post-category">
+                                    ACM-ICPC
                                 </a>
                             
                             
@@ -934,12 +876,12 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/AI/">
-                        <span class="chip bg-color">AI</span>
+                    <a href="/tags/ACM-OI/">
+                        <span class="chip bg-color">ACM/OI</span>
                     </a>
                     
-                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
-                        <span class="chip bg-color">AI面试知识</span>
+                    <a href="/tags/%E5%87%A0%E4%BD%95/">
+                        <span class="chip bg-color">几何</span>
                     </a>
                     
                 </div>

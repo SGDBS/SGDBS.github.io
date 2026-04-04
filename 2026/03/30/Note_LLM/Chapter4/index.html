@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Chapter3 对比学习BYOL， SimSiam, YANG&#39;s Blog">
+    <meta name="keywords" content="Chapter4 强化学习 RLHF, YANG&#39;s Blog">
     <meta name="description" content="Cogito, ergo sum">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Chapter3 对比学习BYOL， SimSiam | YANG&#39;s Blog</title>
+    <title>Chapter4 强化学习 RLHF | YANG&#39;s Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/2.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/17.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Chapter3 对比学习BYOL， SimSiam</h1>
+                    <h1 class="description center-align post-title">Chapter4 强化学习 RLHF</h1>
                 </div>
             </div>
         </div>
@@ -448,8 +448,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                AI大学习
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                学习笔记-大模型
                             </a>
                         
                     </div>
@@ -461,7 +461,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2026-03-28
+                    2026-03-30
                 </div>
                 
 
@@ -482,131 +482,185 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="BYOL-Bootstrap-Your-Own-Latent"><a href="#BYOL-Bootstrap-Your-Own-Latent" class="headerlink" title="BYOL (Bootstrap Your Own Latent)"></a>BYOL (Bootstrap Your Own Latent)</h2><h3 id="1-核心理念"><a href="#1-核心理念" class="headerlink" title="1. 核心理念"></a>1. 核心理念</h3><p>BYOL 证明了在<strong>完全没有负样本（Negative Pairs）</strong>的情况下，通过构建<strong>非对称结构（Asymmetric Architecture）</strong>和<strong>预测机制</strong>，也能实现有效的自监督学习，并成功避免模型塌缩（Collapse）。</p>
-<h3 id="2-网络架构"><a href="#2-网络架构" class="headerlink" title="2. 网络架构"></a>2. 网络架构</h3><p>BYOL 由两个互动的网络分支组成：</p>
+                <p>我们可以把 RLHF 看作是将人类的“价值观”和“偏好”量化为奖励信号，并指导模型进化的过程。</p>
+<h2 id="RLHF-Reinforcement-Learning-from-Human-Feedback-的三大阶段"><a href="#RLHF-Reinforcement-Learning-from-Human-Feedback-的三大阶段" class="headerlink" title="RLHF (Reinforcement Learning from Human Feedback)的三大阶段"></a>RLHF (Reinforcement Learning from Human Feedback)的三大阶段</h2><h3 id="1-监督微调-SFT-Supervised-Fine-Tuning"><a href="#1-监督微调-SFT-Supervised-Fine-Tuning" class="headerlink" title="1. 监督微调 (SFT - Supervised Fine-Tuning)"></a>1. 监督微调 (SFT - Supervised Fine-Tuning)</h3><ul>
+<li>目标：让预训练模型学会“听话”，掌握对话的基本格式。</li>
+<li>做法：使用高质量的“指令-回答”数据（由人类编写）对预训练模型进行有监督学习。</li>
+<li>数学本质：最大化似然估计 $\max_\theta \mathbb{E}_{(x, y) \sim D} [\log P_\theta(y|x)]$。</li>
+<li>产物：SFT 模型（这是后续阶段的起点）。</li>
+</ul>
+<h3 id="2-训练奖励模型-RM-Reward-Modeling"><a href="#2-训练奖励模型-RM-Reward-Modeling" class="headerlink" title="2. 训练奖励模型 (RM - Reward Modeling)"></a>2. 训练奖励模型 (RM - Reward Modeling)</h3><p>这是 RLHF 的核心。人类并不擅长给模型打分（打 80 分还是 82 分？），但非常擅长做排序。</p>
 <ul>
-<li><strong>Online Network（在线网络）</strong>: 参数为 $\theta$。<ul>
-<li>组成：<ul>
-<li>Encoder $f_\theta$：通常是 ResNet-50。它将增强后的图像 $v$ 映射为高维特征向量 $h_\theta$。</li>
-<li>Projector $g_\theta$：一个多层感知机（MLP）。它将 $h_\theta$ 投影到一个更紧凑的空间 $z_\theta$。</li>
-<li>Predictor $q_\theta$（核心层）：又一个 MLP。它试图将 $z_\theta$ 映射到 Target 网络的表示空间，输出 $\hat{z}_\theta$。</li>
-</ul>
-</li>
-<li>更新方式：通过梯度下降（SGD/Adam）实时更新。</li>
-</ul>
-</li>
-<li><strong>Target Network（目标网络）</strong>: 参数为 $\xi$。<ul>
-<li>组成：<ul>
-<li>Encoder $f_\xi$：结构与 $f_\theta$ 完全一致。</li>
-<li>Projector $g_\xi$：结构与 $g_\theta$ 完全一致。</li>
-</ul>
-</li>
-<li>更新方式：<strong>动量更新（EMA）</strong>，不计算梯度。其参数是 Online 参数的历史加权平均。</li>
-</ul>
-</li>
-</ul>
-<h3 id="3-具体算法流程-Step-by-Step"><a href="#3-具体算法流程-Step-by-Step" class="headerlink" title="3. 具体算法流程 (Step-by-Step)"></a>3. 具体算法流程 (Step-by-Step)</h3><ol>
-<li><strong>视图生成</strong>: 对原始图片 $x$ 进行两种随机数据增强，得到视图 $v$ 和 $v’$。（例如一张裁剪，一张变色）</li>
-<li><strong>Online 前向传播</strong>: 视图 $v$ 经过编码器、投影层和<strong>预测层</strong>，输出 <script type="math/tex">\hat{z}_\theta = q_\theta(g_\theta(f_\theta(v)))</script></li>
-<li><strong>Target 前向传播</strong>: 视图 $v’$ 经过编码器和投影层，输出目标表示 <script type="math/tex">z_\xi = g_\xi(f_\xi(v'))</script></li>
-<li><strong>损失计算</strong>: <ul>
-<li>对 $\hat{z}_\theta$ 和 $z_\xi$ 进行 $L_2$ 归一化。</li>
-<li>计算均方误差（MSE）：$L = |\bar{q}_\theta(z_\theta) - \bar{z}_\xi|_2^2$（本质上是最大化余弦相似度）。</li>
-</ul>
-</li>
-<li><strong>梯度与参数更新</strong>:<ul>
-<li><strong>Online</strong>: 计算 $L$ 对 $\theta$ 的梯度并执行更新。</li>
-<li><strong>Target</strong>: 不传梯度，执行动量平滑更新：$\xi \leftarrow m\xi + (1-m)\theta$。</li>
-</ul>
-</li>
+<li>做法：<ol>
+<li>让 SFT 模型针对同一个问题 $x$ 生成多个回答 ${y_1, y_2, \dots}$。</li>
+<li>人类根据偏好对回答进行排序（例如 $y_{win} &gt; y_{lose}$）。训练一个奖励模型 $r_\phi(x, y)$，使其对人类喜欢的回答打高分。</li>
 </ol>
-<h3 id="4-关键机制深度解析"><a href="#4-关键机制深度解析" class="headerlink" title="4. 关键机制深度解析"></a>4. 关键机制深度解析</h3><h4 id="A-为什么会陷入“平凡解”（塌缩）？"><a href="#A-为什么会陷入“平凡解”（塌缩）？" class="headerlink" title="A. 为什么会陷入“平凡解”（塌缩）？"></a>A. 为什么会陷入“平凡解”（塌缩）？</h4><ul>
-<li><strong>数学本质</strong>: 在没有负样本时，模型为了最小化 Loss，最简单的“捷径”是将所有输入映射为同一个常数向量（常数映射）。此时正样本对相似度为 1，Loss 为 0，但模型失去了特征区分能力。<blockquote>
-<p>假设模型 $f_\theta$ 将所有输入 $x$ 都映射成一个单位向量 $c$（例如 $[1, 0, 0, \dots]$）。</p>
+</li>
+<li>损失函数 (Pairwise Ranking Loss)：<script type="math/tex">L(\phi) = -\mathbb{E}_{(x, y_w, y_l) \sim D} [\log(\sigma(r_\phi(x, y_w) - r_\phi(x, y_l)))]</script></li>
+<li>直觉：两个回答的奖励分差值经过 Sigmoid 后，应该尽可能接近 1。</li>
+<li>产物：奖励模型 RM（它代表了人类的审美）。</li>
+</ul>
+<h3 id="3-强化学习对齐-PPO-Proximal-Policy-Optimization"><a href="#3-强化学习对齐-PPO-Proximal-Policy-Optimization" class="headerlink" title="3. 强化学习对齐 (PPO - Proximal Policy Optimization)"></a>3. 强化学习对齐 (PPO - Proximal Policy Optimization)</h3><p>这一步是利用 RM 作为“裁判”，通过强化学习算法（通常是 PPO）来榨取模型的潜力。</p>
 <ul>
-<li>对于任意一对正样本 $(v, v’)$，它们的输出分别是 $z = c$ 和 $z’ = c$。</li>
-<li>此时，余弦相似度 $\cos(z, z’) = 1$，损失函数 $L = 1 - \cos(z, z’) = 0$。</li>
+<li>做法：<ol>
+<li>将 SFT 模型初始化为 Policy 网络。</li>
+<li>模型生成回答，RM 打分。</li>
+<li>根据得分更新模型参数。</li>
+</ol>
+</li>
+<li>关键约束：<strong>KL 散度</strong>：<br>  为了防止模型为了骗高分而变得“油腔滑调”或产生乱码（即模型坍缩），会在 Reward 中加入一个惩罚项：<script type="math/tex">\text{Reward} = r_\phi(x, y) - \beta \cdot \text{KL}(P_{RL}(y|x) \| P_{SFT}(y|x))</script><ul>
+<li>意义：强迫对齐后的模型不要偏离原始 SFT 模型太远。</li>
+</ul>
+</li>
+<li>产物：最终的 RLHF 模型。</li>
+</ul>
+<h3 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h3><ol>
+<li>为什么 RLHF 很重要？</li>
+</ol>
+<ul>
+<li><p><strong>不可定义性</strong>：人类对“幽默”、“安全”、“有用”的定义很难用传统的 Loss Function 写出来，但 RM 可以通过学习排序规律隐式地捕获这些特征。</p>
+</li>
+<li><p><strong>泛化能力</strong>：RM 训练好后，可以给海量的模型生成结果打分，这比纯人工标注（SFT）的规模要大得多，效率更高。</p>
+</li>
+<li><p><strong>解决幻觉</strong>：通过偏好引导，模型可以学会“知之为知之，不知为不知”，减少一本正经胡说八道。</p>
+</li>
+</ul>
+<ol>
+<li>为什么要加 KL 散度约束？</li>
+</ol>
+<p>答：防止 Reward Hacking（奖励作弊）。如果没有约束，模型可能会发现某些特定字符串（如“！！！！”）在 RM 看来分数很高，从而大量生成这类无意义内容来刷分。<br>KL 散度保证了模型在对齐的同时，依然保持语言模型的本色。</p>
+<ol>
+<li>问：RM 模型和 Policy 模型一定要一样大吗？</li>
+</ol>
+<p>答：不一定。通常 RM 会稍微小一点（例如 Policy 是 175B，RM 可能是 6B），因为它只需要判断好坏，不需要生成复杂的文本。</p>
+<ol>
+<li>问：RLHF 有什么局限性？</li>
+</ol>
+<p>答：成本极高（需要大量人工排位）；存在“人类偏好偏见”（人类可能更倾向于字数多、语气委婉但内容错误的回答）；PPO 算法训练极度不稳定，对超参数敏感。</p>
+<h2 id="第一阶段：SFT-Supervised-Fine-Tuning"><a href="#第一阶段：SFT-Supervised-Fine-Tuning" class="headerlink" title="第一阶段：SFT (Supervised Fine-Tuning)"></a>第一阶段：SFT (Supervised Fine-Tuning)</h2><p>这是将一个“只会预测下一个词”的<strong>预训练语言模型（Base Model）转变为“能够听懂指令”的对话模型（Assistant Model）</strong>的关键步骤。</p>
+<h3 id="1-数据准备"><a href="#1-数据准备" class="headerlink" title="1. 数据准备"></a>1. 数据准备</h3><ul>
+<li><p>这一阶段需要的是 (Prompt, Response) 对，即“问题-答案”对。</p>
+</li>
+<li><p>来源：通常由专业标注人员编写，或者从高质量的种子任务中衍生。</p>
+</li>
+<li><p>规模：通常在几万条左右（相对于预训练的万亿级数据，这非常小，但质量要求极高）。</p>
+</li>
+</ul>
+<blockquote>
+<p>例子：</p>
+<ul>
+<li>Prompt: “请帮我写一首关于春天的五言绝句。”</li>
+<li>Response: “春色满园开，红花映绿苔。微风吹柳面，燕子衔泥来。”</li>
 </ul>
 </blockquote>
+<h3 id="2-训练逻辑"><a href="#2-训练逻辑" class="headerlink" title="2. 训练逻辑"></a>2. 训练逻辑</h3><ul>
+<li><p>模型状态：加载预训练好的 Base Model（如 Llama-3 或 GPT-3 的原始权重）。</p>
+</li>
+<li><p>训练方式：标准的自回归语言建模（Autoregressive Language Modeling）。</p>
+</li>
+<li><p>核心细节：在训练时，我们只对 Response（回答） 部分计算损失，而不对 Prompt 部分计算。</p>
 </li>
 </ul>
-<h4 id="B-为什么-BYOL-能防止塌缩？"><a href="#B-为什么-BYOL-能防止塌缩？" class="headerlink" title="B. 为什么 BYOL 能防止塌缩？"></a>B. 为什么 BYOL 能防止塌缩？</h4><ul>
-<li><strong>Predictor 的预测作用</strong>: Predictor 引入了非线性变换，使得 Online 端必须去“预测” Target 的特征，而不仅仅是简单的恒等拷贝。</li>
-<li><strong>Stop-gradient（停止梯度）</strong>: 关键在于梯度不流向 Target 分支。这使得 Target 在优化过程中是一个“被动观察者”，不会为了减小 Loss 而主动向常数解靠拢。</li>
-<li><strong>动量滞后性</strong>: Target 网络是 Online 网络的一个“缓慢移动的影子”。这种时间上的滞后和不一致性打破了坍缩所需的同步性。</li>
+<h3 id="3-数学本质"><a href="#3-数学本质" class="headerlink" title="3. 数学本质"></a>3. 数学本质</h3><p>SFT 的本质是最大似然估计 (MLE)。给定输入的上下文 $x$，模型输出人类标注答案 $y$ 的概率：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{SFT}(\theta) = - \mathbb{E}_{(x, y) \sim D_{SFT}} \left[ \sum_{t=1}^{|y|} \log P_\theta(y_t | x, y_{<t}) \right]</script><ul>
+<li>$\theta$：模型参数。$y_t$：回答中的第 $t$ 个 token。</li>
+<li>直观理解：让模型生成的分布尽可能地贴近人类标注员写的那个分布。</li>
 </ul>
-<h4 id="C-动量更新（EMA）的具体作用"><a href="#C-动量更新（EMA）的具体作用" class="headerlink" title="C. 动量更新（EMA）的具体作用"></a>C. 动量更新（EMA）的具体作用</h4><ul>
-<li><strong>提供稳定目标</strong>: 由于 Target 更新极慢，它为 Online 提供了一个连续且平滑的回归目标，起到了正则化作用。</li>
-<li><strong>信息集成</strong>: Target 实际上是 Online 历史多个版本的集成（Ensemble），包含了更丰富的特征空间信息。</li>
-</ul>
-<h3 id="5-面试考点总结"><a href="#5-面试考点总结" class="headerlink" title="5. 面试考点总结"></a>5. 面试考点总结</h3><ul>
-<li><strong>对比 MoCo</strong>: MoCo 的动量是为了维持负样本队列的一致性；BYOL 的动量是为了在无负样本时稳定目标、防止塌缩。</li>
-<li><strong>Predictor 必要性</strong>: 若去掉预测层，双路结构完全对称，模型会立即陷入平凡解。</li>
-<li><strong>核心结论</strong>: BYOL 证明了“非对称性”是自监督学习中除了“负样本约束”外的另一种有效的防塌缩手段。</li>
-</ul>
-<h2 id="SimSiam-Simple-Siamese"><a href="#SimSiam-Simple-Siamese" class="headerlink" title="SimSiam (Simple Siamese)"></a>SimSiam (Simple Siamese)</h2><p>SimSiam 是何恺明团队对 BYOL 的极大简化。它证明了：<strong>甚至不需要动量更新（Momentum），只要有 Stop-gradient 就能训练。</strong></p>
-<h3 id="1-SimSiam-的网络结构"><a href="#1-SimSiam-的网络结构" class="headerlink" title="1 SimSiam 的网络结构"></a>1 SimSiam 的网络结构</h3><p>SimSiam 采用的是完全共享权重的<strong>孪生网络（Siamese Network）</strong>结构：</p>
+<h3 id="4-更新参数"><a href="#4-更新参数" class="headerlink" title="4. 更新参数"></a>4. 更新参数</h3><script type="math/tex; mode=display">L_{SFT} = - \sum_{t=|x|+1}^{L} \log P(y_t | x, y_{<t})</script><h4 id="全参数微调-Full-Fine-Tuning"><a href="#全参数微调-Full-Fine-Tuning" class="headerlink" title="全参数微调 (Full Fine-Tuning)"></a>全参数微调 (Full Fine-Tuning)</h4><p>这是最原始、最暴力的方法。</p>
 <ul>
-<li>Encoder (编码器 $f$)：通常是 ResNet。两路输入共享同一套参数 $\theta$。</li>
-<li>Projector (投影层 $g$)：一个 MLP，将高维特征映射到中间空间,参数 $\theta$。</li>
-<li>Predictor (预测层 $p$)：仅在其中一路使用。它是一个非线性 MLP，用于将一路的输出匹配到另一路的表示,参数 $\theta$。</li>
+<li>训练哪些参数：模型的所有权重矩阵。以 Transformer 架构为例，包括所有的 $W_Q, W_K, W_V, W_O$（注意力权重），$W_1, W_2$（前馈网络层），以及 Embedding 层和最后的 LM Head（分类输出层）。</li>
+<li>状态：所有参数的梯度（Gradients）都会被计算，优化器（如 AdamW）会更新所有参数的状态。</li>
+<li>缺点：显存压力极大（通常需要模型参数量 4-8 倍的显存）。</li>
 </ul>
-<h3 id="2-具体算法流程"><a href="#2-具体算法流程" class="headerlink" title="2 具体算法流程"></a>2 具体算法流程</h3><p>假设输入一张图像 $x$，流程如下：</p>
-<ol>
-<li><strong>数据增强</strong>：对 $x$ 进行两次随机增强，得到两个视图 $x_1$ 和 $x_2$。</li>
-<li><strong>提取表示</strong>：<ul>
-<li>两张图都经过相同的 Encoder $f$ 和 Projector $g$。</li>
-<li>得到两个向量：$z_1 = g(f(x_1))$ 和 $z_2 = g(f(x_2))$。</li>
-</ul>
-</li>
-<li><strong>预测映射</strong>：<ul>
-<li>将 $z_1$ 喂入 Predictor $p$，得到预测向量 $p_1 = p(z_1)$。</li>
-<li>同理，将 $z_2$ 喂入 Predictor $p$，得到预测向量 $p_2 = p(z_2)$。</li>
-</ul>
-</li>
-<li><strong>计算对称损失</strong> (Symmetrized Loss)：<br> SimSiam 计算两次损失并取平均。<ul>
-<li>第一部分：$D(p_1, \text{stop_grad}(z_2))$。这里 $p_1$ 去追 $z_2$，但 $z_2$ 不准产生梯度。</li>
-<li>第二部分：$D(p_2, \text{stop_grad}(z_1))$。这里 $p_2$ 去追 $z_1$，但 $z_1$ 不准产生梯度。</li>
-<li>距离函数 $D$：通常使用负余弦相似度：$D(p, z) = -\frac{p \cdot z}{|p|_2 |z|_2}$。</li>
-</ul>
-</li>
-<li><strong>更新参数</strong>：根据总损失 $L = \frac{1}{2}(L_1 + L_2)$，通过反向传播更新所有共享参数 $\theta$：<script type="math/tex; mode=display">\nabla \theta = \frac{1}{2} \frac{\partial D(p_1, z_2)}{\partial \theta} + \frac{1}{2} \frac{\partial D(p_2, z_1)}{\partial \theta}</script></li>
-</ol>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 得到表示 (z) 和 预测 (p)</span></span><br><span class="line">z1, z2 = model.backbone(x1), model.backbone(x2) <span class="comment"># backbone 包含 encoder 和 projector</span></span><br><span class="line">p1, p2 = model.predictor(z1), model.predictor(z2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 计算损失：注意 detach() 就是 stop-gradient 的实现</span></span><br><span class="line"><span class="comment"># D 是余弦相似度</span></span><br><span class="line">loss = (D(p1, z2.detach()) + D(p2, z1.detach())) * <span class="number">0.5</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 统一更新参数</span></span><br><span class="line">loss.backward() <span class="comment"># 梯度只从 p1 传回，不从 z2 传回</span></span><br><span class="line">optimizer.step()</span><br></pre></td></tr></table></figure>
-<h3 id="3-为什么它有效？"><a href="#3-为什么它有效？" class="headerlink" title="3 为什么它有效？"></a>3 为什么它有效？</h3><p>何恺明在论文中做了一个实验：一旦去掉 Stop-gradient，模型会瞬间塌缩。<br>数学上，SimSiam 的优化可以看作是<strong>交替优化（Alternating Optimization）</strong>。<br>如果不加 Stop-gradient，模型是在同时优化 $\theta$ 和表示 $z$，这会产生退化解。加上之后，它变成了一个类似 EM 算法 的过程：</p>
-<ol>
-<li><p>定义目标函数我们假设图像<br> $x$ 有一个“理想的特征表示” $\eta_x$。</p>
-<p> 我们的目标是训练一个网络 $\mathcal{F}_\theta$（包含 Encoder, Projector 和 Predictor），使得它能预测出这个 $\eta_x$。</p>
-<p> 定义损失函数 $E(\theta, \eta)$：</p>
-<script type="math/tex; mode=display">E(\theta, \eta) = \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]</script><ul>
-<li>这里有两个待优化的变量：$\theta$：网络的参数（我们想要学习的模型）。</li>
-<li>$\eta$：图像的表示（隐变量，我们并不知道每张图最完美的向量是什么）。</li>
-</ul>
-</li>
-<li><p>为什么直接优化会“塌缩”？<br> 如果像普通的端到端训练那样同时对 $\theta$ 和 $\eta$ 求导：</p>
-<script type="math/tex; mode=display">\min_{\theta, \eta} E(\theta, \eta)</script><p> 模型会发现一个超级捷径：让所有的 $\eta_x$ 都等于一个常数 $C$，同时让网络 $\mathcal{F}_\theta$ 对任何输入也输出 $C$。<br> 此时误差为 0，但模型什么也没学到。这就是<strong>塌缩（Collapse）</strong>。</p>
-</li>
-<li><p>引入 EM 思想：交替优化</p>
-<p> 为了防止上述情况，SimSiam（以及 BYOL）实际上将优化拆成了两步，这与 EM 算法 的逻辑完美对应：</p>
-<p> <strong>第一步：E-step（固定 $\theta$，优化 $\eta$）</strong><br> $\eta_x$（样本分配）：就像 K-Means 里的分配标签。我们更新标签，把样本分配给最近的中心。<br> 在这一步，我们不更新网络，而是问：“<strong>基于现在的模型，哪种特征表示 $\eta$ 最能代表这张图？</strong>”</p>
-<script type="math/tex; mode=display">\eta^t \leftarrow \arg\min_{\eta} L(\theta^t, \eta)</script><p> 为了让 MSE 最小，$\eta_x$ 的最优解应该是该图片在所有可能的数据增强 $T$ 下的平均表示：</p>
-<script type="math/tex; mode=display">\eta_x^t \leftarrow \mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]</script><p> 实际上$T$的平均表示很难获取，于是我们用</p>
-<script type="math/tex; mode=display">\eta_x \leftarrow \mathcal{F}_{\theta^t}(T'(x))</script><p> 代替。</p>
-<p> <strong>第二步：M-step（固定 $\eta$，优化 $\theta$）</strong><br> $\theta$（聚类中心）：就像 K-Means 里的中心点。我们更新中心点，让它靠近分配给它的样本。</p>
-<script type="math/tex; mode=display">\theta^t \leftarrow \arg\min_{\theta} L(\theta, \eta^{t-1})</script></li>
-<li><p>Predictor</p>
+<h4 id="高效参数微调-PEFT-Parameter-Efficient-Fine-Tuning"><a href="#高效参数微调-PEFT-Parameter-Efficient-Fine-Tuning" class="headerlink" title="高效参数微调 (PEFT - Parameter-Efficient Fine-Tuning)"></a>高效参数微调 (PEFT - Parameter-Efficient Fine-Tuning)</h4><p>LoRA 的参数更新逻辑LoRA 的核心思想是：冻结原模型，只训练旁路的小矩阵。</p>
 <ul>
-<li>理想状态：$\eta_x$ 应该是所有增强视图的期望 $\mathbb{E}_T [\mathcal{F}(T(x))]$。</li>
-<li>由于计算期望太慢，我们每次只随机采样一个视图 $\mathcal{F}_{\theta^t}(T’(x))$<br>来代替期望$\mathbb{E}_T [\mathcal{F}_{\theta^t}(T(x))]$:<ul>
-<li>因为我们用“单次采样”代替了“期望”，这引入了巨大的噪声。</li>
-<li>它的目标就是最小化 $|h(z_1) - z_2|^2$。</li>
-<li>$h(z_1)$ 的最优解在数学上恰好就是 $z_2$ 的期望 $\mathbb{E}[z_2]$</li>
-<li>所以，Predictor 实际上是在“<strong>预判期望</strong>”。它弥补了由于单次采样带来的信息缺失，让模型能够朝着真正的 $\eta$（期望表示）演进。</li>
+<li>不训练哪些：冻结预训练模型（Base Model）的所有原始参数 $\mathbf{W}_0$。这些参数在反向传播时不计算梯度。</li>
+<li>训练哪些参数：只训练新增的两个低秩矩阵 $\mathbf{A}$ 和 $\mathbf{B}$。<ul>
+<li>假设原始矩阵是 $d \times d$，LoRA 引入 $A (d \times r)$ 和 $B (r \times d)$，其中秩 $r$ 通常很小（如 8 或 16）。</li>
+<li>更新公式：$h = \mathbf{W}_0 x + \Delta \mathbf{W} x = \mathbf{W}_0 x + \mathbf{BA} x$</li>
 </ul>
 </li>
+<li>在 SFT 阶段，通常只在 Attention 层（$W_Q, W_V$）添加 LoRA 模块，但现在的趋势是全层（包括 MLP）都加，效果更好。</li>
+</ul>
+<h4 id="为什么-SFT-只训练-Response-部分？"><a href="#为什么-SFT-只训练-Response-部分？" class="headerlink" title="为什么 SFT 只训练 Response 部分？"></a>为什么 SFT 只训练 Response 部分？</h4><p>这是工程实现上的一个细节。在训练时，虽然整条序列 [Prompt] [Response] 都会喂给模型，但：</p>
+<ul>
+<li><p>Mask 操作：我们会构造一个 Loss Mask。对于 Prompt 对应的 Token，其 Loss 被设为 0；只有 Response 对应的 Token 才会计算 Cross-Entropy Loss。</p>
+</li>
+<li><p>原因：我们不希望模型去“学习”用户是怎么提问的（Prompt 是外部输入的），我们只要求模型学习在给定 Prompt 下，如何生成正确率最高的 Response。</p>
+</li>
+</ul>
+<h3 id="5-这一阶段解决了什么？"><a href="#5-这一阶段解决了什么？" class="headerlink" title="5. 这一阶段解决了什么？"></a>5. 这一阶段解决了什么？</h3><ul>
+<li>格式对齐：模型学会了“问答”这种形式。</li>
+<li>能力激活：预训练阶段学到的海量知识被“提取”出来，用于回答问题。</li>
+</ul>
+<h3 id="6-为什么-SFT-还不够？"><a href="#6-为什么-SFT-还不够？" class="headerlink" title="6. 为什么 SFT 还不够？"></a>6. 为什么 SFT 还不够？</h3><ul>
+<li><p>标注成本：写出高质量的回答非常累，人类很难覆盖所有的边界情况。</p>
+</li>
+<li><p>多解性：对于“写个代码”这种任务，答案有很多种。SFT 强迫模型只学某一个标注员的写法，会限制模型的创造力。</p>
+</li>
+<li><p>错误积累：SFT 属于“模仿学习”，如果标注数据里有一点点幻觉或错误，模型会学得非常扎实。</p>
+</li>
+</ul>
+<h3 id="关键代码"><a href="#关键代码" class="headerlink" title="关键代码"></a>关键代码</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer</span><br><span class="line"><span class="keyword">from</span> peft <span class="keyword">import</span> LoraConfig, get_peft_model, TaskType</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 加载预训练模型和分词器</span></span><br><span class="line">model_id = <span class="string">&quot;your-base-model-path&quot;</span></span><br><span class="line">tokenizer = AutoTokenizer.from_pretrained(model_id)</span><br><span class="line">model = AutoModelForCausalLM.from_pretrained(model_id, device_map=<span class="string">&quot;auto&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 定义 LoRA 配置</span></span><br><span class="line">config = LoraConfig(</span><br><span class="line">    task_type=TaskType.CAUSAL_LM, <span class="comment"># 任务类型：自回归语言模型</span></span><br><span class="line">    inference_mode=<span class="literal">False</span>,         <span class="comment"># 训练模式</span></span><br><span class="line">    r=<span class="number">8</span>,                          <span class="comment"># LoRA 的秩 (Rank)，决定了参数量</span></span><br><span class="line">    lora_alpha=<span class="number">32</span>,                <span class="comment"># 缩放因子，通常为 r 的 2-4 倍</span></span><br><span class="line">    lora_dropout=<span class="number">0.1</span>,             <span class="comment"># 防止过拟合</span></span><br><span class="line">    target_modules=[<span class="string">&quot;q_proj&quot;</span>, <span class="string">&quot;v_proj&quot;</span>] <span class="comment"># 关键：指定 LoRA 作用于哪些权重矩阵</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 将原始模型包装为 PeftModel</span></span><br><span class="line"><span class="comment"># 此时 model 内部的原始参数会被 freeze，只有 A 和 B 矩阵可训练</span></span><br><span class="line">model = get_peft_model(model, config)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 打印可训练参数量（面试时常被问到：LoRA 训练多少参数？）</span></span><br><span class="line">model.print_trainable_parameters()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 训练配置 (SFT 关键点：只计算 Response 损失通过 DataCollator 实现)</span></span><br><span class="line">training_args = TrainingArguments(</span><br><span class="line">    output_dir=<span class="string">&quot;./output_sft&quot;</span>,</span><br><span class="line">    per_device_train_batch_size=<span class="number">4</span>,</span><br><span class="line">    learning_rate=<span class="number">2e-4</span>,           <span class="comment"># LoRA 学习率通常比全量微调稍大</span></span><br><span class="line">    num_train_epochs=<span class="number">3</span>,</span><br><span class="line">    logging_steps=<span class="number">10</span>,</span><br><span class="line">    bf16=<span class="literal">True</span>                     <span class="comment"># 如果显卡支持，bf16 效果更好</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 启动训练</span></span><br><span class="line">trainer = Trainer(</span><br><span class="line">    model=model,</span><br><span class="line">    args=training_args,</span><br><span class="line">    train_dataset=dataset,        <span class="comment"># 预先处理好的数据集</span></span><br><span class="line">    data_collator=DataCollatorForSeq2Seq(tokenizer, padding=<span class="literal">True</span>) <span class="comment"># 自动 mask prompt 部分</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">trainer.train()</span><br></pre></td></tr></table></figure>
+<h2 id="第二阶段：RM-Reward-Modeling"><a href="#第二阶段：RM-Reward-Modeling" class="headerlink" title="第二阶段：RM (Reward Modeling)"></a>第二阶段：RM (Reward Modeling)</h2><h3 id="1-数据构造：从“写答案”到“排高下”"><a href="#1-数据构造：从“写答案”到“排高下”" class="headerlink" title="1. 数据构造：从“写答案”到“排高下”"></a>1. 数据构造：从“写答案”到“排高下”</h3><p>人类很难给一个回答打出精确的分数（比如 79 分 vs 81 分），但人类非常擅长做对比选择。</p>
+<ul>
+<li><strong>采样</strong>：给出一个问题（Prompt）$x$，让第一阶段得到的 SFT 模型 生成多个不同的回答 ${y_1, y_2, \dots, y_k}$（通常使用不同的采样随机种子）。</li>
+<li><strong>标注</strong>：标注员会对这些回答进行两两比较（Pairwise），选出更好的一个。结果格式：$(x, y_w, y_l)$，其中 $y_w$ (win) 是较好的回答，$y_l$ (lose) 是较差的回答。</li>
+<li><strong>数据规模</strong>：通常需要数十万甚至上百万对这种对比数据，比 SFT 的数据量大得多。</li>
+</ul>
+<h3 id="2-模型结构：从“概率分布”到“标量分数”"><a href="#2-模型结构：从“概率分布”到“标量分数”" class="headerlink" title="2. 模型结构：从“概率分布”到“标量分数”"></a>2. 模型结构：从“概率分布”到“标量分数”</h3><p>奖励模型通常由 SFT 模型改造而来，但其输出层发生了本质变化：</p>
+<ul>
+<li><strong>结构调整</strong>：去掉 SFT 模型最后的 LM Head（原本是输出词表大小 $V$ 的概率分布），换成一个 Scalar Head（输出一个单一的实数值 $r$）。</li>
+<li><strong>输入输出</strong>：输入一个序列 $(x, y)$，模型不再预测下一个词，而是对整条序列吐出一个分值 $r_\phi(x, y)$。</li>
+<li><strong>参数量</strong>：RM 通常比生成模型稍小或对等。例如 175B 的 GPT-3，其 RM 可能是 6B 的</li>
+</ul>
+<h3 id="3-数学本质：排序损失函数-Pairwise-Ranking-Loss"><a href="#3-数学本质：排序损失函数-Pairwise-Ranking-Loss" class="headerlink" title="3. 数学本质：排序损失函数 (Pairwise Ranking Loss)"></a>3. 数学本质：排序损失函数 (Pairwise Ranking Loss)</h3><p>我们希望对于同一问题 $x$，好的回答 $y_w$ 得分高于差的回答 $y_l$。损失函数定义如下：</p>
+<script type="math/tex; mode=display">L(\phi) = -\frac{1}{K} \mathbb{E}_{(x, y_w, y_l) \sim D} \left[ \log \left( \sigma \left( r_\phi(x, y_w) - r_\phi(x, y_l) \right) \right) \right]</script><ul>
+<li>$\sigma$ (Sigmoid 函数)：将分数的差值映射到 $(0, 1)$ 区间。</li>
+<li>逻辑：如果 $r(y_w) \gg r(y_l)$，则 $\sigma(\text{diff}) \approx 1$，$\log(1) = 0$，Loss 极小。如果 $r(y_w) \ll r(y_l)$，则 $\sigma(\text{diff}) \approx 0$，Loss 极大。* 直觉：通过拉大正负样本之间的分差，迫使模型学习人类偏好的底层特征（如安全性、事实性、语气等）。</li>
+</ul>
+<h3 id="4-训练时的参数更新"><a href="#4-训练时的参数更新" class="headerlink" title="4. 训练时的参数更新"></a>4. 训练时的参数更新</h3><ul>
+<li>初始化：使用 SFT 模型的权重初始化 RM。这是因为 RM 首先得“读懂”文本，SFT 的预训练知识对它至关重要。</li>
+<li>训练参数：<ul>
+<li>全量微调：更新 RM 的所有参数。</li>
+<li>LoRA 模式：同样可以使用 LoRA 只训练旁路。</li>
 </ul>
 </li>
+<li>注意：训练 RM 时，不使用 Mask。我们需要模型对整个序列（Prompt + Response）产生一个全局的理解。</li>
+</ul>
+<h3 id="5-具体训练过程"><a href="#5-具体训练过程" class="headerlink" title="5. 具体训练过程"></a>5. 具体训练过程</h3><h4 id="1-模型架构："><a href="#1-模型架构：" class="headerlink" title="1. 模型架构："></a>1. 模型架构：</h4><p>通常由第一阶段训练好的 SFT 模型（Supervised Fine-Tuned Model）改造而来。</p>
+<ul>
+<li><strong>基座 (Backbone)</strong>：保持 GPT 的 Transformer Decoder 结构不变</li>
+<li><strong>结构改动</strong>：<ul>
+<li>移除 LM Head：去掉原来输出维度为词表大小 $V$（如 50,257）的线性层。</li>
+<li>添加 Scalar Head：增加一个随机初始化的线性层（Linear Layer），其输出维度固定为 1。</li>
+</ul>
+</li>
+<li><strong>输入限制</strong>：RM 通常具有与 SFT 相同的上下文窗口（如 4096 或 8192），以便能够处理长对话。</li>
+</ul>
+<h4 id="2-详细训练流程：Pairwise-RankingRM-的训练本质上是一个排序问题。"><a href="#2-详细训练流程：Pairwise-RankingRM-的训练本质上是一个排序问题。" class="headerlink" title="2. 详细训练流程：Pairwise RankingRM 的训练本质上是一个排序问题。"></a>2. 详细训练流程：Pairwise RankingRM 的训练本质上是一个排序问题。</h4><h5 id="步骤-A：数据采集与标注："><a href="#步骤-A：数据采集与标注：" class="headerlink" title="步骤 A：数据采集与标注："></a>步骤 A：数据采集与标注：</h5><ol>
+<li>采样：从 Prompt 池中取一个问题 $x$，让 SFT 模型生成 $k$ 个不同的回答（$k \ge 2$）。</li>
+<li>标注：人类标注员对这 $k$ 个回答进行排序。我们从中提取出二元对比组：$(x, y_w, y_l)$。<ul>
+<li>$y_w$ (winning)：人类更喜欢的回答。</li>
+<li>$y_l$ (losing)：人类较不喜欢的回答。<h5 id="步骤-B：前向传播-Forward-Pass"><a href="#步骤-B：前向传播-Forward-Pass" class="headerlink" title="步骤 B：前向传播 (Forward Pass)"></a>步骤 B：前向传播 (Forward Pass)</h5>模型需要分别计算 $y_w$ 和 $y_l$ 在同一个问题 $x$ 下的分数。</li>
+</ul>
+</li>
+<li>拼接序列：构造两个输入序列 。<ul>
+<li>$s_w = [x; y_w]$</li>
+<li>$s_l = [x; y_l]$</li>
+</ul>
+</li>
+<li>提取特征：将 $s_w$ 和 $s_l$ 分别喂入 Transformer。取最后一个 Token：提取 Transformer 最后一层在序列末尾位置（$last_token$）的隐藏状态向量。</li>
 </ol>
+<h5 id="步骤-C：计算-Loss-与反向传播"><a href="#步骤-C：计算-Loss-与反向传播" class="headerlink" title="步骤 C：计算 Loss 与反向传播"></a>步骤 C：计算 Loss 与反向传播</h5><p>使用<strong>排序损失（Pairwise Ranking Loss）</strong>更新参数。</p>
+<h3 id="6-关键代码"><a href="#6-关键代码" class="headerlink" title="6. 关键代码"></a>6. 关键代码</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModel, PreTrainedModel</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GPTRewardModel</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, base_model</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.config = base_model.config</span><br><span class="line">        <span class="variable language_">self</span>.backbone = base_model <span class="comment"># 这里的 base_model 是 SFT 后的 GPT</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 这里的 d_model 对应 GPT 的 hidden_size (如 4096)</span></span><br><span class="line">        <span class="comment"># 输出维度为 1，代表奖励分</span></span><br><span class="line">        <span class="variable language_">self</span>.v_head = nn.Linear(<span class="variable language_">self</span>.config.hidden_size, <span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, input_ids, attention_mask</span>):</span><br><span class="line">        <span class="comment"># 1. 经过 Transformer 得到所有 hidden states</span></span><br><span class="line">        <span class="comment"># 输出维度: [batch, seq_len, hidden_size]</span></span><br><span class="line">        transformer_outputs = <span class="variable language_">self</span>.backbone(input_ids, attention_mask=attention_mask)</span><br><span class="line">        hidden_states = transformer_outputs.last_hidden_state</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 2. 关键点：取每一个序列中【最后一个非 padding】的 token</span></span><br><span class="line">        <span class="comment"># 找到每个 batch 中最后一个有效 token 的索引</span></span><br><span class="line">        last_token_indices = attention_mask.<span class="built_in">sum</span>(dim=<span class="number">1</span>) - <span class="number">1</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 提取该 token 的向量: [batch, hidden_size]</span></span><br><span class="line">        batch_size = input_ids.shape[<span class="number">0</span>]</span><br><span class="line">        last_token_hidden_states = hidden_states[torch.arange(batch_size), last_token_indices]</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 3. 映射为标量分数: [batch, 1]</span></span><br><span class="line">        values = <span class="variable language_">self</span>.v_head(last_token_hidden_states)</span><br><span class="line">        <span class="keyword">return</span> values</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">compute_ranking_loss</span>(<span class="params">chosen_rewards, rejected_rewards</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    chosen_rewards: [batch, 1] - 胜出回答的分数</span></span><br><span class="line"><span class="string">    rejected_rewards: [batch, 1] - 落败回答的分数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 公式: Loss = -log(sigmoid(r_w - r_l))</span></span><br><span class="line">    <span class="comment"># 我们希望分差越大越好</span></span><br><span class="line">    loss = -torch.log(torch.sigmoid(chosen_rewards - rejected_rewards)).mean()</span><br><span class="line">    <span class="keyword">return</span> loss</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 假设 batch 包含: </span></span><br><span class="line"><span class="comment"># input_ids_chosen (Prompt + 好回答)</span></span><br><span class="line"><span class="comment"># input_ids_rejected (Prompt + 差回答)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train_step</span>(<span class="params">model, batch, optimizer</span>):</span><br><span class="line">    model.train()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 1. 计算两组回答的分数</span></span><br><span class="line">    <span class="comment"># 为了节省显存，可以合并到一个 batch 里跑，然后拆开</span></span><br><span class="line">    rewards_chosen = model(batch[<span class="string">&#x27;input_ids_chosen&#x27;</span>], batch[<span class="string">&#x27;attention_mask_chosen&#x27;</span>])</span><br><span class="line">    rewards_rejected = model(batch[<span class="string">&#x27;input_ids_rejected&#x27;</span>], batch[<span class="string">&#x27;attention_mask_rejected&#x27;</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 2. 计算排序损失</span></span><br><span class="line">    loss = compute_ranking_loss(rewards_chosen, rewards_rejected)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 3. 反向传播</span></span><br><span class="line">    loss.backward()</span><br><span class="line">    optimizer.step()</span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> loss.item()</span><br></pre></td></tr></table></figure>
+<h2 id="第三阶段：PPO-Proximal-Policy-Optimization，近端策略优化"><a href="#第三阶段：PPO-Proximal-Policy-Optimization，近端策略优化" class="headerlink" title="第三阶段：PPO (Proximal Policy Optimization，近端策略优化)"></a>第三阶段：PPO (Proximal Policy Optimization，近端策略优化)</h2><p>这一步的目标是：利用第二阶段训练好的 RM (奖励模型) 作为判官，采用强化学习算法来更新 SFT 模型，使其生成的回答能够最大化奖励分数。</p>
+<h3 id="1-PPO-系统的“四模并行”架构"><a href="#1-PPO-系统的“四模并行”架构" class="headerlink" title="1. PPO 系统的“四模并行”架构"></a>1. PPO 系统的“四模并行”架构</h3><ul>
+<li><strong>Actor Model (Policy)</strong>： 主角，接收 Prompt，生成 Response。最终我们要的成品。更新参数</li>
+<li><strong>Critic Model (Value)</strong>： 教练。预估当前状态的价值（Value），辅助 Actor 计算“收益是否超预期”。更新参数</li>
+<li><strong>Reference Model</strong>    标杆。SFT 模型的冻结副本，用来限制 Actor 不要跑太远。不更新参数</li>
+<li><strong>Reward Model</strong>    判官。阶段二训好的模型，给 Actor 的成品打分。不更新参数</li>
+</ul>
 
                 
             </div>
@@ -633,7 +687,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://SGDBS.github.io/2026/03/28/AI/Chapter3/">https://SGDBS.github.io/2026/03/28/AI/Chapter3/</a>
+                    <a href="https://SGDBS.github.io/2026/03/30/Note_LLM/Chapter4/">https://SGDBS.github.io/2026/03/30/Note_LLM/Chapter4/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -850,13 +904,13 @@
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
-                <a href="/2026/03/30/AI/Chapter4/">
+                <a href="/2026/04/01/Dairy/2026/2026_04/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/17.jpg" class="responsive-img" alt="Chapter4 强化学习 RLHF">
+                        <img src="/medias/featureimages/5.jpg" class="responsive-img" alt="2026年4月 日记">
                         
-                        <span class="card-title">Chapter4 强化学习 RLHF</span>
+                        <span class="card-title">2026年4月 日记</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -867,31 +921,19 @@
                     </div>
                     <div class="publish-info">
                         <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-30
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-04-01
                         </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    AI大学习
+                            <a href="/categories/%E6%97%A5%E8%AE%B0/" class="post-category">
+                                    日记
                                 </a>
                             
                             
                         </span>
                     </div>
-                </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/AI/">
-                        <span class="chip bg-color">AI</span>
-                    </a>
-                    
-                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
-                        <span class="chip bg-color">AI面试知识</span>
-                    </a>
-                    
                 </div>
                 
             </div>
@@ -903,13 +945,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2026/03/27/AI/Chapter2/">
+                <a href="/2026/03/28/Note_LLM/Chapter3/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="Chapter2 对比学习（Contrastive Learning）的核心机理">
+                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="Chapter3 对比学习BYOL， SimSiam">
                         
-                        <span class="card-title">Chapter2 对比学习（Contrastive Learning）的核心机理</span>
+                        <span class="card-title">Chapter3 对比学习BYOL， SimSiam</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -920,14 +962,14 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-28
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/AI%E5%A4%A7%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    AI大学习
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                    学习笔记-大模型
                                 </a>
                             
                             
