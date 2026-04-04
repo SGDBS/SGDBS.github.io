@@ -738,42 +738,82 @@
 </ul>
 </li>
 </ul>
-<details>
-<summary>图解示例：双十一 iPhone 点击统计</summary>
-
-**场景设定**：双十一期间统计各商品点击总数。`iPhone_17` 是超级爆款，产生了 **100 万次**点击；普通商品（如充电线）只有 10 次。假设每个 Task 的处理上限为 **20 万条**，若直接聚合，处理 `iPhone_17` 的 Task 必然崩溃（OOM）。
-
-#### 阶段一：局部聚合（加盐分散压力）
-
-给每条 `iPhone_17` 记录随机附加 $0 \sim 4$ 的盐值（$k=5$），Key 改变后，100 万条数据被哈希分散到 5 个不同的 Task：
-
-| 打盐后的 Key | Task | 局部计数 |
-| :--- | :---: | ---: |
-| `0_iPhone_17` | Task 0 | 200,050 |
-| `1_iPhone_17` | Task 1 | 199,980 |
-| `2_iPhone_17` | Task 2 | 200,010 |
-| `3_iPhone_17` | Task 3 | 199,950 |
-| `4_iPhone_17` | Task 4 | 200,010 |
-
-*此时，没有任何一个 Task 超过 20 万条的负载上限，任务全部成功完成。*
-
-#### 阶段二：全局聚合（去盐还原结果）
-
-将 5 条中间结果去掉前缀，还原为 `iPhone_17`，再由单个 Task 进行最终加法：
-
-$$200050 + 199980 + 200010 + 199950 + 200010 = 1{,}000{,}000$$
-
-#### 方案对比
-
-| 维度 | 普通聚合 (Single Stage) | 两阶段聚合 (Two-Stage) |
-| :--- | :--- | :--- |
-| **最大单点压力** | 1,000,000 条（导致崩溃） | 200,050 条（平稳运行） |
-| **计算复杂度** | $O(N)$ | $O(\frac{N}{k} + k)$ |
-| **Shuffle 数据量** | 100 万条原始记录 | 100 万条 + $k$ 条中间结果 |
-| **核心模式** | 多对一 | **多对多对一** |
-
+<details><summary>图解示例：双十一 iPhone 点击统计</summary><p><strong>场景设定</strong>：双十一期间统计各商品点击总数。<code>iPhone_17</code> 是超级爆款，产生了 <strong>100 万次</strong>点击；普通商品（如充电线）只有 10 次。假设每个 Task 的处理上限为 <strong>20 万条</strong>，若直接聚合，处理 <code>iPhone_17</code> 的 Task 必然崩溃（OOM）。</p>
+<h4 id="阶段一：局部聚合（加盐分散压力）"><a href="#阶段一：局部聚合（加盐分散压力）" class="headerlink" title="阶段一：局部聚合（加盐分散压力）"></a>阶段一：局部聚合（加盐分散压力）</h4><p>给每条 <code>iPhone_17</code> 记录随机附加 $0 \sim 4$ 的盐值（$k=5$），Key 改变后，100 万条数据被哈希分散到 5 个不同的 Task：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">打盐后的 Key</th>
+<th style="text-align:center">Task</th>
+<th style="text-align:right">局部计数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>0_iPhone_17</code></td>
+<td style="text-align:center">Task 0</td>
+<td style="text-align:right">200,050</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>1_iPhone_17</code></td>
+<td style="text-align:center">Task 1</td>
+<td style="text-align:right">199,980</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>2_iPhone_17</code></td>
+<td style="text-align:center">Task 2</td>
+<td style="text-align:right">200,010</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>3_iPhone_17</code></td>
+<td style="text-align:center">Task 3</td>
+<td style="text-align:right">199,950</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>4_iPhone_17</code></td>
+<td style="text-align:center">Task 4</td>
+<td style="text-align:right">200,010</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><em>此时，没有任何一个 Task 超过 20 万条的负载上限，任务全部成功完成。</em></p>
+<h4 id="阶段二：全局聚合（去盐还原结果）"><a href="#阶段二：全局聚合（去盐还原结果）" class="headerlink" title="阶段二：全局聚合（去盐还原结果）"></a>阶段二：全局聚合（去盐还原结果）</h4><p>将 5 条中间结果去掉前缀，还原为 <code>iPhone_17</code>，再由单个 Task 进行最终加法：</p>
+<script type="math/tex; mode=display">200050 + 199980 + 200010 + 199950 + 200010 = 1{,}000{,}000</script><h4 id="方案对比"><a href="#方案对比" class="headerlink" title="方案对比"></a>方案对比</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">普通聚合 (Single Stage)</th>
+<th style="text-align:left">两阶段聚合 (Two-Stage)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>最大单点压力</strong></td>
+<td style="text-align:left">1,000,000 条（导致崩溃）</td>
+<td style="text-align:left">200,050 条（平稳运行）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>计算复杂度</strong></td>
+<td style="text-align:left">$O(N)$</td>
+<td style="text-align:left">$O(\frac{N}{k} + k)$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Shuffle 数据量</strong></td>
+<td style="text-align:left">100 万条原始记录</td>
+<td style="text-align:left">100 万条 + $k$ 条中间结果</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心模式</strong></td>
+<td style="text-align:left">多对一</td>
+<td style="text-align:left"><strong>多对多对一</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
 </details>
-
 <hr>
 <h3 id="二、-连接操作引起的倾斜-Join-Sequence-Skew"><a href="#二、-连接操作引起的倾斜-Join-Sequence-Skew" class="headerlink" title="二、 连接操作引起的倾斜 (Join/Sequence Skew)"></a>二、 连接操作引起的倾斜 (Join/Sequence Skew)</h3><p><strong>现象</strong>：按 <code>User_ID</code> 分组提取行为序列时，爬虫或超级活跃用户产生的日志成千上万，导致 Shuffle 过程极慢。</p>
 <h4 id="1-过滤与分流"><a href="#1-过滤与分流" class="headerlink" title="1. 过滤与分流"></a>1. 过滤与分流</h4><ul>
