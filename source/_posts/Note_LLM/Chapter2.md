@@ -1,7 +1,7 @@
 ---
 title: Chapter2 对比学习（Contrastive Learning）的核心机理
 date: 2026-03-27 16:03:34
-categories: AI大学习
+categories: 学习笔记-大模型
 mathjax: true
 tags:
     - AI

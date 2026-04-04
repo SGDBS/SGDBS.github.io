@@ -1,7 +1,7 @@
 ---
 title: Chapter1 相似度度量（Similarity Measures）
 date: 2026-03-27 12:48:00
-categories: AI大学习
+categories: 学习笔记-大模型
 mathjax: true
 tags:
     - AI
