@@ -829,6 +829,9 @@
 <li>对另一张表中这些 Key 对应的数据进行<strong>“膨胀”</strong>（拷贝多份），从而配合大表加盐后的并行计算。</li>
 </ul>
 <details><summary>示例：用户行为表 Join 用户属性表</summary><p><strong>场景设定</strong>：推荐系统中，将行为日志表（A）与用户属性表（B）关联，目的是给每条行为记录打上年龄段标签，供模型做特征增强。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> A.<span class="operator">*</span>, B.age_group <span class="keyword">FROM</span> A <span class="keyword">JOIN</span> B <span class="keyword">ON</span> A.user_id <span class="operator">=</span> B.user_id</span><br></pre></td></tr></table></figure>
+<p>执行这条 SQL 的目的：是为了知道“点击了这个商品的人，到底是哪个年龄段的？”
+这是特征工程中最关键的一步。有了 age_group，模型才能学习到：“iPhone 17 主要是 20-30 岁的青年人在点击”，从而实现精准推荐。</p>
 <table>
 <thead>
 <tr>
