@@ -73,7 +73,9 @@ $$S_u = \sum_{i \in \text{Actions}} w_i \cdot f(t_i) \cdot \text{Action\_Value}_
 * **反思**：在构建特征时，必须确保特征的生成时间戳早于预测行为的时间戳。
 * **实践**：严格执行 `Point-in-time Join`（时点关联）。
 
-#### 5. 算带时间衰减的用户点击特征
+
+{% details 计算带时间衰减的用户点击特征 %}
+
 ```py
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -120,6 +122,8 @@ user_activity_features = decay_df.groupBy("user_id").agg(
 
 user_activity_features.show()
 ```
+
+{% enddetails %}
 
 ## 2.特征工程之用户活跃度与物品热度
 
@@ -279,7 +283,7 @@ user_activity_features.show()
     * **适用场景**：`count`、`sum` 等满足**结合律**的聚合运算。
     * **面试加分**：在 Spark 中，可提到 `spark.sql.adaptive.enabled`（自适应查询执行 **AQE**），它能自动检测分区大小并在运行时合并或拆分倾斜分区。
 
-{% details 图解示例：双十一 iPhone 点击统计 %}
+{% details 示例：双十一 iPhone 点击统计 %}
 
 **场景设定**：双十一期间统计各商品点击总数。`iPhone_17` 是超级爆款，产生了 **100 万次**点击；普通商品（如充电线）只有 10 次。假设每个 Task 的处理上限为 **20 万条**，若直接聚合，处理 `iPhone_17` 的 Task 必然崩溃（OOM）。
 
