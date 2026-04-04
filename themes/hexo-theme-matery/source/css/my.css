@@ -1,1 +1,50 @@
 /* Here is your custom css styles. */
+
+/* ── Details 折叠块 ── */
+details {
+  background-color: #f5f7fa;
+  border: 1px solid #dce3ed;
+  border-left: 4px solid #5b8dee;
+  border-radius: 6px;
+  padding: 12px 18px;
+  margin: 16px 0;
+  font-family: 'Georgia', 'Noto Serif SC', serif;
+  font-size: 0.95em;
+  color: #3a3a3a;
+  line-height: 1.8;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: bold;
+  font-family: inherit;
+  color: #2c5fbd;
+  list-style: none;
+  padding: 2px 0;
+  user-select: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: '▶ ';
+  font-size: 0.75em;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+details[open] summary::before {
+  content: '▼ ';
+}
+
+details[open] summary {
+  margin-bottom: 10px;
+}
+
+details table {
+  background-color: transparent;
+  font-family: inherit;
+  font-size: 1em;
+}
