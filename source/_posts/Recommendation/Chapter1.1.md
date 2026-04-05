@@ -1,5 +1,5 @@
 ---
-title: 推荐算法Chapter1 数据预处理与特征工程
+title: 推荐算法Chapter1.1 数据预处理与特征工程
 date: 2026-04-2 12:48:00
 categories: 学习笔记-推荐算法
 mathjax: true
