@@ -320,3 +320,5 @@ def train_step(model, batch, optimizer):
 * **Reference Model**	标杆。SFT 模型的冻结副本，用来限制 Actor 不要跑太远。不更新参数
 * **Reward Model**	判官。阶段二训好的模型，给 Actor 的成品打分。不更新参数
 
+
+### To Be Continued...
