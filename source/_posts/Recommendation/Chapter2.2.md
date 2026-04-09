@@ -88,22 +88,22 @@ $$L = \sum_{(u,i) \in K} (r_{ui} - q_i^T p_u)^2 + \lambda (\|p_u\|^2 + \|q_i\|^2
 | **用途** | **特征选择**（自动剔除无效特征） | **防止过拟合**，保证模型稳定性 |
 | **贝叶斯先验** | **拉普拉斯分布** (Laplace) | **高斯分布** (Gaussian) |
 
-{% details 为什么 %}
+{% details 为什么是这样 %}
 
 从贝叶斯统计学的视角来看，正则化项本质上是我们在观测数据之前，对模型参数 $\theta$ 所抱有的**先验假设 (Prior Assumption)**。
 
-### 1. 概率论背景：最大后验概率 (MAP)
+#### 1. 概率论背景：最大后验概率 (MAP)
 模型学习的目标是最大化后验概率 $P(\theta|D)$。根据对数变换：
 $$\arg \max_{\theta} P(\theta|D) = \arg \min_{\theta} \left( \underbrace{-\log P(D|\theta)}_{\text{负对数似然 (Loss)}} + \underbrace{-\log P(\theta)}_{\text{正则化项}} \right)$$
 
-### 2. L2 正则化 <=> 高斯先验 (Gaussian Prior)
+#### 2. L2 正则化 <=> 高斯先验 (Gaussian Prior)
 * **假设**：每个参数 $w_i$ 独立同分布地服从 $N(0, \sigma^2)$。
 * **推导**：
     高斯概率密度 $$P(w) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{w^2}{2\sigma^2}\right)$$
     取负对数得到 $$-\log f(w) \propto \frac{1}{2\sigma^2} w^2$$
 * **物理意义**：高斯分布的曲线在 0 附近是平滑的。它告诉模型：参数值不应该太大，但它们可以均匀地分布在 0 附近，这导致了参数的**整体缩小 (Weight Decay)**。
 
-### 3. L1 正则化 <=> 拉普拉斯先验 (Laplacian Prior)
+#### 3. L1 正则化 <=> 拉普拉斯先验 (Laplacian Prior)
 * **假设**：每个参数 $w_i$ 独立同分布地服从 $Laplace(0, b)$。
 * **推导**：
     拉普拉斯概率密度 $$P(w) = \frac{1}{2b} \exp\left(-\frac{|w|}{b}\right)$$
@@ -125,9 +125,45 @@ $$\arg \max_{\theta} P(\theta|D) = \arg \min_{\theta} \left( \underbrace{-\log P
 * **Early Stopping**：在验证集性能不再提升时提前停止训练。
 * **Embedding Normalization**：在双塔模型中，对输出的向量进行 $L_2$ 归一化，使其映射到单位球面上，这可以看作是一种隐式的硬正则化。
 
+## 2.FunkSVD 与传统 SVD
 
+### 1. 传统 SVD 的“数学困境”
+在数学定义中，奇异值分解（Singular Value Decomposition）将矩阵 $M$ 分解为 $U\Sigma V^T$。
+* 硬性要求：矩阵 $M$ 必须是**稠密（Dense）**的。
+* 推荐系统的现实：用户-物品矩阵 $R$ 极其稀疏（99% 为空）。
+* 后果：为了使用传统 SVD，你必须对缺失值进行填充（Imputation），如填充 0 或均值。这会导致矩阵体积爆炸，且引入的伪造数据会严重干扰预测精度。
 
+### 2. FunkSVD 的“工程智慧”
+由 Simon Funk 提出，它跳出了“分解”的数学框架，转而使用**“拟合”**的机器学习框架。
+* 核心逻辑：不再追求完美的数学分解，而是定义一个损失函数，只看已有的评分。
+* 预测公式：$\hat{r}_{ui} = p_u \cdot q_i^T$
+* 损失函数：$$\min_{P, Q} \sum_{(u,i) \in \text{Observed}} (r_{ui} - p_u q_i^T)^2 + \lambda(\|p_u\|^2 + \|q_i\|^2)$$
+注意：求和只针对 $\text{Observed}$（已观测到的数据），这完美解决了稀疏性问题。
 
+{% details 训练过程 %}
+FunkSVD 的训练是一个基于 **SGD（随机梯度下降）** 的迭代过程，主要分为以下四个步骤：
 
+#### 第一步：参数初始化 (Initialization)
+* 随机初始化矩阵 $P$ 和 $Q$。
+* 通常使用均值为 0、方差较小的正态分布（如 $N(0, 0.1)$）。初始值不宜过大，否则内积结果容易爆炸，导致模型不收敛。
+
+#### 第二步：定义损失函数 (Loss Function)
+* **目标**：让预测评分尽可能接近真实评分，同时防止过拟合。
+* **公式**：
+    $$L = \sum_{(u,i) \in \text{Observed}} \underbrace{(r_{ui} - p_u q_i^T)^2}_{\text{误差项}} + \underbrace{\lambda (\|p_u\|^2 + \|q_i\|^2)}_{\text{L2正则化项}}$$
+    > **核心注意点**：求和符号 $\sum$ 只针对**已有的（非空）评分数据**进行计算。
+
+#### 第三步：执行随机梯度下降 (Optimization via SGD)
+* **流程**：遍历训练集中的每一个三元组 $(u, i, r_{ui})$。
+* **计算误差**：$e_{ui} = r_{ui} - \hat{r}_{ui}$。
+* **梯度更新**：根据损失函数对参数求偏导，得到更新公式：
+    $$p_{u} \leftarrow p_{u} + \eta \cdot (e_{ui} q_{i} - \lambda p_{u})$$
+    $$q_{i} \leftarrow q_{i} + \eta \cdot (e_{ui} p_{u} - \lambda q_{i})$$
+    其中 $\eta$ 是学习率（Learning Rate）。
+
+#### 第四步：收敛与存储
+* 重复迭代（Epochs），直到损失函数不再下降或达到预设次数。
+* 训练完成后，丢弃原始稀疏矩阵，只保留稠密的 $P$ 和 $Q$ 矩阵。
+{% enddetails %}
 
 ### To be continued...
