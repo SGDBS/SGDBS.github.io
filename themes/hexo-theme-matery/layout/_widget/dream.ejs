@@ -1,12 +1,87 @@
-<div class="dream">
-    <% if (theme.dream.showTitle) { %>
-    <div class="title center-align">
-        <i class="far fa-lightbulb"></i>&nbsp;&nbsp;<%= theme.dream.title %>
-    </div>
-    <% } %>
-    <div class="row">
-        <div class="col l8 offset-l2 m10 offset-m1 s10 offset-s1 center-align text">
-            <%= theme.dream.text %>
+<div class="dream" id="dream-container">
+
+    <!-- 我的梦想视图 -->
+    <div id="dream-view">
+        <% if (theme.dream.showTitle) { %>
+        <div class="title center-align">
+            <i class="far fa-lightbulb"></i>&nbsp;&nbsp;<%= theme.dream.title %>
+        </div>
+        <% } %>
+        <div class="row">
+            <div class="col l8 offset-l2 m10 offset-m1 s10 offset-s1 center-align text">
+                <%= theme.dream.text %>
+            </div>
+        </div>
+        <div class="center-align" style="margin-top: 18px;">
+            <button class="btn btn-small waves-effect waves-light joke-toggle-btn" onclick="dreamToggleToJoke()">
+                <i class="fas fa-theater-masks"></i>&nbsp;每日笑话
+            </button>
         </div>
     </div>
+
+    <!-- 每日笑话视图 -->
+    <div id="joke-view" style="display:none;">
+        <div class="title center-align">
+            <i class="fas fa-theater-masks"></i>&nbsp;&nbsp;苏东政治笑话
+        </div>
+        <div class="row">
+            <div class="col l8 offset-l2 m10 offset-m1 s10 offset-s1">
+                <div id="joke-text" class="text joke-text-box">加载中……</div>
+                <div class="center-align" style="margin-top: 16px;">
+                    <button class="btn btn-small waves-effect waves-light joke-toggle-btn" onclick="dreamRefreshJoke()" style="margin-right: 10px;">
+                        <i class="fas fa-sync-alt"></i>&nbsp;刷新
+                    </button>
+                    <button class="btn btn-small waves-effect waves-light joke-toggle-btn" onclick="dreamToggleToDream()">
+                        <i class="fas fa-arrow-left"></i>&nbsp;切换
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<script>
+(function () {
+    var _jokesCache = null;
+    var _jokesUrl = '<%- url_for("/js/jokes.json") %>';
+
+    window.dreamToggleToJoke = function () {
+        document.getElementById('dream-view').style.display = 'none';
+        document.getElementById('joke-view').style.display = '';
+        if (_jokesCache) {
+            dreamShowRandom();
+        } else {
+            document.getElementById('joke-text').textContent = '加载中……';
+            fetch(_jokesUrl)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    _jokesCache = data;
+                    dreamShowRandom();
+                })
+                .catch(function () {
+                    document.getElementById('joke-text').textContent = '加载失败，请稍后再试。';
+                });
+        }
+    };
+
+    window.dreamToggleToDream = function () {
+        document.getElementById('joke-view').style.display = 'none';
+        document.getElementById('dream-view').style.display = '';
+    };
+
+    window.dreamRefreshJoke = function () {
+        if (_jokesCache) {
+            dreamShowRandom();
+        } else {
+            window.dreamToggleToJoke();
+        }
+    };
+
+    function dreamShowRandom() {
+        if (!_jokesCache || !_jokesCache.length) return;
+        var idx = Math.floor(Math.random() * _jokesCache.length);
+        document.getElementById('joke-text').textContent = _jokesCache[idx];
+    }
+})();
+</script>
