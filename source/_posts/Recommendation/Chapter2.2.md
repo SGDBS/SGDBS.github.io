@@ -124,3 +124,10 @@ $$\arg \max_{\theta} P(\theta|D) = \arg \min_{\theta} \left( \underbrace{-\log P
 * **Dropout**：深度学习时代最常用的正则化手段，通过随机关闭神经元实现。
 * **Early Stopping**：在验证集性能不再提升时提前停止训练。
 * **Embedding Normalization**：在双塔模型中，对输出的向量进行 $L_2$ 归一化，使其映射到单位球面上，这可以看作是一种隐式的硬正则化。
+
+
+
+
+
+
+### To be continued...
