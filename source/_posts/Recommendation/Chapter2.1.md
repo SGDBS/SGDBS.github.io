@@ -1,6 +1,6 @@
 ---
 title: 推荐算法Chapter2.1 协同过滤基础与邻域方法
-date: 2026-04-2 12:48:00
+date: 2026-04-8 12:48:00
 categories: 学习笔记-推荐算法
 mathjax: true
 tags:
