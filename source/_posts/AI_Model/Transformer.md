@@ -168,7 +168,7 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 
 
 ## 4. 结构
-![](transformer.png)
+<img src="transformer.png" width="50%" style="display:block;margin:0 auto;">
 
 
 ### To be continued
