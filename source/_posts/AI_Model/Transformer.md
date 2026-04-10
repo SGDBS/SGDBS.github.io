@@ -126,7 +126,7 @@ $$P_i M P_j^T \neq P_j M P_i^T$$
 
 {% enddetails %}
 
-### 3.  自注意力机制（Self-Attention）
+## 3.  自注意力机制（Self-Attention）
 
 #### 1. 什么是 $Q$、$K$、$V$
 
