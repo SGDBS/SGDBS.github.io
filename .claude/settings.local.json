@@ -3,7 +3,12 @@
     "allow": [
       "Bash(python -c ':*)",
       "Bash(python:*)",
-      "Bash(hexo generate:*)"
+      "Bash(hexo generate:*)",
+      "Bash(pip install:*)",
+      "Bash(python3 -c \"import json; data=json.load\\(open\\('D:/MyBlog/blog/source/js/jokes.json', encoding='utf-8'\\)\\); print\\(f'jokes count: {len\\(data\\)}'\\)\")",
+      "Bash(python3 -c \"import json; data=json.load\\(open\\('D:/MyBlog/blog/source/js/joke_analyses.json', encoding='utf-8'\\)\\); print\\(f'analyses count: {len\\(data\\)}'\\)\")",
+      "Bash(node:*)",
+      "Bash(bash:*)"
     ]
   }
 }

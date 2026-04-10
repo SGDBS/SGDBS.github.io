@@ -27,9 +27,13 @@
         <div class="row">
             <div class="col l8 offset-l2 m10 offset-m1 s10 offset-s1">
                 <div id="joke-text" class="text joke-text-box">加载中……</div>
+                <div id="joke-analysis" class="text joke-analysis-box" style="display:none;"></div>
                 <div class="center-align" style="margin-top: 16px;">
-                    <button class="btn btn-small waves-effect waves-light joke-toggle-btn" onclick="dreamRefreshJoke()" style="margin-right: 10px;">
+                    <button class="btn btn-small waves-effect waves-light joke-toggle-btn" onclick="dreamRefreshJoke()" style="margin-right: 8px;">
                         <i class="fas fa-sync-alt"></i>&nbsp;再来一个
+                    </button>
+                    <button id="analysis-btn" class="btn btn-small waves-effect waves-light joke-analysis-btn" onclick="dreamToggleAnalysis()" style="margin-right: 8px;">
+                        <i class="fas fa-lightbulb"></i>&nbsp;笑点解析
                     </button>
                     <button class="btn btn-small waves-effect waves-light joke-toggle-btn" onclick="dreamToggleToDream()">
                         <i class="fas fa-arrow-left"></i>&nbsp;奋斗模式
@@ -78,10 +82,62 @@
         }
     };
 
+    var _analysesCache = null;
+    var _analysesUrl = '<%- url_for("/js/joke_analyses.json") %>';
+    var _currentIdx = -1;
+
     function dreamShowRandom() {
         if (!_jokesCache || !_jokesCache.length) return;
         var idx = Math.floor(Math.random() * _jokesCache.length);
-        document.getElementById('joke-text').textContent = _jokesCache[idx];
+        _currentIdx = idx;
+        var item = _jokesCache[idx];
+        var text = typeof item === 'string' ? item : item.text;
+        document.getElementById('joke-text').textContent = text;
+        document.getElementById('joke-analysis').style.display = 'none';
+        document.getElementById('analysis-btn').innerHTML = '<i class="fas fa-lightbulb"></i>&nbsp;笑点解析';
     }
+
+    // 加载笑话时同步预加载解析文件
+    var _origToggle = window.dreamToggleToJoke;
+    window.dreamToggleToJoke = function () {
+        document.getElementById('dream-view').style.display = 'none';
+        document.getElementById('joke-view').style.display = '';
+        var jokesReady = _jokesCache
+            ? Promise.resolve(_jokesCache)
+            : fetch(_jokesUrl).then(function(r){ return r.json(); }).then(function(d){ _jokesCache = d; return d; });
+        var analysesReady = _analysesCache
+            ? Promise.resolve(_analysesCache)
+            : fetch(_analysesUrl).then(function(r){ return r.json(); }).then(function(d){ _analysesCache = d; return d; });
+        document.getElementById('joke-text').textContent = '加载中……';
+        Promise.all([jokesReady, analysesReady]).then(function(){ dreamShowRandom(); })
+            .catch(function(){ document.getElementById('joke-text').textContent = '加载失败，请稍后再试。'; });
+    };
+
+    window.dreamToggleToDream = function () {
+        document.getElementById('joke-view').style.display = 'none';
+        document.getElementById('dream-view').style.display = '';
+    };
+
+    window.dreamRefreshJoke = function () {
+        if (_jokesCache) { dreamShowRandom(); }
+        else { window.dreamToggleToJoke(); }
+    };
+
+    window.dreamToggleAnalysis = function () {
+        var analysisEl = document.getElementById('joke-analysis');
+        var btn = document.getElementById('analysis-btn');
+        if (analysisEl.style.display === 'none') {
+            var analysis = '暂无解析';
+            if (_analysesCache && _currentIdx >= 0 && _analysesCache[_currentIdx]) {
+                analysis = _analysesCache[_currentIdx];
+            }
+            analysisEl.textContent = analysis;
+            analysisEl.style.display = '';
+            btn.innerHTML = '<i class="fas fa-eye-slash"></i>&nbsp;收起解析';
+        } else {
+            analysisEl.style.display = 'none';
+            btn.innerHTML = '<i class="fas fa-lightbulb"></i>&nbsp;笑点解析';
+        }
+    };
 })();
 </script>

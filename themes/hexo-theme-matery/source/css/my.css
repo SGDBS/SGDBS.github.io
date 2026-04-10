@@ -73,3 +73,31 @@ details table {
   padding: 16px 20px;
   min-height: 60px;
 }
+
+.joke-analysis-box {
+  text-align: left;
+  line-height: 1.8;
+  font-size: 0.97rem;
+  background: rgba(253, 160, 133, 0.08);
+  border-left: 4px solid #fda085;
+  border-radius: 6px;
+  padding: 14px 20px;
+  margin-top: 12px;
+  color: #5a4a3a;
+  font-style: italic;
+}
+
+/* ── 笑点解析按钮 ── */
+.joke-analysis-btn {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important;
+  border-radius: 20px !important;
+  letter-spacing: 0.05em;
+  color: #5a3a1a !important;
+  box-shadow: 0 3px 10px rgba(253, 160, 133, 0.4) !important;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.joke-analysis-btn:hover {
+  box-shadow: 0 5px 16px rgba(253, 160, 133, 0.6) !important;
+  transform: translateY(-1px);
+}
