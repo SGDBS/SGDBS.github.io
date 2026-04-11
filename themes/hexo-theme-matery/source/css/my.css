@@ -44,11 +44,17 @@ details[open] summary {
 
 .details-content {
   padding: 14px 20px;
+  background-color: #f5f7fa;
+  font-family: 'Georgia', 'Noto Serif SC', serif;
+  font-size: 0.95em;
+  color: #3a3a3a;
+  line-height: 1.8;
 }
 
 details code,
 details pre {
-  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+  font-size: 0.95em;
 }
 
 details summary::before {
