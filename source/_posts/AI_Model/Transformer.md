@@ -165,20 +165,6 @@ $$Attention\ Weights = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)$$
 $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
 出来的结果，就是一个**融合了全局上下文信息**的全新矩阵！在这个新矩阵里，“苹果”这个词的向量，不仅包含了它自己的本意，还悄悄融合了“吃”和“红色”的特征。
 
-## 4. 结构
-<div style="width:50%;margin:0 auto;">{% asset_img transformer.png Transformer架构图 %}</div>
-
-在原论文中，Transformer 是一个用于机器翻译的 **Encoder-Decoder（编码器-解码器）** 架构。两边都由 $N=6$ 个相同的模块（Block）堆叠而成。
-
-### 编码器模块（Encoder Block）
-
-它就像一个流水线车间，只做两件事：特征提取与特征融合。每个 Block 包含两个子层：
-
-1.**Multi-Head Self-Attention（多头自注意力）**： 让句子里的词互相交流，提取全局上下文。
-
-2.**Feed Forward Network (FFN / 前馈神经网络)**： 这是一个两层的全连接网络（通常中间用 ReLU 或 GELU 激活函数）。它只对**单个词的向量**进行局部的非线性映射。
-
-> Attention 负责“词与词之间的信息交流”，FFN 负责“词自身的特征升维与提炼”。
 
 {% details 愉快的代码时间 %}
 
@@ -271,6 +257,24 @@ class MyMultiHeadAttention(nn.Module):
 ```
 
 {% enddetails %}
+
+
+
+## 4. 结构
+<div style="width:50%;margin:0 auto;">{% asset_img transformer.png Transformer架构图 %}</div>
+
+在原论文中，Transformer 是一个用于机器翻译的 **Encoder-Decoder（编码器-解码器）** 架构。两边都由 $N=6$ 个相同的模块（Block）堆叠而成。
+
+### 编码器模块（Encoder Block）
+
+它就像一个流水线车间，只做两件事：特征提取与特征融合。每个 Block 包含两个子层：
+
+1.**Multi-Head Self-Attention（多头自注意力）**： 让句子里的词互相交流，提取全局上下文。
+
+2.**Feed Forward Network (FFN / 前馈神经网络)**： 这是一个两层的全连接网络（通常中间用 ReLU 或 GELU 激活函数）。它只对**单个词的向量**进行局部的非线性映射。
+
+> Attention 负责“词与词之间的信息交流”，FFN 负责“词自身的特征升维与提炼”。
+
 
 ### 解码器模块（Decoder Block）
 

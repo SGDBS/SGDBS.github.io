@@ -44,10 +44,11 @@ details[open] summary {
 
 .details-content {
   padding: 14px 20px;
-  background: #ffffff;
-  font-size: 0.95em;
-  line-height: 1.8;
-  color: #3a3a3a;
+}
+
+details code,
+details pre {
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
 
 details summary::before {
