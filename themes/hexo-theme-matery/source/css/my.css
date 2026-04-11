@@ -57,8 +57,9 @@ details pre {
   font-size: 0.95em;
 }
 
-details pre * {
+details pre .title {
   font-size: inherit;
+  margin-bottom: 0;
 }
 
 details summary::before {
