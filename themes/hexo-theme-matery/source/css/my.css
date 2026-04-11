@@ -57,6 +57,10 @@ details pre {
   font-size: 0.95em;
 }
 
+details pre * {
+  font-size: inherit;
+}
+
 details summary::before {
   content: '▶ ';
   font-size: 0.75em;
