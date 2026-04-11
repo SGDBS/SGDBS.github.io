@@ -66,8 +66,8 @@ cover:
 dream:
   enable: true
   showTitle: true
-  title: 我的梦想
-  text: 不是每个人都应该像我这样去建造一座水晶大教堂，但是每个人都应该拥有自己的梦想，设计自己的梦想，追求自己的梦想，实现自己的梦想。梦想是生命的灵魂，是心灵的灯塔，是引导人走向成功的信仰。有了崇高的梦想，只要矢志不渝地追求，梦想就会成为现实，奋斗就会变成壮举，生命就会创造奇迹。——罗伯·舒乐
+  title: 梦想
+  text: 享受当下做的每一件事 Live a Life You will Remember
 
 # Whether to display the musics.
 # 是否在首页显示音乐.
@@ -132,13 +132,13 @@ indexbtn:
 # icon/button will not show up if you leave the corresponding socialLink empty
 # 首页 banner 中的第二行个人信息配置，留空即不启用
 socialLink:
-  github:  https://github.com/blinkfox
-  email: 1181062873@qq.com
-  facebook: # https://www.facebook.com/xxx
-  twitter: # https://twitter.com/xxx
-  qq: 1181062873
-  weibo: # https://weibo.com/xxx
-  zhihu: # https://www.zhihu.com/xxx
+  github:  https://github.com/SGDBS
+  #email: 1181062873@qq.com
+  #facebook: # https://www.facebook.com/xxx
+  #twitter: # https://twitter.com/xxx
+  # qq: 1181062873
+  #weibo: # https://weibo.com/xxx
+  #zhihu: # https://www.zhihu.com/xxx
   rss: true # true、false
 
 # Whether to activate the Post TOC, and Configure which title types are supported by TOC support.

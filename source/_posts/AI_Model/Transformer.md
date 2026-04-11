@@ -196,16 +196,19 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 
 1.**Add (残差连接 / Residual Connection)**： 
 
+公式：$Output = x + \text{Sublayer}(x)$。为了解决网络加深后的梯度消失问题，保证底层信息能直接短路传到高层。
+
+
 {% details 残差网络为什么能Work %}
 
-#### 1.为什么网络不能无限加深？（退化问题）
+##### 1.为什么网络不能无限加深？（退化问题）
 
 在残差连接出现之前，人们发现了一个诡异的现象：当我们不断增加网络层数时，训练误差不仅没有降低，反而升高了。
 
 * 注意：这不仅是过拟合！ 过拟合是训练误差低、测试误差高。而深度网络面临的是退化问题（Degradation）——层数深了之后，模型连训练集都拟合不好了。
 * 因为在传统的网络中，让**非线性层去学习一个完美的“恒等映射”（Identity Mapping，即输出等于输入）是极其困难的**。
 
-#### 2.核心
+##### 2.核心
 
 传统的网络层是在试图直接学习一个完整的映射函数 $H(x)$。
 
@@ -225,7 +228,7 @@ $$y = \mathcal{F}(x) + x$$
 
 * 结论： 神经网络的权重初始化通常都在 $0$ 附近，通过 L2 正则化（Weight Decay）也倾向于把权重往 $0$ 压。因此，学习 $\mathcal{F}(x) \rightarrow 0$ 比学习 $\mathcal{F}(x) \rightarrow x$ 要简单无数倍。残差连接给网络提供了一个“极低成本的保底方案”。
 
-#### 4. 数学解释二：反向传播
+##### 4. 数学解释二：反向传播
 
 假设我们要求损失函数 $L$ 对输入 $x$ 的梯度。根据微积分的链式法则，对 $y = \mathcal{F}(x) + x$ 求导：
 
@@ -240,20 +243,17 @@ $$= \frac{\partial L}{\partial y} \cdot \frac{\partial \mathcal{F}(x)}{\partial 
 
 * 右边 $\left(\frac{\partial L}{\partial y}\right)$：那个 "+1" 产生了一项无损的梯度， 它意味着，无论网络有多深，无论左边的复杂梯度是不是变成了 $0$，高层的梯度 $\frac{\partial L}{\partial y}$ 永远能够通过这个 "+1" 形成的高速公路，原封不动地、100% 地直接传回浅层。
 
-#### 5. 前沿分析
+##### 5. 前沿分析
 
-##### 视角一：模型集成（Ensemble View）
+###### 视角一：模型集成（Ensemble View）
 
 有论文指出，一个包含残差连接的深层网络，实际上可以看作是**指数级个浅层网络的隐式集成（Ensemble）**。因为每一次残差连接都提供了两条路（走 $\mathcal{F}(x)$ 或是走跳跃连接），信号的流动有无数种组合。这极大地提升了模型的鲁棒性和泛化能力。
 
-##### 视角二：损失地形更加平滑（Loss Landscape Smoothing）
+###### 视角二：损失地形更加平滑（Loss Landscape Smoothing）
 
 学术界通过 3D 可视化证明了，传统的深层网络，其损失函数的等高线图就像是充满悬崖峭壁的恶劣山脉，梯度下降极容易卡死在局部最优解或鞍点。而**加入了残差连接后，损失地形会变得像一个平滑的大碗**。这种平滑性使得优化器（如 SGD 或 Adam）能够极其顺畅地滑向全局最优点。
 
 {% enddetails %}
-
-
-公式：$Output = x + \text{Sublayer}(x)$。为了解决网络加深后的梯度消失问题，保证底层信息能直接短路传到高层。
 
 2.**Norm (层归一化 / Layer Normalization)**
 
@@ -315,7 +315,46 @@ RMSNorm（均方根归一化）是 LayerNorm 的一种“青春版”。它认�
 
 {% enddetails %}
 
+{% details 愉快的代码时间 %}
 
+```py
+import torch
+import torch.nn as nn
+
+class MyLayerNorm(nn.Module):
+    def __init__(self, d_model, eps=1e-5):
+        super(MyLayerNorm, self).__init__()
+        self.eps = eps
+        
+        # 面试考点 1：千万别忘了这两个可学习的参数！
+        # gamma (缩放) 初始化为 1，beta (平移) 初始化为 0
+        # nn.Parameter 告诉 PyTorch 这些是需要计算梯度的模型参数
+        self.gamma = nn.Parameter(torch.ones(d_model))
+        self.beta = nn.Parameter(torch.zeros(d_model))
+
+    def forward(self, x):
+        # x 的维度通常是: [batch_size, seq_len, d_model]
+        
+        # 面试考点 2：在哪个维度上做归一化？
+        # LayerNorm 是在词向量的内部 (即最后一个维度 d_model) 上求均值和方差
+        # keepdim=True 是为了保持维度为 [batch_size, seq_len, 1]，方便后续的广播机制 (Broadcasting)
+        mean = x.mean(dim=-1, keepdim=True)
+        
+        # 注意：PyTorch 默认计算的是无偏估计 (除以 N-1)，但 LayerNorm 标准公式里是除以 N
+        # 所以严谨的话，这里要加上 unbiased=False
+        var = x.var(dim=-1, unbiased=False, keepdim=True)
+
+        # 1. 标准化 (减均值，除以标准差，加上 eps 防止分母为 0)
+        x_normalized = (x - mean) / torch.sqrt(var + self.eps)
+
+        # 2. 仿射变换 (恢复表达能力)
+        # 维度 [batch_size, seq_len, d_model] 和 [d_model] 会自动广播
+        out = self.gamma * x_normalized + self.beta
+        
+        return out
+```
+
+{% enddetails %}
 
 
 ### To be continued
