@@ -7,5 +7,5 @@ const kramed = require('kramed');
 hexo.extend.tag.register('details', function (args, content) {
   const summary = args.join(' ');
   const rendered = kramed(content);
-  return `<details><summary>${summary}</summary>${rendered}</details>`;
+  return `<details><summary>${summary}</summary><div class="details-content">${rendered}</div></details>`;
 }, { ends: true });

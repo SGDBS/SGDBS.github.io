@@ -165,8 +165,6 @@ $$Attention\ Weights = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)$$
 $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
 出来的结果，就是一个**融合了全局上下文信息**的全新矩阵！在这个新矩阵里，“苹果”这个词的向量，不仅包含了它自己的本意，还悄悄融合了“吃”和“红色”的特征。
 
-
-
 ## 4. 结构
 <div style="width:50%;margin:0 auto;">{% asset_img transformer.png Transformer架构图 %}</div>
 
@@ -181,6 +179,98 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 2.**Feed Forward Network (FFN / 前馈神经网络)**： 这是一个两层的全连接网络（通常中间用 ReLU 或 GELU 激活函数）。它只对**单个词的向量**进行局部的非线性映射。
 
 > Attention 负责“词与词之间的信息交流”，FFN 负责“词自身的特征升维与提炼”。
+
+{% details 愉快的代码时间 %}
+
+```py
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class MyMultiHeadAttention(nn.Module):
+    def __init__(self, d_model, num_heads):
+        super(MyMultiHeadAttention, self).__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        
+        # 计算每个注意力头的维度 (例如 512 // 8 = 64)
+        self.d_k = d_model // num_heads 
+        
+        # 面试防坑：一定要加上这个断言，保证均分
+        assert d_model % num_heads == 0, "d_model 必须能被 num_heads 整除"
+
+        # 定义 Q, K, V 的线性映射层
+        # 工业界常把这三个合并成一个 nn.Linear(d_model, 3 * d_model) 来加速计算
+        # 但为了面试推导清晰，我们分开写
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+
+        # 最终拼接后的输出映射层
+        self.W_o = nn.Linear(d_model, d_model)
+
+    def forward(self, Q, K, V, mask=None):
+        # 这里的 Q, K, V 最初就是输入矩阵 X
+        # 维度: [batch_size, seq_len, d_model]
+        batch_size = Q.size(0)
+
+        # ==========================================
+        # 步骤 1: 线性映射并拆分多头 (精华所在)
+        # ==========================================
+        # self.W_q(Q) 的结果是 [batch_size, seq_len, d_model]
+        # 我们用 view 把它拆成 [batch_size, seq_len, num_heads, d_k]
+        # 然后用 transpose 把 seq_len 和 num_heads 交换位置
+        # 最终维度: [batch_size, num_heads, seq_len, d_k]
+        q = self.W_q(Q).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        k = self.W_k(K).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        v = self.W_v(V).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+
+        # ==========================================
+        # 步骤 2: 计算 Scaled Dot-Product Attention 得分
+        # ==========================================
+        # q 的维度: [batch_size, num_heads, seq_len, d_k]
+        # k 转置后的维度: [batch_size, num_heads, d_k, seq_len]
+        # 矩阵相乘 (@ 或 matmul) 后，得出的 scores 维度: 
+        # [batch_size, num_heads, seq_len, seq_len]
+        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.d_k)
+
+        # 处理 Mask (比如 Decoder 中的 Causal Mask 或是 Encoder 中的 Padding Mask)
+        if mask is not None:
+            # 面试考点 3：把 mask 中为 0 (不允许看) 的地方，替换为一个极小的负数
+            # 这样经过 softmax 后，这些位置的权重就会变成 0
+            scores = scores.masked_fill(mask == 0, -1e9)
+
+        # ==========================================
+        # 步骤 3: Softmax 提取注意力权重并乘以 V
+        # ==========================================
+        # 在最后一个维度 (seq_len_k) 上做 softmax
+        attn_weights = F.softmax(scores, dim=-1)
+        
+        # attn_weights: [batch_size, num_heads, seq_len, seq_len]
+        # v: [batch_size, num_heads, seq_len, d_k]
+        # 乘积 context 维度: [batch_size, num_heads, seq_len, d_k]
+        context = torch.matmul(attn_weights, v)
+
+        # ==========================================
+        # 步骤 4: 拼接多头并经过最终的线性层
+        # ==========================================
+        # 先把 num_heads 和 seq_len 转置回来: [batch_size, seq_len, num_heads, d_k]
+        # 面试必考点 4：为什么要加 .contiguous()？
+        # 因为 transpose 会打乱 Tensor 在内存中的连续性，而 view 操作要求内存必须连续。
+        context = context.transpose(1, 2).contiguous()
+        
+        # 合并最后的两个维度，恢复成 d_model
+        # [batch_size, seq_len, d_model]
+        context = context.view(batch_size, -1, self.d_model)
+
+        # 最后一个线性层输出
+        output = self.W_o(context)
+        
+        return output
+```
+
+{% enddetails %}
 
 ### 解码器模块（Decoder Block）
 
@@ -199,7 +289,7 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 公式：$Output = x + \text{Sublayer}(x)$。为了解决网络加深后的梯度消失问题，保证底层信息能直接短路传到高层。
 
 
-{% details 残差网络为什么能Work %}
+{% details 残差连接，为什么有效？ %}
 
 ##### 1.为什么网络不能无限加深？（退化问题）
 
@@ -314,6 +404,7 @@ RMSNorm（均方根归一化）是 LayerNorm 的一种“青春版”。它认�
 
 
 {% enddetails %}
+
 
 {% details 愉快的代码时间 %}
 
