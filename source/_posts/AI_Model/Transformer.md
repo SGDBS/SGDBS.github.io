@@ -309,7 +309,7 @@ class MyMultiHeadAttention(nn.Module):
 
 * 第二步（FFN）： 相当于**“散会后回工位独立思考”**。开完会后，每个词（带着它新吸收的全局信息）回到自己的位置上，断开与其他词的联系，独立地进行内部信息的消化、提炼和特征转换。
 
-注意一个极其重要的细节： FFN 在学术上全称叫 Position-wise FFN（逐位置前馈网络）。这意味着 FFN 是对句子里的每一个词独立且平等地执行完全相同的计算，处理“苹果”的 FFN 权重，和处理“吃”的 FFN 权重是一模一样的。
+注意一个极其重要的细节： FFN 在学术上全称叫 Position-wise Feed-Forward Network（逐位置前馈网络）。这意味着 FFN 是对句子里的每一个词独立且平等地执行完全相同的计算，处理“苹果”的 FFN 权重，和处理“吃”的 FFN 权重是一模一样的。
 
 
 #### 2. 结构拆解：“升维再降维”的特征提取
@@ -325,9 +325,61 @@ $$\text{FFN}(x) = \text{ReLU}(xW_1 + b_1)W_2 + b_2$$
 这在机器学习中叫**“流形展开”**。在低维空间中严重纠缠、难以区分的复杂特征（比如一句话里极其微妙的讽刺意味），被投射到 2048 维的超高维空间后，会变得更容易被线性分割和提取。FFN 就像一个放大镜，先用极高的维度把词向量里的所有细微特征全部撑开、激活，然后再提炼出最核心的精华，压缩回 512 维传给下一层。
 
 
+#### 3. FFN 是模型的“知识记忆库”
+
+《Transformer Feed-Forward Layers Are Key-Value Memories》指出，FFN 实际上充当了大型的“键值对（Key-Value）内存库”：
+
+* 第一层 ($W_1$ / Key)： 相当于模式匹配器。高维空间中的每一个神经元（或者说每一个维度）都在寻找特定的语义模式。比如第 886 号神经元可能专门对“历史事件”敏感，第 1024 号神经元对“编程语法”敏感。
+
+* 第二层 ($W_2$ / Value)： 相当于知识输出器。一旦 $W_1$ 中的某个神经元被激活（比如检测到了“法国的首都”），$W_2$ 就会把对应的具体知识（比如“巴黎”的特征向量）附加到这个词向量上。
+
+#### 4. 从数学角度上提供“非线性”
+
+* Attention 层的短板： 虽然 Self-Attention 里面有 Softmax，但它本质上还是对各个 Value 矩阵进行线性加权求和。如果没有 FFN，哪怕你叠 100 层 Attention，模型依然严重缺乏拟合复杂非线性函数的能力。
+
+* FFN 的补足： FFN 中间夹带的那个非线性激活函数（ReLU/GELU），是整个 Transformer Block 中唯一的非线性来源（除了 Softmax）。正是这成千上万次的非线性激活，赋予了 Transformer 强大的表达能力，使其能够拟合极其复杂的人类语言分布。
 
 {% enddetails %}
 
+
+
+{% details 愉快的代码时间 %}
+
+```py
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class PositionwiseFeedForward(nn.Module):
+    def __init__(self, d_model=512, d_ff=2048, dropout=0.1):
+        super(PositionwiseFeedForward, self).__init__()
+        
+        # 第一层线性映射：升维 (512 -> 2048)
+        self.w_1 = nn.Linear(d_model, d_ff)
+        
+        # 第二层线性映射：降维 (2048 -> 512)
+        self.w_2 = nn.Linear(d_ff, d_model)
+        
+        # Dropout 层，防止过拟合
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        # x 的维度: [batch_size, seq_len, d_model]
+        
+        # 第1步：输入 x 经过 w_1 升维
+        # 第2步：应用 ReLU 激活函数
+        hidden_states = F.relu(self.w_1(x))
+        
+        # 应用 Dropout
+        hidden_states = self.dropout(hidden_states)
+        
+        # 第3步：经过 w_2 降维并输出
+        output = self.self.w_2(hidden_states)
+        
+        return output
+```
+
+{% enddetails %}
 
 
 ### 3.解码器模块（Decoder Block）
