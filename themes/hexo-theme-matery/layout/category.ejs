@@ -11,8 +11,11 @@ var hashCode = function (str) {
     return hash;
 };
 
-/* ── 侧边栏数据构建 ── */
-var allPosts = page.posts.sort('date').reverse().toArray();
+/* ── 侧边栏数据构建：从 site.categories 取全量文章，不受分页限制 ── */
+var catObj = site.categories.findOne({name: page.category});
+var allPosts = catObj
+    ? catObj.posts.sort('date').reverse().toArray()
+    : page.posts.toArray();
 
 var chapterRe = /Chapter\s*(\d+)[\.\-](\d+)/i;
 var hasChapters = allPosts.some(function(p){ return chapterRe.test(p.title); });
