@@ -1,5 +1,14 @@
 /* Here is your custom css styles. */
 
+/* Fix: highlight.js spans with class "title" (e.g. function names) must not
+   inherit the global .title { font-size: 2rem } rule from matery.css */
+.highlight .title,
+.highlight .title.class_,
+.highlight .title.function_ {
+    font-size: inherit;
+    margin-bottom: 0;
+}
+
 /* ── Details 折叠块 ── */
 details {
   margin: 1.2em 0;
