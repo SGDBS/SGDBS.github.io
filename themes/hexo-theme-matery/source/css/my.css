@@ -1,12 +1,152 @@
 /* Here is your custom css styles. */
 
-/* Fix: highlight.js spans with class "title" (e.g. function names) must not
-   inherit the global .title { font-size: 2rem } rule from matery.css */
-.highlight .title,
-.highlight .title.class_,
-.highlight .title.function_ {
-    font-size: inherit;
-    margin-bottom: 0;
+/* ════════════════════════════════════════════════
+   One Dark Pro 代码块主题
+   Palette:
+     bg        #282c34   gutter-bg  #21252b
+     fg        #abb2bf   gutter-fg  #636d83
+     comment   #5c6370   keyword    #c678dd
+     string    #98c379   number     #d19a66
+     type      #e5c07b   function   #61afef
+     builtin   #56b6c2   meta/self  #e06c75
+   ════════════════════════════════════════════════ */
+
+/* ── 容器背景 ── */
+figure.highlight {
+    background: #282c34 !important;
+    border-radius: 0.35rem;
+    overflow: hidden;
+    margin: 1.2em 0;
+}
+
+/* ── 行号列 ── */
+figure.highlight td.gutter {
+    background: #21252b !important;
+    border-right: 1px solid #3d4148;
+}
+
+figure.highlight td.gutter pre {
+    background: #21252b !important;
+    color: #636d83 !important;
+    padding: 2rem 0.9rem 1rem 0.9rem !important;
+    user-select: none;
+}
+
+/* ── 代码列 ── */
+figure.highlight td.code pre {
+    background: #282c34 !important;
+    color: #abb2bf;
+    padding: 2rem 1.2rem 1rem 1.2rem !important;
+}
+
+/* 覆盖 matery.css 的 pre code 规则 */
+figure.highlight pre code {
+    background: transparent !important;
+    color: inherit !important;
+    padding: 0 !important;
+}
+
+/* 默认行文字色 */
+figure.highlight .line {
+    color: #abb2bf;
+}
+
+/* ── Token 颜色 ── */
+
+/* 注释：灰色 + 斜体 */
+figure.highlight .comment,
+figure.highlight .quote {
+    color: #5c6370;
+    font-style: italic;
+}
+
+/* 关键字：def class if for return import __global__ 等 */
+figure.highlight .keyword,
+figure.highlight .selector-tag {
+    color: #c678dd;
+}
+
+/* C++ 类型：int double bool void size_t 等 */
+figure.highlight .type {
+    color: #e5c07b;
+}
+
+/* struct/class 名称，Python class 名称 */
+figure.highlight .title.class_ {
+    color: #e5c07b;
+}
+
+/* 函数名（含 C++ 和 Python） */
+figure.highlight .title.function_,
+figure.highlight .title {
+    color: #61afef;
+    font-size: inherit !important;   /* 防止全局 .title{font-size:2rem} 污染 */
+    margin-bottom: 0 !important;
+}
+
+/* 函数参数列表：保持默认前景色 */
+figure.highlight .params {
+    color: #abb2bf;
+}
+
+/* Python self / this 等语言变量 */
+figure.highlight .variable.language_ {
+    color: #e06c75;
+}
+
+/* C++ 预处理指令：#include #define #pragma */
+figure.highlight .meta {
+    color: #e06c75;
+}
+figure.highlight .meta .keyword {
+    color: #c678dd;  /* #include 里的 include 关键字保持紫 */
+}
+figure.highlight .meta .string {
+    color: #98c379;  /* <bits/stdc++.h> 路径 */
+}
+
+/* 字符串 */
+figure.highlight .string,
+figure.highlight .attr,
+figure.highlight .addition {
+    color: #98c379;
+}
+
+/* 数字字面量，及 True / False / None / null / nullptr */
+figure.highlight .number,
+figure.highlight .literal {
+    color: #d19a66;
+}
+
+/* 内置函数：printf scanf print range len abs sort 等 */
+figure.highlight .built_in {
+    color: #56b6c2;
+}
+
+/* 运算符 */
+figure.highlight .operator {
+    color: #56b6c2;
+}
+
+/* Python 装饰器 @decorator */
+figure.highlight .decorator,
+figure.highlight .meta.decorator {
+    color: #e06c75;
+}
+
+/* ── UI 细节 ── */
+
+/* 语言标签（右上角 "cpp" / "python" 文字）适配深色背景 */
+.code_lang {
+    filter: none !important;
+    color: #636d83;
+    opacity: 1;
+}
+
+/* 复制 / 折叠图标在深色背景下加亮 */
+.code_copy,
+.code-expand {
+    filter: invert(75%) !important;
 }
 
 /* ── Details 折叠块 ── */
