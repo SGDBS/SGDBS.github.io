@@ -1,7 +1,7 @@
 ---
 title: Chapter4 强化学习 RLHF
-date: 2026-03-30 16:03:34
 categories: 学习笔记-大模型
+date: 2026-03-30 16:03:34
 mathjax: true
 tags:
     - AI

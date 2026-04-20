@@ -1,7 +1,7 @@
 ---
 title: 修复 details 折叠标签并将样式迁移至主题 CSS
+categories: 博客搞建
 date: 2026-04-11 14:00:00
-categories: 博客搭建
 tags:
     - Hexo
     - 调试

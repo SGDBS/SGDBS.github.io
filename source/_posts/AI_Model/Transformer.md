@@ -1,7 +1,7 @@
 ---
 title: Transformer详解
-date: 2026-04-10 12:00:00
 categories: 学习笔记-AI模型
+date: 2026-04-10 12:00:00
 mathjax: true
 tags:
     - AI

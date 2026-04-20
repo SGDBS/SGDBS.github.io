@@ -1,7 +1,7 @@
 ---
 title: 推荐算法Chapter2.2 矩阵分解模型 
-date: 2026-04-9 12:00:00
 categories: 学习笔记-推荐算法
+date: 2026-04-9 12:00:00
 mathjax: true
 tags:
     - 推荐算法

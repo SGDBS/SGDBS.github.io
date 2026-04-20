@@ -1,7 +1,7 @@
 ---
 title: 为 Hexo 实现可折叠内容块：从功能开发到深挖 ERR_ASSERTION 崩溃
+categories: 博客搞建
 date: 2026-04-04 14:00:00
-categories: 博客搭建
 tags:
     - Hexo
     - 调试

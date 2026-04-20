@@ -1,12 +1,12 @@
 ---
 layout:     post
 title:      Pytorch学习笔记#1：拟合函数/梯度下降
+categories: Python
 subtitle:
 date:       2023-03-01
 author:     BY 水蓝
 header-img: img/sv1.jpg
 catalog: true
-categories: Python
 mathjax: true
 tags:
     - Python

@@ -1,12 +1,12 @@
 ---
 layout:     post
 title:      Attention机制 学习笔记
+categories: AI模型
 subtitle:
 date:       2023-02-11
 author:     BY 水蓝
 header-img: img/sv1.jpg
 catalog: true
-categories: AI模型
 mathjax: true
 tags:
     - AI

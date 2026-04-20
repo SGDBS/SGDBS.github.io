@@ -1,7 +1,7 @@
 ---
 title: 为博客首页"我的梦想"栏添加每日笑话切换功能
+categories: 博客搞建
 date: 2026-04-09 14:00:00
-categories: 博客搭建
 tags:
     - Hexo
     - JavaScript

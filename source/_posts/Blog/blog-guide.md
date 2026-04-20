@@ -1,7 +1,7 @@
 ---
 title: 博客工程全解析：项目结构与自定义样式指南
+categories: 博客搞建
 date: 2026-04-04 12:00:00
-categories: 博客搭建
 tags:
     - Hexo
     - 博客

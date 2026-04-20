@@ -17,57 +17,34 @@ var allPosts = catObj
     ? catObj.posts.sort('date').reverse().toArray()
     : page.posts.toArray();
 
-var chapterRe = /Chapter\s*(\d+)[\.\-](\d+)/i;
-var hasChapters = allPosts.some(function(p){ return chapterRe.test(p.title); });
+/* ── 按文件夹层级分组（source 路径的直属子文件夹作为组名） ── */
+var folderGroups = {};
+var folderOrder = [];
 
-var genericTags = ['ACM/OI','算法','c++','C++','icpc','ICPC','codeforces',
-    'Codeforces','Codeforeces','c语言','C语言','acm竞赛','算法竞赛',
-    'AtCoder','atcoder','leetcode','LeetCode'];
+allPosts.forEach(function(p) {
+    /* p.source: '_posts/ACM-ICPC/Dynamic_Programming/file.md' */
+    var src = (p.source || '').replace(/\\/g, '/').replace(/^_posts\//, '');
+    var parts = src.split('/');
+    /* parts[0] = top-level folder, parts[1] = subfolder (if any), last = filename */
+    /* 取第2层文件夹作为分组标签；若不存在则为顶层文件夹 */
+    var label = parts.length > 2 ? parts[1] : (parts.length > 1 ? parts[0] : '一般');
 
+    if (!folderGroups[label]) { folderGroups[label] = []; folderOrder.push(label); }
+    folderGroups[label].push(p);
+});
+
+/* 章节类分组按章节号排序；其余按文章数降序 */
+var chapterRe = /Chapter\s*(\d+)[.\-]?(\d*)/i;
 var sidebarGroups = [];
-
-if (hasChapters) {
-    var sorted = allPosts.slice().sort(function(a, b){
-        var ma = a.title.match(chapterRe);
-        var mb = b.title.match(chapterRe);
-        if (!ma && !mb) return 0;
-        if (!ma) return 1;
-        if (!mb) return -1;
+folderOrder.sort(function(a, b) {
+    var ma = a.match(chapterRe), mb = b.match(chapterRe);
+    if (ma && mb) {
         var diff = parseInt(ma[1]) - parseInt(mb[1]);
-        return diff !== 0 ? diff : parseInt(ma[2]) - parseInt(mb[2]);
-    });
-    var chapterGroups = {};
-    var chapterOrder = [];
-    sorted.forEach(function(p){
-        var m = p.title.match(chapterRe);
-        var key = m ? ('第' + m[1] + '章') : '其他';
-        if (!chapterGroups[key]) { chapterGroups[key] = []; chapterOrder.push(key); }
-        chapterGroups[key].push(p);
-    });
-    chapterOrder.forEach(function(k){ sidebarGroups.push({label: k, posts: chapterGroups[k]}); });
-
-} else {
-    var tagGroups = {};
-    var tagOrder = [];
-    var noTagPosts = [];
-    allPosts.forEach(function(p){
-        var tags = (p.tags && p.tags.toArray ? p.tags.toArray() : []);
-        var primary = null;
-        for (var i = 0; i < tags.length; i++) {
-            var name = tags[i].name;
-            if (genericTags.indexOf(name) === -1) { primary = name; break; }
-        }
-        if (primary) {
-            if (!tagGroups[primary]) { tagGroups[primary] = []; tagOrder.push(primary); }
-            tagGroups[primary].push(p);
-        } else {
-            noTagPosts.push(p);
-        }
-    });
-    tagOrder.sort(function(a,b){ return tagGroups[b].length - tagGroups[a].length; });
-    tagOrder.forEach(function(k){ sidebarGroups.push({label: k, posts: tagGroups[k]}); });
-    if (noTagPosts.length) sidebarGroups.push({label: '其他', posts: noTagPosts});
-}
+        return diff !== 0 ? diff : parseInt(ma[2] || 0) - parseInt(mb[2] || 0);
+    }
+    return folderGroups[b].length - folderGroups[a].length;
+});
+folderOrder.forEach(function(k) { sidebarGroups.push({label: k, posts: folderGroups[k]}); });
 %>
 
 <!-- 侧边栏：独立于 main，固定在视口最左侧 -->
