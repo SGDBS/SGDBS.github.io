@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Pytorch学习笔记#2: 搭建神经网络训练MNIST手写数字数据集
+title:      Pytorch学习笔记#2 搭建神经网络训练MNIST手写数字数据集
 subtitle:
 date:       2023-03-23
 author:     BY 水蓝
