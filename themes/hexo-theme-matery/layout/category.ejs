@@ -67,7 +67,7 @@ folderOrder.forEach(function(k) {
 <!-- 侧边栏：独立于 main，固定在视口最左侧 -->
 <nav class="category-sidebar">
     <% sidebarGroups.forEach(function(group, gi) { %>
-    <div class="sidebar-group" id="sg-<%= gi %>">
+    <div class="sidebar-group collapsed" id="sg-<%= gi %>">
         <div class="sidebar-group-title" onclick="toggleSidebarGroup(<%= gi %>)">
             <span class="sidebar-arrow">▼</span>
             <%= group.label %>
