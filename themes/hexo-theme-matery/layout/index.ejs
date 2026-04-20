@@ -129,3 +129,12 @@
 <% if (page.total > 1) { %>
 <%- partial('_partial/paging') %>
 <% } %>
+
+<% if (theme.mathjax.enable && page.posts && page.posts.some(function(p){ return p.mathjax; })) { %>
+<script src="<%- theme.mathjax.cdn %>"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    });
+</script>
+<% } %>
