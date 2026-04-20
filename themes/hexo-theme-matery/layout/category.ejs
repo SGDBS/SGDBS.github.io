@@ -18,19 +18,31 @@ var allPosts = catObj
     : page.posts.toArray();
 
 /* ── 按文件夹层级分组（source 路径的直属子文件夹作为组名） ── */
-var folderGroups = {};
-var folderOrder = [];
+/* folderConfigs 由 scripts/sidebar-folder-config.js 注入，key 为相对 _posts 的路径 */
+var folderConfigs = site.sidebarFolderConfigs || {};
+
+var folderGroups   = {};   /* folderKey → [posts] */
+var folderRelPaths = {};   /* folderKey → 相对 _posts 的路径，用于查 config.json */
+var folderOrder    = [];
 
 allPosts.forEach(function(p) {
     /* p.source: '_posts/ACM-ICPC/Dynamic_Programming/file.md' */
-    var src = (p.source || '').replace(/\\/g, '/').replace(/^_posts\//, '');
-    var parts = src.split('/');
-    /* parts[0] = top-level folder, parts[1] = subfolder (if any), last = filename */
-    /* 取第2层文件夹作为分组标签；若不存在则为顶层文件夹 */
-    var label = parts.length > 2 ? parts[1] : (parts.length > 1 ? parts[0] : '一般');
+    var src      = (p.source || '').replace(/\\/g, '/');
+    var parts    = src.split('/');           /* ['_posts','ACM-ICPC','Dynamic_Programming','file.md'] */
+    var dirParts = parts.slice(0, -1);       /* 去掉文件名 */
+    /* 分组键：直属子文件夹名（最后一级目录） */
+    var key      = dirParts.length > 2 ? dirParts[dirParts.length - 1]
+                 : dirParts.length > 1 ? dirParts[1]
+                 : '一般';
+    /* 相对 _posts 的路径，去掉开头的 '_posts' */
+    var relPath  = dirParts.slice(1).join('/');   /* e.g. 'ACM-ICPC/Dynamic_Programming' */
 
-    if (!folderGroups[label]) { folderGroups[label] = []; folderOrder.push(label); }
-    folderGroups[label].push(p);
+    if (!folderGroups[key]) {
+        folderGroups[key]   = [];
+        folderRelPaths[key] = relPath;
+        folderOrder.push(key);
+    }
+    folderGroups[key].push(p);
 });
 
 /* 章节类分组按章节号排序；其余按文章数降序 */
@@ -44,7 +56,12 @@ folderOrder.sort(function(a, b) {
     }
     return folderGroups[b].length - folderGroups[a].length;
 });
-folderOrder.forEach(function(k) { sidebarGroups.push({label: k, posts: folderGroups[k]}); });
+folderOrder.forEach(function(k) {
+    /* 优先用 config.json 中定义的 name，否则用文件夹名 */
+    var cfg   = folderConfigs[folderRelPaths[k]] || {};
+    var label = cfg.name || k;
+    sidebarGroups.push({ label: label, posts: folderGroups[k] });
+});
 %>
 
 <!-- 侧边栏：独立于 main，固定在视口最左侧 -->
