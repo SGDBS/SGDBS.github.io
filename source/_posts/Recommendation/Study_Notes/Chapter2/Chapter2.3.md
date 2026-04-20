@@ -1,6 +1,6 @@
 ---
 title: 推荐算法Chapter3.1 多阶段级联架构(漏斗模型)
-categories: 学习笔记-推荐算法
+categories: 推荐系统
 date: 2026-04-13 18:00:00
 mathjax: true
 tags:
