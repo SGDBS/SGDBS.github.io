@@ -292,30 +292,19 @@ details table {
 }
 
 /* ── 分类侧边栏 ── */
-.category-layout {
-    display: block;
-    padding: 0 16px;
-    max-width: 1280px;
-    margin: 0 auto;
-}
-
-.category-main {
-    width: 100%;
-}
-
 .category-sidebar {
     position: fixed;
     left: 0;
-    top: 80px;
+    top: 64px;
     width: 240px;
-    max-height: calc(100vh - 90px);
+    height: calc(100vh - 64px);
     overflow-y: auto;
     background: #fff;
     border-radius: 0 8px 8px 0;
-    box-shadow: 2px 4px 16px rgba(0,0,0,0.12);
+    box-shadow: 2px 4px 16px rgba(0,0,0,0.15);
     padding: 14px 0;
     font-size: 0.88rem;
-    z-index: 100;
+    z-index: 990;
 }
 
 .sidebar-group-title {
