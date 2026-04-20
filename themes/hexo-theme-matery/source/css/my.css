@@ -293,31 +293,29 @@ details table {
 
 /* ── 分类侧边栏 ── */
 .category-layout {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
+    display: block;
     padding: 0 16px;
     max-width: 1280px;
     margin: 0 auto;
 }
 
 .category-main {
-    flex: 1;
-    min-width: 0;
+    width: 100%;
 }
 
 .category-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 20px;
-    max-height: calc(100vh - 40px);
+    position: fixed;
+    left: 0;
+    top: 80px;
+    width: 240px;
+    max-height: calc(100vh - 90px);
     overflow-y: auto;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 0 8px 8px 0;
+    box-shadow: 2px 4px 16px rgba(0,0,0,0.12);
     padding: 14px 0;
     font-size: 0.88rem;
+    z-index: 100;
 }
 
 .sidebar-group-title {
@@ -370,6 +368,6 @@ details table {
     margin: 6px 16px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
     .category-sidebar { display: none; }
 }
