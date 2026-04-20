@@ -154,17 +154,6 @@ figure.highlight .meta.decorator {
     filter: invert(75%) !important;
 }
 
-/* ── 预览卡片：隐藏代码块、图片、表格，确保可见区域为文字 ── */
-.summary.block-with-text figure.highlight,
-.summary.block-with-text pre,
-.summary.block-with-text img,
-.summary.block-with-text .table-container,
-.summary.block-with-text table,
-.summary.block-with-text details,
-.summary.block-with-text hr,
-.summary.block-with-text blockquote {
-    display: none !important;
-}
 
 /* ── Details 折叠块 ── */
 details {

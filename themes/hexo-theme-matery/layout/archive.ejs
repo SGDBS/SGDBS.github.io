@@ -7,12 +7,6 @@
     <% } %>
 
     <%
-    /**
-     * hashCode function.
-     *
-     * @param str str
-     * @returns {number}
-     */
     var hashCode = function (str) {
         if (!str && str.length === 0) {
             return 0;
@@ -79,28 +73,6 @@
                             </div>
                         </a>
                         <div class="card-content article-content">
-                            <div class="summary block-with-text">
-                                <%
-                                var _ph = '';
-                                if (post.summary && post.summary.length > 0) {
-                                    _ph = post.summary;
-                                } else if (post.excerpt && post.excerpt.length > 0) {
-                                    _ph = post.excerpt;
-                                } else if (post.content && post.content.length > 0) {
-                                    _ph = post.content;
-                                    if (post.mathjax) {
-                                        var _mi = _ph.indexOf('<script type="math/tex"');
-                                        var _di = _ph.indexOf('$');
-                                        var _fm = (_mi >= 0 && _di >= 0) ? Math.min(_mi, _di) : (_mi >= 0 ? _mi : _di);
-                                        if (_fm > 300) {
-                                            var _ts = _ph.lastIndexOf('<', _fm);
-                                            if (_ts >= 0) _ph = _ph.substring(_ts);
-                                        }
-                                    }
-                                }
-                                %>
-                                <%- _ph %>
-                            </div>
                             <div class="publish-info">
                                 <span class="publish-date">
                                     <i class="far fa-clock fa-fw icon-date"></i><%= date(post.date, config.date_format) %>
@@ -142,14 +114,4 @@
 
 <% if (page.total > 1) { %>
 <%- partial('_partial/paging') %>
-<% } %>
-
-<% if (theme.mathjax.enable && page.posts && page.posts.toArray().some(function(p){ return p.mathjax; })) { %>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        extensions: ["tex2jax.js"],
-        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
-    });
-</script>
-<script src="<%- theme.mathjax.cdn %>"></script>
 <% } %>
