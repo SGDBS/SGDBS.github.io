@@ -333,6 +333,28 @@ details table {
 .sidebar-group.collapsed .sidebar-arrow { transform: rotate(-90deg); }
 .sidebar-group.collapsed .sidebar-items { display: none; }
 
+/* 二级分组 */
+.sidebar-subgroup-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px 4px 28px;
+    font-weight: 600;
+    color: #7a9ee8;
+    font-size: 0.78rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.sidebar-subgroup-title .sidebar-arrow {
+    font-size: 0.6em;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.sidebar-subgroup.collapsed .sidebar-arrow { transform: rotate(-90deg); }
+.sidebar-subgroup.collapsed .sidebar-subitems { display: none; }
+
 .sidebar-item {
     display: block;
     padding: 5px 16px 5px 26px;
@@ -342,6 +364,10 @@ details table {
     border-left: 2px solid transparent;
     transition: border-color 0.15s, background 0.15s;
     word-break: break-all;
+}
+
+.sidebar-item--l2 {
+    padding-left: 40px;
 }
 
 .sidebar-item:hover {
