@@ -231,4 +231,4 @@ const marked = require('marked');     // hexo-renderer-marked 项目
 
 使用 `kramed` 直接渲染时，代码块不会经过 Hexo 的 `highlight.js` 管道，因此**不会有行号和主题的代码高亮样式**。如需高亮，建议将代码块放在折叠区块外部。
 
-{% enddetails %}
+{% enddetails %}$$

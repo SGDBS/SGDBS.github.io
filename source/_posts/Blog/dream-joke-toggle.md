@@ -39,7 +39,7 @@ tags:
 ……
 ```
 
-关键字符是 Unicode `U+FF09`（全角右括号 `）`），通过 `re.match(r'^\d+\uff09', line)` 匹配各条笑话的起始行。
+关键字符是 Unicode `U+FF09`（全角右括号 `）`），通过 $`re.match(r'^\d+\uff09',$ line)` 匹配各条笑话的起始行。
 
 ### 三、 提取脚本
 
@@ -186,4 +186,4 @@ with open('source/js/jokes.json', 'w', encoding='utf-8') as f:
 | :--- | :--- | :--- |
 | `source/js/jokes.json` | 新建 | 提取后的 671 条笑话，UTF-8 JSON |
 | `themes/.../layout/_widget/dream.ejs` | 修改 | 双视图结构 + 切换 JS |
-| `themes/.../source/css/my.css` | 追加 | 按钮与笑话文本框样式 |
+| `themes/.../source/css/my.css` | 追加 | 按钮与笑话文本框样式 |$$

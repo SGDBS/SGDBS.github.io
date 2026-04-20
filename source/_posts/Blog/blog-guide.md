@@ -300,4 +300,4 @@ hexo clean && hexo generate && hexo deploy
 "hexo-tag-embed"          // 第三方内容嵌入标签
 ```
 
-新增 npm 插件后，重新 `hexo clean && hexo generate` 即可生效。
+新增 npm 插件后，重新 `hexo clean && hexo generate` 即可生效。$$
