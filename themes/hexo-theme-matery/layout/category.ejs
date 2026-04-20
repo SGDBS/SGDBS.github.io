@@ -79,6 +79,29 @@
 
     <div class="category-layout">
 
+        <!-- 侧边栏（左） -->
+        <nav class="category-sidebar">
+            <% sidebarGroups.forEach(function(group, gi) { %>
+            <div class="sidebar-group" id="sg-<%= gi %>">
+                <div class="sidebar-group-title" onclick="toggleSidebarGroup(<%= gi %>)">
+                    <span class="sidebar-arrow">▼</span>
+                    <%= group.label %>
+                    <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= group.posts.length %></span>
+                </div>
+                <div class="sidebar-items">
+                    <% group.posts.forEach(function(p) { %>
+                    <a class="sidebar-item" href="<%- url_for(p.path) %>" title="<%= p.title %>">
+                        <%= p.title %>
+                    </a>
+                    <% }); %>
+                </div>
+                <% if (gi < sidebarGroups.length - 1) { %>
+                <div class="sidebar-divider"></div>
+                <% } %>
+            </div>
+            <% }); %>
+        </nav>
+
         <!-- 文章卡片主区域 -->
         <div class="category-main">
             <article id="articles" class="articles">
@@ -135,29 +158,6 @@
                 </div>
             </article>
         </div>
-
-        <!-- 侧边栏 -->
-        <nav class="category-sidebar">
-            <% sidebarGroups.forEach(function(group, gi) { %>
-            <div class="sidebar-group" id="sg-<%= gi %>">
-                <div class="sidebar-group-title" onclick="toggleSidebarGroup(<%= gi %>)">
-                    <span class="sidebar-arrow">▼</span>
-                    <%= group.label %>
-                    <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= group.posts.length %></span>
-                </div>
-                <div class="sidebar-items">
-                    <% group.posts.forEach(function(p) { %>
-                    <a class="sidebar-item" href="<%- url_for(p.path) %>" title="<%= p.title %>">
-                        <%= p.title %>
-                    </a>
-                    <% }); %>
-                </div>
-                <% if (gi < sidebarGroups.length - 1) { %>
-                <div class="sidebar-divider"></div>
-                <% } %>
-            </div>
-            <% }); %>
-        </nav>
 
     </div><!-- .category-layout -->
 

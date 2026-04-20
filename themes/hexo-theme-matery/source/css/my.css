@@ -310,8 +310,8 @@ details table {
     width: 260px;
     flex-shrink: 0;
     position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 100px);
+    top: 20px;
+    max-height: calc(100vh - 40px);
     overflow-y: auto;
     background: #fff;
     border-radius: 8px;
