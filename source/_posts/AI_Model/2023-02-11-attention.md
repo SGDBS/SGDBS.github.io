@@ -14,8 +14,6 @@ tags:
     - 深度学习
 ---
 
-# Attention机制 学习笔记
-
 学习自https://easyai.tech/ai-definition/attention/
 
 ### Attention本质

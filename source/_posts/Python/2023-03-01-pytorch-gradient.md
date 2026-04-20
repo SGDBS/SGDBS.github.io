@@ -32,7 +32,7 @@ $d:2∗x3∗∑(y−y^)d:2\*x^3\*\sum(y-\hat{y})d:2∗x3∗∑(y−y^)$
 
 代码
 
-```
+```python
 import torch
 import math
 
@@ -73,14 +73,14 @@ for t in range(2000):
     d -= learning_rate * grad_d
 
 print(f'Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3')
-```
+```python
 
 ### 自动梯度下降拟合函数
 
 通过PyTorch: nn构建神经网络，如果我们需要一个三次函数来拟合，那么我们就需要一个隐藏层为1层，节点为3个的神经网络。  
 $即y^=∑i=13(wixi+bi)\hat{y}=\sum\_{i=1}^3(w\_ix^i+b\_i)y^=∑i=13(wixi+bi)$
 
-```
+```python
 model = torch.nn.Sequential(
     torch.nn.Linear(3, 1), #三个节点
     torch.nn.Flatten(0, 1) # 把三个节点的结果加起来
@@ -89,32 +89,32 @@ model = torch.nn.Sequential(
 
 由于我们的神经网络第一层有三个输入（x,x2,x3x,x^2,x^3x,x2,x3）,所以我们需要把数据预处理一下
 
-```
+```python
 x = torch.linspace(-math.pi, math.pi, 2000)
 y = torch.sin(x)
 
 p = torch.tensor([1, 2, 3])
 xx = x.unsqueeze(-1).pow(p)
-```
+```python
 
 然后我们预测输出就可以直接调用model了
 
-```
+```python
 y_pred = model(xx) # y_pred也是一个tensor
 ```
 
 **损失函数**
 
-```
+```python
 loss_fn = torch.nn.MSELoss(reduction='sum') # 定义,使用均方误差
 loss = loss_fn(y_pred, y) # 计算均方误差
 model.zero_grad() # 先把原先模型的梯度信息清零
 loss.backward() # 计算反向传播的梯度
-```
+```python
 
 完整代码
 
-```
+```python
 import torch
 import math
 
