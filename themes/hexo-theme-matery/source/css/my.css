@@ -28,7 +28,7 @@ figure.highlight td.gutter {
 figure.highlight td.gutter pre {
     background: #21252b !important;
     color: #636d83 !important;
-    padding: 2rem 0.9rem 1rem 0.9rem !important;
+    padding: 0.8rem 0.9rem !important;
     user-select: none;
 }
 
@@ -36,7 +36,7 @@ figure.highlight td.gutter pre {
 figure.highlight td.code pre {
     background: #282c34 !important;
     color: #abb2bf;
-    padding: 2rem 1.2rem 1rem 1.2rem !important;
+    padding: 0.8rem 1.2rem !important;
 }
 
 /* 覆盖 matery.css 的 pre code 规则 */
@@ -135,6 +135,11 @@ figure.highlight .meta.decorator {
 }
 
 /* ── UI 细节 ── */
+
+/* 删除代码块左上角的 macOS 圆球装饰 */
+.code-area::after {
+    display: none !important;
+}
 
 /* 语言标签（右上角 "cpp" / "python" 文字）适配深色背景 */
 .code_lang {
