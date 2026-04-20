@@ -130,11 +130,9 @@
 <%- partial('_partial/paging') %>
 <% } %>
 
-<% if (theme.mathjax.enable && page.posts && page.posts.some(function(p){ return p.mathjax; })) { %>
-<script src="<%- theme.mathjax.cdn %>"></script>
-<script>
-    MathJax.Hub.Config({
-        tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
-    });
+<% if (theme.mathjax.enable && page.posts && page.posts.toArray().some(function(p){ return p.mathjax; })) { %>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'],['\\(','\\)']]} });
 </script>
+<script src="<%- theme.mathjax.cdn %>"></script>
 <% } %>

@@ -82,8 +82,8 @@
                             <div class="summary block-with-text">
                                 <% if (post.summary && post.summary.length > 0) { %>
                                     <%- post.summary %>
-                                <% } else { %>
-                                    <%- strip_html(post.content).substring(0, 120) %>
+                                <% } else if (post.content && post.content.length > 0) { %>
+                                    <%- post.content %>
                                 <% } %>
                             </div>
                             <div class="publish-info">
@@ -127,4 +127,11 @@
 
 <% if (page.total > 1) { %>
 <%- partial('_partial/paging') %>
+<% } %>
+
+<% if (theme.mathjax.enable && page.posts && page.posts.toArray().some(function(p){ return p.mathjax; })) { %>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'],['\(','\)']]} });
+</script>
+<script src="<%- theme.mathjax.cdn %>"></script>
 <% } %>
