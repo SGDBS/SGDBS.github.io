@@ -6,10 +6,7 @@
 
     <%
     var hashCode = function (str) {
-        if (!str && str.length === 0) {
-            return 0;
-        }
-
+        if (!str && str.length === 0) { return 0; }
         var hash = 0;
         for (var i = 0, len = str.length; i < len; i++) {
             hash = ((hash << 5) - hash) + str.charCodeAt(i);
@@ -17,66 +14,162 @@
         }
         return hash;
     };
+
+    /* ── 侧边栏数据构建 ── */
+    var allPosts = page.posts.sort('date').reverse().toArray();
+
+    /* 判断是否为章节类分类（标题含 ChapterX.Y） */
+    var chapterRe = /Chapter\s*(\d+)[\.\-](\d+)/i;
+    var hasChapters = allPosts.some(function(p){ return chapterRe.test(p.title); });
+
+    /* 通用/噪音标签，不作为分组依据 */
+    var genericTags = ['ACM/OI','算法','c++','C++','icpc','ICPC','codeforces',
+        'Codeforces','Codeforeces','c语言','C语言','acm竞赛','算法竞赛',
+        'AtCoder','atcoder','leetcode','LeetCode'];
+
+    var sidebarGroups = []; /* [{label, posts:[]}] */
+
+    if (hasChapters) {
+        /* 章节排序：ChapterX.Y → [X, Y]，无章节号的排最后 */
+        var sorted = allPosts.slice().sort(function(a, b){
+            var ma = a.title.match(chapterRe);
+            var mb = b.title.match(chapterRe);
+            if (!ma && !mb) return 0;
+            if (!ma) return 1;
+            if (!mb) return -1;
+            var diff = parseInt(ma[1]) - parseInt(mb[1]);
+            return diff !== 0 ? diff : parseInt(ma[2]) - parseInt(mb[2]);
+        });
+        /* 按 Chapter 主编号分组 */
+        var chapterGroups = {};
+        var chapterOrder = [];
+        sorted.forEach(function(p){
+            var m = p.title.match(chapterRe);
+            var key = m ? ('第' + m[1] + '章') : '其他';
+            if (!chapterGroups[key]) { chapterGroups[key] = []; chapterOrder.push(key); }
+            chapterGroups[key].push(p);
+        });
+        chapterOrder.forEach(function(k){ sidebarGroups.push({label: k, posts: chapterGroups[k]}); });
+
+    } else {
+        /* 标签分组：取每篇文章第一个「非通用」标签作为主分组 */
+        var tagGroups = {};
+        var tagOrder = [];
+        var noTagPosts = [];
+        allPosts.forEach(function(p){
+            var tags = (p.tags && p.tags.toArray ? p.tags.toArray() : []);
+            var primary = null;
+            for (var i = 0; i < tags.length; i++) {
+                var name = tags[i].name;
+                if (genericTags.indexOf(name) === -1) { primary = name; break; }
+            }
+            if (primary) {
+                if (!tagGroups[primary]) { tagGroups[primary] = []; tagOrder.push(primary); }
+                tagGroups[primary].push(p);
+            } else {
+                noTagPosts.push(p);
+            }
+        });
+        /* 按组内文章数量降序排列 */
+        tagOrder.sort(function(a,b){ return tagGroups[b].length - tagGroups[a].length; });
+        tagOrder.forEach(function(k){ sidebarGroups.push({label: k, posts: tagGroups[k]}); });
+        if (noTagPosts.length) sidebarGroups.push({label: '其他', posts: noTagPosts});
+    }
     %>
 
-    <article id="articles" class="container articles">
-        <div class="row tags-posts">
-            <% page.posts.sort('date').reverse().forEach(post => { %>
-            <div class="article tag-post col s12 m6 l4" data-aos="zoom-in">
-                <div class="card">
-                    <a href="<%- url_for(post.path) %>">
-                        <div class="card-image tag-image">
-                            <% if (post.img) { %>
-                            <img src="<%- url_for(post.img) %>" class="responsive-img" alt="<%= post.title %>">
-                            <% } else { %>
-                            <%
-                                var featureimg = theme.featureImages[Math.abs(hashCode(post.title) % theme.featureImages.length)];
-                            %>
-                            <img src="<%- theme.jsDelivr.url %><%- url_for(featureimg) %>" class="responsive-img" alt="<%= post.title %>">
-                            <% } %>
-                            <span class="card-title"><%= post.title %></span>
-                        </div>
-                    </a>
-                    <div class="card-content article-content">
-                        <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i><%= date(post.date, config.date_format) %>
-                            </span>
-                            <span class="publish-author">
-                                <% if (post.categories && post.categories.length > 0) { %>
-                                <i class="fas fa-bookmark fa-fw icon-category"></i>
-                                <% post.categories.forEach(category => { %>
-                                <a href="<%- url_for(category.path) %>" class="post-category">
-                                    <%- category.name %>
+    <div class="category-layout">
+
+        <!-- 文章卡片主区域 -->
+        <div class="category-main">
+            <article id="articles" class="articles">
+                <div class="row tags-posts">
+                    <% page.posts.sort('date').reverse().forEach(post => { %>
+                    <div class="article tag-post col s12 m6 l4" data-aos="zoom-in">
+                        <div class="card">
+                            <a href="<%- url_for(post.path) %>">
+                                <div class="card-image tag-image">
+                                    <% if (post.img) { %>
+                                    <img src="<%- url_for(post.img) %>" class="responsive-img" alt="<%= post.title %>">
+                                    <% } else { %>
+                                    <%
+                                        var featureimg = theme.featureImages[Math.abs(hashCode(post.title) % theme.featureImages.length)];
+                                    %>
+                                    <img src="<%- theme.jsDelivr.url %><%- url_for(featureimg) %>" class="responsive-img" alt="<%= post.title %>">
+                                    <% } %>
+                                    <span class="card-title"><%= post.title %></span>
+                                </div>
+                            </a>
+                            <div class="card-content article-content">
+                                <div class="publish-info">
+                                    <span class="publish-date">
+                                        <i class="far fa-clock fa-fw icon-date"></i><%= date(post.date, config.date_format) %>
+                                    </span>
+                                    <span class="publish-author">
+                                        <% if (post.categories && post.categories.length > 0) { %>
+                                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                                        <% post.categories.forEach(category => { %>
+                                        <a href="<%- url_for(category.path) %>" class="post-category">
+                                            <%- category.name %>
+                                        </a>
+                                        <% }); %>
+                                        <% } else { %>
+                                        <i class="fas fa-user fa-fw"></i>
+                                        <%- config.author %>
+                                        <% } %>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <% if (post.tags && post.tags.length) { %>
+                            <div class="card-action article-tags">
+                                <% post.tags.forEach(tag => { %>
+                                <a href="<%- url_for(tag.path) %>">
+                                    <span class="chip bg-color"><%= tag.name %></span>
                                 </a>
                                 <% }); %>
-                                <% } else if (post.author && post.author.length > 0) { %>
-                                <i class="fas fa-user fa-fw"></i>
-                                <%- post.author %>
-                                <% } else { %>
-                                <i class="fas fa-user fa-fw"></i>
-                                <%- config.author %>
-                                <% } %>
-                            </span>
+                            </div>
+                            <% } %>
                         </div>
                     </div>
-
-                    <% if (post.tags && post.tags.length) { %>
-                    <div class="card-action article-tags">
-                        <% post.tags.forEach(tag => { %>
-                        <a href="<%- url_for(tag.path) %>">
-                            <span class="chip bg-color"><%= tag.name %></span>
-                        </a>
-                        <% }); %>
-                    </div>
-                    <% } %>
+                    <% }); %>
                 </div>
+            </article>
+        </div>
+
+        <!-- 侧边栏 -->
+        <nav class="category-sidebar">
+            <% sidebarGroups.forEach(function(group, gi) { %>
+            <div class="sidebar-group" id="sg-<%= gi %>">
+                <div class="sidebar-group-title" onclick="toggleSidebarGroup(<%= gi %>)">
+                    <span class="sidebar-arrow">▼</span>
+                    <%= group.label %>
+                    <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= group.posts.length %></span>
+                </div>
+                <div class="sidebar-items">
+                    <% group.posts.forEach(function(p) { %>
+                    <a class="sidebar-item" href="<%- url_for(p.path) %>" title="<%= p.title %>">
+                        <%= p.title %>
+                    </a>
+                    <% }); %>
+                </div>
+                <% if (gi < sidebarGroups.length - 1) { %>
+                <div class="sidebar-divider"></div>
+                <% } %>
             </div>
             <% }); %>
-        </div>
-    </article>
+        </nav>
+
+    </div><!-- .category-layout -->
+
 </main>
 
 <% if (page.total > 1) { %>
 <%- partial('_partial/paging') %>
 <% } %>
+
+<script>
+function toggleSidebarGroup(idx) {
+    var el = document.getElementById('sg-' + idx);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
