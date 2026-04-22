@@ -18,7 +18,12 @@
 <%
     var isTocEnable = theme.toc.enable && String(page.toc) !== 'false';
     var containerClass = isTocEnable ? 'post-container' : 'container';
+    var _postCatName = (page.categories && page.categories.length > 0)
+        ? page.categories.toArray()[0].name
+        : '';
 %>
+
+<%- partial('_partial/category-sidebar', {catName: _postCatName, activeSource: page.source}) %>
 
 <main class="<%- containerClass %> content">
 

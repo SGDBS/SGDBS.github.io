@@ -10,126 +10,9 @@ var hashCode = function (str) {
     }
     return hash;
 };
-
-/* ── 全量文章 ── */
-var catObj = site.categories.findOne({name: page.category});
-var allPosts = catObj
-    ? catObj.posts.sort('date').reverse().toArray()
-    : page.posts.toArray();
-
-/* folderConfigs 由 scripts/sidebar-folder-config.js 注入 */
-var folderConfigs = site.sidebarFolderConfigs || {};
-
-/* ── 构建两级树 ──
-   路径形如 _posts/<CatFolder>/<L1>/<L2>?/file.md
-   tree[L1key] = { relPath, subgroups: { L2key: { relPath, posts[] } }, sgOrder[], posts[] }
-*/
-var tree      = {};
-var treeOrder = [];
-
-allPosts.forEach(function(p) {
-    var src      = (p.source || '').replace(/\\/g, '/');
-    var parts    = src.split('/');
-    var dirParts = parts.slice(0, -1);   /* 去掉文件名 */
-    /* dirParts: ['_posts', 'CatFolder', 'L1', 'L2?'] */
-
-    var L1key = dirParts.length >= 3 ? dirParts[2] : '一般';
-    var L1rel = dirParts.length >= 3 ? dirParts.slice(1, 3).join('/') : (dirParts[1] || '');
-
-    if (!tree[L1key]) {
-        tree[L1key] = { relPath: L1rel, subgroups: {}, sgOrder: [], posts: [] };
-        treeOrder.push(L1key);
-    }
-
-    if (dirParts.length >= 4) {
-        var L2key = dirParts[3];
-        var L2rel = dirParts.slice(1, 4).join('/');
-        if (!tree[L1key].subgroups[L2key]) {
-            tree[L1key].subgroups[L2key] = { relPath: L2rel, posts: [] };
-            tree[L1key].sgOrder.push(L2key);
-        }
-        tree[L1key].subgroups[L2key].posts.push(p);
-    } else {
-        tree[L1key].posts.push(p);
-    }
-});
-
-/* ── 排序：Chapter N 按序号，其余按文章数降序 ── */
-var chapterRe = /Chapter\s*(\d+)[.\-]?(\d*)/i;
-function chapterCmp(a, b, sizeFn) {
-    var ma = a.match(chapterRe), mb = b.match(chapterRe);
-    if (ma && mb) {
-        var d = parseInt(ma[1]) - parseInt(mb[1]);
-        return d !== 0 ? d : parseInt(ma[2] || 0) - parseInt(mb[2] || 0);
-    }
-    return sizeFn(b) - sizeFn(a);
-}
-
-treeOrder.sort(function(a, b) {
-    var sizeA = tree[a].posts.length + tree[a].sgOrder.reduce(function(s,k){ return s + tree[a].subgroups[k].posts.length; }, 0);
-    var sizeB = tree[b].posts.length + tree[b].sgOrder.reduce(function(s,k){ return s + tree[b].subgroups[k].posts.length; }, 0);
-    return chapterCmp(a, b, function(k){ return k === a ? sizeA : sizeB; });
-});
-
-/* ── 组装最终渲染数据 ── */
-var sidebarTree = treeOrder.map(function(L1key) {
-    var node    = tree[L1key];
-    var L1cfg   = folderConfigs[node.relPath] || {};
-    var L1label = L1cfg.name || L1key;
-
-    node.sgOrder.sort(function(a, b) {
-        return chapterCmp(a, b, function(k){ return node.subgroups[k].posts.length; });
-    });
-
-    var subgroups = node.sgOrder.map(function(L2key) {
-        var sg    = node.subgroups[L2key];
-        var L2cfg = folderConfigs[sg.relPath] || {};
-        return { label: L2cfg.name || L2key, posts: sg.posts };
-    });
-
-    var total = node.posts.length + node.sgOrder.reduce(function(s,k){ return s + node.subgroups[k].posts.length; }, 0);
-    return { label: L1label, posts: node.posts, subgroups: subgroups, total: total };
-});
 %>
 
-<!-- 侧边栏：独立于 main，固定在视口最左侧 -->
-<nav class="category-sidebar">
-    <% sidebarTree.forEach(function(L1, i) { %>
-    <div class="sidebar-group collapsed" id="sg-<%= i %>">
-        <div class="sidebar-group-title" onclick="toggleGroup('sg-<%= i %>')">
-            <span class="sidebar-arrow">▼</span>
-            <%= L1.label %>
-            <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= L1.total %></span>
-        </div>
-        <div class="sidebar-items">
-            <% L1.subgroups.forEach(function(sg, j) { %>
-            <div class="sidebar-subgroup collapsed" id="sg-<%= i %>-<%= j %>">
-                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-<%= i %>-<%= j %>')">
-                    <span class="sidebar-arrow">▼</span>
-                    <%= sg.label %>
-                    <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= sg.posts.length %></span>
-                </div>
-                <div class="sidebar-subitems">
-                    <% sg.posts.forEach(function(p) { %>
-                    <a class="sidebar-item sidebar-item--l2" href="<%- url_for(p.path) %>" title="<%= p.title %>">
-                        <%= p.title %>
-                    </a>
-                    <% }); %>
-                </div>
-            </div>
-            <% }); %>
-            <% L1.posts.forEach(function(p) { %>
-            <a class="sidebar-item" href="<%- url_for(p.path) %>" title="<%= p.title %>">
-                <%= p.title %>
-            </a>
-            <% }); %>
-        </div>
-        <% if (i < sidebarTree.length - 1) { %>
-        <div class="sidebar-divider"></div>
-        <% } %>
-    </div>
-    <% }); %>
-</nav>
+<%- partial('_partial/category-sidebar', {catName: page.category, activeSource: ''}) %>
 
 <main class="content">
 
@@ -194,10 +77,3 @@ var sidebarTree = treeOrder.map(function(L1key) {
 <% if (page.total > 1) { %>
 <%- partial('_partial/paging') %>
 <% } %>
-
-<script>
-function toggleGroup(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.toggle('collapsed');
-}
-</script>

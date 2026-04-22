@@ -377,6 +377,13 @@ details table {
     text-decoration: none;
 }
 
+.sidebar-item--active {
+    background: #eef2ff;
+    border-left-color: #5b8dee;
+    color: #2c5cc5;
+    font-weight: 600;
+}
+
 .sidebar-divider {
     height: 1px;
     background: #eee;
