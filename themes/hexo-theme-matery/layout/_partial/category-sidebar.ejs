@@ -92,9 +92,20 @@ if (_catName) {
         var total = node.posts.length + node.sgOrder.reduce(function(s,k){ return s + node.subgroups[k].posts.length; }, 0);
         return { label: L1label, posts: node.posts, subgroups: subgroups, total: total, isActive: isL1Active };
     });
+
+    /* ── sidebar top title: CatFolder's config.json name or folder name ── */
+    var catFolder = '';
+    if (allPosts.length > 0) {
+        var _fp = (allPosts[0].source || '').replace(/\\/g, '/').split('/');
+        catFolder = _fp.length >= 2 ? _fp[1] : _catName;
+    }
+    var catFolderLabel = (folderConfigs[catFolder] && folderConfigs[catFolder].name)
+        ? folderConfigs[catFolder].name
+        : (catFolder || _catName);
 %>
 
 <nav class="category-sidebar">
+    <div class="sidebar-title"><%= catFolderLabel %></div>
     <% sidebarTree.forEach(function(L1, i) { %>
     <div class="sidebar-group <%= L1.isActive ? '' : 'collapsed' %>" id="sg-<%= i %>">
         <div class="sidebar-group-title" onclick="toggleGroup('sg-<%= i %>')">

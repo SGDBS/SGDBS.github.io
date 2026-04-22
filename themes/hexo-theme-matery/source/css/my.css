@@ -307,6 +307,16 @@ details table {
     z-index: 990;
 }
 
+.sidebar-title {
+    padding: 14px 16px 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 2px solid #5b8dee;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+}
+
 .sidebar-group-title {
     display: flex;
     align-items: center;
