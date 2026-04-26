@@ -563,7 +563,7 @@ Recomputation 在 FlashAttention 中解决的核心问题是:**反向传播怎�
 
 ## 4. 附录A
 
-{% details $Y = AB$ ->  $dA = dY \cdot B^T, \quad dB = A^T \cdot dY $ %}
+{% details 结论一：若 $Y = AB$，则  $dA = dY \cdot B^T, \quad dB = A^T \cdot dY $ %}
 
 **结论 1**:若 $Y = AB$,则
 
@@ -855,9 +855,590 @@ $$
 
 三种方法殊途同归。日常使用推荐方法 3(最快),遇到陌生情况用方法 2(最严谨),方法 1 是理解背后机制的基础。
 
+
+{% enddetails  %}
+
+
+{% details  设 $p = \text{softmax}(s)$，则 $dS = P \odot \big(dP - \text{rowsum}(dP \odot P)\big)$ %}
+
+
+**结论 2**:设 $p = \text{softmax}(s)$,其中 $s, p \in \mathbb{R}^N$,则:
+
+$$
+ds = p \odot dp - p \cdot (p^T dp) = p \odot (dp - \rho), \quad \rho = p^T dp = \sum_k p_k \, dp_k
+$$
+
+扩展到按行 softmax 的矩阵形式:
+
+$$
+dS = P \odot \big(dP - \text{rowsum}(dP \odot P)\big)
+$$
+
+下面从零开始推导。
+
+### 一、softmax 的定义回顾
+
+对向量 $s = (s_1, s_2, \dots, s_N) \in \mathbb{R}^N$,softmax 输出:
+
+$$
+p_i = \frac{e^{s_i}}{\sum_{k=1}^{N} e^{s_k}}, \quad i = 1, \dots, N
+$$
+
+记分母 $Z = \sum_k e^{s_k}$,则 $p_i = e^{s_i} / Z$。
+
+**两个关键性质**:
+
+1. $\sum_i p_i = 1$
+2. $p_i > 0$ 对所有 $i$
+
+### 二、求雅可比矩阵 $\frac{\partial p_i}{\partial s_j}$
+
+这是整个推导的核心。我们要算:**$p_i$ 对每个 $s_j$ 的偏导**。
+
+由于 $p_i = e^{s_i} / Z$,而 $Z$ **依赖所有的 $s_j$**(不只是 $s_i$),这是关键——改变任何一个 $s_j$ 都会通过 $Z$ 影响每个 $p_i$。
+
+#### 2.1 分情况推导
+
+用商的求导法则:
+
+$$
+\frac{\partial p_i}{\partial s_j} = \frac{\partial}{\partial s_j}\left(\frac{e^{s_i}}{Z}\right) = \frac{\frac{\partial e^{s_i}}{\partial s_j} \cdot Z - e^{s_i} \cdot \frac{\partial Z}{\partial s_j}}{Z^2}
+$$
+
+先算两个关键偏导:
+
+- $\frac{\partial e^{s_i}}{\partial s_j} = \begin{cases} e^{s_i} & \text{若 } i = j \\ 0 & \text{否则} \end{cases} = e^{s_i} \delta_{ij}$
+
+- $\frac{\partial Z}{\partial s_j} = \frac{\partial}{\partial s_j}\sum_k e^{s_k} = e^{s_j}$(只有 $k = j$ 那一项有贡献)
+
+其中 $\delta_{ij}$ 是 Kronecker delta:$i = j$ 时为 1,否则为 0。
+
+#### 2.2 代入整理
+
+$$
+\frac{\partial p_i}{\partial s_j} = \frac{e^{s_i} \delta_{ij} \cdot Z - e^{s_i} \cdot e^{s_j}}{Z^2}
+$$
+
+分子分母同除以 $Z^2$:
+
+$$
+\frac{\partial p_i}{\partial s_j} = \frac{e^{s_i}}{Z} \delta_{ij} - \frac{e^{s_i}}{Z} \cdot \frac{e^{s_j}}{Z}
+$$
+
+注意 $e^{s_i} / Z = p_i$,$e^{s_j} / Z = p_j$,所以:
+
+$$
+\boxed{\frac{\partial p_i}{\partial s_j} = p_i \delta_{ij} - p_i p_j}
+$$
+
+#### 2.3 分两种情况的形式
+
+写得更直观一点:
+
+$$
+\frac{\partial p_i}{\partial s_j} = \begin{cases} p_i (1 - p_i) & \text{若 } i = j \\ -p_i p_j & \text{若 } i \neq j \end{cases}
+$$
+
+对角上是 $p_i(1-p_i)$,非对角是 $-p_i p_j$。注意这是一个**对称**雅可比(因为 $p_i p_j = p_j p_i$)。
+
+#### 2.4 验证一下
+
+简单验证:对角上 $p_i(1 - p_i) > 0$(softmax 的输出是增函数,增大 $s_i$ 会增大 $p_i$),非对角 $-p_i p_j < 0$(增大 $s_j$ 会减小别的 $p_i$),符合直觉。
+
+还可以验证每列求和为 0:
+
+$$
+\sum_i \frac{\partial p_i}{\partial s_j} = \sum_i (p_i \delta_{ij} - p_i p_j) = p_j - p_j \sum_i p_i = p_j - p_j \cdot 1 = 0 \quad \checkmark
+$$
+
+这反映了 $\sum_i p_i = 1$ 这个约束——所有 $p_i$ 对任意 $s_j$ 的变化量加起来必须为 0。
+
+### 三、雅可比的矩阵写法
+
+把 $\frac{\partial p_i}{\partial s_j} = p_i \delta_{ij} - p_i p_j$ 整理成矩阵:
+
+$$
+J = \text{diag}(p) - p p^T
+$$
+
+其中:
+- $\text{diag}(p)$ 是对角矩阵,对角线上是 $p_1, p_2, \dots, p_N$(对应 $\delta_{ij} p_i$ 项)
+- $p p^T$ 是外积矩阵,第 $(i,j)$ 元素是 $p_i p_j$
+
+**形状**:$J \in \mathbb{R}^{N \times N}$,$J_{ij} = \frac{\partial p_i}{\partial s_j}$。
+
+### 四、反向传播:求 $ds$
+
+#### 4.1 链式法则
+
+给定上游梯度 $dp \in \mathbb{R}^N$($dp_i = \frac{\partial L}{\partial p_i}$),反向得到:
+
+$$
+ds_j = \frac{\partial L}{\partial s_j} = \sum_{i=1}^{N} \frac{\partial L}{\partial p_i} \cdot \frac{\partial p_i}{\partial s_j} = \sum_{i=1}^{N} dp_i \cdot J_{ij}
+$$
+
+写成矩阵形式:
+
+$$
+ds = J^T dp = J dp \quad \text{(因为 J 对称)}
+$$
+
+#### 4.2 代入 $J$ 的表达式
+
+$$
+ds = (\text{diag}(p) - pp^T) dp = \text{diag}(p) \cdot dp - p p^T dp
+$$
+
+逐项分析:
+
+- $\text{diag}(p) \cdot dp$:对角矩阵左乘向量,等价于**逐元素相乘**,即 $p \odot dp$
+- $p p^T dp$:先算 $p^T dp$,这是个**标量**(两个向量的点积),记为 $\rho = \sum_k p_k dp_k$。然后 $p \cdot \rho$ 是每个 $p_i$ 乘以这个标量。
+
+所以:
+
+$$
+\boxed{ds = p \odot dp - \rho \cdot p, \quad \rho = p^T dp = \sum_k p_k \, dp_k}
+$$
+
+#### 4.3 因式分解形式
+
+把 $p$ 提出来(每项都含 $p_i$):
+
+$$
+ds_j = p_j \cdot dp_j - \rho \cdot p_j = p_j (dp_j - \rho)
+$$
+
+写成向量:
+
+$$
+\boxed{ds = p \odot (dp - \rho)}
+$$
+
+这就是结论 2 的向量形式。$\rho$ 是个标量,被**广播**到 $dp$ 的每个位置做减法。
+
+### 五、直觉理解:$ds$ 公式在说什么
+
+这个公式有很清晰的几何/概率直觉。
+
+#### 5.1 $\rho = \sum_k p_k dp_k$ 是什么?
+
+这是 **$dp$ 在 $p$ 分布下的加权平均**(因为 $\sum_k p_k = 1$,$p$ 本身是概率分布)。
+
+#### 5.2 $(dp - \rho)$ 是什么?
+
+是 $dp$ **减去其加权平均**,即"中心化"后的 $dp$。
+
+#### 5.3 为什么要中心化?
+
+因为 softmax 有个根本约束:$\sum_i p_i = 1$,所以**所有 $p_i$ 同时增加 1 单位** 是不可能的——它们必须"此消彼长"。
+
+从梯度角度看:如果 $dp$ 是一个常量向量(所有 $dp_i$ 相等),说明损失对 $p$ 的每个分量"要求"同样的变化,但 softmax 无法同时满足(受约束)。此时应该 $ds = 0$。
+
+验证:若 $dp_i = c$(常量),则 $\rho = \sum_k p_k \cdot c = c$,所以 $dp - \rho = 0$,进而 $ds = 0$。**完美符合直觉**。
+
+#### 5.4 为什么乘 $p$?
+
+中心化后,还要乘以 $p$(逐元素)。这反映了:$p_i$ 小的分量对 $s_i$ 的变化**不敏感**(因为 $p_i \approx 0$,改变 $s_i$ 影响很小)。
+
+### 六、扩展到矩阵(按行 softmax)
+
+在 attention 里,$P = \text{softmax}(S)$ 是按 $S$ 的每一行独立做 softmax。设 $S, P \in \mathbb{R}^{N \times N}$,则**不同行之间互不影响**——第 $i$ 行的 $P$ 只依赖第 $i$ 行的 $S$。
+
+所以把前面的结论逐行应用即可。对第 $i$ 行:
+
+$$
+\rho_i = \sum_k P_{ik} \, dP_{ik} = (P \odot dP) \text{ 的第 } i \text{ 行之和}
+$$
+
+$$
+dS_{ij} = P_{ij} (dP_{ij} - \rho_i)
+$$
+
+写成矩阵形式:
+
+$$
+\boxed{dS = P \odot (dP - \text{rowsum}(dP \odot P))}
+$$
+
+其中 $\text{rowsum}(\cdot)$ 返回一个 $N \times 1$ 的列向量,每一行是对应行的和。减法时这个列向量被**广播到整行**(每行都减同一个标量)。
+
+### 七、一个具体例子手算验证
+
+取 $N = 2$,$s = (1, 2)$。
+
+**前向**:
+
+$$
+p_1 = \frac{e}{e + e^2} = \frac{1}{1 + e}, \quad p_2 = \frac{e^2}{e + e^2} = \frac{e}{1 + e}
+$$
+
+带入数值($e \approx 2.718$):$p_1 \approx 0.269$,$p_2 \approx 0.731$。
+
+**雅可比**:
+
+$$
+J = \text{diag}(p) - pp^T = \begin{pmatrix} p_1 - p_1^2 & -p_1 p_2 \\ -p_1 p_2 & p_2 - p_2^2 \end{pmatrix} \approx \begin{pmatrix} 0.197 & -0.197 \\ -0.197 & 0.197 \end{pmatrix}
+$$
+
+(注意到 $p_1 p_2 = p_1(1-p_1) = p_2(1-p_2)$,因为 $N=2$ 时 $p_2 = 1 - p_1$。)
+
+**假设上游梯度** $dp = (1, 0)$(即 $L = p_1$)。
+
+**用公式算**:
+
+- $\rho = p^T dp = p_1 \cdot 1 + p_2 \cdot 0 = p_1 \approx 0.269$
+- $dp - \rho = (1 - 0.269, 0 - 0.269) = (0.731, -0.269)$
+- $ds = p \odot (dp - \rho) = (0.269 \times 0.731, 0.731 \times (-0.269)) \approx (0.197, -0.197)$
+
+**直接用雅可比**:
+
+- $ds = J^T dp = J dp = (0.197, -0.197)$ ✓
+
+**再直接对 $p_1$ 求偏导验证**:
+
+- $\frac{\partial p_1}{\partial s_1} = p_1(1-p_1) \approx 0.197$ ✓
+- $\frac{\partial p_1}{\partial s_2} = -p_1 p_2 \approx -0.197$ ✓
+
+三种方法结果一致,公式正确。
+
+### 八、为什么这个结果特别好?
+
+在 attention 的反向里,这个公式有几个重要的工程价值:
+
+#### 8.1 $ds$ 可以逐行、逐元素算
+
+公式 $dS_{ij} = P_{ij}(dP_{ij} - \rho_i)$ 是一个**逐元素**操作(加上每行一个共享的 $\rho_i$)。
+
+这意味着如果把 $P, dP$ 分块,每个 $(i, j)$ 块可以独立算 $dS_{ij}$——只需要知道对应行的 $\rho_i$ 这一个标量。这正是 FlashAttention 能分块反向的基础。
+
+#### 8.2 $\rho_i$ 可以预计算或替换
+
+$\rho_i = \sum_k P_{ik} dP_{ik}$ 看似需要完整的 $P$ 和 $dP$,但上一节的恒等式告诉我们:
+
+$$
+\rho_i = \text{rowsum}(P \odot dP)_i = \text{rowsum}(dO \odot O)_i =: D_i
+$$
+
+所以 $D_i$ 可以**在反向循环开始前一次性算好**(只用 $dO$ 和 $O$),每个 block 需要时直接读取。
+
+#### 8.3 避免显式构造雅可比
+
+若老老实实构造 $J = \text{diag}(p) - pp^T$,需要 $O(N^2)$ 存储一个稠密矩阵,然后做 $Jdp$ 这个矩阵-向量乘法 $O(N^2)$ 次运算。
+
+用因式分解形式 $ds = p \odot (dp - \rho)$:
+
+- 算 $\rho$:$O(N)$ 次乘加
+- 减去 $\rho$:$O(N)$ 次减法
+- 逐元素乘 $p$:$O(N)$ 次乘法
+
+**总共 $O(N)$**,不需要显式构造雅可比矩阵。这在 $N$ 大(长序列)时是关键的优化。
+
+### 九、另一种推导路径:用交叉熵直觉
+
+如果你学过分类问题里的 softmax + 交叉熵,可能见过一个著名公式:
+
+$$
+L = -\sum_i y_i \log p_i \Rightarrow \frac{\partial L}{\partial s_j} = p_j - y_j
+$$
+
+这个公式看起来和我们推的完全不同,但其实是一致的——它是**特殊情况**。
+
+当损失是交叉熵 $L = -\sum_i y_i \log p_i$ 时:
+
+$$
+dp_i = \frac{\partial L}{\partial p_i} = -\frac{y_i}{p_i}
+$$
+
+代入通用公式 $ds = p \odot (dp - \rho)$:
+
+$$
+\rho = \sum_k p_k \cdot \left(-\frac{y_k}{p_k}\right) = -\sum_k y_k = -1 \quad \text{(假设 } y \text{ 是 one-hot 或概率分布)}
+$$
+
+$$
+ds_j = p_j \left(-\frac{y_j}{p_j} - (-1)\right) = p_j - y_j \quad \checkmark
+$$
+
+一致!这也再次验证了通用公式的正确性。交叉熵之所以那么简洁,是因为它的 $dp$ 形式特别,让 $\rho = -1$ 消得很干净。
+
+### 十、总结
+
+**核心结果**:
+
+$$
+\boxed{ds = p \odot (dp - \rho), \quad \rho = p^T dp}
+$$
+
+**三层理解**:
+
+1. **数学层面**:softmax 的雅可比是 $\text{diag}(p) - pp^T$,利用这个矩阵的特殊结构(一个对角加一个秩一),$Jdp$ 有 $O(N)$ 的分解形式
+2. **几何层面**:$\rho$ 是 $dp$ 在 $p$ 分布下的加权平均,$dp - \rho$ 是中心化,反映了 softmax 的"概率和为 1"约束——共同平移不改变 softmax
+3. **工程层面**:分解形式省时省空间,可以**逐行、逐块**计算,让 FlashAttention 的分块反向成为可能;$\rho$ 可以预计算或用 $dO \odot O$ 替换,彻底绕过 $N \times N$ 的 $P, dP$
+
+**在 FlashAttention 中的角色**:这个结论加上结论 1(矩阵乘的梯度)和 $\rho = \text{rowsum}(dO \odot O)$ 的恒等式,构成了 attention 反向传播分块计算的完整数学基础。
+
+
+{% enddetails%}
+
+
+{% details 反向传播的公式推导 %}
+
+
+这个推导是理解 FlashAttention 反向的基础。我会从最基本的链式法则开始,一步步把所有梯度推出来。
+
+### 一、前向回顾与记号约定
+
+前向传播:
+
+$$
+S = QK^T \in \mathbb{R}^{N \times N}
+$$
+$$
+P = \text{softmax}(S) \in \mathbb{R}^{N \times N} \quad \text{(按行做 softmax)}
+$$
+$$
+O = PV \in \mathbb{R}^{N \times d}
+$$
+
+其中 $Q, K, V \in \mathbb{R}^{N \times d}$(为简洁省略 $\sqrt{d}$ 缩放,加回去只是每处乘个常数)。
+
+**记号约定**(这是关键,很多推导让人糊涂就是记号乱):
+
+$$
+dX := \frac{\partial L}{\partial X}
+$$
+
+即 $dX$ 表示损失 $L$ 对 $X$ 的梯度,形状与 $X$ **完全相同**。
+
+已知:$dO \in \mathbb{R}^{N \times d}$(从上游传下来)。
+
+目标:求 $dQ, dK, dV$,形状分别与 $Q, K, V$ 相同。
+
+### 二、两个基础结论
+
+推导矩阵梯度时,以下两个结论会被反复使用。先把它们证明清楚,后面直接套用。
+
+#### 结论 1:若 $Y = AB$,则
+
+$$
+dA = dY \cdot B^T, \quad dB = A^T \cdot dY
+$$
+
+**推导**:标量形式 $Y_{ij} = \sum_k A_{ik} B_{kj}$。
+
+$$
+dA_{ik} = \sum_{i',j} \frac{\partial L}{\partial Y_{i'j}} \cdot \frac{\partial Y_{i'j}}{\partial A_{ik}}
+$$
+
+$\frac{\partial Y_{i'j}}{\partial A_{ik}} = B_{kj} \cdot \mathbb{1}[i' = i]$,所以
+
+$$
+dA_{ik} = \sum_j dY_{ij} B_{kj} = (dY \cdot B^T)_{ik}
+$$
+
+同理得 $dB = A^T \cdot dY$。**一个助记方法**:梯度的形状必须和原矩阵一致,所以 $B$ 出现在右边就要转置,$A$ 出现在左边也要转置。
+
+#### 结论 2:行 softmax 的雅可比
+
+设 $p = \text{softmax}(s)$,其中 $s, p \in \mathbb{R}^N$(单独一行),则给定 $dp$,
+
+$$
+ds = p \odot \left(dp - \sum_k p_k \, dp_k\right) = p \odot dp - p \cdot (p^T dp)
+$$
+
+**推导**:softmax 的雅可比
+
+$$
+\frac{\partial p_i}{\partial s_j} = p_i \delta_{ij} - p_i p_j
+$$
+
+所以
+
+$$
+ds_j = \sum_i dp_i \cdot \frac{\partial p_i}{\partial s_j} = \sum_i dp_i (p_i \delta_{ij} - p_i p_j) = p_j dp_j - p_j \sum_i p_i dp_i
+$$
+
+写成向量形式:$ds = p \odot dp - p \cdot (\sum_i p_i dp_i)$。
+
+令 $\rho = \sum_i p_i dp_i$(这是个标量,即 $p$ 和 $dp$ 的点积),则:
+
+$$
+ds = p \odot (dp - \rho)
+$$
+
+扩展到整个矩阵 $P$(每行独立做 softmax),逐行应用上式,$\rho$ 变成每行一个的列向量,广播到对应行:
+
+$$
+dS = P \odot (dP - \text{rowsum}(dP \odot P))
+$$
+
+这里 $\text{rowsum}(\cdot)$ 返回一个 $N \times 1$ 的列向量,广播时每一行减去自己那行的标量。
+
+### 三、逐步推导三个梯度
+
+#### 步骤 1:从 $O = PV$ 出发,求 $dV$ 和 $dP$
+
+套用结论 1(令 $Y = O, A = P, B = V$):
+
+$$
+\boxed{dV = P^T \cdot dO}
+$$
+
+$$
+\boxed{dP = dO \cdot V^T}
+$$
+
+**形状检查**:
+- $dV$:$(N \times N)^T \cdot (N \times d) = (N \times d)$ ✓
+- $dP$:$(N \times d) \cdot (d \times N) = (N \times N)$ ✓
+
+#### 步骤 2:从 $P = \text{softmax}(S)$,求 $dS$
+
+直接套用结论 2:
+
+$$
+\boxed{dS = P \odot \left(dP - \text{rowsum}(dP \odot P)\right)}
+$$
+
+**形状检查**:$N \times N$ ✓
+
+#### 步骤 3:从 $S = QK^T$,求 $dQ$ 和 $dK$
+
+把 $S = QK^T$ 写成 $S = Q \cdot (K^T)$,套用结论 1(令 $Y = S, A = Q, B = K^T$):
+
+$$
+dQ = dS \cdot (K^T)^T = dS \cdot K
+$$
+
+对 $B = K^T$:
+
+$$
+d(K^T) = Q^T \cdot dS
+$$
+
+所以
+
+$$
+dK = (d(K^T))^T = (Q^T \cdot dS)^T = dS^T \cdot Q
+$$
+
+$$
+\boxed{dQ = dS \cdot K, \qquad dK = dS^T \cdot Q}
+$$
+
+**形状检查**:
+- $dQ$:$(N \times N) \cdot (N \times d) = (N \times d)$ ✓
+- $dK$:$(N \times N) \cdot (N \times d) = (N \times d)$ ✓
+
+### 四、整合全流程
+
+把五个公式串起来:
+
+$$
+\begin{aligned}
+dV &= P^T \cdot dO \\
+dP &= dO \cdot V^T \\
+D &= \text{rowsum}(dP \odot P) \quad \text{(每行一个标量)} \\
+dS &= P \odot (dP - D) \\
+dQ &= dS \cdot K \\
+dK &= dS^T \cdot Q
+\end{aligned}
+$$
+
+标准实现里,每一步都要在 HBM 中保存 $N \times N$ 的 $P, dP, dS$,显存 $O(N^2)$,且反复读写导致速度慢。
+
+### 五、一个关键恒等式:$D$ 可以只用 $dO$ 和 $O$ 算
+
+FlashAttention 的一个优化点在于:那个 $D = \text{rowsum}(dP \odot P)$ 看起来需要完整的 $dP$ 和 $P$,但其实可以**完全绕过**它们。
+
+**断言**:
+
+$$
+\text{rowsum}(dP \odot P) = \text{rowsum}(dO \odot O)
+$$
+
+**推导**:注意 $O = PV$,$dP = dO \cdot V^T$。逐元素算:
+
+$$
+(dP \odot P)_{ij} = P_{ij} \cdot (dO \cdot V^T)_{ij} = P_{ij} \sum_k dO_{ik} V_{jk}
+$$
+
+对 $j$ 求和:
+
+$$
+\sum_j (dP \odot P)_{ij} = \sum_j P_{ij} \sum_k dO_{ik} V_{jk} = \sum_k dO_{ik} \sum_j P_{ij} V_{jk}
+$$
+
+里面的 $\sum_j P_{ij} V_{jk} = (PV)_{ik} = O_{ik}$,于是:
+
+$$
+\sum_j (dP \odot P)_{ij} = \sum_k dO_{ik} O_{ik} = (dO \odot O)_i \text{ 行和}
+$$
+
+即:
+
+$$
+\boxed{D_i = \text{rowsum}(dO \odot O)_i}
+$$
+
+**这个结论很重要**,因为它意味着:
+- $D \in \mathbb{R}^{N \times 1}$ 可以在反向循环**开始之前**用 $dO$ 和 $O$ 一次性算好
+- 每个 block 在需要 $D_i$ 时直接读取,不需要 $P$ 或 $dP$ 的全貌
+- 让分块反向在数学上变得干净:每个 block 所需的外部输入只有 $Q_i, K_j, V_j, dO_i, O_i, L_i, D_i$,全都是 $O(N)$ 或 $O(Nd)$ 的量
+
+### 六、FlashAttention 分块反向的完整流程
+
+有了上面的公式,可以把整个反向重写为分块形式:
+
+```
+预处理: D = rowsum(dO ⊙ O)      # 形状 N×1, 一次扫描搞定
+初始化: dQ = dK = dV = 0
+
+for i = 1..T_r:
+    加载 Q_i, O_i, dO_i, L_i, D_i 到 SRAM
+    
+    for j = 1..T_c:
+        加载 K_j, V_j 到 SRAM
+        
+        # --- 重算前向得到 P_ij ---
+        S_ij = Q_i K_j^T
+        P_ij = exp(S_ij - L_i)          # 利用 L_i 直接得到归一化的 P
+        
+        # --- 按上面五个公式算梯度 ---
+        dV_j += P_ij^T · dO_i           
+        dP_ij = dO_i · V_j^T             
+        dS_ij = P_ij ⊙ (dP_ij - D_i)    # 用预计算的 D_i, 不用 rowsum
+        dQ_i += dS_ij · K_j              
+        dK_j += dS_ij^T · Q_i            
+    
+    写回 dQ_i
+写回 dK, dV
+```
+
+注意 $P_{ij}, dP_{ij}, dS_{ij}$ 都是 $B_r \times B_c$ 的小块,只活在 SRAM 里,计算完就丢。整个反向期间 **HBM 中从未出现完整的 $N \times N$ 矩阵**。
+
+### 七、一句话总结
+
+| 推导环节 | 用到的工具 |
+|---------|-----------|
+| $dV, dP$ | 矩阵乘反向(结论 1) |
+| $dS$ | softmax 雅可比(结论 2) |
+| $dQ, dK$ | 矩阵乘反向(结论 1) |
+| $D$ 的简化 | 交换求和顺序 + $O = PV$ 恒等式 |
+
+**最核心的两个技术点**:
+
+1. **结论 2 的 softmax 反向** 把 $dS$ 和 $P \odot dP$ 联系起来
+2. **$D = \text{rowsum}(dO \odot O)$ 的恒等式** 让整个反向可以完全分块,不需要 $P, dP$ 的全貌
+
+这两点加上前向存下来的 $L$,让 FlashAttention 反向做到了数学上与标准实现完全等价,但显存 $O(N)$、速度更快。
+
 ---
 
-需要我接着讲结论 2(softmax 雅可比)的严格推导吗?那个用到 Kronecker delta 和链式法则,但逻辑和这里完全类似。
+如果想进一步深入,我可以讲:
 
+- softmax 雅可比 $p \delta_{ij} - p_i p_j$ 从定义开始更严格的推导
+- 加了 causal mask(因果掩码)后梯度怎么变(实际上只要在 $S_{ij}$ 上加 mask 即可,其他不变)
+- 多头注意力的反向(其实就是每个头独立做一遍上面的推导)
 
 {% enddetails %}
