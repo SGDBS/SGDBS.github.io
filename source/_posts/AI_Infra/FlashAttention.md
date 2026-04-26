@@ -859,7 +859,7 @@ $$
 {% enddetails  %}
 
 
-{% details  设 $p = \text{softmax}(s)$，则 $dS = P \odot \big(dP - \text{rowsum}(dP \odot P)\big)$ %}
+{% details  结论二： 设 $p = \text{softmax}(s)$，则 $dS = P \odot \big(dP - \text{rowsum}(dP \odot P)\big)$ %}
 
 
 **结论 2**:设 $p = \text{softmax}(s)$,其中 $s, p \in \mathbb{R}^N$,则:
@@ -907,9 +907,9 @@ $$
 
 先算两个关键偏导:
 
-- $\frac{\partial e^{s_i}}{\partial s_j} = \begin{cases} e^{s_i} & \text{若 } i = j \\ 0 & \text{否则} \end{cases} = e^{s_i} \delta_{ij}$
+$\frac{\partial e^{s_i}}{\partial s_j} = \begin{cases} e^{s_i} & \text{若 } i = j \\ 0 & \text{否则} \end{cases} = e^{s_i} \delta_{ij}$
 
-- $\frac{\partial Z}{\partial s_j} = \frac{\partial}{\partial s_j}\sum_k e^{s_k} = e^{s_j}$(只有 $k = j$ 那一项有贡献)
+$\frac{\partial Z}{\partial s_j} = \frac{\partial}{\partial s_j}\sum_k e^{s_k} = e^{s_j}$(只有 $k = j$ 那一项有贡献)
 
 其中 $\delta_{ij}$ 是 Kronecker delta:$i = j$ 时为 1,否则为 0。
 
