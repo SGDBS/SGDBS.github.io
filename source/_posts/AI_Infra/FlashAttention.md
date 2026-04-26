@@ -907,7 +907,9 @@ $$
 
 先算两个关键偏导:
 
-$\frac{\partial e^{s_i}}{\partial s_j} = \begin{cases} e^{s_i} & \text{若 } i = j \\ 0 & \text{否则} \end{cases} = e^{s_i} \delta_{ij}$
+$$
+\frac{\partial e^{s_i}}{\partial s_j} = \begin{cases} e^{s_i} & \text{若 } i = j \\ 0 & \text{否则} \end{cases} = e^{s_i} \delta_{ij}
+$$
 
 $\frac{\partial Z}{\partial s_j} = \frac{\partial}{\partial s_j}\sum_k e^{s_k} = e^{s_j}$(只有 $k = j$ 那一项有贡献)
 
