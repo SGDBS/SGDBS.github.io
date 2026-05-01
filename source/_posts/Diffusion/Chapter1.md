@@ -1,5 +1,5 @@
 ---
-title: Chapter 0 前置知识
+title: Chapter 1 Sohl-Dickstein 模型
 categories: Diffusion Models
 date: 2026-05-01 12:00:00
 mathjax: true
@@ -8,258 +8,373 @@ tags:
     - Diffusion Models
 ---
 
-好,那我们从头系统讲起。这一讲先把**最早的源头**讲透,把数学基础打牢,后面才能层层递进。
 
-我会按这个路径展开:
+## 1. 模型框架的全貌
 
-1. 这一讲:**Sohl-Dickstein 2015** —— diffusion 的真正起点,以及它依赖的物理直觉和数学工具
-2. 下一讲:Score Matching(Hyvärinen 2005)和 NCSN(2019)
-3. 再下一讲:DDPM(2020),把 ELBO 推导彻底讲完
-4. 之后:Score SDE 统一框架
-5. 最后:DDIM、CFG、Flow Matching 等现代发展
+Sohl-Dickstein 的模型有两个过程,**一个固定、一个学习**。
 
-每讲我会假设你跟得上前面的推导,如果哪里卡住随时打断我。
+### 1.1. 前向过程(固定,不学习)
 
----
+把数据 $x_0 \sim q(x_0)$ 逐步加噪,经过 $T$ 步变成纯噪声:
 
+$$q(x_t \mid x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}\, x_{t-1},\, \beta_t I)$$
 
-## 1. 核心动机:为什么是"扩散"?
+整个前向链:
 
-2015 年之前,生成模型主要有几条路:
+$$q(x_{1:T} \mid x_0) = \prod_{t=1}^T q(x_t \mid x_{t-1})$$
 
-- **VAE**(2013):用变分下界,但生成质量有限
-- **GAN**(2014):效果好但训练不稳定,没有显式概率
-- **自回归模型**(PixelRNN 等):生成慢,不适合连续数据
-- **Normalizing Flow**:要求可逆架构,表达力受限
+**关键性质**:
 
-Sohl-Dickstein 想要的是:**既有显式概率(像 VAE),训练又稳定,表达力还强**。
+- $\beta_t \in (0, 1)$ 是预设的 noise schedule(比如线性从 $10^{-4}$ 到 $0.02$)
+- 系数 $\sqrt{1-\beta_t}$ 保证方差不爆炸:若 $\text{Var}(x_{t-1}) = 1$,则 $\text{Var}(x_t) = 1$
+- $T$ 足够大时,$x_T \approx \mathcal{N}(0, I)$,与 $x_0$ 无关
+- **没有任何参数**——这一步设计完就锁死
 
-灵感来自非平衡热力学。考虑一滴墨水滴入水中:
+### 1.2. 逆向过程(要学习)
 
-- **正向过程**:墨水从有结构(集中一点)逐渐扩散成无结构(均匀分布)。这个过程**简单、可解析**。
-- **逆向过程**:让均匀分布的水"凝聚"回一滴墨水。这看起来违反热力学第二定律(熵减),物理上不可能自发发生。**但如果我们知道每一步该怎么做(学出来的逆过程),数学上是可以的。**
+从纯噪声 $x_T \sim \mathcal{N}(0, I)$ 出发,逐步去噪生成 $x_0$:
 
-这就是 diffusion model 的核心思想:**用一个简单的、可解析的破坏过程,然后学习它的逆过程**。
+$$p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(x_{t-1};\, \mu_\theta(x_t, t),\, \Sigma_\theta(x_t, t))$$
 
-## 2. 必要的数学预备
+整个逆向链:
 
-在讲具体模型前,需要这几个工具:
+$$p_\theta(x_{0:T}) = p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)$$
 
-**(1) 高斯分布的一些性质**
+其中 $p(x_T) = \mathcal{N}(0, I)$ 是固定的。
 
-一维高斯 $\mathcal{N}(x; \mu, \sigma^2)$ 的密度:
+**为什么逆向也用高斯?** 这是 Sohl-Dickstein 引用 Feller (1949) 的关键洞察:**当前向每步 $\beta_t$ 足够小时,真实的逆向条件分布 $q(x_{t-1} \mid x_t)$ 也近似为高斯**。所以用高斯参数化是合理的。
 
-$$p(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$$
+直觉解释:每步加的噪声很小,所以"撤销"这一步只需要小幅修正,小幅修正的不确定性也是高斯的。如果一步加大量噪声,逆向分布就不再是高斯(可能多峰),那就学不动了。
 
-多维高斯 $\mathcal{N}(x; \mu, \Sigma)$ 的密度:
+**这一点决定了 diffusion 必须用很多步**——这是它和 GAN 一步生成的本质区别。
 
-$$p(x) = \frac{1}{(2\pi)^{d/2} |\Sigma|^{1/2}} \exp\left(-\frac{1}{2}(x-\mu)^\top \Sigma^{-1} (x-\mu)\right)$$
+### 1.3. 模型参数化:$\mu_\theta$ 和 $\Sigma_\theta$ 是什么?
 
-**关键性质 —— 高斯的可加性**:如果 $x \sim \mathcal{N}(\mu_1, \sigma_1^2)$ 且 $y \mid x \sim \mathcal{N}(ax, \sigma_2^2)$,那么边际 $y \sim \mathcal{N}(a\mu_1, a^2\sigma_1^2 + \sigma_2^2)$。这个性质后面 DDPM 会大量用。
+在 2015 年原版,$\mu_\theta$ 和 $\Sigma_\theta$ 都是神经网络的输出。给定 $(x_t, t)$,网络输出均值向量和协方差矩阵(实践中通常对角)。
 
-**(2) KL 散度**
-
-衡量两个分布的"差异":
-
-$$D_{\text{KL}}(q \| p) = \mathbb{E}_{x \sim q}\left[\log \frac{q(x)}{p(x)}\right]$$
-
-性质:非负、不对称、$D_{\text{KL}}(q\|p) = 0 \iff q = p$。
-
-**两个高斯之间的 KL 有闭式解**(这个非常重要,后面会反复用):
-
-$$D_{\text{KL}}(\mathcal{N}(\mu_1, \sigma_1^2) \| \mathcal{N}(\mu_2, \sigma_2^2)) = \log\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1 - \mu_2)^2}{2\sigma_2^2} - \frac{1}{2}$$
-
-**(3) 马尔可夫链**
-
-序列 $x_0, x_1, \ldots, x_T$ 满足马尔可夫性:
-
-$$p(x_t \mid x_{t-1}, x_{t-2}, \ldots, x_0) = p(x_t \mid x_{t-1})$$
-
-即"未来只依赖于现在,与过去无关"。联合分布可以分解:
-
-$$p(x_{0:T}) = p(x_0) \prod_{t=1}^T p(x_t \mid x_{t-1})$$
-
-**(4) 变分下界(ELBO)**
-
-这是从 VAE 继承来的核心工具。我们想最大化数据似然 $\log p_\theta(x_0)$,但它通常算不出来(因为要对所有隐变量积分):
-
-$$p_\theta(x_0) = \int p_\theta(x_0, x_{1:T})\, dx_{1:T}$$
-
-引入一个辅助分布 $q(x_{1:T} \mid x_0)$,用 Jensen 不等式:
-
-$$\log p_\theta(x_0) = \log \int p_\theta(x_{0:T})\, dx_{1:T} = \log \int q(x_{1:T} \mid x_0) \frac{p_\theta(x_{0:T})}{q(x_{1:T} \mid x_0)}\, dx_{1:T}$$
-
-$$\geq \mathbb{E}_q\left[\log \frac{p_\theta(x_{0:T})}{q(x_{1:T} \mid x_0)}\right] =: \mathcal{L}(\theta)$$
-
-这个下界 $\mathcal{L}$ 就是 **ELBO**(Evidence Lower BOund)。最大化 ELBO 就是在(近似)最大化对数似然。
+网络架构在原论文里比较朴素(MLP 或简单 CNN)——这也是它当年效果不够惊艳的原因之一。后来 DDPM 用 UNet 才让效果上去。
 
 ---
 
-## 附录1. ELBO的证明
+## 2. 损失函数:从 ELBO 到具体形式
 
-好,ELBO 是整个 diffusion 数学骨架的基石,我们彻底讲透。我会从最根本的动机讲起,推导给你三种角度——它们结果一样,但视角不同,能帮你深刻理解。
+### 2.1. 起点:ELBO
+
+我们已经推过:
+
+$$\log p_\theta(x_0) \geq \mathbb{E}_{q(x_{1:T} \mid x_0)}\left[\log \frac{p_\theta(x_{0:T})}{q(x_{1:T} \mid x_0)}\right] =: \mathcal{L}$$
+
+在训练时我们最小化 $-\mathcal{L}$(负 ELBO)。
+
+### 2.2. 展开
+
+把 $p_\theta(x_{0:T})$ 和 $q(x_{1:T} \mid x_0)$ 的乘积形式代入:
+
+$$-\mathcal{L} = \mathbb{E}_q\left[-\log \frac{p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)}{\prod_{t=1}^T q(x_t \mid x_{t-1})}\right]$$
+
+把 $\log$ 拆开:
+
+$$= \mathbb{E}_q\left[-\log p(x_T) - \sum_{t=1}^T \log \frac{p_\theta(x_{t-1} \mid x_t)}{q(x_t \mid x_{t-1})}\right]$$
+
+整理成更标准的形式:
+
+$$\boxed{-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \sum_{t=1}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}\right]}$$
+
+这就是 **Sohl-Dickstein 2015 的训练目标**。
+
+### 2.3. 这个目标怎么训练?
+
+具体训练步骤:
+
+1. 从数据集采 $x_0$
+2. 前向采样整条链 $x_1, x_2, \ldots, x_T$(每一步都按 $q(x_t \mid x_{t-1})$ 采)
+3. 计算每一项 $\log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}$
+4. 求和,反向传播,更新 $\theta$
+
+这就是**完整的 Sohl-Dickstein 训练流程**。
+
+### 2.4. 为什么这个目标"能算但不好用"?
+
+每一项里:
+
+- **分子** $q(x_t \mid x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}\, x_{t-1},\, \beta_t I)$ 是已知的高斯,$\log$ 有闭式
+- **分母** $p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t),\, \Sigma_\theta(x_t, t))$ 是网络输出的高斯,$\log$ 也有闭式
+
+所以每一项的对数比值都能算。问题是**方差**。
+
+让我具体分析一下方差从哪儿来。在前向采样时:
+
+- 你从 $x_0$ 走到 $x_t$,中间每步都是随机的
+- $x_t$ 的随机性会"传染"给所有后续步骤
+
+于是这个估计量 $\log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}$ 在不同的随机轨迹下取值跳得很厉害,$T = 1000$ 步求和后方差会累积得很大。
+
+### 2.5. 一个不那么明显的问题:**方向不一致**
+
+更深的问题是:
+
+- 分子 $q(x_t \mid x_{t-1})$ 是**前向**的:已知 $x_{t-1}$,问 $x_t$
+- 分母 $p_\theta(x_{t-1} \mid x_t)$ 是**逆向**的:已知 $x_t$,问 $x_{t-1}$
+
+两者条件方向相反,导致:
+
+- 这不是一个"自然"的 KL 散度形式
+- 没法用闭式 KL 简化
+- 每一项必须用蒙特卡洛估计
+
+DDPM 后来的关键改写就是**把分子也变成逆向条件分布**,让每项都变成两个高斯之间的 KL,有闭式解,直接消除蒙特卡洛噪声。
 
 
-### 一、为什么需要 ELBO?
+## 3. Sohl-Dickstein 论文里的另外两件事
 
-我们的目标是**最大似然**:给定数据 $\{x^{(1)}, \ldots, x^{(N)}\}$,找参数 $\theta$ 使
+为了完整,提一下论文里的另外两个细节:
 
-$$\theta^* = \arg\max_\theta \sum_{i=1}^N \log p_\theta(x^{(i)})$$
+### 3.1. noise schedule 的选择
 
-但问题来了:模型里有**隐变量** $z$(在 diffusion 里 $z = x_{1:T}$,在 VAE 里 $z$ 就是潜变量)。我们写出的是**联合分布** $p_\theta(x, z)$,而要的是**边际**:
+原论文用了几种:
 
-$$p_\theta(x) = \int p_\theta(x, z)\, dz$$
+- 二项扩散(用于二值数据)
+- 高斯扩散(用于连续数据)——也就是我们上面讨论的
 
-这个积分通常**算不出来**。比如在 diffusion 里:
+他们做了一些手工设计,后来 DDPM 用了简单的线性 schedule,效果就很好。
 
-$$p_\theta(x_0) = \int p_\theta(x_0, x_{1:T})\, dx_{1:T} = \int p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)\, dx_{1:T}$$
+### 3.2. 一个有意思的小细节:乘性 vs 加性
 
-这是一个 $T$ 重高维积分($T$ 可能是 1000),没有解析解,蒙特卡洛估计方差也极大。
+注意前向 $q(x_t \mid x_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t}\, x_{t-1}, \beta_t I)$ 里的 $\sqrt{1-\beta_t}$。这个**乘性收缩**有什么用?
 
-**ELBO 的作用**:既然 $\log p_\theta(x)$ 算不出来,那就找一个能算的**下界**,最大化下界。
+如果只用加性噪声 $q(x_t \mid x_{t-1}) = \mathcal{N}(x_{t-1}, \beta_t I)$,方差会一直涨,$T \to \infty$ 时 $x_T$ 是无限大方差——不收敛到标准高斯。
 
----
+加上 $\sqrt{1-\beta_t}$ 这个收缩,信号每一步都向 $0$ 靠拢一点,噪声也加一点,**总方差保持不变**。这种设计叫 **Variance Preserving (VP)**,是 DDPM 沿用的形式。
 
-### 二、推导一:Jensen 不等式视角(最直接)
-
-**Jensen 不等式**:对凹函数 $f$ 和随机变量 $X$,
-
-$$f(\mathbb{E}[X]) \geq \mathbb{E}[f(X)]$$
-
-$\log$ 是凹函数,所以 $\log \mathbb{E}[X] \geq \mathbb{E}[\log X]$。
-
-引入任意一个分布 $q(z \mid x)$(称为**变分分布**),做"乘 1 除 1"的技巧:
-
-$$\log p_\theta(x) = \log \int p_\theta(x, z)\, dz = \log \int q(z \mid x) \cdot \frac{p_\theta(x, z)}{q(z \mid x)}\, dz$$
-
-注意中间那部分就是期望:
-
-$$= \log \mathbb{E}_{z \sim q(z \mid x)}\left[\frac{p_\theta(x, z)}{q(z \mid x)}\right]$$
-
-用 Jensen 把 $\log$ 移进期望:
-
-$$\geq \mathbb{E}_{z \sim q(z \mid x)}\left[\log \frac{p_\theta(x, z)}{q(z \mid x)}\right] =: \mathcal{L}(\theta, q; x)$$
-
-这个 $\mathcal{L}$ 就是 **ELBO**。它的精妙之处:
-
-- 我们有了一个**期望形式**——可以用蒙特卡洛采样估计
-- $q(z \mid x)$ 是我们自己选的——可以选一个采样和计算都方便的形式
-- 它是 $\log p_\theta(x)$ 的下界——最大化它**至少不会让似然变差**
-
----
-
-### 三、推导二:KL 散度视角(最深刻)
-
-这个推导更优美,能直接告诉你**下界有多紧**。
-
-从 KL 散度的定义出发:
-
-$$D_{\text{KL}}(q(z \mid x) \,\|\, p_\theta(z \mid x)) = \mathbb{E}_q\left[\log \frac{q(z \mid x)}{p_\theta(z \mid x)}\right]$$
-
-用贝叶斯公式 $p_\theta(z \mid x) = \frac{p_\theta(x, z)}{p_\theta(x)}$:
-
-$$= \mathbb{E}_q\left[\log q(z \mid x) - \log p_\theta(x, z) + \log p_\theta(x)\right]$$
-
-注意 $\log p_\theta(x)$ 不依赖 $z$,可以从期望里提出来:
-
-$$= \mathbb{E}_q[\log q(z \mid x)] - \mathbb{E}_q[\log p_\theta(x, z)] + \log p_\theta(x)$$
-
-整理一下,把 $\log p_\theta(x)$ 单独放一边:
-
-$$\log p_\theta(x) = \underbrace{\mathbb{E}_q\left[\log \frac{p_\theta(x, z)}{q(z \mid x)}\right]}_{\mathcal{L}(\theta, q; x) \text{ = ELBO}} + \underbrace{D_{\text{KL}}(q(z \mid x) \,\|\, p_\theta(z \mid x))}_{\geq 0}$$
-
-**这是一个等式!** 不是不等式!
-
-它告诉我们三件极其重要的事:
-
-1. $\log p_\theta(x) = \text{ELBO} + \text{KL}$,因为 KL ≥ 0,所以 $\log p_\theta(x) \geq \text{ELBO}$ —— 重新得到了下界
-2. **下界的"间隙"恰好是** $D_{\text{KL}}(q(z \mid x) \,\|\, p_\theta(z \mid x))$。也就是说,$q$ 越接近真实后验 $p_\theta(z \mid x)$,下界越紧
-3. 当 $q(z \mid x) = p_\theta(z \mid x)$ 时,KL = 0,**ELBO 等于真实对数似然**
-
-这告诉我们 ELBO 优化的**本质是什么**:同时在做两件事——拉高 $\log p_\theta(x)$,以及让 $q$ 逼近真实后验。
-
----
-
-### 四、推导三:能量分解视角(最实用)
-
-把 ELBO 重新整理一下:
-
-$$\mathcal{L} = \mathbb{E}_q[\log p_\theta(x, z)] - \mathbb{E}_q[\log q(z \mid x)]$$
-
-用 $p_\theta(x, z) = p_\theta(x \mid z) p(z)$:
-
-$$\mathcal{L} = \mathbb{E}_q[\log p_\theta(x \mid z)] + \mathbb{E}_q[\log p(z)] - \mathbb{E}_q[\log q(z \mid x)]$$
-
-后两项合并成 KL:
-
-$$\boxed{\mathcal{L} = \underbrace{\mathbb{E}_{q(z \mid x)}[\log p_\theta(x \mid z)]}_{\text{重建项}} - \underbrace{D_{\text{KL}}(q(z \mid x) \,\|\, p(z))}_{\text{先验匹配项}}}$$
-
-这就是 **VAE 论文里的经典 ELBO 形式**。两项的含义:
-
-- **重建项**:从 $q$ 采样 $z$,用 $z$ 重建 $x$ 的对数似然要高 —— 即"信息要保留"
-- **先验匹配项**:$q(z \mid x)$ 不能离先验 $p(z)$ 太远 —— 即"潜空间要规整"
-
-最大化 ELBO = 重建好 + 潜空间规整。
+后来 NCSN/Score SDE 用了另一种思路 **Variance Exploding (VE)**:不收缩,直接加大量噪声让方差爆炸。两种都行,只是参数化不同。
 
 ---
 
-### 五、应用到 diffusion 上
+## 4. 用一张图总结
 
-在 diffusion 里:
+```
+                  前向(固定,加噪)
+   x_0  ────→  x_1  ────→  x_2  ────→ ... ────→  x_T ≈ N(0, I)
+        q(x_1|x_0)    q(x_2|x_1)              q(x_T|x_{T-1})
+   
+   
+   x_0  ←────  x_1  ←────  x_2  ←──── ... ←────  x_T
+         p_θ(x_0|x_1)  p_θ(x_1|x_2)         p_θ(x_{T-1}|x_T)
+                  逆向(学习,去噪)
 
-- $x = x_0$(数据)
-- $z = x_{1:T}$(所有加噪后的隐变量)
-- $q(z \mid x) = q(x_{1:T} \mid x_0) = \prod_{t=1}^T q(x_t \mid x_{t-1})$ —— **固定的**前向过程,不需要学
-- $p_\theta(x, z) = p_\theta(x_{0:T}) = p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)$ —— **要学的**逆向过程
 
-直接套推导一的结果:
+训练目标(Sohl-Dickstein 2015):
+  最小化 −ELBO
+       = E_q [−log p(x_T) + Σ_t log q(x_t|x_{t-1}) / p_θ(x_{t-1}|x_t) ]
 
-$$\log p_\theta(x_0) \geq \mathbb{E}_{q(x_{1:T} \mid x_0)}\left[\log \frac{p_\theta(x_{0:T})}{q(x_{1:T} \mid x_0)}\right]$$
 
-把分子分母展开:
-
-$$= \mathbb{E}_q\left[\log \frac{p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)}{\prod_{t=1}^T q(x_t \mid x_{t-1})}\right]$$
-
-$$= \mathbb{E}_q\left[\log p(x_T) + \sum_{t=1}^T \log \frac{p_\theta(x_{t-1} \mid x_t)}{q(x_t \mid x_{t-1})}\right]$$
-
-这就是 Sohl-Dickstein 2015 用的 ELBO 形式。
-
-但这个形式**训练效果不好**——分子是逆向 $p_\theta(x_{t-1} \mid x_t)$,分母是前向 $q(x_t \mid x_{t-1})$,方向不一致,梯度方差大。
-
-DDPM 的关键贡献之一就是用**贝叶斯公式重写这个 ELBO**,让每一项都变成两个高斯之间的 KL,从而:
-
-- 有闭式解,不需要采样估计
-- 方差大幅降低
-- 最终化简为漂亮的 $\| \epsilon - \epsilon_\theta \|^2$ 形式
-
-这部分我们留到 DDPM 那一讲(第三讲)详细推。
+采样:
+  x_T ~ N(0, I)
+  for t = T, ..., 1:
+      x_{t-1} ~ p_θ(x_{t-1} | x_t)   # 用学到的网络
+  return x_0
+```
 
 ---
 
-### 六、几个常见困惑点
+## 5. 和后续工作的承接
 
-**Q1:为什么 $q$ 可以"任意选"?选错了会怎样?**
+理解了原版,后续每一步"改进"你都能看清:
 
-ELBO 对**任何** $q$ 都成立(Jensen 不等式不要求 $q$ 是什么具体形式)。但选得不好,下界很松,优化下界相当于在优化一个跟 $\log p_\theta(x)$ 关系很弱的东西。
+| 问题 | 谁解决的 | 怎么解决 |
+|------|---------|---------|
+| ELBO 里 $q$ 和 $p_\theta$ 方向不一致 | DDPM (2020) | 用贝叶斯把 ELBO 重写成 KL 之和 |
+| KL 没闭式 | DDPM | 高斯之间的 KL 有闭式 |
+| 损失里要预测 $\mu_\theta$ | DDPM | 重参数化为预测噪声 $\epsilon$ |
+| 网络架构弱 | DDPM | UNet + 自注意力 + 时间嵌入 |
+| 采样要 $T$ 步太慢 | DDIM (2020) / DPM-Solver (2022) | 跳步采样 / ODE 数值解 |
+| 直接在像素空间太贵 | LDM / Stable Diffusion (2022) | 在 VAE 潜空间做 diffusion |
 
-在 VAE 里,$q_\phi(z \mid x)$ 是用神经网络参数化、和 $\theta$ 一起学的。在 diffusion 里更聪明:$q$ 是**预先固定的扩散过程**——简单到不需要学,但又因为 $T$ 大、每步小,使得 $q$ 自动接近真实后验。这是 diffusion 比 VAE 强的一个本质原因。
+---
 
-**Q2:为什么不直接最大化 $\log p_\theta(x)$?**
+## 6. 要点回顾
 
-算不出来。即使能用蒙特卡洛 $p_\theta(x) \approx \frac{1}{N}\sum_i \frac{p_\theta(x, z_i)}{q(z_i \mid x)}$,这是有偏估计(因为 $\log$ 套外面),而且方差极大,实际不可行。
+- Sohl-Dickstein 的框架 = **固定的高斯加噪前向 + 学习的高斯去噪逆向**
+- 损失函数 = ELBO,展开后是一串"前向条件 / 逆向条件"的对数比值之和
+- 这个目标**理论上正确、实际上方差大**,导致原始版本训练效果一般
+- 关键卡点:前向和逆向条件方向不一致,无法化简成闭式 KL
+- DDPM 的本质改进就是**通过贝叶斯把这个不一致修好**
 
-**Q3:Jensen 不等式损失了多少?**
+---
 
-正好是 $D_{\text{KL}}(q \| p_\theta(z \mid x))$。这就是为什么推导二比推导一更深刻——它精确量化了"损失"。
+到这里,**第一讲(Sohl-Dickstein 起源)**就讲完整了。我们已经覆盖:
+- 物理动机和 ELBO 的推导
+- 蒙特卡洛采样估计的本质
+- 完整的模型框架和损失函数
+- 它为什么 work、为什么不够好
+
+## 7. 为什么 2015 年没火?
+
+Sohl-Dickstein 的论文方向完全正确,但有几个问题:
+
+1. **算力不够**:2015 年训练一个像样的 diffusion 模型代价很大
+2. **架构不够好**:UNet + attention 的组合是后来才成熟的
+3. **目标函数没简化**:直接的 ELBO 训练信号弱
+4. **采样太慢**:几百步采样在当时不可接受
+
+所以这篇论文沉寂了 5 年,直到 2020 年 DDPM 才让它重新焕发生机。
+
+
+## 附录1: $p_\theta(x_{t-1} \mid x_t)$ 怎么算的
 
 
 
-要点回顾:
+### 一、先澄清:不是"计算 $p_\theta(x_{t-1} \mid x_t)$",而是"计算这个分布在某点的密度值"
 
-- ELBO 来源于"$\log$ 移进期望"(Jensen)或等价地"似然 = ELBO + KL"
-- 最大化 ELBO 同时做两件事:逼近真实似然 + 让 $q$ 逼近真实后验
-- 在 diffusion 里 $q$ 是固定的前向过程,这是和 VAE 的关键区别
-- 直接套出来的 ELBO 形式可训练但方差大,DDPM 的关键改进是用贝叶斯重写成 KL 之和
+先把概念分开:
 
+- $p_\theta(x_{t-1} \mid x_t)$ 作为**分布**,本身就是 $\mathcal{N}(\mu_\theta(x_t, t), \Sigma_\theta(x_t, t))$——它是一个高斯,由网络输出 $\mu_\theta, \Sigma_\theta$ 完全定义
+- **训练时我们要算的不是这个分布,而是"已经采到的 $x_{t-1}$ 在这个分布下的概率密度值"** $p_\theta(x_{t-1} \mid x_t)$ 在那个特定点的取值
 
+也就是说,损失里的 $\log p_\theta(x_{t-1} \mid x_t)$ 是一个**数**,通过把具体的 $x_{t-1}$ 代入高斯密度公式得到。
 
+---
+
+### 二、具体计算流程
+
+#### 步骤 1:前向采样得到 $x_{t-1}$ 和 $x_t$
+
+从数据 $x_0$ 出发,跑前向链:
+
+$$x_1 = \sqrt{1-\beta_1}\, x_0 + \sqrt{\beta_1}\, \epsilon_0$$
+$$x_2 = \sqrt{1-\beta_2}\, x_1 + \sqrt{\beta_2}\, \epsilon_1$$
+$$\vdots$$
+$$x_{t-1} = \sqrt{1-\beta_{t-1}}\, x_{t-2} + \sqrt{\beta_{t-1}}\, \epsilon_{t-2}$$
+$$x_t = \sqrt{1-\beta_t}\, x_{t-1} + \sqrt{\beta_t}\, \epsilon_{t-1}$$
+
+现在我们手上有两个**具体的向量**:$x_{t-1}$ 和 $x_t$(都是 $d$ 维向量,比如 28×28=784 维)。
+
+它们都是 $\theta$-无关的——纯粹由前向链和随机种子决定。
+
+#### 步骤 2:把 $x_t$ 喂给网络,得到 $\mu_\theta$ 和 $\Sigma_\theta$
+
+神经网络 $f_\theta$ 的输入:$(x_t, t)$
+神经网络的输出:两个量
+
+$$\mu_\theta(x_t, t) \in \mathbb{R}^d \quad (\text{一个 } d \text{ 维向量})$$
+$$\Sigma_\theta(x_t, t) \in \mathbb{R}^{d \times d} \quad (\text{一个协方差矩阵,实践中通常对角})$$
+
+实践中协方差用对角矩阵 $\Sigma_\theta = \text{diag}(\sigma_\theta^2)$,网络输出 $d$ 个方差值(或对数方差),这样:
+
+- 网络输出 $2d$ 个数
+- 前 $d$ 个是 $\mu_\theta$
+- 后 $d$ 个是 $\sigma_\theta^2$(对角元素)
+
+#### 步骤 3:把 $x_{t-1}$ 代入高斯密度公式
+
+现在 $p_\theta(\cdot \mid x_t) = \mathcal{N}(\mu_\theta, \Sigma_\theta)$ 这个分布被完全定义了。我们要算这个分布在 $x_{t-1}$ 这个点的密度值。
+
+多维高斯密度公式:
+
+$$\mathcal{N}(x; \mu, \Sigma) = \frac{1}{(2\pi)^{d/2} |\Sigma|^{1/2}} \exp\left(-\frac{1}{2}(x-\mu)^\top \Sigma^{-1} (x-\mu)\right)$$
+
+取 $\log$:
+
+$$\log \mathcal{N}(x; \mu, \Sigma) = -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log|\Sigma| - \frac{1}{2}(x-\mu)^\top \Sigma^{-1} (x-\mu)$$
+
+把 $x = x_{t-1}$、$\mu = \mu_\theta(x_t, t)$、$\Sigma = \Sigma_\theta(x_t, t)$ 代入:
+
+$$\log p_\theta(x_{t-1} \mid x_t) = -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log|\Sigma_\theta| - \frac{1}{2}(x_{t-1}-\mu_\theta)^\top \Sigma_\theta^{-1} (x_{t-1}-\mu_\theta)$$
+
+如果 $\Sigma_\theta = \text{diag}(\sigma_{\theta,1}^2, \ldots, \sigma_{\theta,d}^2)$ 是对角的,这进一步简化为:
+
+$$\log p_\theta(x_{t-1} \mid x_t) = -\frac{d}{2}\log(2\pi) - \frac{1}{2}\sum_{i=1}^d \log \sigma_{\theta,i}^2 - \frac{1}{2}\sum_{i=1}^d \frac{(x_{t-1,i} - \mu_{\theta,i})^2}{\sigma_{\theta,i}^2}$$
+
+**这就是一个具体可算的标量**。每一项都是当前张量的简单运算——对应到代码里就是几行 `torch` 操作。
+
+---
+
+### 三、伪代码版本
+
+让流程更具体一些:
+
+```python
+# 训练一个数据点
+x_0 = sample_from_dataset()
+t = random.randint(1, T)
+
+# 步骤 1: 前向采样到 x_{t-1} 和 x_t
+x_prev = forward_sample(x_0, t-1)   # 即 x_{t-1}
+eps = randn_like(x_prev)
+x_t = sqrt(1 - beta[t]) * x_prev + sqrt(beta[t]) * eps
+
+# 步骤 2: 网络输出 mu 和 sigma^2
+mu_theta, log_var_theta = network(x_t, t)
+var_theta = exp(log_var_theta)
+
+# 步骤 3: 算 log p(x_{t-1} | x_t),代高斯密度公式
+diff = x_prev - mu_theta
+log_p = -0.5 * d * log(2*pi) \
+        - 0.5 * sum(log_var_theta) \
+        - 0.5 * sum(diff**2 / var_theta)
+
+# 损失里的对应项:-log p
+loss_term = -log_p
+```
+
+---
+
+### 四、关键澄清点
+
+#### 4.1 训练时的 $x_{t-1}$ 不是网络生成的
+
+**初学者最容易混淆的一点**:训练时,$x_{t-1}$ 不是从 $p_\theta$ 采样得到的——它是**前向链事先采好的"标签"**。
+
+我们做的事情是:
+
+- 给网络看 $x_t$
+- 让网络输出一个分布 $p_\theta(\cdot \mid x_t)$
+- 评估这个分布在"真实"的 $x_{t-1}$ 上的概率密度
+- 优化网络让这个密度尽量大
+
+**这是经典的最大似然训练**——网络输出一个分布,我们让它在真实数据上的概率最大。和分类任务里"输出 softmax 概率,让真实类别的概率最大"完全同构,只是这里"类别"换成了连续的 $x_{t-1}$,概率换成了高斯密度。
+
+#### 4.2 梯度怎么流?
+
+梯度路径:
+
+$$\theta \xrightarrow{\text{网络}} (\mu_\theta, \Sigma_\theta) \xrightarrow{\text{密度公式}} \log p_\theta(x_{t-1} \mid x_t) \xrightarrow{} \text{loss}$$
+
+注意 $x_t, x_{t-1}$ 是常量(对梯度而言),只有 $\mu_\theta, \Sigma_\theta$ 是 $\theta$ 的函数。所以梯度只通过这两个量回流——**不需要重参数化穿过任何采样动作**(这就是上一讲说的"Sohl-Dickstein 不必须用重参数化"的具体含义)。
+
+#### 4.3 直观上网络在学什么
+
+最关键的一项是:
+
+$$-\frac{1}{2}\| x_{t-1} - \mu_\theta(x_t, t) \|^2 / \sigma^2$$
+
+最大化它 = 让 $\mu_\theta(x_t, t)$ 尽量靠近 $x_{t-1}$。
+
+也就是说:**网络看到 $x_t$,要预测出"这个 $x_t$ 上一步应该长啥样"**——一种"去噪"行为。这就是 diffusion 网络在做的事的本质。
+
+DDPM 后来做的"预测 $\epsilon$"其实是这个目标的等价变换——既然 $x_t = \sqrt{\bar\alpha_t}x_0 + \sqrt{1-\bar\alpha_t}\epsilon$,与其让网络预测 $\mu_\theta$,不如让它预测 $\epsilon$,数学上完全等价但优化更稳定。
+
+---
+
+### 五、和完整损失的关系
+
+最后把这一项放回完整损失里看。Sohl-Dickstein 的损失:
+
+$$-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \sum_{t=1}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}\right]$$
+
+每一项 $\log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}$ 包含:
+
+- $\log q(x_t \mid x_{t-1})$:**已知量**,直接代固定的高斯公式($\beta_t$ 是预设的)
+- $\log p_\theta(x_{t-1} \mid x_t)$:**通过上面的流程算出**
+
+两者相减得到这一项,所有 $t$ 求和,期望由蒙特卡洛(就当前这一条采样轨迹)估计。
+
+---
+
+### 六、要点回顾
+
+- $p_\theta(x_{t-1} \mid x_t)$ 是个高斯分布,由网络输出 $\mu_\theta, \Sigma_\theta$ 完全定义
+- "计算 $p_\theta(x_{t-1} \mid x_t)$" 实际指**算高斯密度公式在 $x_{t-1}$ 这个点的取值**
+- $x_{t-1}$ 是从前向链采样得到的"标签",不是网络生成的
+- 梯度只通过 $\mu_\theta, \Sigma_\theta$ 回流,不穿过采样
+- 本质上是最大似然:让网络输出的分布在真实 $x_{t-1}$ 上概率最大
