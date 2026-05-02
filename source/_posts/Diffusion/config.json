@@ -1,1 +1,9 @@
-{"name": "Diffusion Models 从入门到入土"}
+{
+    "name": "Diffusion Models 从入门到入土",
+    "order": [                                                                                                                                                                                                                           
+        "Chapter0",
+        "Chapter1",
+        "Chapter2",
+        "Chapter3"
+    ]
+}
