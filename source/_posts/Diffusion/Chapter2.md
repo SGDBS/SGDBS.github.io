@@ -124,7 +124,7 @@ $$= \int p_{\text{data}}(x)\, s_\theta(x)^\top \frac{\nabla_x p_{\text{data}}(x)
 
 **$p_{\text{data}}$ 被消掉了!** 这一步是关键——它让我们不再需要知道 $p_{\text{data}}$ 的密度形式,只需要它的存在。
 
-现在用**分部积分**(假设 $p_{\text{data}}(x) \to 0$ 在边界上,这在标准条件下成立):
+现在用**分部积分**(假设 $p_{\text{data}}(x) \to 0$ 在边界上,这在标准条件下成立，完整证明见附录1):
 
 $$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx = -\mathbb{E}_{p_{\text{data}}}[\nabla_x \cdot s_\theta(x)]$$
 
@@ -352,14 +352,218 @@ NCSN 是 2019 年第一个用 score-based 方法在 CIFAR-10 上做出能看的�
 - **NCSN**(Song & Ermon 2019):多尺度噪声 + annealed Langevin,解决低密度区域问题
 - 形式上和 DDPM 几乎相同——下一讲统一两条线
 
+## 附录1： $$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$$
+
+这一步是 score matching 推导里的关键一步——分部积分。我们一行一行推清楚,顺便把这个工具讲透,因为它在后面 SDE 推导里还会频繁出现。
+
 ---
 
-到这里,**两条独立的源头**都讲完了。下一步可以选:
+### 一、先看一维情形(最容易理解)
 
-1. **第三讲 DDPM**:推贝叶斯改写 + $\epsilon$-预测,把第一讲的"原始版本"升级成"现代版本"。这是工程上的关键突破。
-2. **第四讲 Score SDE**:直接进入统一框架,看两条线如何在 SDE 视角下完全合二为一。
-3. **再展开 NCSN**:比如详细讨论 noise schedule 的选择、Langevin 收敛理论。
+一维分部积分公式(高中知识):
 
-你想怎么走?
+$$\int u(x)\, v'(x)\, dx = u(x) v(x) - \int u'(x)\, v(x)\, dx$$
 
-我个人建议按**1 → 4** 的顺序——先把 DDPM 完整推完(它是 score SDE 的"离散版基石"),再看 SDE 框架如何把所有东西统一,这样会比直接跳到 SDE 更有"恍然大悟"的感觉。
+或者写成定积分:
+
+$$\int_{-\infty}^{\infty} u(x)\, v'(x)\, dx = \left[u(x) v(x)\right]_{-\infty}^{\infty} - \int_{-\infty}^{\infty} u'(x)\, v(x)\, dx$$
+
+我们要推:
+
+$$\int s_\theta(x)\, \frac{dp_{\text{data}}(x)}{dx}\, dx = -\int p_{\text{data}}(x)\, \frac{ds_\theta(x)}{dx}\, dx$$
+
+(暂且把 $s_\theta, p_{\text{data}}$ 都当作一维标量函数)
+
+设 $u = s_\theta$,$v = p_{\text{data}}$。那么 $v' = \frac{dp_{\text{data}}}{dx}$,$u' = \frac{ds_\theta}{dx}$。代入分部积分公式:
+
+$$\int_{-\infty}^{\infty} s_\theta(x)\, \frac{dp_{\text{data}}}{dx}\, dx = \underbrace{\left[s_\theta(x)\, p_{\text{data}}(x)\right]_{-\infty}^{\infty}}_{\text{边界项}} - \int_{-\infty}^{\infty} \frac{ds_\theta}{dx}\, p_{\text{data}}(x)\, dx$$
+
+**关键步骤:边界项为 0**。
+
+这要求一个**正则性假设**:$\lim_{|x| \to \infty} s_\theta(x)\, p_{\text{data}}(x) = 0$。
+
+什么时候成立?
+
+- $p_{\text{data}}(x) \to 0$ 在 $|x| \to \infty$ 处 ✓(任何合理的概率密度都满足,因为 $\int p\, dx = 1$ 强迫它衰减)
+- $s_\theta(x)$ 不能"爆炸得比 $p_{\text{data}}$ 衰减得还快"——通常 $p_{\text{data}}$ 是指数衰减(高斯尾巴),$s_\theta$ 是神经网络多项式增长,这个条件几乎总是成立
+
+所以边界项消失,得到:
+
+$$\int s_\theta(x)\, \frac{dp_{\text{data}}}{dx}\, dx = -\int p_{\text{data}}(x)\, \frac{ds_\theta}{dx}\, dx$$
+
+这就是一维版本的恒等式。✓
+
+---
+
+### 二、为什么这个变换能成立?直觉
+
+为什么"导数能从一边换到另一边"?用一个最直观的图景:
+
+$$\int s_\theta\, \frac{dp_{\text{data}}}{dx}\, dx = \int s_\theta\, dp_{\text{data}}$$
+
+(微分形式的写法)用乘法的微分法则:
+
+$$d(s_\theta \cdot p_{\text{data}}) = (ds_\theta) \cdot p_{\text{data}} + s_\theta \cdot (dp_{\text{data}})$$
+
+整理:
+
+$$s_\theta \cdot dp_{\text{data}} = d(s_\theta \cdot p_{\text{data}}) - p_{\text{data}} \cdot ds_\theta$$
+
+两边积分:
+
+$$\int s_\theta\, dp_{\text{data}} = \int d(s_\theta \cdot p_{\text{data}}) - \int p_{\text{data}}\, ds_\theta = [s_\theta \cdot p_{\text{data}}]_{-\infty}^{\infty} - \int p_{\text{data}}\, ds_\theta$$
+
+边界项消失:
+
+$$\int s_\theta\, dp_{\text{data}} = -\int p_{\text{data}}\, ds_\theta$$
+
+**本质上就是乘法求导法则反向用了一次**。
+
+---
+
+### 三、推广到多维:散度定理
+
+多维情形,我们要推的是:
+
+$$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$$
+
+注意类型:
+
+- $s_\theta(x) \in \mathbb{R}^d$:向量场
+- $\nabla_x p_{\text{data}}(x) \in \mathbb{R}^d$:梯度向量
+- $s_\theta(x)^\top \nabla_x p_{\text{data}}(x) \in \mathbb{R}$:两个向量的点积,是标量
+- $\nabla_x \cdot s_\theta(x) = \sum_i \partial s_{\theta,i}/\partial x_i \in \mathbb{R}$:散度,是标量
+
+所以两边都是标量积分,类型对得上。
+
+#### 用散度恒等式推
+
+有一个标准的向量分析恒等式(乘积法则的多维版):
+
+$$\nabla \cdot (f \mathbf{v}) = \nabla f \cdot \mathbf{v} + f\, \nabla \cdot \mathbf{v}$$
+
+对任意标量函数 $f$ 和向量场 $\mathbf{v}$ 成立(就是把一维的 $(fg)' = f'g + fg'$ 推广到多维,这里"导数"对应"梯度",左边的"和的一阶导"对应"散度")。
+
+我们这里取 $f = p_{\text{data}}$,$\mathbf{v} = s_\theta$:
+
+$$\nabla \cdot (p_{\text{data}} s_\theta) = \nabla p_{\text{data}} \cdot s_\theta + p_{\text{data}}\, \nabla \cdot s_\theta$$
+
+整理:
+
+$$\nabla p_{\text{data}} \cdot s_\theta = \nabla \cdot (p_{\text{data}} s_\theta) - p_{\text{data}}\, \nabla \cdot s_\theta$$
+
+注意 $\nabla p_{\text{data}} \cdot s_\theta$ 就是 $s_\theta^\top \nabla p_{\text{data}}$。两边积分:
+
+$$\int s_\theta^\top \nabla p_{\text{data}}\, dx = \int \nabla \cdot (p_{\text{data}} s_\theta)\, dx - \int p_{\text{data}}\, \nabla \cdot s_\theta\, dx$$
+
+#### 第一项消失:散度定理
+
+第一项 $\int \nabla \cdot (p_{\text{data}} s_\theta)\, dx$ 是关键。**散度定理(高斯-奥斯特罗格拉茨基定理)**:
+
+$$\int_V \nabla \cdot \mathbf{F}\, dV = \oint_{\partial V} \mathbf{F} \cdot \mathbf{n}\, dS$$
+
+意思是:**一个向量场在体积内的散度积分,等于它在边界上的法向通量**。
+
+我们的积分域 $V = \mathbb{R}^d$ 是整个空间,边界 $\partial V$ 是"无穷远的球面"。要让这个边界积分为 0,需要:
+
+$$\lim_{\|x\| \to \infty} p_{\text{data}}(x)\, s_\theta(x) = 0$$
+
+(且衰减得足够快,具体是要快于 $1/\|x\|^{d-1}$)
+
+这个条件在标准设定下成立——$p_{\text{data}}$ 是合理的概率密度(指数衰减),$s_\theta$ 是神经网络(最多多项式增长),乘积一定衰减到 0。
+
+**所以散度积分 = 边界通量 = 0**。
+
+#### 得到结果
+
+$$\int s_\theta^\top \nabla p_{\text{data}}\, dx = 0 - \int p_{\text{data}}\, \nabla \cdot s_\theta\, dx = -\int p_{\text{data}}\, \nabla \cdot s_\theta\, dx$$
+
+写成期望形式:
+
+$$\int s_\theta^\top \nabla p_{\text{data}}\, dx = -\mathbb{E}_{p_{\text{data}}}[\nabla \cdot s_\theta]$$
+
+---
+
+### 四、再说一句关于 trace 和散度的关系
+
+我们之前写成 $\text{tr}(\nabla_x s_\theta)$,这里又写成 $\nabla_x \cdot s_\theta$,这两个其实是**同一个东西**:
+
+$$\nabla_x \cdot s_\theta(x) = \sum_{i=1}^d \frac{\partial s_{\theta,i}}{\partial x_i}$$
+
+而 $\nabla_x s_\theta$ 是 $s_\theta$ 的雅可比矩阵 $J \in \mathbb{R}^{d \times d}$,$J_{ij} = \partial s_{\theta,i}/\partial x_j$。雅可比矩阵的迹:
+
+$$\text{tr}(\nabla_x s_\theta) = \sum_{i=1}^d J_{ii} = \sum_{i=1}^d \frac{\partial s_{\theta,i}}{\partial x_i}$$
+
+所以**散度 = 雅可比的迹**,只是不同记号。
+
+---
+
+### 五、把推导整合在一起
+
+为了把整个 score matching 的关键化简看清楚,我把完整链条写一遍:
+
+我们要算:
+
+$$\mathbb{E}_{p_{\text{data}}}\left[s_\theta(x)^\top \nabla_x \log p_{\text{data}}(x)\right]$$
+
+**第一步**:展开期望,用对数导数公式 $\nabla_x \log p = \nabla_x p / p$:
+
+$$= \int p_{\text{data}}(x)\, s_\theta(x)^\top \frac{\nabla_x p_{\text{data}}(x)}{p_{\text{data}}(x)}\, dx = \int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx$$
+
+**$p_{\text{data}}$ 神奇地约掉了**——这是为什么这个推导能 work。
+
+**第二步**:用乘积法则 + 散度定理(刚才推的):
+
+$$= -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$$
+
+**第三步**:写回期望:
+
+$$= -\mathbb{E}_{p_{\text{data}}}[\nabla_x \cdot s_\theta(x)]$$
+
+完成。✓
+
+---
+
+### 六、这个技巧的"关键魔法"在哪?
+
+值得停下来欣赏一下这个推导为什么这么神奇。
+
+**起点**:$\mathbb{E}_{p_{\text{data}}}[s_\theta^\top \nabla_x \log p_{\text{data}}]$——里面有个 $\nabla_x \log p_{\text{data}}$,**这正是我们不知道、想学的东西**。
+
+**终点**:$-\mathbb{E}_{p_{\text{data}}}[\nabla_x \cdot s_\theta]$——里面只有 $s_\theta$ 和它的导数,**完全不需要知道 $p_{\text{data}}$ 的密度形式**,只要能从 $p_{\text{data}}$ 采样就行(数据集就是采样!)。
+
+**两步操作**做到了这个变换:
+
+1. **对数导数公式**:把 $\log p$ 的梯度变成 $\nabla p / p$,然后 $p$ 约掉
+2. **分部积分(散度定理)**:把"$\nabla$ 在 $p$ 上"换成"$\nabla$ 在 $s_\theta$ 上",代价是边界项(为 0)
+
+第二步是核心:**它把"未知函数 $p_{\text{data}}$ 的导数"换成了"已知函数 $s_\theta$ 的导数"**,梯度从积不动的对象转移到了能算的对象。
+
+---
+
+### 七、这个技巧后面还会出现
+
+为什么花这么多时间讲这个推导?因为**分部积分(散度定理)在 diffusion / score matching 框架里是反复出现的核心工具**。后面你会看到:
+
+1. **Score Matching 损失推导**(就是我们刚做的)
+2. **Stein's identity**:$\mathbb{E}_p[\nabla \cdot f + f^\top \nabla \log p] = 0$,用同样手法推
+3. **Fokker-Planck 方程**:推 SDE 下分布的演化,反复用分部积分
+4. **Reverse SDE 推导(Anderson 1982)**:把前向 SDE 翻转成反向,核心一步就是分部积分
+5. **Probability Flow ODE**:从 Fokker-Planck 推 ODE,又是分部积分
+
+**学透这一步,后面的 SDE 推导你会觉得"怎么又是这一招"——确实是同一招。**
+
+---
+
+### 八、要点回顾
+
+- 一维分部积分:$\int u v' = [uv] - \int u' v$,边界项消失则得到对称形式
+- 多维推广:用乘积法则 $\nabla \cdot (fv) = \nabla f \cdot v + f \nabla \cdot v$ + 散度定理
+- 散度定理把"体积内的散度积分"变成"边界上的通量",在合理衰减条件下边界项为 0
+- 这个技巧的本质:**把未知函数的导数换成已知函数的导数**
+- 散度 = 雅可比矩阵的迹,两个名字一回事
+- 这个工具在后续 SDE 推导里反复出现,值得彻底理解
+
+
+
+
