@@ -63,6 +63,30 @@ if (_catName) {
         return chapterCmp(a, b, function(k){ return k === a ? sizeA : sizeB; });
     });
 
+    /* ── apply per-folder `order` from config.json ──
+       cfg.order is an array of post filenames (without .md, .md tolerated).
+       Listed posts come first in that order; unlisted posts follow in date-desc.
+    */
+    function applyOrderConfig(posts, cfg) {
+        if (!cfg || !cfg.order || !Array.isArray(cfg.order) || cfg.order.length === 0) {
+            return posts;
+        }
+        var orderMap = {};
+        cfg.order.forEach(function(name, idx) {
+            orderMap[String(name).replace(/\.md$/i, '')] = idx;
+        });
+        function basenameKey(p) {
+            var src = (p.source || '').replace(/\\/g, '/');
+            return src.split('/').pop().replace(/\.md$/i, '');
+        }
+        return posts.slice().sort(function(a, b) {
+            var ia = orderMap.hasOwnProperty(basenameKey(a)) ? orderMap[basenameKey(a)] : Infinity;
+            var ib = orderMap.hasOwnProperty(basenameKey(b)) ? orderMap[basenameKey(b)] : Infinity;
+            if (ia !== ib) return ia - ib;
+            return new Date(b.date) - new Date(a.date);
+        });
+    }
+
     /* ── assemble render data, tracking which groups contain the active post ── */
     var sidebarTree = treeOrder.map(function(L1key) {
         var node    = tree[L1key];
@@ -82,7 +106,7 @@ if (_catName) {
                 ? sg.posts.some(function(p){ return (p.source||'').replace(/\\/g,'/')===_activeSource; })
                 : false;
             if (sgActive) isL1Active = true;
-            return { label: L2cfg.name || L2key, posts: sg.posts, isActive: sgActive };
+            return { label: L2cfg.name || L2key, posts: applyOrderConfig(sg.posts, L2cfg), isActive: sgActive };
         });
 
         if (!isL1Active && _activeSource) {
@@ -90,7 +114,7 @@ if (_catName) {
         }
 
         var total = node.posts.length + node.sgOrder.reduce(function(s,k){ return s + node.subgroups[k].posts.length; }, 0);
-        return { label: L1label, posts: node.posts, subgroups: subgroups, total: total, isActive: isL1Active };
+        return { label: L1label, posts: applyOrderConfig(node.posts, L1cfg), subgroups: subgroups, total: total, isActive: isL1Active };
     });
 
     /* ── sidebar top title: CatFolder's config.json name or folder name ── */
