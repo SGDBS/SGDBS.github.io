@@ -172,7 +172,7 @@ $$\boxed{J_{\text{DSM}}(\theta) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}},
 
 注意里面是 $\log q_\sigma(\tilde x \mid x)$(条件概率,有闭式),不是 $\log q_\sigma(\tilde x)$(边际,无闭式)。
 
-Vincent 证明了:
+Vincent 证明了(详细证明在附录2):
 
 $$\arg\min_\theta J_{\text{DSM}}(\theta) = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}(\theta)$$
 
@@ -352,7 +352,7 @@ NCSN 是 2019 年第一个用 score-based 方法在 CIFAR-10 上做出能看的�
 - **NCSN**(Song & Ermon 2019):多尺度噪声 + annealed Langevin,解决低密度区域问题
 - 形式上和 DDPM 几乎相同——下一讲统一两条线
 
-## 附录1： $$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$$
+## 附录1： $\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$
 
 这一步是 score matching 推导里的关键一步——分部积分。我们一行一行推清楚,顺便把这个工具讲透,因为它在后面 SDE 推导里还会频繁出现。
 
@@ -566,4 +566,237 @@ $$= -\mathbb{E}_{p_{\text{data}}}[\nabla_x \cdot s_\theta(x)]$$
 
 
 
+## 附录2：$\arg\min_\theta J_{\text{DSM}}(\theta) = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}(\theta)$
+这是 Vincent 2011 论文的核心定理,推导很优雅。我们彻底证一遍——这个证明的技巧和你刚学的分部积分非常类似,都是"把不知道的东西通过代数变换约掉"。
+
+---
+
+### 一、先把两个目标写清楚
+
+设噪声分布:
+
+$$q_\sigma(\tilde x \mid x) = \mathcal{N}(\tilde x; x, \sigma^2 I)$$
+
+加噪后的边际分布:
+
+$$q_\sigma(\tilde x) = \int q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$$
+
+**ESM(对 $q_\sigma$)**:学 $q_\sigma$ 的 score:
+
+$$J_{\text{ESM}}^{(\sigma)}(\theta) = \frac{1}{2}\mathbb{E}_{\tilde x \sim q_\sigma}\left[\| s_\theta(\tilde x) - \nabla_{\tilde x} \log q_\sigma(\tilde x) \|^2\right]$$
+
+**DSM**:学条件 score:
+
+$$J_{\text{DSM}}(\theta) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}},\, \tilde x \sim q_\sigma(\tilde x \mid x)}\left[\| s_\theta(\tilde x) - \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x) \|^2\right]$$
+
+**注意区别**:
+
+- ESM 里是 $\nabla \log q_\sigma(\tilde x)$ —— 边际的 score,**没有闭式**(里面有积分)
+- DSM 里是 $\nabla \log q_\sigma(\tilde x \mid x)$ —— 条件的 score,**有闭式**(高斯)
+
+我们要证:**两者作为 $\theta$ 的函数,只差一个常数**——所以最优 $\theta$ 相同。
+
+---
+
+### 二、整体策略
+
+我们**不直接证两者相等**,而是证明:
+
+$$J_{\text{DSM}}(\theta) = J_{\text{ESM}}^{(\sigma)}(\theta) + C$$
+
+其中 $C$ **不依赖于 $\theta$**。这样:
+
+$$\arg\min_\theta J_{\text{DSM}} = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}$$
+
+策略:把两个目标都展开,看交叉项是否相等。
+
+---
+
+### 三、把两个目标展开
+
+平方展开 $\| s_\theta - t \|^2 = \| s_\theta \|^2 - 2 s_\theta^\top t + \| t \|^2$,所以:
+
+**ESM 展开**:
+
+$$J_{\text{ESM}}^{(\sigma)} = \underbrace{\frac{1}{2}\mathbb{E}_{q_\sigma(\tilde x)}\left[\| s_\theta(\tilde x) \|^2\right]}_{(A)} - \underbrace{\mathbb{E}_{q_\sigma(\tilde x)}\left[s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x)\right]}_{(B)} + \underbrace{\frac{1}{2}\mathbb{E}_{q_\sigma(\tilde x)}\left[\| \nabla_{\tilde x} \log q_\sigma(\tilde x) \|^2\right]}_{C_1}$$
+
+**DSM 展开**:
+
+$$J_{\text{DSM}} = \underbrace{\frac{1}{2}\mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[\| s_\theta(\tilde x) \|^2\right]}_{(A')} - \underbrace{\mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\right]}_{(B')} + \underbrace{\frac{1}{2}\mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[\| \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x) \|^2\right]}_{C_2}$$
+
+**目标**:证明 $(A) = (A')$、$(B) = (B')$,这样剩下 $C_1, C_2$ 都不依赖 $\theta$,差就是常数。
+
+---
+
+### 四、证 $(A) = (A')$:边际化等价
+
+这一步几乎是定义。
+
+$(A')$ 里的双重期望可以重组:
+
+$$(A') = \frac{1}{2}\int p_{\text{data}}(x) \int q_\sigma(\tilde x \mid x)\, \| s_\theta(\tilde x) \|^2\, d\tilde x\, dx$$
+
+交换积分顺序:
+
+$$= \frac{1}{2}\int \| s_\theta(\tilde x) \|^2 \underbrace{\int q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx}_{= q_\sigma(\tilde x)}\, d\tilde x$$
+
+$$= \frac{1}{2}\int q_\sigma(\tilde x)\, \| s_\theta(\tilde x) \|^2\, d\tilde x = \frac{1}{2}\mathbb{E}_{q_\sigma(\tilde x)}[\| s_\theta(\tilde x) \|^2] = (A)$$
+
+所以 **$(A) = (A')$** ✓
+
+直觉:被积函数 $\| s_\theta(\tilde x) \|^2$ 只依赖 $\tilde x$,和 $x$ 无关,所以对 $x$ 边际化把联合分布塌缩成边际分布,期望不变。
+
+---
+
+### 五、证 $(B) = (B')$:核心一步
+
+这是关键的一步。我们要证:
+
+$$\mathbb{E}_{q_\sigma(\tilde x)}\left[s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x)\right] \stackrel{?}{=} \mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\right]$$
+
+左边的"边际 score"和右边的"条件 score"**在期望意义下相等**。这是个非平凡的事实——表面上看两者完全不同。
+
+#### 推导左边 $(B)$
+
+$$(B) = \int q_\sigma(\tilde x)\, s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x)\, d\tilde x$$
+
+用对数导数公式 $\nabla_{\tilde x} \log q_\sigma(\tilde x) = \nabla_{\tilde x} q_\sigma(\tilde x) / q_\sigma(\tilde x)$:
+
+$$= \int q_\sigma(\tilde x)\, s_\theta(\tilde x)^\top \frac{\nabla_{\tilde x} q_\sigma(\tilde x)}{q_\sigma(\tilde x)}\, d\tilde x = \int s_\theta(\tilde x)^\top \nabla_{\tilde x} q_\sigma(\tilde x)\, d\tilde x$$
+
+(还是那个"$q_\sigma$ 神奇消掉"的把戏)
+
+#### 推 $\nabla_{\tilde x} q_\sigma(\tilde x)$
+
+$q_\sigma(\tilde x) = \int q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$,对 $\tilde x$ 求梯度($p_{\text{data}}$ 不依赖 $\tilde x$,梯度可以进入积分):
+
+$$\nabla_{\tilde x} q_\sigma(\tilde x) = \int \nabla_{\tilde x} q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$$
+
+再用一次对数导数公式($\nabla_{\tilde x} q_\sigma(\tilde x \mid x) = q_\sigma(\tilde x \mid x)\, \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)$):
+
+$$= \int q_\sigma(\tilde x \mid x)\, \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$$
+
+#### 代回 $(B)$
+
+$$(B) = \int s_\theta(\tilde x)^\top \left[\int q_\sigma(\tilde x \mid x)\, \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx\right] d\tilde x$$
+
+把 $s_\theta(\tilde x)$ 移进内层积分(它不依赖 $x$):
+
+$$= \int \int p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)\, s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\, dx\, d\tilde x$$
+
+这就是双重期望:
+
+$$= \mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\right] = (B')$$
+
+✓
+
+---
+
+### 六、合起来
+
+我们证明了:
+
+- $(A) = (A')$
+- $(B) = (B')$
+- $C_1, C_2$ 都不依赖 $\theta$
+
+所以:
+
+$$J_{\text{ESM}}^{(\sigma)}(\theta) = (A) - (B) + C_1$$
+
+$$J_{\text{DSM}}(\theta) = (A') - (B') + C_2 = (A) - (B) + C_2$$
+
+两式相减:
+
+$$\boxed{J_{\text{DSM}}(\theta) - J_{\text{ESM}}^{(\sigma)}(\theta) = C_2 - C_1 = \text{常数(不依赖 } \theta \text{)}}$$
+
+最小化谁结果都一样:
+
+$$\arg\min_\theta J_{\text{DSM}} = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}$$
+
+证毕。
+
+---
+
+### 七、关键技巧总结
+
+整个证明就靠两个把戏,反复用:
+
+#### 技巧 1:对数导数公式
+
+$$\nabla \log p = \frac{\nabla p}{p}$$
+
+它的威力:把 $\log p$ 拆开后,$p$ 出现在分母,容易和外面的 $p$ 约掉。我们用了**两次**:
+
+- 一次把 $\nabla \log q_\sigma(\tilde x)$ 变成 $\nabla q_\sigma(\tilde x) / q_\sigma(\tilde x)$,然后约掉 $q_\sigma(\tilde x)$
+- 一次把 $\nabla q_\sigma(\tilde x \mid x)$ 写成 $q_\sigma(\tilde x \mid x)\, \nabla \log q_\sigma(\tilde x \mid x)$,造出条件 score
+
+#### 技巧 2:交换积分顺序
+
+边际分布是积分的结果 $q_\sigma(\tilde x) = \int q_\sigma(\tilde x \mid x) p_{\text{data}}(x)\, dx$。当我们对 $\tilde x$ 求梯度后,这个积分依然在,只是被积函数变了。
+
+**梯度算子可以"穿过"对 $x$ 的积分**(因为求导和积分变量不同),这让我们能把"边际 score 的期望"和"条件 score 的期望"联系起来。
+
+---
+
+### 八、为什么这个等价"看起来不可思议"?
+
+直觉上,边际 score $\nabla \log q_\sigma(\tilde x)$ 和条件 score $\nabla \log q_\sigma(\tilde x \mid x)$ **完全不同**:
+
+- 边际 score:在所有可能的 $x$ 上平均后的"指向高密度方向"
+- 条件 score:已知 $x$ 时,$\tilde x$ 偏离 $x$ 的方向(有闭式 $-(\tilde x - x)/\sigma^2$)
+
+它们怎么会"等价"?
+
+关键是**等价的是期望**,不是逐点相等。具体地:
+
+$$\nabla_{\tilde x} \log q_\sigma(\tilde x) = \mathbb{E}_{p(x \mid \tilde x)}[\nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)]$$
+
+(这其实是 Tweedie 公式的雏形——边际 score 是条件 score 在后验下的期望)
+
+我们证明的不是逐点相等,而是**在更外层的期望下相等**。这就是为什么 $J_{\text{ESM}}$ 和 $J_{\text{DSM}}$ 只差一个不依赖 $\theta$ 的常数——交叉项 $(B), (B')$ 被这个隐藏的恒等式连接起来。
+
+---
+
+### 九、为什么这件事如此重要?
+
+回顾我们绕了一大圈做了什么:
+
+| | 我们想要的 | 实际可算的 |
+|---|---|---|
+| ESM | $\nabla \log p_{\text{data}}$(根本不知道) | 没法直接算 |
+| ESM($q_\sigma$) | $\nabla \log q_\sigma(\tilde x)$(边际,无闭式) | 没法直接算 |
+| DSM | $\nabla \log q_\sigma(\tilde x \mid x)$(条件,**有闭式**!) | **可以直接算!** |
+
+DSM 把"想学边际 score"这件事,通过"加点噪声 + 用条件 score 当目标"的迂回,变成了一个**完全可计算**的 MSE 损失。
+
+代入条件高斯的 score $\nabla \log q_\sigma(\tilde x \mid x) = -(\tilde x - x)/\sigma^2$,得到:
+
+$$J_{\text{DSM}} = \frac{1}{2}\mathbb{E}_{x, \tilde x}\left[\left\| s_\theta(\tilde x) + \frac{\tilde x - x}{\sigma^2} \right\|^2\right]$$
+
+——干净的回归损失,可以直接训练。这就是 DSM 在工程上的伟大之处。
+
+---
+
+### 十、和上一讲分部积分对比
+
+注意到这个证明**没有用分部积分**——它纯粹靠"对数导数 + 积分顺序交换"。这是因为:
+
+- Hyvärinen ESM 的化简(上一讲)需要把 $\nabla p_{\text{data}}$ 转移到 $s_\theta$ 上,所以要分部积分
+- Vincent DSM 的等价性证明则是把"边际 score"通过定义本身展开成"条件 score 的积分",不需要"导数转移"
+
+两个证明思路不同,但**共同的精神**是:利用**对数导数公式**让"未知函数"自动从分子分母约掉,最终得到一个只用已知量的式子。
+
+这是 score 视角下反复出现的核心技术——记住它,后面在 Tweedie 公式、reverse SDE 推导里你都会再看到。
+
+---
+
+### 十一、要点回顾
+
+- DSM 和 ESM(对 $q_\sigma$)只差一个不依赖 $\theta$ 的常数,所以最优解相同
+- 证明靠两步:展开平方损失,然后证明 $(A) = (A')$ 和 $(B) = (B')$
+- $(A) = (A')$ 用积分顺序交换得到边际化
+- $(B) = (B')$ 用对数导数公式让 $q_\sigma$ 在分母分子约掉,然后造出 $p_{\text{data}}\, q_\sigma(\tilde x \mid x)$ 的形式
+- 隐藏的核心事实:**边际 score = 条件 score 在后验下的期望**(Tweedie 公式)
+- 这让我们绕开"边际 score 没有闭式"的问题,转而学有闭式的"条件 score"——目标完全等价但完全可计算
 
