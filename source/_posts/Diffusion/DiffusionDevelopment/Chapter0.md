@@ -1,5 +1,5 @@
 ---
-title: Chapter 0 数学知识
+title: Chapter 0. 数学知识
 categories: Diffusion Models
 date: 2026-05-01 12:00:00
 mathjax: true

@@ -1,5 +1,5 @@
 ---
-title: Chapter 1 Sohl-Dickstein 模型
+title: Chapter 1 Sohl-Dickstein Model
 categories: Diffusion Models
 date: 2026-05-01 12:00:00
 mathjax: true

@@ -1,5 +1,5 @@
 ---
-title: Chapter 3 DDPM 模型
+title: Chapter 3. DDPM 
 categories: Diffusion Models
 date: 2026-05-01 12:00:00
 mathjax: true
@@ -561,7 +561,7 @@ $$-\frac{1}{2}\left(A \| z \|^2 - 2 B^\top z\right)$$
 
 
 
-## 附录2： 怎么化简$L_{t-1}$散度的
+## 附录2：怎么化简$L_{t-1}$散度的
 
 
 ### 一、先回顾我们在哪
