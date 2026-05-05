@@ -735,8 +735,8 @@ $$\epsilon \sim \mathcal{N}(0, I)$$
 | 阶段 | loss 的形式 | 怎么算 |
 |---|---|---|
 | Sohl-Dickstein | $\log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}$ | 蒙特卡洛(方向不一致,无法 KL) |
-| DDPM 改写后 | $D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \| p_\theta(x_{t-1} \mid x_t))$ | 闭式 KL(都是高斯,方差还相同) |
-| DDPM 化简后 | $\| \tilde\mu - \mu_\theta \|^2$ | MSE,直接回归 |
+| DDPM 改写后 | $D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \,\Vert\, p_\theta(x_{t-1} \mid x_t))$ | 闭式 KL(都是高斯,方差还相同) |
+| DDPM 化简后 | $\Vert \tilde\mu - \mu_\theta \Vert^2$ | MSE,直接回归 |
 
 每一步都在**降低 loss 的计算复杂度**:从需要采样估计,到闭式 KL,到 MSE 回归。
 

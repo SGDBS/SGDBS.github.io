@@ -574,7 +574,7 @@ NCSN 是 2019 年第一个用 score-based 方法在 CIFAR-10 上做出能看的�
 | 关键补丁 | DDPM(简化目标) | DSM(去噪等价) |
 | 工程问题二 | 仍要 1000 步采样 | 低密度区域 score 不准 |
 | 突破 | 使用多步小噪声(自带) | NCSN 多尺度噪声 |
-| 训练目标 | $\| \epsilon - \epsilon_\theta(x_t, t) \|^2$ | $\sigma \| s_\theta(\tilde x, \sigma) + \epsilon/\sigma \|^2$ |
+| 训练目标 | $\Vert \epsilon - \epsilon_\theta(x_t, t) \Vert^2$ | $\sigma \Vert s_\theta(\tilde x, \sigma) + \epsilon/\sigma \Vert^2$ |
 | 采样 | 逆向链 | Annealed Langevin |
 | 提出年份 | 2020(DDPM) | 2019(NCSN) |
 
