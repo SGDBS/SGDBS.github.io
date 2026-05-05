@@ -114,12 +114,15 @@
 <script src="<%- theme.jsDelivr.url %><%- url_for(theme.libs.js.tocbot) %>"></script>
 <script>
     $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
         tocbot.init({
             tocSelector: '#toc-content',
             contentSelector: '#articleContent',
             headingsOffset: -($(window).height() * 0.4 - 45),
             collapseDepth: Number('<%- theme.toc.collapseDepth %>'),
-            headingSelector: '<%- theme.toc.heading %>'
+            headingSelector: '<%- theme.toc.heading %>',
+            ignoreSelector: 'details *'
         });
 
         // modify the toc link href to support Chinese.
@@ -130,6 +133,8 @@
         });
 
         // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
         i = 0;
         $('#articleContent').children('<%- theme.toc.heading %>').each(function () {
             $(this).attr('id', tocHeading + (++i));

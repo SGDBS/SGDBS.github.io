@@ -112,11 +112,11 @@ $$q_\sigma(x_t \mid x_0) = \int q_\sigma(x_t \mid x_{t-1}, x_0)\, q_\sigma(x_{t-
 
 $$q_\sigma(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_t}\, x_0, (1-\bar\alpha_t) I)$$
 
-**归纳基**
+### 归纳基
 
 $t = T$:这一步直接由前向定义保证(我们让 $q_\sigma(x_T \mid x_0)$ 仍然是 DDPM 的最终分布)。
 
-**归纳步:假设 $t-1$ 成立,证 $t$ 成立**
+### 归纳步:假设 $t-1$ 成立,证 $t$ 成立
 
 假设 $q_\sigma(x_{t-1} \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_{t-1}}\, x_0, (1-\bar\alpha_{t-1}) I)$。
 
@@ -132,7 +132,7 @@ $$x_t = \underbrace{\sqrt{\bar\alpha_t}\, x_0}_{\text{均值}} + \underbrace{\sq
 
 通过线性高斯计算可验证均值方差正确。完整的代数推导比较繁琐,DDIM 论文的 Lemma 1 给出了详细形式。
 
-**关键启示**
+### 关键启示
 
 这个构造**留出了 $\sigma_t$ 这个自由度**——它只影响**联合分布**(也就是 $x_{t-1}$ 和 $x_t$ 的相关性),不影响**边际**。我们后面会看到,$\sigma_t$ 从 0 到 DDPM 后验方差是一个连续族,DDPM 是这个族的特定一员。
 
