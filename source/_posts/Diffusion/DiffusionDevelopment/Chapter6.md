@@ -98,7 +98,235 @@ $$\boxed{\tilde\beta_t = \frac{1 - \bar\alpha_{t-1}}{1 - \bar\alpha_t}\, \beta_t
 
 这个公式是 DDPM 数学的**核心引擎**——后面的一切都建立在它上面。
 
-(完整推导见附录1)
+{% details 怎么推导的 %}
+
+好,这个推导是"高斯运算"的经典练习——纯代数,但每一步都要清楚。我会用**配方法**(completing the square)系统推完。这是 diffusion 推导里最技术性的一段,但理解了它,后面所有"高斯之间的运算"你都会做。
+
+---
+
+### 一、起点:贝叶斯展开
+
+我们要推:
+
+$$q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}$$
+
+三个高斯都已知:
+
+$$q(x_t \mid x_{t-1}) = \mathcal{N}(x_t;\, \sqrt{\alpha_t} x_{t-1},\, \beta_t I)$$
+
+$$q(x_{t-1} \mid x_0) = \mathcal{N}(x_{t-1};\, \sqrt{\bar\alpha_{t-1}} x_0,\, (1-\bar\alpha_{t-1}) I)$$
+
+$$q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t} x_0,\, (1-\bar\alpha_t) I)$$
+
+(其中 $\alpha_t = 1-\beta_t$,$\bar\alpha_t = \prod_{s=1}^t \alpha_s$)
+
+**总策略**:取对数,只看依赖 $x_{t-1}$ 的项,把它整理成"$x_{t-1}$ 的二次型 + 常数",对照高斯标准形式读出均值和方差。
+
+为什么这个策略行?因为:**任何关于 $x_{t-1}$ 的表达,如果它的对数是 $x_{t-1}$ 的二次型,那它就是关于 $x_{t-1}$ 的高斯**。高斯被均值和方差完全确定,所以读出二次型的系数就够了。
+
+---
+
+### 二、写出对数
+
+取对数(乘除 → 加减):
+
+$$\log q(x_{t-1} \mid x_t, x_0) = \log q(x_t \mid x_{t-1}) + \log q(x_{t-1} \mid x_0) - \log q(x_t \mid x_0)$$
+
+第三项 $\log q(x_t \mid x_0)$ **不依赖 $x_{t-1}$**,作为常数处理(吸收到归一化里)。
+
+剩下两项,代入高斯密度公式 $\log \mathcal{N}(z; \mu, \sigma^2 I) = -\frac{1}{2\sigma^2}\| z - \mu \|^2 + \text{const}$(为了简洁我用了一维记号,多维各向同性同理):
+
+**第一项**:
+
+$$\log q(x_t \mid x_{t-1}) = -\frac{1}{2\beta_t}\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2 + \text{const}$$
+
+**第二项**:
+
+$$\log q(x_{t-1} \mid x_0) = -\frac{1}{2(1-\bar\alpha_{t-1})}\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2 + \text{const}$$
+
+合并:
+
+$$\log q(x_{t-1} \mid x_t, x_0) = -\frac{1}{2}\left[\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} + \frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}}\right] + \text{const}$$
+
+---
+
+### 三、展开 $x_{t-1}$ 的二次型
+
+我们的目标是把方括号里的部分整理成关于 $x_{t-1}$ 的形式:
+
+$$A \| x_{t-1} \|^2 - 2 B^\top x_{t-1} + (\text{不依赖 } x_{t-1} \text{ 的常数})$$
+
+读出 $A$ 和 $B$ 后,均值方差就出来了。
+
+#### 第一块展开
+
+$$\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} = \frac{1}{\beta_t}\left(\| x_t \|^2 - 2\sqrt{\alpha_t}\, x_t^\top x_{t-1} + \alpha_t \| x_{t-1} \|^2\right)$$
+
+只看依赖 $x_{t-1}$ 的项:
+
+$$= \frac{\alpha_t}{\beta_t}\| x_{t-1} \|^2 - \frac{2\sqrt{\alpha_t}}{\beta_t}\, x_t^\top x_{t-1} + \text{const}$$
+
+#### 第二块展开
+
+$$\frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}} = \frac{1}{1-\bar\alpha_{t-1}}\left(\| x_{t-1} \|^2 - 2\sqrt{\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \bar\alpha_{t-1}\| x_0 \|^2\right)$$
+
+只看依赖 $x_{t-1}$ 的项:
+
+$$= \frac{1}{1-\bar\alpha_{t-1}}\| x_{t-1} \|^2 - \frac{2\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \text{const}$$
+
+#### 合并两块
+
+$x_{t-1}$ 的**二次项系数 $A$**:
+
+$$A = \frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}$$
+
+$x_{t-1}$ 的**一次项系数 $B$**(指 $-2 B^\top x_{t-1}$ 的 $B$):
+
+$$B = \frac{\sqrt{\alpha_t}}{\beta_t}\, x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0$$
+
+---
+
+### 四、配方法读出均值和方差
+
+回忆标准高斯的对数(忽略常数):
+
+$$\log \mathcal{N}(x_{t-1}; \tilde\mu, \tilde\sigma^2 I) = -\frac{1}{2\tilde\sigma^2}\| x_{t-1} - \tilde\mu \|^2 = -\frac{1}{2\tilde\sigma^2}\left(\| x_{t-1} \|^2 - 2 \tilde\mu^\top x_{t-1}\right) + \text{const}$$
+
+所以标准形式中的二次项系数和一次项 $B$ 满足:
+
+- 二次项系数 = $\frac{1}{\tilde\sigma^2}$
+- 一次项系数 $B$ = $\frac{\tilde\mu}{\tilde\sigma^2}$
+
+(注意我们的合并公式整体外面有一个 $-\frac{1}{2}$,所以提取的就是这个对应关系)
+
+对照得到:
+
+$$\frac{1}{\tilde\sigma^2} = A,\quad \frac{\tilde\mu}{\tilde\sigma^2} = B$$
+
+所以:
+
+$$\boxed{\tilde\sigma^2 = \frac{1}{A},\quad \tilde\mu = \frac{B}{A} = \tilde\sigma^2 \cdot B}$$
+
+---
+
+### 五、化简 $\tilde\sigma^2$
+
+$$\tilde\sigma^2 = \frac{1}{\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}}$$
+
+通分:
+
+$$\tilde\sigma^2 = \frac{1}{\frac{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}{\beta_t (1-\bar\alpha_{t-1})}} = \frac{\beta_t (1-\bar\alpha_{t-1})}{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}$$
+
+化简分母。用 $\beta_t = 1 - \alpha_t$:
+
+$$\alpha_t (1-\bar\alpha_{t-1}) + \beta_t = \alpha_t - \alpha_t \bar\alpha_{t-1} + 1 - \alpha_t = 1 - \alpha_t \bar\alpha_{t-1}$$
+
+而 $\alpha_t \bar\alpha_{t-1} = \bar\alpha_t$(因为 $\bar\alpha_t = \prod_{s=1}^t \alpha_s = \alpha_t \prod_{s=1}^{t-1} \alpha_s = \alpha_t \bar\alpha_{t-1}$),所以分母是 $1 - \bar\alpha_t$。
+
+得到:
+
+$$\boxed{\tilde\sigma^2 = \tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t}\, \beta_t}$$
+
+完美——这就是 DDPM 公式里的方差。
+
+---
+
+### 六、化简 $\tilde\mu_t$
+
+$$\tilde\mu_t = \tilde\sigma^2 \cdot B = \frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t}\left[\frac{\sqrt{\alpha_t}}{\beta_t} x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} x_0\right]$$
+
+把 $\tilde\sigma^2$ 分配进去:
+
+**$x_t$ 的系数**:
+
+$$\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\alpha_t}}{\beta_t} = \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}$$
+
+**$x_0$ 的系数**:
+
+$$\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}$$
+
+合起来:
+
+$$\boxed{\tilde\mu_t(x_t, x_0) = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}\, x_0 + \frac{\sqrt{\alpha_t}\, (1-\bar\alpha_{t-1})}{1-\bar\alpha_t}\, x_t}$$
+
+完美——这就是 DDPM 公式里的均值。✓
+
+---
+
+### 七、检查一致性(sanity check)
+
+数学推导要会自检,看这个结果合不合理。
+
+**检查 1**:$x_0$ 和 $x_t$ 的系数加起来应该接近什么?
+
+让我们看极端情况。当 $t = 1$ 时,$\bar\alpha_{t-1} = \bar\alpha_0 = 1$,$\bar\alpha_t = \alpha_1$:
+
+- $x_0$ 系数:$\frac{\sqrt{1} \cdot \beta_1}{1-\alpha_1} = \frac{\beta_1}{\beta_1} = 1$
+- $x_t$ 系数:$\frac{\sqrt{\alpha_1}(1-1)}{1-\alpha_1} = 0$
+
+所以 $\tilde\mu_1 = x_0$ —— 当 $t = 1$ 时,逆向后验完全集中在 $x_0$,**没有不确定性**(方差也应该是 0,我们检查:$\tilde\beta_1 = \frac{1-1}{1-\alpha_1}\beta_1 = 0$ ✓)。
+
+**直觉解释**:已知 $x_0$ 和 $x_1$,要问 $x_0$ 是什么——当然就是 $x_0$ 本身,完全确定。
+
+**检查 2**:当 $t$ 很大、$\bar\alpha_t \to 0$ 时:
+
+- $x_0$ 系数 $\approx \sqrt{\bar\alpha_{t-1}} \beta_t \to 0$
+- $x_t$ 系数 $\approx \sqrt{\alpha_t}$
+
+也就是 $\tilde\mu_t \approx \sqrt{\alpha_t}\, x_t$。当噪声非常大时,$x_0$ 信息被噪声完全淹没,逆向后验主要由 $x_t$ 决定——也合理。
+
+**检查 3**:方差 $\tilde\beta_t < \beta_t$ 吗?
+
+$\tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t} \beta_t$。因为 $\bar\alpha_{t-1} > \bar\alpha_t$,有 $1-\bar\alpha_{t-1} < 1-\bar\alpha_t$,所以 $\tilde\beta_t < \beta_t$ ✓。
+
+**直觉**:已知 $x_0$ 和 $x_t$ 之后,我们对 $x_{t-1}$ 的不确定性,比单纯看前向加噪 $\beta_t$ 要小——多了 $x_0$ 这个信息,后验就更窄。合理。
+
+---
+
+### 八、技巧总结:配方法的精髓
+
+整个推导的核心是**配方法**——给一个二次型,读出均值方差。让我把这个"模板"提炼出来,因为它在 diffusion / VAE / 高斯过程里反复出现。
+
+**模板**:如果一个分布的对数密度(忽略常数)长这样
+
+$$-\frac{1}{2}\left(A \| z \|^2 - 2 B^\top z\right)$$
+
+那这个分布就是高斯,均值 $\mu = B/A$,方差 $\sigma^2 = 1/A$。
+
+**实践三步**:
+
+1. 把所有"高斯乘积/比值"取对数,变成一堆二次型相加
+2. 收集所有 $\| z \|^2$ 的系数得 $A$,所有 $z^\top$ 的系数得 $B$
+3. 读出 $\mu = B/A$,$\sigma^2 = 1/A$,完成
+
+整个过程**不需要任何创意**,纯机械。学会这个,你以后看 diffusion 各种高斯运算都不会怕。
+
+#### 一个更几何的视角
+
+更深一层:这个推导本质是"两个高斯的乘积还是高斯"——更准确地说,**两个关于 $x_{t-1}$ 的高斯的乘积,得到一个新的关于 $x_{t-1}$ 的高斯,新的精度(precision = 方差的倒数)是两个精度之和**。
+
+具体到我们这里:
+
+- $q(x_t \mid x_{t-1})$ 看作 $x_{t-1}$ 的函数,精度是 $\alpha_t / \beta_t$
+- $q(x_{t-1} \mid x_0)$ 看作 $x_{t-1}$ 的函数,精度是 $1/(1-\bar\alpha_{t-1})$
+- 乘积后的精度 = 两者之和 = $A$
+
+这就是为什么贝叶斯推断里,**精度具有"可加性",而方差不具备**——后验精度 = 先验精度 + 似然精度。这个原理在贝叶斯线性回归、卡尔曼滤波里都是同一回事。
+
+---
+
+### 九、要点回顾
+
+- 推导工具:**配方法**——把对数密度整理成关于变量的二次型,读出均值方差
+- 三个高斯(前向 1 步、前向 $t-1$ 步、前向 $t$ 步)通过贝叶斯组合
+- 第三个($q(x_t \mid x_0)$)不依赖 $x_{t-1}$,扔进常数
+- 二次项系数 $A$ 和一次项系数 $B$ 决定 $\tilde\mu = B/A$,$\tilde\sigma^2 = 1/A$
+- 关键化简:$1 - \alpha_t \bar\alpha_{t-1} = 1 - \bar\alpha_t$
+- 检查极端情况($t=1$、$t$ 很大)能验证公式合理
+- 几何视角:贝叶斯组合 = 精度相加
+
+
+{% enddetails %}
 
 ---
 
