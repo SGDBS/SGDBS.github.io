@@ -1,436 +1,306 @@
 ---
-title: Chapter 5. Score SDE
+title: Chapter 5. NCSN Models
 categories: Diffusion Models
-date: 2026-05-04 12:00:00
+date: 2026-05-01 13:00:00
 mathjax: true
 tags:
     - AI
     - Diffusion Models
 ---
 
-好,**第四讲:Score SDE**。
+## 一、NCSN 是什么
 
-这一讲是 diffusion 数学的"加冕时刻"——把第一讲(变分线)和第二讲(score 线)正式统一在一个连续时间的随机微分方程框架下。Song et al. 2021 的论文 "Score-Based Generative Modeling through Stochastic Differential Equations" 是这条线的集大成者。
+**NCSN = Noise Conditional Score Network**(噪声条件 score 网络)
 
-我会按这个顺序展开:
+是 Yang Song(就是 Score SDE 的作者)和 Stefano Ermon 在 2019 年提出的方法,论文 "Generative Modeling by Estimating Gradients of the Data Distribution"。
 
-1. 为什么需要连续时间视角
-2. SDE 的基础(Itô 微积分最小集)
-3. 前向 SDE:DDPM 和 NCSN 都是它的特例
-4. **Anderson 反向 SDE**:这一讲的"心脏"
-5. Probability Flow ODE:确定性视角
-6. 训练:连续时间的 score matching
-7. 统一图景
+它和 DDPM 是 diffusion 两条独立线索的"成熟代表":
 
----
+- **DDPM(2020)**:从变分推断和马尔可夫链出发
+- **NCSN(2019)**:从 score matching 和 Langevin 动力学出发
 
-## 一、动机:从离散到连续
-
-回顾我们走过的路:
-
-- DDPM:离散链 $x_0 \to x_1 \to \cdots \to x_T$,$T = 1000$
-- NCSN:离散噪声尺度 $\sigma_1 > \cdots > \sigma_L$
-
-每个都是"离散时间"的过程。但思考一下:
-
-- $T$ 是**任意选的**——为什么是 1000?500 行不行?2000 呢?
-- $\beta_t$ 是个**离散 schedule**,它是某种连续函数的"采样"
-- DDPM 和 NCSN 看起来是不同的过程,但**最终训练目标几乎相同**($\epsilon$-预测 vs score-预测,差一个标量)
-
-这强烈暗示:**它们是同一个连续过程的两种离散化**。让 $T \to \infty$、$\Delta t \to 0$,会得到一个连续时间的 SDE,所有特例都能从它推出来。
-
-这就是 Score SDE 的核心思想——**连续时间是 diffusion 的"自然语言",离散都是它的近似**。
+最终它们在 Score SDE 框架下被统一,但**NCSN 比 DDPM 早一年**——它其实是更早的"现代 diffusion"工作。
 
 ---
 
-## 二、SDE 基础(最小必备)
+## 二、它要解决什么问题
 
-我假设你只接触过 ODE,我们快速过 SDE 的核心概念。
+回顾我们讲 score matching 时讲的两个**核心障碍**:
 
-### 2.1 什么是 SDE?
+### 障碍 1:原版 score matching 算不动
 
-ODE:$\frac{dx}{dt} = f(x, t)$,确定性演化。
+Hyvärinen 2005 原版的损失里有 trace 项 $\text{tr}(\nabla_x s_\theta)$,需要 $d$ 次反向传播,高维下不可行。
 
-SDE:加上随机扰动:
+### 障碍 2:低密度区域 score 估不准
 
-$$dx = f(x, t)\, dt + g(t)\, dw$$
+即使用 DSM(Denoising Score Matching)绕开了 trace 问题,**还有一个更根本的问题**:
 
-- $f(x, t)$:**漂移**(drift)——确定性的"流向"
-- $g(t)$:**扩散系数**——随机扰动的强度
-- $dw$:**布朗运动的增量**——核心的"随机种子"
+- 真实数据集中在低维流形上,$\mathbb{R}^d$ 的绝大部分空间是低密度区域
+- 训练数据稀疏,网络在低密度区域学不准 score
+- Langevin 采样从噪声 $\mathcal{N}(0, I)$ 出发,**初始点几乎肯定在低密度区域**——score 给的方向是错的,采样不收敛
 
-### 2.2 布朗运动(Wiener 过程)
+这导致单尺度 DSM + Langevin 完全不能 work——理论可行,实际从噪声出发就走不动。
 
-$w_t$ 是布朗运动,意思是:
-
-- $w_0 = 0$
-- 增量 $w_{t+\Delta t} - w_t \sim \mathcal{N}(0, \Delta t)$,且与过去独立
-- 路径连续但处处不可微(这是关键技术点)
-
-直观:**$dw$ 是"无穷小的高斯增量"**,标准差 $\sqrt{dt}$。
-
-### 2.3 Euler-Maruyama 离散化
-
-把 SDE 离散化到步长 $\Delta t$:
-
-$$x_{t+\Delta t} \approx x_t + f(x_t, t)\, \Delta t + g(t)\sqrt{\Delta t}\, z,\quad z \sim \mathcal{N}(0, I)$$
-
-注意:漂移项是 $\Delta t$,扩散项是 $\sqrt{\Delta t}$ ——这是 SDE 和 ODE 的**关键区别**。$\Delta t$ 小时,$\sqrt{\Delta t} \gg \Delta t$,**随机扰动主导短时行为**。
-
-### 2.4 Fokker-Planck 方程
-
-我们关心的不是某条具体路径,而是分布 $p_t(x)$ 怎么演化。**Fokker-Planck 方程**给出答案:
-
-$$\frac{\partial p_t(x)}{\partial t} = -\nabla_x \cdot [f(x,t)\, p_t(x)] + \frac{1}{2} g(t)^2 \nabla_x^2 p_t(x)$$
-
-这是个偏微分方程(PDE),描述密度的时间演化:
-
-- 第一项:漂移导致的输运
-- 第二项:扩散导致的"模糊化"(就是热方程里的拉普拉斯算子)
-
-我们用不到这个 PDE 的解析解,但要知道它的存在——它是反向 SDE 推导的关键。
+**NCSN 的核心贡献:用多尺度噪声 + 退火 Langevin 解决这个问题**。
 
 ---
 
-## 三、前向 SDE:DDPM 和 NCSN 是特例
+## 三、关键想法:多尺度噪声
 
-### 3.1 一般前向 SDE
+NCSN 的核心洞察:
 
-定义前向 SDE($t \in [0, T]$):
+> **同一个 score 网络,在多个噪声尺度上同时学**。大噪声让低密度区域有足够数据,小噪声让结果接近真实数据。
 
-$$dx = f(x, t)\, dt + g(t)\, dw$$
+具体地,选 $L$ 个噪声尺度,几何递减:
 
-我们要选 $f, g$ 使得:
+$$\sigma_1 > \sigma_2 > \cdots > \sigma_L$$
 
-- $t = 0$:$x_0 \sim p_{\text{data}}$
-- $t = T$:$x_T$ 接近某个简单分布(高斯)
+通常 $\sigma_1 \approx$ 数据的最大距离尺度(很大),$\sigma_L \approx 0.01$(很小)。
 
-### 3.2 VP-SDE(对应 DDPM)
+对每个尺度 $\sigma_i$,定义加噪分布:
 
-**Variance Preserving** SDE:
+$$q_{\sigma_i}(\tilde x \mid x) = \mathcal{N}(\tilde x; x, \sigma_i^2 I)$$
 
-$$dx = -\frac{1}{2}\beta(t)\, x\, dt + \sqrt{\beta(t)}\, dw$$
+$$q_{\sigma_i}(\tilde x) = \int q_{\sigma_i}(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$$
 
-让我们验证它对应 DDPM。Euler-Maruyama 离散化($\Delta t = 1$,$\beta_t = \beta(t)$):
+然后训练**一个**网络 $s_\theta(x, \sigma)$,对每个 $\sigma_i$ 都学对应的 score $\nabla_{\tilde x} \log q_{\sigma_i}(\tilde x)$。
 
-$$x_{t} \approx x_{t-1} - \frac{1}{2}\beta_t\, x_{t-1} + \sqrt{\beta_t}\, z = (1 - \tfrac{1}{2}\beta_t)\, x_{t-1} + \sqrt{\beta_t}\, z$$
+### 为什么"多尺度"能解决问题?
 
-而 $\sqrt{1 - \beta_t} \approx 1 - \frac{1}{2}\beta_t$(泰勒展开,$\beta_t$ 小)。所以这正是 DDPM 的离散公式:
+**关键观察**:
 
-$$x_t = \sqrt{1-\beta_t}\, x_{t-1} + \sqrt{\beta_t}\, z$$
+- **大尺度 $\sigma_1$**:$q_{\sigma_1}$ 把数据"涂抹"到整个空间——任何点都有显著密度,score 处处可学
+- **小尺度 $\sigma_L$**:$q_{\sigma_L} \approx p_{\text{data}}$,score 接近真实数据 score
+- **中间尺度**:平滑过渡
 
-VP-SDE **就是 DDPM 的连续时间极限**——精确到一阶,但 $\sqrt{1-\beta_t}$ 用了精确形式而非泰勒近似(这保证了方差严格守恒)。
+**采样时**:从大尺度开始(那里 score 准),逐步退火到小尺度(那里数据精细)。这样每一步 Langevin 都用着"准确的 score",不会卡住。
 
-VP-SDE 的边际分布也是闭式:
+这就是"退火"的精髓——**用大尺度先把样本"拉到正确的大方向上",再用小尺度精修细节**。
 
-$$p_t(x \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha(t)}\, x_0,\, (1-\bar\alpha(t))I)$$
+---
 
-其中 $\bar\alpha(t) = \exp\left(-\int_0^t \beta(s)\, ds\right)$ ——离散版的 $\bar\alpha_t$ 的连续推广。
+## 四、训练目标
 
-### 3.3 VE-SDE(对应 NCSN)
+### 4.1 加权 DSM 损失
 
-**Variance Exploding** SDE:
+对每个尺度 $\sigma_i$,DSM 损失是:
+
+$$\ell(\theta; \sigma_i) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}}, \tilde x \sim q_{\sigma_i}(\tilde x \mid x)}\left[\left\| s_\theta(\tilde x, \sigma_i) - \nabla_{\tilde x} \log q_{\sigma_i}(\tilde x \mid x) \right\|^2\right]$$
+
+代入条件 score $\nabla_{\tilde x} \log q_{\sigma_i}(\tilde x \mid x) = -(\tilde x - x)/\sigma_i^2$:
+
+$$\ell(\theta; \sigma_i) = \frac{1}{2}\mathbb{E}\left[\left\| s_\theta(\tilde x, \sigma_i) + \frac{\tilde x - x}{\sigma_i^2} \right\|^2\right]$$
+
+总损失是所有尺度的加权求和:
+
+$$\mathcal{L}(\theta) = \frac{1}{L}\sum_{i=1}^L \lambda(\sigma_i)\, \ell(\theta; \sigma_i)$$
+
+### 4.2 权重选择 $\lambda(\sigma_i) = \sigma_i^2$
+
+直接平均会出问题:小尺度的 $1/\sigma^2$ 项会让损失数值非常大,大尺度的项相对很小。**不同尺度的损失数值不在一个量级**,训练时小尺度主导,大尺度学不好。
+
+NCSN 的方案:取 $\lambda(\sigma_i) = \sigma_i^2$,这样每个尺度的损失数值大致相同。
+
+代入后:
+
+$$\sigma_i^2 \cdot \ell = \frac{1}{2}\mathbb{E}\left[\left\| \sigma_i\, s_\theta(\tilde x, \sigma_i) + \frac{\tilde x - x}{\sigma_i} \right\|^2\right]$$
+
+注意 $\frac{\tilde x - x}{\sigma_i} = \epsilon$(因为 $\tilde x = x + \sigma_i \epsilon$),所以:
+
+$$\boxed{\mathcal{L}(\theta) = \frac{1}{2L}\sum_{i=1}^L \mathbb{E}_{x, \epsilon}\left[\left\| \sigma_i\, s_\theta(\tilde x, \sigma_i) + \epsilon \right\|^2\right]}$$
+
+或定义 $\epsilon_\theta := -\sigma_i\, s_\theta$:
+
+$$\mathcal{L} = \frac{1}{2L}\sum_i \mathbb{E}\left[\| \epsilon - \epsilon_\theta(\tilde x, \sigma_i) \|^2\right]$$
+
+**和 DDPM 的 $L_{\text{simple}}$ 几乎完全一样**!唯一的区别是用 $\sigma_i$ 替代 $t$ 作为时间参数。这不是巧合——下面会讲它们的精确对应。
+
+---
+
+## 五、采样:退火 Langevin 动力学
+
+回忆基础 Langevin 动力学:
+
+$$x_{k+1} = x_k + \frac{\eta}{2}\, s_\theta(x_k) + \sqrt{\eta}\, z_k$$
+
+NCSN 的退火版本:
+
+```
+初始化:x ~ N(0, σ_1² I)        # 从最大噪声分布采
+
+for i = 1, 2, ..., L:           # 从大尺度到小尺度
+    η_i = ε · σ_i² / σ_L²       # 步长(随尺度衰减)
+    
+    for k = 1, ..., K:          # 在尺度 σ_i 上跑 K 步 Langevin
+        z ~ N(0, I)
+        x ← x + (η_i / 2) · s_θ(x, σ_i) + sqrt(η_i) · z
+
+return x
+```
+
+**关键设计**:
+
+- **初始化**:从 $\mathcal{N}(0, \sigma_1^2 I)$ 出发,这是 $q_{\sigma_1}$ 的高密度区域(因为 $q_{\sigma_1}$ 也接近 $\mathcal{N}(0, \sigma_1^2 I)$,当 $\sigma_1$ 远大于数据尺度时)。所以 score 在这个起点学得准
+- **退火**:逐步从 $\sigma_1$ 到 $\sigma_L$,每个尺度跑 $K$ 步 Langevin
+- **步长缩放**:$\eta_i \propto \sigma_i^2$,保证不同尺度的"信噪比"恒定
+
+**直觉图景**:
+
+```
+σ_1 (大噪声):
+  数据被涂抹成几乎均匀的雾
+  score 处处合理
+  样本被拉到"数据团块的大方向"
+
+σ_中间:
+  数据轮廓显现
+  score 引导样本走向具体区域
+  样本被精修到"具体的子团块"
+
+σ_L (小噪声):
+  数据接近真实分布
+  score 接近真实 score
+  样本被精修到"具体的数据点"
+```
+
+每个尺度做的事 = "在当前模糊度下做局部 Langevin 采样"。退火是在做**多尺度优化**。
+
+---
+
+## 六、和 DDPM 的精确对应
+
+让我们把 NCSN 和 DDPM 摆在一起:
+
+| | NCSN | DDPM |
+|---|---|---|
+| 噪声参数 | $\sigma_i$(尺度,几何递减) | $\beta_t$(schedule,通常线性) |
+| 加噪过程 | $\tilde x = x + \sigma_i \epsilon$ | $x_t = \sqrt{\bar\alpha_t}\, x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$ |
+| 终态分布 | $\mathcal{N}(0, \sigma_1^2 I)$,**方差大** | $\mathcal{N}(0, I)$,**方差守恒** |
+| 网络预测 | score $s_\theta$ | 噪声 $\epsilon_\theta$ |
+| 训练损失 | 加权 DSM($\lambda = \sigma^2$) | $L_{\text{simple}}$ |
+| 采样 | 退火 Langevin | Ancestral sampling |
+| SDE 对应 | VE-SDE | VP-SDE |
+
+### 6.1 关键差异 1:VE vs VP
+
+**NCSN 是 Variance Exploding(VE)**:噪声直接加,不收缩信号,$\tilde x$ 的方差随尺度增大。
+
+**DDPM 是 Variance Preserving(VP)**:同时收缩信号 + 加噪,方差守恒。
+
+之前我们讨论过为什么 DDPM 选 VP——朴素加噪让 $x_T$ 不收敛到固定分布。但 NCSN 用 VE,它怎么处理这个问题?
+
+NCSN 的处理:**让 $\sigma_1$ 足够大**,使得 $\sigma_1$ 远大于数据尺度。这时
+
+$$q_{\sigma_1}(\tilde x) = \int q_{\sigma_1}(\tilde x \mid x) p_{\text{data}}(x)\, dx \approx \mathcal{N}(0, \sigma_1^2 I)$$
+
+(因为 $\sigma_1^2 I \gg \text{Var}(x)$,加噪后数据信息几乎被完全淹没)
+
+所以**实际上 $q_{\sigma_1}$ 也近似是 $\mathcal{N}(0, \sigma_1^2 I)$**,只是尺度大了——本质和 VP 没差很多。
+
+### 6.2 关键差异 2:网络预测什么
+
+NCSN 直接预测 **score**,DDPM 预测 **noise**。两者关系:
+
+$$s_\theta(\tilde x, \sigma) = -\frac{\epsilon_\theta(\tilde x, \sigma)}{\sigma}$$
+
+(对 NCSN)和
+
+$$s_\theta(x_t, t) = -\frac{\epsilon_\theta(x_t, t)}{\sqrt{1-\bar\alpha_t}}$$
+
+(对 DDPM)
+
+只差一个标量,**完全等价**。两个网络做的"事情"一样,只是输出的"单位"不同。
+
+### 6.3 关键差异 3:采样方式
+
+DDPM:严格按 $p_\theta(x_{t-1} \mid x_t)$ 采样,$T$ 步走到底。
+
+NCSN:退火 Langevin,每个尺度跑 $K$ 步,共 $L \times K$ 步。
+
+两者都是迭代去噪,具体公式略有不同,但都是同一个 SDE 的不同离散化(下面再说)。
+
+---
+
+## 七、SDE 视角:统一两者
+
+按上一讲的 Score SDE 框架:
+
+### NCSN 对应 VE-SDE
 
 $$dx = \sqrt{\frac{d\sigma^2(t)}{dt}}\, dw$$
 
-(没有漂移项)边际分布:
+边际:$p_t(x \mid x_0) = \mathcal{N}(x_0, \sigma^2(t) I)$。
 
-$$p_t(x \mid x_0) = \mathcal{N}(x_0, \sigma^2(t) I)$$
+NCSN 的离散尺度 $\sigma_i$ 就是 $\sigma(t)$ 的离散采样,退火 Langevin 是这个 SDE 反向 SDE 的一种特定离散化(用 score 项做 Langevin,忽略漂移因为 VE 没有漂移)。
 
-——直接给 $x_0$ 加方差为 $\sigma^2(t)$ 的高斯。这正是 NCSN 的多尺度噪声,只是从离散尺度 $\sigma_l$ 变成连续函数 $\sigma(t)$。
+### DDPM 对应 VP-SDE
 
-### 3.4 统一视角
+$$dx = -\frac{1}{2}\beta(t) x\, dt + \sqrt{\beta(t)}\, dw$$
 
-DDPM 和 NCSN 都是**前向 SDE 的特例**——它们看起来是不同的过程,但在 SDE 框架下只是参数化的差异:
+边际:$p_t(x \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha(t)}\, x_0,\, (1-\bar\alpha(t))I)$。
 
-| | $f(x, t)$ | $g(t)$ | $x_T$ 分布 |
-|---|---|---|---|
-| VP (DDPM) | $-\frac{1}{2}\beta(t) x$ | $\sqrt{\beta(t)}$ | $\mathcal{N}(0, I)$ |
-| VE (NCSN) | $0$ | $\sqrt{d\sigma^2/dt}$ | $\mathcal{N}(0, \sigma^2(T) I)$ |
+DDPM 的离散步是 VP-SDE 的 Euler-Maruyama 离散化,ancestral sampling 是反向 VP-SDE 的离散化。
 
-第一个统一:**前向过程不是问题,关键是怎么逆向**。
-
----
-
-## 四、Anderson 反向 SDE:这一讲的心脏
-
-这是 Score SDE 论文最关键的引用——Anderson (1982) 的一个经典定理。
-
-### 4.1 定理陈述
-
-给定前向 SDE:
-
-$$dx = f(x, t)\, dt + g(t)\, dw$$
-
-它**有一个对应的反向 SDE**:
-
-$$\boxed{dx = \left[f(x, t) - g(t)^2 \nabla_x \log p_t(x)\right] dt + g(t)\, d\bar w}$$
-
-时间从 $T$ 走到 $0$,$d\bar w$ 是反向时间的布朗运动。
-
-**关键点**:**只要知道每个时刻的 score $\nabla_x \log p_t(x)$,就能精确反向运行 SDE,从 $p_T$ 采样回 $p_0$**。
-
-### 4.2 这是什么意思?
-
-让我们消化这个公式的威力:
-
-- **前向 SDE**:把数据加噪到高斯——已知,简单
-- **反向 SDE**:从高斯回到数据——只需要 score!
-- **score 怎么得到**:用 score matching 训练 → 连续版的 DSM
-
-**这就是 score-based generative modeling 的完整框架**:
-
-1. 选一个前向 SDE(VP/VE/任意)
-2. 用 score matching 学 $s_\theta(x, t) \approx \nabla_x \log p_t(x)$
-3. 把 $s_\theta$ 代入反向 SDE,从 $\mathcal{N}(0, I)$ 数值求解到 $t = 0$
-
-### 4.3 反向 SDE 的简单证明思路
-
-让我给你一个非严谨但直观的推导,看清楚 score 为什么会出现。
-
-考虑前向 SDE 的 Fokker-Planck 方程:
-
-$$\frac{\partial p_t}{\partial t} = -\nabla \cdot (f p_t) + \frac{1}{2} g^2 \nabla^2 p_t$$
-
-我们想找一个反向 SDE,它的 FPE 给出**同样的 $p_t$**(只是时间倒着走)。
-
-技巧:把 $\nabla^2 p_t = \nabla \cdot (\nabla p_t)$,而 $\nabla p_t = p_t \nabla \log p_t$(对数导数公式!)。所以:
-
-$$\frac{1}{2} g^2 \nabla^2 p_t = \frac{1}{2} g^2 \nabla \cdot (p_t \nabla \log p_t)$$
-
-代回 FPE:
-
-$$\frac{\partial p_t}{\partial t} = -\nabla \cdot \left[(f - g^2 \nabla \log p_t) p_t\right] + \frac{1}{2} g^2 \nabla^2 p_t$$
-
-注意我们做了一个**代数恒等变形**:把 $\frac{1}{2} g^2 \nabla \cdot (p_t \nabla \log p_t)$ 拆成两份,一份移到第一项里(变成 $-g^2 \nabla \log p_t$ 加进漂移),另一份留在原位置。
-
-这个新的 FPE 形式对应的 SDE:
-
-$$dx = (f - g^2 \nabla \log p_t)\, dt + g\, dw$$
-
-**这就是反向 SDE 的形式**(细节上时间方向需要正式处理,但核心逻辑就是这个对数导数变换)。
-
-### 4.4 关键技术工具:对数导数公式
-
-注意整个推导的核心又是:
-
-$$\nabla p_t = p_t\, \nabla \log p_t$$
-
-——同一个公式,在 score matching 推导里用过,在分部积分里用过,在 DSM 等价性证明里用过。
-
-**这是 score 视角下反复出现的"瑞士军刀"**。
-
-### 4.5 一个直觉解释
-
-反向 SDE 的形式是:
-
-$$dx = \left[\underbrace{f(x, t)}_{\text{原前向漂移}} - \underbrace{g(t)^2 \nabla \log p_t(x)}_{\text{score 修正}}\right] dt + g(t)\, d\bar w$$
-
-直觉:
-
-- **保留扩散项 $g\, d\bar w$**:反向也加噪声(对应 DDPM 采样里的 $\sigma_t z$)
-- **漂移项变了**:原本是 $f$,现在是 $f - g^2 \nabla \log p_t$
-- **$- g^2 \nabla \log p_t$ 把粒子推向高密度区域**——score 指向数据密度,这一项是"反向的拉力"
-
-物理图景:前向是"扩散+漂移",反向是"反扩散(沿 score 方向走)+ 同样的漂移修正 + 噪声"。score 是反向过程的"导航星"。
-
----
-
-## 五、Probability Flow ODE:确定性视角
-
-Anderson 反向 SDE 是 score-based 生成的"标准答案",但 Score SDE 论文还做了一件神奇的事:**给出对应的确定性 ODE**。
-
-### 5.1 神奇的事实
-
-可以构造一个**ODE**(没有随机项):
-
-$$\boxed{\frac{dx}{dt} = f(x, t) - \frac{1}{2} g(t)^2 \nabla_x \log p_t(x)}$$
-
-它的解 $x(t)$ 与反向 SDE **有相同的边际分布** $p_t$。
-
-注意系数:从反向 SDE 的 $g^2$ 变成 $\frac{1}{2}g^2$,扩散项消失。
-
-### 5.2 这意味着什么?
-
-**两件事**:
-
-**(1) 采样可以是确定性的**
-
-不需要任何随机性,只要数值求解 ODE。给定 $x_T \sim \mathcal{N}(0, I)$,确定性地走到 $x_0$ ——同一个 $x_T$ 永远给同一个 $x_0$。这是 DDIM 的连续版本(DDIM 其实就是这个 ODE 的特定离散化)。
-
-**(2) 可以精确算似然**
-
-ODE 是可逆变换,通过**瞬时变量替换公式**(continuous normalizing flows 的核心):
-
-$$\log p_0(x_0) = \log p_T(x_T) + \int_0^T \nabla \cdot \tilde f(x_t, t)\, dt$$
-
-(其中 $\tilde f$ 是 ODE 的右端)
-
-这给出 $p_0(x_0)$ 的**精确**对数似然——对比 ELBO 只是下界。这让 diffusion 成为真正的概率模型,能做密度估计、anomaly detection 等。
-
-### 5.3 SDE vs ODE 的对比
-
-| | 反向 SDE | Probability Flow ODE |
-|---|---|---|
-| 形式 | $dx = (f - g^2 s)\,dt + g\, d\bar w$ | $dx = (f - \frac{1}{2}g^2 s)\, dt$ |
-| 随机性 | 有 | 无 |
-| 同一起点 | 不同采样得不同结果 | 唯一解 |
-| 边际分布 | 等于真实 $p_t$ | 等于真实 $p_t$ |
-| 似然计算 | ELBO 下界 | 精确似然 |
-| 采样多样性 | 高(随机性贡献) | 低(完全由 $x_T$ 决定) |
-| 数值求解 | Euler-Maruyama 等 | RK4 等高阶 ODE solver |
-
-**两者的边际分布相同——但路径不同**。ODE 给了一条"最短路径",SDE 给了一族"加噪路径"。
-
-### 5.4 为什么会有这个 ODE?
-
-简单的直觉:Fokker-Planck 方程
-
-$$\frac{\partial p_t}{\partial t} = -\nabla \cdot (f p_t) + \frac{1}{2} g^2 \nabla^2 p_t$$
-
-可以重写为输运方程(连续性方程)的形式:
-
-$$\frac{\partial p_t}{\partial t} = -\nabla \cdot (\tilde f p_t)$$
-
-其中 $\tilde f = f - \frac{1}{2}g^2 \nabla \log p_t$。
-
-输运方程对应的就是 ODE $dx/dt = \tilde f(x, t)$ ——粒子按这个速度场运动,密度自动满足 FPE。
-
-**所以 SDE 和 ODE 是"边际分布等价"的两个版本**——一个有随机性,一个没有,但它们描述的概率密度演化完全一样。
-
----
-
-## 六、训练:连续时间的 score matching
-
-我们要学 $s_\theta(x, t) \approx \nabla_x \log p_t(x)$ 对所有 $t \in [0, T]$ 同时成立。
-
-### 6.1 连续 score matching 损失
-
-$$\mathcal{L}(\theta) = \mathbb{E}_{t \sim U[0, T]}\left[\lambda(t)\, \mathbb{E}_{p_t(x)}\left[\| s_\theta(x, t) - \nabla_x \log p_t(x) \|^2\right]\right]$$
-
-其中 $\lambda(t)$ 是个权重函数(比如 $\lambda(t) = g(t)^2$,这选择对应 ELBO 优化)。
-
-但 $\nabla \log p_t(x)$ 还是不知道。用 DSM 的连续版:
-
-$$\mathcal{L}_{\text{DSM}}(\theta) = \mathbb{E}_{t}\left[\lambda(t)\, \mathbb{E}_{x_0, x_t}\left[\| s_\theta(x_t, t) - \nabla_{x_t} \log p_t(x_t \mid x_0) \|^2\right]\right]$$
-
-对 VP-SDE,$p_t(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha(t)} x_0, (1-\bar\alpha(t)) I)$,条件 score 是 $-\epsilon/\sqrt{1-\bar\alpha(t)}$,所以:
-
-$$\mathcal{L}_{\text{DSM}} = \mathbb{E}_t\left[\frac{\lambda(t)}{1-\bar\alpha(t)}\, \mathbb{E}_{x_0, \epsilon}\left[\| \sqrt{1-\bar\alpha(t)}\, s_\theta(x_t, t) + \epsilon \|^2\right]\right]$$
-
-定义 $\epsilon_\theta := -\sqrt{1-\bar\alpha(t)}\, s_\theta$,选 $\lambda(t) = (1-\bar\alpha(t))$:
-
-$$\mathcal{L}_{\text{DSM}} = \mathbb{E}_t \mathbb{E}_{x_0, \epsilon}\left[\| \epsilon - \epsilon_\theta(x_t, t) \|^2\right]$$
-
-**正是 DDPM 的 $L_{\text{simple}}$**!
-
-第二个统一:**DDPM 的训练目标是连续 score matching 的特定离散化 + 特定权重选择**。
-
----
-
-## 七、统一图景:把所有线索串起来
-
-现在我们终于可以画出 diffusion 数学的完整地图。
-
-### 7.1 三条线索的对照
-
-| 视角 | 来源 | 核心数学对象 |
-|---|---|---|
-| **变分** | Sohl-Dickstein 2015, DDPM 2020 | 离散马尔可夫链 + ELBO |
-| **Score** | Hyvärinen 2005, NCSN 2019 | score $\nabla \log p$ + Langevin |
-| **SDE** | Song 2021 | 连续 SDE + 反向 SDE + ODE |
-
-### 7.2 它们如何统一
-
-**前向**:
-- DDPM 的离散链 = VP-SDE 的 Euler-Maruyama 离散化
-- NCSN 的多尺度噪声 = VE-SDE 的 Euler-Maruyama 离散化
-
-**训练**:
-- DDPM 的 $L_{\text{simple}}$ = 连续 DSM 的离散化(特定 $\lambda$)
-- NCSN 的加权 DSM = 同样的连续 DSM(不同 $\lambda$)
-- $\epsilon_\theta = -\sqrt{1-\bar\alpha(t)}\, s_\theta$ —— 一个简单标量变换
-
-**采样**:
-- DDPM 的 ancestral sampling = 反向 SDE 的特定离散化
-- DDIM = Probability Flow ODE 的特定离散化
-- NCSN 的 annealed Langevin = 反向 SDE 的另一种离散化
-
-### 7.3 SDE 视角带来的新东西
-
-不只是统一,SDE 视角还**带来新工具**:
-
-1. **更好的采样器**:能用高阶 ODE/SDE 数值求解器(RK4、predictor-corrector)
-2. **精确似然**:Probability Flow ODE 给出精确 $\log p_0$
-3. **可控生成**:Conditional reverse SDE 提供框架,classifier guidance、CFG 都从这里推
-4. **任意路径**:启发了 Flow Matching、Rectified Flow 等用任意概率路径的方法
-5. **在流形上**:可以推广到 Riemannian SDE,用于分子、机器人
-
----
-
-## 八、一个总览图
-
-让我把整个框架画一遍:
+### 一图对照
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                       连续 SDE 框架
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-前向 SDE:    dx = f(x,t) dt + g(t) dw
-                     ↓
-            数据 x_0  ──────→  噪声 x_T
-
-         参数选择:VP(DDPM),VE(NCSN),Sub-VP,...
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-训练:    用 DSM 学 s_θ(x, t) ≈ ∇log p_t(x)
-
-         L = E_t,x_0,ε [ ‖ε - ε_θ(x_t, t)‖² ]
-              ↑
-         (epsilon 和 score 等价,差一个标量)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-采样选项 1:Anderson 反向 SDE(随机)
-         dx = [f - g²s_θ] dt + g dw̄
-         离散化 → DDPM ancestral sampling, annealed Langevin, ...
-
-采样选项 2:Probability Flow ODE(确定)
-         dx/dt = f - ½g² s_θ
-         离散化 → DDIM, DPM-Solver, ...
-         附加能力 → 精确似然计算
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                       Score SDE 框架
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+          VE-SDE                       VP-SDE
+              │                           │
+              ↓                           ↓
+        离散化(NCSN)              离散化(DDPM)
+              │                           │
+        多尺度 σ_i                    schedule β_t
+        VE 加噪                       VP 加噪
+        预测 score                    预测 noise
+        退火 Langevin                 Ancestral sampling
 ```
 
 ---
 
-## 九、一个深刻的反思
+## 八、NCSN 的历史意义
 
-走到这里,值得停下来问:**这一切为什么如此优雅?**
+NCSN 是 score-based 路线的"**第一次成功**":
 
-我的理解是:**diffusion 的"连续时间本质"反映了一个深刻的物理事实**——数据流形在欧氏空间中的"加噪/去噪"过程,本质就是一个被 score 引导的随机过程。
+- **2019** NCSN(v1):在 CIFAR-10 上 FID ≈ 25,质量略差于当时 GAN
+- **2020** NCSN++(v2):改进版,FID ≈ 10,接近 SOTA GAN
+- **2021** Score SDE(同作者):统一框架,质量超过 GAN
 
-- 前向(扩散) = 自然的热力学第二定律,信息丢失,趋向平衡分布
-- 反向(去噪) = 用 score 这个"信息梯度"逆转扩散,从平衡回到结构
-- $T \to \infty$、$\Delta t \to 0$ 是这个过程的"自然单位"——离散步数只是数值近似的产物
+它的影响:
 
-所以 diffusion 不是一个被设计出来的算法——**它是一个被发现的物理过程**,不同的研究者从不同入口(变分、score、SDE)进入同一个数学结构。
+1. **第一次证明 score-based 方法在图像生成上能 work**——之前 score matching 只在低维玩具数据上演示过
+2. **多尺度噪声**这一关键设计被 DDPM 间接吸收(DDPM 的 $T$ 步本质就是多尺度,只是从 VP 角度参数化)
+3. **退火 Langevin**启发了后续大量采样器设计
+4. **作者 Yang Song 的 Score SDE 论文**直接接在 NCSN 之后,把整个 score-based 路线推到顶峰
 
-这种"被多个独立路径同时发现"是数学和科学里很罕见的——通常只发生在你触到了真正的 deep structure。
+可以说,**NCSN 是现代 diffusion 的"另一个奠基人"**——和 DDPM 一起,定义了这条路线的所有核心元素。
+
+---
+
+## 九、为什么 DDPM 比 NCSN 出名?
+
+公平地说,DDPM 在工程实践中传播得更广。原因:
+
+1. **VP 比 VE 更稳定**:方差守恒让数值更可控,训练更顺
+2. **预测噪声比 score 更直观**:$\epsilon \sim \mathcal{N}(0, I)$ 是标准化的,$s$ 的尺度依赖 $\sigma$
+3. **Ancestral sampling 比退火 Langevin 简单**:每步只需一次网络调用,不需要 $K$ 步 Langevin
+4. **DDPM 的论文写作更面向工程**:有清晰的算法、伪代码,容易复现
+5. **后续的 DDIM、Stable Diffusion 都基于 DDPM 路线**:因为 VP 的闭式 $\bar\alpha_t$ 更方便
+
+但**理论上 NCSN/Score SDE 是更通用的框架**——DDPM 是它的一个特例。Yang Song 的 Score SDE 论文实际上把 NCSN 升级成了一个能 cover DDPM 的统一理论。
 
 ---
 
 ## 十、要点回顾
 
-- **连续时间 SDE 是 diffusion 的自然语言**,DDPM 和 NCSN 是它的离散化
-- **Anderson 反向 SDE**:只要有 score,就能反向运行任何前向 SDE
-- $$dx = [f(x,t) - g(t)^2 \nabla_x \log p_t(x)] dt + g(t)\, d\bar w$$
-- **Probability Flow ODE**:同样的边际分布,确定性版本,系数从 $g^2$ 变 $\frac{1}{2}g^2$
-- 训练用连续 DSM,等价于 DDPM 的 $L_{\text{simple}}$(差一个时间权重)
-- 采样:反向 SDE 离散化(DDPM,Langevin)或 ODE 离散化(DDIM,DPM-Solver)
-- ODE 视角带来精确似然
-- **三条线在 SDE 框架下完全统一**——DDPM 是 VP-SDE 的 Euler 步,NCSN 是 VE-SDE 的 Langevin 离散
-- score $\nabla \log p$ 是 diffusion 的"灵魂"——所有视角最终都依赖它
+- **NCSN = Noise Conditional Score Network**,Song & Ermon 2019
+- 解决 score-based 方法的两个老问题:trace 算不动(用 DSM)、低密度 score 不准(用多尺度噪声)
+- 核心设计:**一个网络 + 多个尺度 + 退火 Langevin**
+- 训练:加权 DSM,权重 $\lambda(\sigma) = \sigma^2$,最终形式和 DDPM 的 $L_{\text{simple}}$ 几乎一样
+- 采样:从大尺度到小尺度退火,每个尺度跑 $K$ 步 Langevin
+- 是 **VE-SDE** 的离散化(对比 DDPM 是 VP-SDE)
+- 预测 score(对比 DDPM 预测 noise),两者只差一个标量
+- 历史地位:**score-based 路线在图像生成上的第一次成功**,直接催生了 Score SDE 的统一框架

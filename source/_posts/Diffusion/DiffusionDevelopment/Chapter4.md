@@ -1,1637 +1,593 @@
 ---
-title: Chapter 3. DDPM 
+title: Chapter 4. Score-based Models
 categories: Diffusion Models
-date: 2026-05-01 12:00:00
+date: 2026-05-01 13:00:00
 mathjax: true
 tags:
     - AI
     - Diffusion Models
 ---
 
-这一讲是整个 diffusion 系列里最关键、最优美的一讲——它把 Sohl-Dickstein 的"理论上正确但实际不好用"的框架,改造成了"现代 diffusion 的标准形式"。所有后续工作(Stable Diffusion、Imagen、SDXL、FLUX 等)都建立在 DDPM 之上。
+好,我们正式进入**第二讲:Score Matching**。我会按你熟悉的节奏走——动机、数学、关键洞察、和后面的衔接。
 
-我会按这个顺序展开:
-1. DDPM 的贡献概览
-2. 关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是高斯,有闭式
-3. 用贝叶斯重写 ELBO,得到 KL 之和
-4. 化简 KL,从 $\mu$-预测到 $\epsilon$-预测
-5. $L_{\text{simple}}$ 的诞生
-6. 训练和采样算法
+这条线的核心问题始终是同一个:**如何建模数据分布 $p(x)$**。但和第一讲的变分推断完全不同的思路——不学 $p(x)$,而学 $\nabla_x \log p(x)$。
 
 ---
 
-## 一、DDPM 的核心贡献
+## 一、动机:为什么不直接建模 $p(x)$?
 
-Ho et al. 2020 的论文("Denoising Diffusion Probabilistic Models")做了三件事:
+先看直接建模 $p(x)$ 会遇到什么问题。
 
-1. **数学改写**:用贝叶斯把 ELBO 改成"两个高斯之间 KL"的求和——每一项都有闭式
-2. **重参数化**:把网络的预测目标从均值 $\mu_\theta$ 换成噪声 $\epsilon_\theta$,损失变成简单的 MSE
-3. **工程突破**:UNet 架构 + 时间嵌入,在 CIFAR-10 上首次达到 GAN 级别的质量
+任何概率密度都可以写成:
 
-**这一讲专注前两件事**——它们是数学上的核心,理解了它们,后面的所有 diffusion 工作你都能秒懂。
+$$p_\theta(x) = \frac{\tilde p_\theta(x)}{Z(\theta)}$$
+
+其中 $\tilde p_\theta(x) \geq 0$ 是非归一化的(unnormalized),$Z(\theta) = \int \tilde p_\theta(x)\, dx$ 是**归一化常数(配分函数)**,确保积分为 1。
+
+比如最经典的能量模型(EBM):
+
+$$p_\theta(x) = \frac{\exp(-E_\theta(x))}{Z(\theta)},\quad Z(\theta) = \int \exp(-E_\theta(x))\, dx$$
+
+最大似然要最大化 $\log p_\theta(x) = -E_\theta(x) - \log Z(\theta)$,梯度:
+
+$$\nabla_\theta \log p_\theta(x) = -\nabla_\theta E_\theta(x) - \nabla_\theta \log Z(\theta)$$
+
+**第二项是地狱**。$Z(\theta)$ 是高维积分,通常没有闭式,而且每个 $\theta$ 都不一样。
+
+第二项展开:
+
+$$\nabla_\theta \log Z(\theta) = \frac{\nabla_\theta Z(\theta)}{Z(\theta)} = \mathbb{E}_{x \sim p_\theta(x)}[-\nabla_\theta E_\theta(x)]$$
+
+注意期望是对 **$p_\theta$ 自己**取的——要从当前模型采样!这通常需要 MCMC,慢且方差大。这就是经典 EBM 训练困难的根源。
+
+**核心问题**:$Z(\theta)$ 让最大似然几乎不可行。能不能绕开 $Z$?
 
 ---
 
-## 二、关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是闭式高斯
+## 二、Hyvärinen 的关键洞察(2005)
 
-这是整个 DDPM 推导的基石。让我们看它说什么、为什么重要、怎么算。
+**Score** 定义:
 
-### 2.1 它是什么?
+$$s(x) := \nabla_x \log p(x)$$
 
-注意条件:**给定 $x_t$ 和 $x_0$**,求 $x_{t-1}$ 的分布。
+注意是对 **$x$** 求梯度,不是对 $\theta$。
 
-为什么要加 $x_0$?因为没有 $x_0$ 时,$q(x_{t-1} \mid x_t)$(真实的逆向条件分布)**没有闭式**——它要对所有可能的 $x_0$ 边际化,涉及对真实数据分布的积分。
+关键观察:
 
-但**条件**在 $x_0$ 上之后,问题变得 tractable——这是因为给定 $x_0$,前向过程是一条已知的高斯链。
+$$\nabla_x \log p_\theta(x) = \nabla_x \log \frac{\tilde p_\theta(x)}{Z(\theta)} = \nabla_x \log \tilde p_\theta(x) - \underbrace{\nabla_x \log Z(\theta)}_{= 0}$$
 
-### 2.2 直观
+**$Z(\theta)$ 不依赖 $x$,所以它的 $x$ 梯度恒为 0!**
 
-想象一个三角形:
+也就是说,**score 完全不需要知道 $Z$**。我们只要建模 $\nabla_x \log p(x)$,就绕开了归一化的灾难。
+
+这是 Hyvärinen 2005 的根本动机:**学 score 而不是学密度**。
+
+---
+
+## 三、Score 的几何意义
+
+直观一下,$\nabla_x \log p(x)$ 是什么?
+
+它是一个向量场,每点的方向**指向 $\log p$ 增长最快的方向**——也就是**指向高密度区域**。
 
 ```
-         x_0
-        /    \
-       /      \
-      ↓        ↓
-    x_{t-1} → x_t
+低密度
+ ↑↑↑↑↑
+ ↑↑↑↑↑      ← score 向量在四周都"指向中心"
+[高密度]
+ ↓↓↓↓↓
+ ↓↓↓↓↓
+低密度
 ```
 
-我们已经知道:
+**所以 score 是一个"指向数据流形"的向导场**。如果你站在低密度区域,顺着 score 走,会走向高密度区域(数据集中的地方)。
 
-- $q(x_{t-1} \mid x_0)$:从 $x_0$ 一步跳到 $x_{t-1}$ 的高斯(用边际公式)
-- $q(x_t \mid x_{t-1})$:前向一步的高斯
-- $q(x_t \mid x_0)$:从 $x_0$ 跳到 $x_t$ 的高斯
-
-三者都是高斯,且都已知。**用贝叶斯把它们组合**,就能得到 $q(x_{t-1} \mid x_t, x_0)$。
-
-### 2.3 推导
-
-贝叶斯公式(条件版本):
-
-$$q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1}, x_0)\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}$$
-
-注意 $q(x_t \mid x_{t-1}, x_0) = q(x_t \mid x_{t-1})$(因为前向是马尔可夫,$x_t$ 只依赖 $x_{t-1}$)。所以:
-
-$$q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}$$
-
-三个都是高斯:
-
-- $q(x_t \mid x_{t-1}) = \mathcal{N}(x_t;\, \sqrt{\alpha_t} x_{t-1},\, \beta_t I)$,其中 $\alpha_t = 1 - \beta_t$
-- $q(x_{t-1} \mid x_0) = \mathcal{N}(x_{t-1};\, \sqrt{\bar\alpha_{t-1}} x_0,\, (1-\bar\alpha_{t-1}) I)$
-- $q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t} x_0,\, (1-\bar\alpha_t) I)$
-
-把高斯密度的表达式代入,展开 $\log$,合并 $x_{t-1}$ 的二次项和一次项——**结果一定还是个关于 $x_{t-1}$ 的高斯**(因为指数里是 $x_{t-1}$ 的二次型)。
-
-### 2.4 闭式结果
-
-整理后,$q(x_{t-1} \mid x_t, x_0) = \mathcal{N}(x_{t-1}; \tilde\mu_t(x_t, x_0), \tilde\beta_t I)$,其中:
-
-$$\boxed{\tilde\mu_t(x_t, x_0) = \frac{\sqrt{\bar\alpha_{t-1}} \beta_t}{1 - \bar\alpha_t}\, x_0 + \frac{\sqrt{\alpha_t} (1 - \bar\alpha_{t-1})}{1 - \bar\alpha_t}\, x_t}$$
-
-$$\boxed{\tilde\beta_t = \frac{1 - \bar\alpha_{t-1}}{1 - \bar\alpha_t}\, \beta_t}$$
-
-**关键观察**:
-
-- 均值 $\tilde\mu_t$ 是 $x_0$ 和 $x_t$ 的**线性组合**——非常干净
-- 方差 $\tilde\beta_t$ **不依赖于 $x_0$ 或 $x_t$**,只依赖于 $t$ 和预设的 $\beta_t$
-- 所有项都用 schedule 中已知的 $\alpha, \bar\alpha, \beta$ 算出,没有任何待估计的量
-
-这个公式是 DDPM 数学的**核心引擎**——后面的一切都建立在它上面。
-
-(完整推导见附录1)
+这给了我们采样的思路:**有了 score,就能用类似"梯度上升"的过程从噪声走向数据**。这就是 Langevin 动力学的雏形,我们后面会展开。
 
 ---
 
-## 三、用贝叶斯重写 ELBO
+## 四、Score Matching 损失
 
-回忆 Sohl-Dickstein 的 ELBO:
+我们想学一个网络 $s_\theta(x)$ 逼近真实的 $\nabla_x \log p_{\text{data}}(x)$。最自然的损失:
 
-$$-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \sum_{t=1}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}\right]$$
+$$J_{\text{ESM}}(\theta) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}}}\left[\| s_\theta(x) - \nabla_x \log p_{\text{data}}(x) \|^2\right]$$
 
-我们之前指出问题:每一项分子是前向 $q(x_t \mid x_{t-1})$,分母是逆向 $p_\theta(x_{t-1} \mid x_t)$,**条件方向不一致**,不是 KL 形式,无法用闭式。
+(下标 ESM = Explicit Score Matching)
 
-**DDPM 的修复**:用贝叶斯把分子的方向翻过来。
+**问题**:这没法直接算——我们**不知道** $\nabla_x \log p_{\text{data}}(x)$,这正是要学的东西!陷入鸡生蛋蛋生鸡。
 
-### 3.1 贝叶斯翻转
+Hyvärinen 的关键贡献是证明了一个**奇迹般的恒等式**:
 
-由马尔可夫性,$q(x_t \mid x_{t-1}) = q(x_t \mid x_{t-1}, x_0)$(条件在 $x_0$ 上不影响)。再用贝叶斯:
+$$J_{\text{ESM}}(\theta) = \mathbb{E}_{x \sim p_{\text{data}}}\left[\frac{1}{2}\| s_\theta(x) \|^2 + \text{tr}(\nabla_x s_\theta(x))\right] + \text{const}$$
 
-$$q(x_t \mid x_{t-1}, x_0) = \frac{q(x_{t-1} \mid x_t, x_0)\, q(x_t \mid x_0)}{q(x_{t-1} \mid x_0)}$$
-
-代回 ELBO 的求和项(对 $t \geq 2$ 做这件事,$t=1$ 单独处理):
-
-$$\sum_{t=2}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)} = \sum_{t=2}^T \log \frac{q(x_{t-1} \mid x_t, x_0)\, q(x_t \mid x_0)}{p_\theta(x_{t-1} \mid x_t)\, q(x_{t-1} \mid x_0)}$$
-
-把 $\log$ 拆开:
-
-$$= \sum_{t=2}^T \log \frac{q(x_{t-1} \mid x_t, x_0)}{p_\theta(x_{t-1} \mid x_t)} + \sum_{t=2}^T \log \frac{q(x_t \mid x_0)}{q(x_{t-1} \mid x_0)}$$
-
-### 3.2 第二个求和:望远镜求和(telescoping)
-
-第二个求和是个望远镜结构:
-
-$$\sum_{t=2}^T \log \frac{q(x_t \mid x_0)}{q(x_{t-1} \mid x_0)} = \log q(x_T \mid x_0) - \log q(x_1 \mid x_0)$$
-
-(中间所有项依次抵消,这就是望远镜求和的威力)
-
-### 3.3 处理 $t=1$ 项
-
-把 $t=1$ 的项 $\log \frac{q(x_1 \mid x_0)}{p_\theta(x_0 \mid x_1)}$ 拿出来,和望远镜结果合并:
-
-$$\log \frac{q(x_1 \mid x_0)}{p_\theta(x_0 \mid x_1)} + \log q(x_T \mid x_0) - \log q(x_1 \mid x_0) = -\log p_\theta(x_0 \mid x_1) + \log q(x_T \mid x_0)$$
-
-### 3.4 整合
-
-把所有项放回 $-\mathcal{L}$:
-
-$$-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \log q(x_T \mid x_0) + \sum_{t=2}^T \log \frac{q(x_{t-1} \mid x_t, x_0)}{p_\theta(x_{t-1} \mid x_t)} - \log p_\theta(x_0 \mid x_1)\right]$$
-
-把前两项合并成一个 KL:
-
-$$-\log p(x_T) + \log q(x_T \mid x_0) = \log \frac{q(x_T \mid x_0)}{p(x_T)}$$
-
-它的期望是 $D_{\text{KL}}(q(x_T \mid x_0) \| p(x_T))$。
-
-中间求和的每一项 $\log \frac{q(x_{t-1} \mid x_t, x_0)}{p_\theta(x_{t-1} \mid x_t)}$ 在期望下也是 KL。所以最终:
-
-$$\boxed{-\mathcal{L} = \mathbb{E}_q\left[\underbrace{D_{\text{KL}}(q(x_T \mid x_0) \,\|\, p(x_T))}_{L_T} + \sum_{t=2}^T \underbrace{D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \,\|\, p_\theta(x_{t-1} \mid x_t))}_{L_{t-1}} - \underbrace{\log p_\theta(x_0 \mid x_1)}_{-L_0}\right]}$$
-
-这是 DDPM 论文里 Eq. (5) 的著名形式。
-
-### 3.5 三项的物理意义
-
-- **$L_T$**:最终噪声分布要接近先验 $p(x_T) = \mathcal{N}(0, I)$。**不依赖 $\theta$**(因为 $q$ 不学),训练时是常数,**直接忽略**
-- **$L_{t-1}$**($t = 2, \ldots, T$):每一步的逆向匹配——**这是训练的核心**
-- **$L_0$**:最后一步从 $x_1$ 重建 $x_0$,作为离散数据时的对数似然项
-
-所以**实际训练时,我们最关心的就是中间这一项 $L_{t-1}$**。
+**意义**:右边**完全不需要 $\nabla_x \log p_{\text{data}}$**!只用 $s_\theta$ 自身和它的雅可比迹。我们可以直接最小化它。
 
 ---
 
-## 四、化简 $L_{t-1}$:核心一步
+## 五、Hyvärinen 恒等式的推导
 
-现在魔法发生。$L_{t-1}$ 是两个高斯之间的 KL:
+这个推导值得细看,只用一次分部积分(integration by parts)。
 
-- $q(x_{t-1} \mid x_t, x_0) = \mathcal{N}(\tilde\mu_t(x_t, x_0), \tilde\beta_t I)$ ← 闭式,刚才推过
-- $p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(\mu_\theta(x_t, t), \Sigma_\theta(x_t, t))$ ← 网络输出
+展开 $J_{\text{ESM}}$:
 
-DDPM 做了一个简化:**固定方差不学**。设 $\Sigma_\theta = \sigma_t^2 I$,其中 $\sigma_t^2$ 是预设的(取 $\beta_t$ 或 $\tilde\beta_t$ 都行,论文实验两者效果相近，详细解释见附录2)。
+$$J_{\text{ESM}} = \frac{1}{2}\mathbb{E}_{p_{\text{data}}}\left[\| s_\theta(x) \|^2\right] - \mathbb{E}_{p_{\text{data}}}\left[s_\theta(x)^\top \nabla_x \log p_{\text{data}}(x)\right] + \text{const}$$
 
-(为什么可以固定方差?因为 $\tilde\beta_t$ 已经是闭式且不依赖 $x_0, x_t$,网络再去学一个方差既冗余又不稳。Improved DDPM 后来证明学方差能略微提升似然,但 DDPM 原版坚持固定。)
+(最后一项 $\frac{1}{2}\mathbb{E}\|\nabla_x \log p_{\text{data}}\|^2$ 不依赖 $\theta$,是常数)
 
-固定方差后,套用各向同性高斯 KL 闭式公式:
+第一项已经只含 $s_\theta$,好。**麻烦在第二项**,展开为积分:
 
-$$D_{\text{KL}}(\mathcal{N}(\mu_1, \sigma^2 I) \| \mathcal{N}(\mu_2, \sigma^2 I)) = \frac{\| \mu_1 - \mu_2 \|^2}{2\sigma^2}$$
+$$\mathbb{E}_{p_{\text{data}}}\left[s_\theta(x)^\top \nabla_x \log p_{\text{data}}(x)\right] = \int p_{\text{data}}(x)\, s_\theta(x)^\top \nabla_x \log p_{\text{data}}(x)\, dx$$
 
-得到:
+用对数导数公式 $\nabla_x \log p = \nabla_x p / p$:
 
-$$L_{t-1} = \frac{1}{2\sigma_t^2}\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2 + C$$
+$$= \int p_{\text{data}}(x)\, s_\theta(x)^\top \frac{\nabla_x p_{\text{data}}(x)}{p_{\text{data}}(x)}\, dx = \int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx$$
 
-其中 $C$ 不依赖于 $\theta$。**训练目标变成了一个 MSE**:让网络输出的 $\mu_\theta$ 逼近真实后验均值 $\tilde\mu_t$。
+**$p_{\text{data}}$ 被消掉了!** 这一步是关键——它让我们不再需要知道 $p_{\text{data}}$ 的密度形式,只需要它的存在。
 
-这已经是巨大的进步——但 DDPM 还要再走一步。
+现在用**分部积分**(假设 $p_{\text{data}}(x) \to 0$ 在边界上,这在标准条件下成立，完整证明见附录1):
 
----
+$$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx = -\mathbb{E}_{p_{\text{data}}}[\nabla_x \cdot s_\theta(x)]$$
 
-## 五、从 $\mu$-预测到 $\epsilon$-预测
+其中 $\nabla_x \cdot s_\theta = \sum_i \partial s_{\theta,i} / \partial x_i = \text{tr}(\nabla_x s_\theta)$ 是散度,等于雅可比矩阵的迹。
 
-### 5.1 重写 $\tilde\mu_t$
+**代回**:
 
-$\tilde\mu_t$ 的原始公式包含 $x_0$,但训练时网络看到的是 $x_t$,看不到 $x_0$。我们用重参数化把 $x_0$ 表达成 $x_t$ 和 $\epsilon$ 的函数。
+$$J_{\text{ESM}} = \mathbb{E}_{p_{\text{data}}}\left[\frac{1}{2}\| s_\theta(x) \|^2 + \text{tr}(\nabla_x s_\theta(x))\right] + \text{const}$$
 
-由 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$:
+这就是 Hyvärinen 恒等式。**完全可以用 $p_{\text{data}}$ 的样本(数据集)蒙特卡洛估计**——不需要知道密度本身。
 
-$$x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon}{\sqrt{\bar\alpha_t}}$$
+{% details 分部积分细节:把梯度从未知 p 转移到已知 s_θ 上 %}
 
-代入 $\tilde\mu_t$ 的公式(代入后大量代数化简,这一步比较繁琐但纯机械):
+这一步是 score matching 推导里的关键一步——分部积分。我们一行一行推清楚,顺便把这个工具讲透,因为它在后面 SDE 推导里还会频繁出现。
 
-$$\tilde\mu_t(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon\right)$$
+### 一、先看一维情形(最容易理解)
 
-**这个形式非常优美**:$\tilde\mu_t$ 是 $x_t$ 减去"按比例缩放后的噪声"。
+一维分部积分公式(高中知识):
 
-### 5.2 让 $\mu_\theta$ 取相同的参数化形式
+$$\int u(x)\, v'(x)\, dx = u(x) v(x) - \int u'(x)\, v(x)\, dx$$
 
-既然真实后验均值长这样,我们让模型输出也长这样:
+或者写成定积分:
 
-$$\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon_\theta(x_t, t)\right)$$
-
-这里的 $\epsilon_\theta(x_t, t)$ 是一个新网络——给定 $x_t$ 和 $t$,**预测一个噪声**。这是个**重参数化选择**——我们把"输出 $\mu_\theta$"换成等价地"输出 $\epsilon_\theta$"。
-
-### 5.3 损失变成噪声 MSE
-
-代入 $L_{t-1}$:
-
-$$\| \tilde\mu_t - \mu_\theta \|^2 = \left\| \frac{\beta_t}{\sqrt{\alpha_t}\sqrt{1-\bar\alpha_t}}(\epsilon - \epsilon_\theta(x_t, t)) \right\|^2 = \frac{\beta_t^2}{\alpha_t (1-\bar\alpha_t)}\| \epsilon - \epsilon_\theta(x_t, t) \|^2$$
-
-代回 $L_{t-1}$ 的完整表达:
-
-$$L_{t-1} = \frac{\beta_t^2}{2\sigma_t^2 \alpha_t (1-\bar\alpha_t)}\, \| \epsilon - \epsilon_\theta(x_t, t) \|^2$$
-
-这是一个加权 MSE——**权重依赖于 $t$,但损失函数本身就是"预测噪声"的 MSE**。
-
----
-
-## 六、$L_{\text{simple}}$ 的诞生
-
-DDPM 论文做了最后一个决定性的简化:**把权重扔掉**,得到
-
-$$\boxed{L_{\text{simple}}(\theta) = \mathbb{E}_{t, x_0, \epsilon}\left[\| \epsilon - \epsilon_\theta(x_t, t) \|^2\right]}$$
-
-其中 $t \sim \text{Uniform}(1, T)$,$x_0 \sim p_{\text{data}}$,$\epsilon \sim \mathcal{N}(0, I)$,$x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t} \epsilon$。
-
-这是整个 diffusion 训练的"圣杯"——一个干净的、**无权重**的 MSE。
-
-### 6.1 为什么扔权重?
-
-理论上原始权重 $\beta_t^2 / (2\sigma_t^2 \alpha_t (1-\bar\alpha_t))$ 是 ELBO 的一部分,扔了就不再是严格的最大似然。但 DDPM 实验发现:**扔了之后效果反而更好**。
-
-直觉:原始权重对小 $t$(噪声小)的项加很大权,而那些项的"信号"实际上很弱——网络在小噪声时容易学,学到的细节对生成质量影响不大。扔掉权重相当于让网络在所有 $t$ 上**均匀重视**,实际上这强化了大噪声时的学习,而大噪声时的去噪决定了生成图像的整体结构,更重要。
-
-后来研究者发现,$L_{\text{simple}}$ 等价于一种"去权重"的最大似然——不是严格的 ELBO,但仍然是个合理的 surrogate。
-
-### 6.2 与 score matching 的对应
-
-把 $\epsilon$-预测和 score 联系起来。从 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t} \epsilon$,我们有
-
-$$\nabla_{x_t} \log q(x_t \mid x_0) = -\frac{x_t - \sqrt{\bar\alpha_t} x_0}{1-\bar\alpha_t} = -\frac{\epsilon}{\sqrt{1-\bar\alpha_t}}$$
-
-所以"预测 $\epsilon$"和"预测 score"只差一个标量 $-1/\sqrt{1-\bar\alpha_t}$:
-
-$$s_\theta(x_t, t) = -\frac{\epsilon_\theta(x_t, t)}{\sqrt{1-\bar\alpha_t}}$$
-
-**两条线在这里完全对上了**——DDPM 的 $\epsilon$-预测和 NCSN 的 score-预测在数学上是同一件事。这正是下一讲 Score SDE 要正式统一的内容。
-
----
-
-## 七、训练算法
-
-**完整训练流程**:
-
-```
-for each iteration:
-    x_0 ~ p_data                              # 采一个数据点
-    t   ~ Uniform({1, ..., T})                # 采一个时刻
-    eps ~ N(0, I)                             # 采噪声
-    x_t = sqrt(α_bar[t]) * x_0 + sqrt(1 - α_bar[t]) * eps   # 一步加噪
-    loss = || eps - eps_θ(x_t, t) ||^2        # 噪声 MSE
-    update θ via SGD
-```
-
-仅仅 5 行——这就是 DDPM 训练的全部。回头看 Sohl-Dickstein 那种"整条链采样、逐项算对数比值"的复杂流程,简洁度天差地别。
-
----
-
-## 八、采样算法
-
-训练完后,从纯噪声生成图像:
-
-```
-x_T ~ N(0, I)                                 # 起点:纯噪声
-for t = T, T-1, ..., 1:
-    z = N(0, I) if t > 1 else 0               # 最后一步不加噪声
-    μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))
-    x_{t-1} = μ + σ_t * z
-return x_0
-```
-
-每一步的核心:**预测噪声 → 算后验均值 → 加一点新噪声**,$T$ 次后得到一张图。
-
-注意采样要走 **$T = 1000$ 步**(DDPM 默认)——这慢,是 DDPM 最大的工程问题。后面 DDIM、DPM-Solver 等专门解决这个问题(下一讲后展开)。
-
----
-
-## 九、复盘:为什么这一切如此优雅?
-
-让我们回头看,DDPM 究竟做了什么:
-
-1. **加了一个条件 $x_0$**:$q(x_{t-1} \mid x_t)$ 不闭式 → $q(x_{t-1} \mid x_t, x_0)$ 闭式
-2. **用贝叶斯翻转方向**:让 ELBO 的每一项变成两个高斯的 KL
-3. **套高斯 KL 闭式**:KL → MSE
-4. **重参数化预测目标**:$\mu_\theta \to \epsilon_\theta$
-5. **去掉权重**:得到 $L_{\text{simple}}$
-
-每一步都是把"复杂、不闭式、方向不对"的形式替换成"简单、闭式、可训练"的形式。最终结果:
-
-- 训练 loss 一行 MSE
-- 训练 5 行代码
-- 完全消除蒙特卡洛的内层方差
-- 数值稳定、效果惊艳
-
-**这就是 DDPM 比 Sohl-Dickstein 好的本质**——不是改了模型,而是**改了表达方式**。同一个模型,换个写法,从难训变成易训,从凑合到 SOTA。
-
----
-
-## 十、要点回顾
-
-- DDPM 没有改 Sohl-Dickstein 的模型,只改了**表达方式**
-- 关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是闭式高斯,均值 $\tilde\mu_t$ 是 $x_0, x_t$ 的线性组合
-- 贝叶斯重写:把 ELBO 改成"$L_T + \sum L_{t-1} + L_0$"的形式
-- $L_T$ 是常数,$L_0$ 单独处理,**核心训练**是 $L_{t-1}$
-- $L_{t-1}$ 是两个高斯 KL → 闭式 MSE on $\mu_\theta$
-- 重参数化 $\mu_\theta \to \epsilon_\theta$,变成噪声预测
-- $L_{\text{simple}}$ 去掉权重,纯 MSE
-- $\epsilon$-预测和 score-预测只差一个标量,两条线在此对接
-
-
-## 附录1：怎么用贝叶斯化简 $q(x_{t-1}|x_t,x_0)$
-这个推导是"高斯运算"的经典练习——纯代数,但每一步都要清楚。我会用**配方法**(completing the square)系统推完。这是 diffusion 推导里最技术性的一段,但理解了它,后面所有"高斯之间的运算"你都会做。
-
----
-
-### 一、起点:贝叶斯展开
+$$\int_{-\infty}^{\infty} u(x)\, v'(x)\, dx = \left[u(x) v(x)\right]_{-\infty}^{\infty} - \int_{-\infty}^{\infty} u'(x)\, v(x)\, dx$$
 
 我们要推:
 
-$$q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}$$
+$$\int s_\theta(x)\, \frac{dp_{\text{data}}(x)}{dx}\, dx = -\int p_{\text{data}}(x)\, \frac{ds_\theta(x)}{dx}\, dx$$
 
-三个高斯都已知:
+设 $u = s_\theta$,$v = p_{\text{data}}$。代入分部积分公式:
 
-$$q(x_t \mid x_{t-1}) = \mathcal{N}(x_t;\, \sqrt{\alpha_t} x_{t-1},\, \beta_t I)$$
+$$\int_{-\infty}^{\infty} s_\theta(x)\, \frac{dp_{\text{data}}}{dx}\, dx = \underbrace{\left[s_\theta(x)\, p_{\text{data}}(x)\right]_{-\infty}^{\infty}}_{\text{边界项}} - \int_{-\infty}^{\infty} \frac{ds_\theta}{dx}\, p_{\text{data}}(x)\, dx$$
 
-$$q(x_{t-1} \mid x_0) = \mathcal{N}(x_{t-1};\, \sqrt{\bar\alpha_{t-1}} x_0,\, (1-\bar\alpha_{t-1}) I)$$
+**关键步骤:边界项为 0**。
 
-$$q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t} x_0,\, (1-\bar\alpha_t) I)$$
+要求 $\lim_{|x| \to \infty} s_\theta(x)\, p_{\text{data}}(x) = 0$:
 
-(其中 $\alpha_t = 1-\beta_t$,$\bar\alpha_t = \prod_{s=1}^t \alpha_s$)
+- $p_{\text{data}}(x) \to 0$ 在 $|x| \to \infty$ 处 ✓(任何合理的概率密度都满足)
+- $s_\theta(x)$ 不能"爆炸得比 $p_{\text{data}}$ 衰减得还快"——通常 $p_{\text{data}}$ 是指数衰减,$s_\theta$ 是神经网络多项式增长,这个条件几乎总是成立
 
-**总策略**:取对数,只看依赖 $x_{t-1}$ 的项,把它整理成"$x_{t-1}$ 的二次型 + 常数",对照高斯标准形式读出均值和方差。
+所以边界项消失,得到:
 
-为什么这个策略行?因为:**任何关于 $x_{t-1}$ 的表达,如果它的对数是 $x_{t-1}$ 的二次型,那它就是关于 $x_{t-1}$ 的高斯**。高斯被均值和方差完全确定,所以读出二次型的系数就够了。
+$$\int s_\theta(x)\, \frac{dp_{\text{data}}}{dx}\, dx = -\int p_{\text{data}}(x)\, \frac{ds_\theta}{dx}\, dx$$
+
+### 二、推广到多维:散度定理
+
+多维情形,我们要推的是:
+
+$$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$$
+
+#### 用散度恒等式推
+
+有一个标准的向量分析恒等式(乘积法则的多维版):
+
+$$\nabla \cdot (f \mathbf{v}) = \nabla f \cdot \mathbf{v} + f\, \nabla \cdot \mathbf{v}$$
+
+我们这里取 $f = p_{\text{data}}$,$\mathbf{v} = s_\theta$:
+
+$$\nabla \cdot (p_{\text{data}} s_\theta) = \nabla p_{\text{data}} \cdot s_\theta + p_{\text{data}}\, \nabla \cdot s_\theta$$
+
+整理:
+
+$$\nabla p_{\text{data}} \cdot s_\theta = \nabla \cdot (p_{\text{data}} s_\theta) - p_{\text{data}}\, \nabla \cdot s_\theta$$
+
+两边积分:
+
+$$\int s_\theta^\top \nabla p_{\text{data}}\, dx = \int \nabla \cdot (p_{\text{data}} s_\theta)\, dx - \int p_{\text{data}}\, \nabla \cdot s_\theta\, dx$$
+
+#### 第一项消失:散度定理
+
+第一项 $\int \nabla \cdot (p_{\text{data}} s_\theta)\, dx$ 是关键。**散度定理(高斯-奥斯特罗格拉茨基定理)**:
+
+$$\int_V \nabla \cdot \mathbf{F}\, dV = \oint_{\partial V} \mathbf{F} \cdot \mathbf{n}\, dS$$
+
+意思是:**一个向量场在体积内的散度积分,等于它在边界上的法向通量**。
+
+我们的积分域 $V = \mathbb{R}^d$ 是整个空间,边界 $\partial V$ 是"无穷远的球面"。要让这个边界积分为 0,需要:
+
+$$\lim_{\|x\| \to \infty} p_{\text{data}}(x)\, s_\theta(x) = 0$$
+
+这个条件在标准设定下成立——$p_{\text{data}}$ 是合理的概率密度(指数衰减),$s_\theta$ 是神经网络(最多多项式增长),乘积一定衰减到 0。
+
+**所以散度积分 = 边界通量 = 0**。
+
+#### 得到结果
+
+$$\int s_\theta^\top \nabla p_{\text{data}}\, dx = - \int p_{\text{data}}\, \nabla \cdot s_\theta\, dx$$
+
+写成期望形式:
+
+$$\int s_\theta^\top \nabla p_{\text{data}}\, dx = -\mathbb{E}_{p_{\text{data}}}[\nabla \cdot s_\theta]$$
+
+### 三、trace 和散度的关系
+
+我们之前写成 $\text{tr}(\nabla_x s_\theta)$,这里又写成 $\nabla_x \cdot s_\theta$,这两个其实是**同一个东西**:
+
+$$\nabla_x \cdot s_\theta(x) = \sum_{i=1}^d \frac{\partial s_{\theta,i}}{\partial x_i}$$
+
+而 $\nabla_x s_\theta$ 是 $s_\theta$ 的雅可比矩阵 $J \in \mathbb{R}^{d \times d}$,$J_{ij} = \partial s_{\theta,i}/\partial x_j$。雅可比矩阵的迹:
+
+$$\text{tr}(\nabla_x s_\theta) = \sum_{i=1}^d J_{ii} = \sum_{i=1}^d \frac{\partial s_{\theta,i}}{\partial x_i}$$
+
+所以**散度 = 雅可比的迹**,只是不同记号。
+
+### 四、关键魔法
+
+**起点**:$\mathbb{E}_{p_{\text{data}}}[s_\theta^\top \nabla_x \log p_{\text{data}}]$——里面有个 $\nabla_x \log p_{\text{data}}$,**这正是我们不知道、想学的东西**。
+
+**终点**:$-\mathbb{E}_{p_{\text{data}}}[\nabla_x \cdot s_\theta]$——里面只有 $s_\theta$ 和它的导数,**完全不需要知道 $p_{\text{data}}$ 的密度形式**,只要能从 $p_{\text{data}}$ 采样就行(数据集就是采样!)。
+
+**两步操作**做到了这个变换:
+
+1. **对数导数公式**:把 $\log p$ 的梯度变成 $\nabla p / p$,然后 $p$ 约掉
+2. **分部积分(散度定理)**:把"$\nabla$ 在 $p$ 上"换成"$\nabla$ 在 $s_\theta$ 上",代价是边界项(为 0)
+
+### 五、这个技巧后面还会出现
+
+为什么花这么多时间讲这个推导?因为**分部积分(散度定理)在 diffusion / score matching 框架里是反复出现的核心工具**。后面你会看到:
+
+1. **Score Matching 损失推导**(就是我们刚做的)
+2. **Stein's identity**:$\mathbb{E}_p[\nabla \cdot f + f^\top \nabla \log p] = 0$,用同样手法推
+3. **Fokker-Planck 方程**:推 SDE 下分布的演化,反复用分部积分
+4. **Reverse SDE 推导(Anderson 1982)**:把前向 SDE 翻转成反向,核心一步就是分部积分
+5. **Probability Flow ODE**:从 Fokker-Planck 推 ODE,又是分部积分
+
+**学透这一步,后面的 SDE 推导你会觉得"怎么又是这一招"——确实是同一招。**
+
+{% enddetails %}
 
 ---
 
-### 二、写出对数
+## 六、致命问题:trace 项算不动
 
-取对数(乘除 → 加减):
+理论很美,工程很疼。
 
-$$\log q(x_{t-1} \mid x_t, x_0) = \log q(x_t \mid x_{t-1}) + \log q(x_{t-1} \mid x_0) - \log q(x_t \mid x_0)$$
+$\text{tr}(\nabla_x s_\theta(x))$ 是 $s_\theta$ **雅可比矩阵的迹**。如果 $x \in \mathbb{R}^d$:
 
-第三项 $\log q(x_t \mid x_0)$ **不依赖 $x_{t-1}$**,作为常数处理(吸收到归一化里)。
+$$\text{tr}(\nabla_x s_\theta(x)) = \sum_{i=1}^d \frac{\partial s_{\theta,i}(x)}{\partial x_i}$$
 
-剩下两项,代入高斯密度公式 $\log \mathcal{N}(z; \mu, \sigma^2 I) = -\frac{1}{2\sigma^2}\| z - \mu \|^2 + \text{const}$(为了简洁我用了一维记号,多维各向同性同理):
+要算这个,你需要 **$d$ 次反向传播**(每次拿一个偏导)。对于 $d = 32 \times 32 \times 3 \approx 3000$(小图像)就已经吃不消,对于 $d = 256 \times 256 \times 3 \approx 200{,}000$ 完全没法算。
 
-**第一项**:
-
-$$\log q(x_t \mid x_{t-1}) = -\frac{1}{2\beta_t}\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2 + \text{const}$$
-
-**第二项**:
-
-$$\log q(x_{t-1} \mid x_0) = -\frac{1}{2(1-\bar\alpha_{t-1})}\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2 + \text{const}$$
-
-合并:
-
-$$\log q(x_{t-1} \mid x_t, x_0) = -\frac{1}{2}\left[\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} + \frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}}\right] + \text{const}$$
+**结果**:Hyvärinen 2005 在低维问题上能 work,但在图像生成这种高维场景下,原版 score matching 完全不实用。沉寂了 14 年。
 
 ---
 
-### 三、展开 $x_{t-1}$ 的二次型
+## 七、关键转机:Denoising Score Matching(Vincent 2011)
 
-我们的目标是把方括号里的部分整理成关于 $x_{t-1}$ 的形式:
+这是后来一切的基础。Vincent 想:**能不能避开 trace 项?**
 
-$$A \| x_{t-1} \|^2 - 2 B^\top x_{t-1} + (\text{不依赖 } x_{t-1} \text{ 的常数})$$
+他的洞察:**给数据加点噪声,再学加噪后分布的 score**。
 
-读出 $A$ 和 $B$ 后,均值方差就出来了。
+设噪声 $\sigma > 0$,定义加噪分布:
 
-### 第一块展开
+$$q_\sigma(\tilde x \mid x) = \mathcal{N}(\tilde x; x, \sigma^2 I)$$
 
-$$\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} = \frac{1}{\beta_t}\left(\| x_t \|^2 - 2\sqrt{\alpha_t}\, x_t^\top x_{t-1} + \alpha_t \| x_{t-1} \|^2\right)$$
+$$q_\sigma(\tilde x) = \int q_\sigma(\tilde x \mid x) p_{\text{data}}(x)\, dx$$
 
-只看依赖 $x_{t-1}$ 的项:
+$q_\sigma(\tilde x)$ 是**数据分布加高斯噪声**后的边际分布。我们要学 $q_\sigma$ 的 score,即 $\nabla_{\tilde x} \log q_\sigma(\tilde x)$。
 
-$$= \frac{\alpha_t}{\beta_t}\| x_{t-1} \|^2 - \frac{2\sqrt{\alpha_t}}{\beta_t}\, x_t^\top x_{t-1} + \text{const}$$
+定义 **Denoising Score Matching (DSM)** 损失:
 
-### 第二块展开
+$$\boxed{J_{\text{DSM}}(\theta) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}}, \tilde x \sim q_\sigma(\tilde x \mid x)}\left[\| s_\theta(\tilde x) - \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x) \|^2\right]}$$
 
-$$\frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}} = \frac{1}{1-\bar\alpha_{t-1}}\left(\| x_{t-1} \|^2 - 2\sqrt{\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \bar\alpha_{t-1}\| x_0 \|^2\right)$$
+注意里面是 $\log q_\sigma(\tilde x \mid x)$(条件概率,有闭式),不是 $\log q_\sigma(\tilde x)$(边际,无闭式)。
 
-只看依赖 $x_{t-1}$ 的项:
+Vincent 证明了:
 
-$$= \frac{1}{1-\bar\alpha_{t-1}}\| x_{t-1} \|^2 - \frac{2\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \text{const}$$
+$$\arg\min_\theta J_{\text{DSM}}(\theta) = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}(\theta)$$
 
-### 合并两块
+也就是 **DSM 和 ESM(对 $q_\sigma$)的最优解相同**。学 $q_\sigma$ 的 score 这件事,可以通过 DSM 来做——而 DSM **没有 trace 项**!
 
-$x_{t-1}$ 的**二次项系数 $A$**:
+{% details DSM 等价性证明:DSM 与 ESM 最优解相同 %}
 
-$$A = \frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}$$
+这是 Vincent 2011 论文的核心定理,推导很优雅。这个证明的技巧和上面分部积分非常类似——都是"把不知道的东西通过代数变换约掉"。
 
-$x_{t-1}$ 的**一次项系数 $B$**(指 $-2 B^\top x_{t-1}$ 的 $B$):
+### 一、先把两个目标写清楚
 
-$$B = \frac{\sqrt{\alpha_t}}{\beta_t}\, x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0$$
+设噪声分布 $q_\sigma(\tilde x \mid x) = \mathcal{N}(\tilde x; x, \sigma^2 I)$,加噪后的边际分布:
+
+$$q_\sigma(\tilde x) = \int q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$$
+
+**ESM(对 $q_\sigma$)**:学 $q_\sigma$ 的 score:
+
+$$J_{\text{ESM}}^{(\sigma)}(\theta) = \frac{1}{2}\mathbb{E}_{\tilde x \sim q_\sigma}\left[\| s_\theta(\tilde x) - \nabla_{\tilde x} \log q_\sigma(\tilde x) \|^2\right]$$
+
+**DSM**:学条件 score:
+
+$$J_{\text{DSM}}(\theta) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}},\, \tilde x \sim q_\sigma(\tilde x \mid x)}\left[\| s_\theta(\tilde x) - \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x) \|^2\right]$$
+
+**注意区别**:
+
+- ESM 里是 $\nabla \log q_\sigma(\tilde x)$ —— 边际的 score,**没有闭式**(里面有积分)
+- DSM 里是 $\nabla \log q_\sigma(\tilde x \mid x)$ —— 条件的 score,**有闭式**(高斯)
+
+我们要证:**两者作为 $\theta$ 的函数,只差一个常数**。
+
+### 二、整体策略
+
+证明 $J_{\text{DSM}}(\theta) = J_{\text{ESM}}^{(\sigma)}(\theta) + C$,其中 $C$ **不依赖于 $\theta$**。策略:把两个目标都展开,看交叉项是否相等。
+
+### 三、把两个目标展开
+
+平方展开 $\| s_\theta - t \|^2 = \| s_\theta \|^2 - 2 s_\theta^\top t + \| t \|^2$:
+
+**ESM 展开**:
+
+$$J_{\text{ESM}}^{(\sigma)} = \underbrace{\frac{1}{2}\mathbb{E}_{q_\sigma(\tilde x)}\left[\| s_\theta \|^2\right]}_{(A)} - \underbrace{\mathbb{E}_{q_\sigma(\tilde x)}\left[s_\theta^\top \nabla_{\tilde x} \log q_\sigma(\tilde x)\right]}_{(B)} + C_1$$
+
+**DSM 展开**:
+
+$$J_{\text{DSM}} = \underbrace{\frac{1}{2}\mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[\| s_\theta \|^2\right]}_{(A')} - \underbrace{\mathbb{E}_{p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)}\left[s_\theta^\top \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\right]}_{(B')} + C_2$$
+
+**目标**:证明 $(A) = (A')$、$(B) = (B')$。
+
+### 四、证 $(A) = (A')$:边际化等价
+
+$(A')$ 里的双重期望可以重组:
+
+$$(A') = \frac{1}{2}\int p_{\text{data}}(x) \int q_\sigma(\tilde x \mid x)\, \| s_\theta(\tilde x) \|^2\, d\tilde x\, dx$$
+
+交换积分顺序:
+
+$$= \frac{1}{2}\int \| s_\theta(\tilde x) \|^2 \underbrace{\int q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx}_{= q_\sigma(\tilde x)}\, d\tilde x = (A)$$
+
+直觉:被积函数 $\| s_\theta(\tilde x) \|^2$ 只依赖 $\tilde x$,和 $x$ 无关,所以对 $x$ 边际化把联合分布塌缩成边际分布,期望不变。
+
+### 五、证 $(B) = (B')$:核心一步
+
+$$(B) = \int q_\sigma(\tilde x)\, s_\theta^\top \nabla_{\tilde x} \log q_\sigma(\tilde x)\, d\tilde x$$
+
+用对数导数公式 $\nabla_{\tilde x} \log q_\sigma(\tilde x) = \nabla_{\tilde x} q_\sigma(\tilde x) / q_\sigma(\tilde x)$:
+
+$$= \int s_\theta(\tilde x)^\top \nabla_{\tilde x} q_\sigma(\tilde x)\, d\tilde x$$
+
+而 $q_\sigma(\tilde x) = \int q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$,对 $\tilde x$ 求梯度($p_{\text{data}}$ 不依赖 $\tilde x$,梯度可以进入积分):
+
+$$\nabla_{\tilde x} q_\sigma(\tilde x) = \int \nabla_{\tilde x} q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx = \int q_\sigma(\tilde x \mid x)\, \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\, p_{\text{data}}(x)\, dx$$
+
+代回 $(B)$:
+
+$$(B) = \int \int p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)\, s_\theta(\tilde x)^\top \nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)\, dx\, d\tilde x = (B')$$
+
+✓
+
+### 六、合起来
+
+$$J_{\text{DSM}}(\theta) - J_{\text{ESM}}^{(\sigma)}(\theta) = C_2 - C_1 = \text{常数(不依赖 } \theta \text{)}$$
+
+最小化谁结果都一样:
+
+$$\arg\min_\theta J_{\text{DSM}} = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}$$
+
+证毕。
+
+### 七、关键技巧总结
+
+整个证明就靠两个把戏,反复用:
+
+#### 技巧 1:对数导数公式
+
+$$\nabla \log p = \frac{\nabla p}{p}$$
+
+它的威力:把 $\log p$ 拆开后,$p$ 出现在分母,容易和外面的 $p$ 约掉。
+
+#### 技巧 2:交换积分顺序
+
+边际分布是积分的结果。当我们对 $\tilde x$ 求梯度后,这个积分依然在,只是被积函数变了。**梯度算子可以"穿过"对 $x$ 的积分**(因为求导和积分变量不同)。
+
+### 八、为什么这个等价"看起来不可思议"?
+
+直觉上,边际 score 和条件 score **完全不同**:
+
+- 边际 score:在所有可能的 $x$ 上平均后的"指向高密度方向"
+- 条件 score:已知 $x$ 时,$\tilde x$ 偏离 $x$ 的方向(有闭式 $-(\tilde x - x)/\sigma^2$)
+
+关键是**等价的是期望**,不是逐点相等。具体地:
+
+$$\nabla_{\tilde x} \log q_\sigma(\tilde x) = \mathbb{E}_{p(x \mid \tilde x)}[\nabla_{\tilde x} \log q_\sigma(\tilde x \mid x)]$$
+
+(这其实是 Tweedie 公式的雏形——边际 score 是条件 score 在后验下的期望)
+
+### 九、为什么这件事如此重要?
+
+| | 我们想要的 | 实际可算的 |
+|---|---|---|
+| ESM | $\nabla \log p_{\text{data}}$(根本不知道) | 没法直接算 |
+| ESM($q_\sigma$) | $\nabla \log q_\sigma(\tilde x)$(边际,无闭式) | 没法直接算 |
+| DSM | $\nabla \log q_\sigma(\tilde x \mid x)$(条件,**有闭式**!) | **可以直接算!** |
+
+DSM 把"想学边际 score"这件事,通过"加点噪声 + 用条件 score 当目标"的迂回,变成了一个**完全可计算**的 MSE 损失。
+
+{% enddetails %}
 
 ---
 
-### 四、配方法读出均值和方差
+## 八、DSM 损失化简
 
-回忆标准高斯的对数(忽略常数):
+把 $q_\sigma(\tilde x \mid x) = \mathcal{N}(\tilde x; x, \sigma^2 I)$ 代入:
 
-$$\log \mathcal{N}(x_{t-1}; \tilde\mu, \tilde\sigma^2 I) = -\frac{1}{2\tilde\sigma^2}\| x_{t-1} - \tilde\mu \|^2 = -\frac{1}{2\tilde\sigma^2}\left(\| x_{t-1} \|^2 - 2 \tilde\mu^\top x_{t-1}\right) + \text{const}$$
+$$\log q_\sigma(\tilde x \mid x) = -\frac{\| \tilde x - x \|^2}{2\sigma^2} + \text{const}$$
 
-所以标准形式中的二次项系数和一次项 $B$ 满足:
+$$\nabla_{\tilde x} \log q_\sigma(\tilde x \mid x) = -\frac{\tilde x - x}{\sigma^2}$$
 
-- 二次项系数 = $\frac{1}{\tilde\sigma^2}$
-- 一次项系数 $B$ = $\frac{\tilde\mu}{\tilde\sigma^2}$
+代回 DSM 损失:
 
-(注意我们的合并公式整体外面有一个 $-\frac{1}{2}$,所以提取的就是这个对应关系)
+$$J_{\text{DSM}} = \frac{1}{2}\mathbb{E}_{x, \tilde x}\left[\left\| s_\theta(\tilde x) + \frac{\tilde x - x}{\sigma^2} \right\|^2\right]$$
 
-对照得到:
+用重参数化 $\tilde x = x + \sigma \epsilon,\, \epsilon \sim \mathcal{N}(0, I)$:
 
-$$\frac{1}{\tilde\sigma^2} = A,\quad \frac{\tilde\mu}{\tilde\sigma^2} = B$$
+$$\frac{\tilde x - x}{\sigma^2} = \frac{\epsilon}{\sigma}$$
 
 所以:
 
-$$\boxed{\tilde\sigma^2 = \frac{1}{A},\quad \tilde\mu = \frac{B}{A} = \tilde\sigma^2 \cdot B}$$
+$$J_{\text{DSM}} = \frac{1}{2}\mathbb{E}_{x, \epsilon}\left[\left\| s_\theta(\tilde x) + \frac{\epsilon}{\sigma} \right\|^2\right]$$
+
+**这是一个干净的 MSE!** 没有 trace,没有积分,可以直接训练。
 
 ---
 
-### 五、化简 $\tilde\sigma^2$
+## 九、第一个奇迹:DSM ≡ "学去噪"
 
-$$\tilde\sigma^2 = \frac{1}{\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}}$$
+让我们用另一种参数化。定义"去噪函数":
 
-通分:
+$$D_\theta(\tilde x) := \tilde x + \sigma^2 s_\theta(\tilde x)$$
 
-$$\tilde\sigma^2 = \frac{1}{\frac{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}{\beta_t (1-\bar\alpha_{t-1})}} = \frac{\beta_t (1-\bar\alpha_{t-1})}{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}$$
+代入 DSM 损失:
 
-化简分母。用 $\beta_t = 1 - \alpha_t$:
+$$J_{\text{DSM}} = \frac{1}{2\sigma^2}\mathbb{E}_{x, \tilde x}\left[\| D_\theta(\tilde x) - x \|^2\right]$$
 
-$$\alpha_t (1-\bar\alpha_{t-1}) + \beta_t = \alpha_t - \alpha_t \bar\alpha_{t-1} + 1 - \alpha_t = 1 - \alpha_t \bar\alpha_{t-1}$$
+**意义**:DSM 等价于训练一个去噪器——给加噪图像 $\tilde x$,输出原始图像 $x$。
 
-而 $\alpha_t \bar\alpha_{t-1} = \bar\alpha_t$(因为 $\bar\alpha_t = \prod_{s=1}^t \alpha_s = \alpha_t \prod_{s=1}^{t-1} \alpha_s = \alpha_t \bar\alpha_{t-1}$),所以分母是 $1 - \bar\alpha_t$。
+**这就是 score 视角和 diffusion 视角第一次"对上"了**:
 
-得到:
+- 第一讲(变分视角):DDPM 让网络预测 $\epsilon$ 或 $\mu$,本质上是去噪
+- 这一讲(score 视角):DSM 学 score 也等价于去噪
+- **它们本质上是同一件事**!score 就是去噪方向(乘上一个标量)
 
-$$\boxed{\tilde\sigma^2 = \tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t}\, \beta_t}$$
+更精确地:
 
-完美——这就是 DDPM 公式里的方差。
+$$s_\theta(\tilde x) = \frac{D_\theta(\tilde x) - \tilde x}{\sigma^2} = -\frac{\epsilon_\theta(\tilde x)}{\sigma}$$
 
----
+(其中 $\epsilon_\theta$ 是预测的噪声)
 
-### 六、化简 $\tilde\mu_t$
-
-$$\tilde\mu_t = \tilde\sigma^2 \cdot B = \frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t}\left[\frac{\sqrt{\alpha_t}}{\beta_t} x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} x_0\right]$$
-
-把 $\tilde\sigma^2$ 分配进去:
-
-**$x_t$ 的系数**:
-
-$$\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\alpha_t}}{\beta_t} = \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}$$
-
-**$x_0$ 的系数**:
-
-$$\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}$$
-
-合起来:
-
-$$\boxed{\tilde\mu_t(x_t, x_0) = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}\, x_0 + \frac{\sqrt{\alpha_t}\, (1-\bar\alpha_{t-1})}{1-\bar\alpha_t}\, x_t}$$
-
-完美——这就是 DDPM 公式里的均值。✓
+**这是连接两条线的第一个公式**。后面 Score SDE 会把这个对应推到完整框架。
 
 ---
 
-### 七、检查一致性(sanity check)
+## 十、有了 score 之后怎么采样?
 
-数学推导要会自检,看这个结果合不合理。
+答案:**Langevin 动力学(Langevin dynamics)**。
 
-**检查 1**:$x_0$ 和 $x_t$ 的系数加起来应该接近什么?
+物理背景:Langevin 方程描述布朗运动中的粒子。在我们这里,它给出了一个从 $p$ 采样的方法,**只需要 $\nabla_x \log p(x)$**:
 
-让我们看极端情况。当 $t = 1$ 时,$\bar\alpha_{t-1} = \bar\alpha_0 = 1$,$\bar\alpha_t = \alpha_1$:
+$$x_{k+1} = x_k + \frac{\eta}{2}\nabla_x \log p(x_k) + \sqrt{\eta}\, z_k,\quad z_k \sim \mathcal{N}(0, I)$$
 
-- $x_0$ 系数:$\frac{\sqrt{1} \cdot \beta_1}{1-\alpha_1} = \frac{\beta_1}{\beta_1} = 1$
-- $x_t$ 系数:$\frac{\sqrt{\alpha_1}(1-1)}{1-\alpha_1} = 0$
+其中 $\eta > 0$ 是步长。可以证明:当 $\eta \to 0$、$k \to \infty$ 时,$x_k$ 的分布收敛到 $p(x)$。
 
-所以 $\tilde\mu_1 = x_0$ —— 当 $t = 1$ 时,逆向后验完全集中在 $x_0$,**没有不确定性**(方差也应该是 0,我们检查:$\tilde\beta_1 = \frac{1-1}{1-\alpha_1}\beta_1 = 0$ ✓)。
+**直观**:
 
-**直觉解释**:已知 $x_0$ 和 $x_1$,要问 $x_0$ 是什么——当然就是 $x_0$ 本身,完全确定。
+- 漂移项 $\frac{\eta}{2}\nabla_x \log p$:把粒子拉向高密度区域
+- 噪声项 $\sqrt{\eta}\, z$:防止粒子卡在局部模式上,保证遍历全分布
 
-**检查 2**:当 $t$ 很大、$\bar\alpha_t \to 0$ 时:
+如果我们学到了 $s_\theta \approx \nabla_x \log p$,直接代进去:
 
-- $x_0$ 系数 $\approx \sqrt{\bar\alpha_{t-1}} \beta_t \to 0$
-- $x_t$ 系数 $\approx \sqrt{\alpha_t}$
+$$x_{k+1} = x_k + \frac{\eta}{2}s_\theta(x_k) + \sqrt{\eta}\, z_k$$
 
-也就是 $\tilde\mu_t \approx \sqrt{\alpha_t}\, x_t$。当噪声非常大时,$x_0$ 信息被噪声完全淹没,逆向后验主要由 $x_t$ 决定——也合理。
-
-**检查 3**:方差 $\tilde\beta_t < \beta_t$ 吗?
-
-$\tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t} \beta_t$。因为 $\bar\alpha_{t-1} > \bar\alpha_t$,有 $1-\bar\alpha_{t-1} < 1-\bar\alpha_t$,所以 $\tilde\beta_t < \beta_t$ ✓。
-
-**直觉**:已知 $x_0$ 和 $x_t$ 之后,我们对 $x_{t-1}$ 的不确定性,比单纯看前向加噪 $\beta_t$ 要小——多了 $x_0$ 这个信息,后验就更窄。合理。
+——就能从 $p$ 采样了。**无需归一化常数,无需采样链复杂的 EBM,只要 score**。
 
 ---
 
-### 八、技巧总结:配方法的精髓
+## 十一、致命问题二:低密度区域 score 不准
 
-整个推导的核心是**配方法**——给一个二次型,读出均值方差。让我把这个"模板"提炼出来,因为它在 diffusion / VAE / 高斯过程里反复出现。
+理论很美,实践又疼一次。
 
-**模板**:如果一个分布的对数密度(忽略常数)长这样
+考虑实际数据:图像在 $\mathbb{R}^{d}$($d \approx 10^5$)中其实集中在一个**低维流形**上,绝大部分空间是低密度区域。
 
-$$-\frac{1}{2}\left(A \| z \|^2 - 2 B^\top z\right)$$
+问题是:
 
-那这个分布就是高斯,均值 $\mu = B/A$,方差 $\sigma^2 = 1/A$。
+- **训练数据稀疏**:低密度区域几乎没有训练样本
+- **score 学不准**:网络在低密度区域输出基本是随机的
+- **Langevin 卡住**:从随机噪声 $\mathcal{N}(0, I)$ 出发,初始点几乎肯定在低密度区域,$s_\theta$ 给出的方向是错的,Langevin 完全不收敛
 
-**实践三步**:
-
-1. 把所有"高斯乘积/比值"取对数,变成一堆二次型相加
-2. 收集所有 $\| z \|^2$ 的系数得 $A$,所有 $z^\top$ 的系数得 $B$
-3. 读出 $\mu = B/A$,$\sigma^2 = 1/A$,完成
-
-整个过程**不需要任何创意**,纯机械。学会这个,你以后看 diffusion 各种高斯运算都不会怕。
-
-#### 一个更几何的视角
-
-更深一层:这个推导本质是"两个高斯的乘积还是高斯"——更准确地说,**两个关于 $x_{t-1}$ 的高斯的乘积,得到一个新的关于 $x_{t-1}$ 的高斯,新的精度(precision = 方差的倒数)是两个精度之和**。
-
-具体到我们这里:
-
-- $q(x_t \mid x_{t-1})$ 看作 $x_{t-1}$ 的函数,精度是 $\alpha_t / \beta_t$
-- $q(x_{t-1} \mid x_0)$ 看作 $x_{t-1}$ 的函数,精度是 $1/(1-\bar\alpha_{t-1})$
-- 乘积后的精度 = 两者之和 = $A$
-
-这就是为什么贝叶斯推断里,**精度具有"可加性",而方差不具备**——后验精度 = 先验精度 + 似然精度。这个原理在贝叶斯线性回归、卡尔曼滤波里都是同一回事。
+这正是 score-based 方法 2011 年之后又沉寂多年的原因——理论可行,但**实际从噪声开始采样不 work**。
 
 ---
 
-### 九、要点回顾
+## 十二、第二个奇迹:NCSN(Song & Ermon 2019)
 
-- 推导工具:**配方法**——把对数密度整理成关于变量的二次型,读出均值方差
-- 三个高斯(前向 1 步、前向 $t-1$ 步、前向 $t$ 步)通过贝叶斯组合
-- 第三个($q(x_t \mid x_0)$)不依赖 $x_{t-1}$,扔进常数
-- 二次项系数 $A$ 和一次项系数 $B$ 决定 $\tilde\mu = B/A$,$\tilde\sigma^2 = 1/A$
-- 关键化简:$1 - \alpha_t \bar\alpha_{t-1} = 1 - \bar\alpha_t$
-- 检查极端情况($t=1$、$t$ 很大)能验证公式合理
-- 几何视角:贝叶斯组合 = 精度相加
+直到 2019 年,Yang Song 想到:**用多种尺度的噪声**。
 
+核心思路:
 
+- **大噪声 $\sigma_1$**:加大量噪声后,$q_{\sigma_1}$ 在整个空间都有显著密度,score 处处都能学准
+- **小噪声 $\sigma_L$**:噪声很小时,$q_{\sigma_L} \approx p_{\text{data}}$,采样得到的接近真实数据
+- **中间过渡**:从 $\sigma_1$ 退火到 $\sigma_L$
 
-## 附录2：怎么化简$L_{t-1}$散度的
+具体地,选 $L$ 个噪声尺度 $\sigma_1 > \sigma_2 > \cdots > \sigma_L$(几何递减,如 $\sigma_l = \sigma_1 \cdot (\sigma_L/\sigma_1)^{(l-1)/(L-1)}$)。
 
+训练一个**噪声条件 score 网络** $s_\theta(x, \sigma)$,加权 DSM 损失:
 
-### 一、先回顾我们在哪
+$$J_{\text{NCSN}} = \frac{1}{L}\sum_{l=1}^L \lambda(\sigma_l) \cdot J_{\text{DSM}}(\theta; \sigma_l)$$
 
-DDPM 把负 ELBO 改写成:
+其中 $\lambda(\sigma_l) = \sigma_l^2$(平衡不同尺度的损失大小)。
 
-$$-\mathcal{L} = \mathbb{E}_q\left[L_T + \sum_{t=2}^T L_{t-1} + L_0\right]$$
+代入展开,加权后形式漂亮:
 
-其中核心训练项是
+$$J_{\text{NCSN}} = \frac{1}{2L}\sum_l \mathbb{E}_{x, \epsilon}\left[\| \sigma_l \, s_\theta(\tilde x_l, \sigma_l) + \epsilon \|^2\right]$$
 
-$$L_{t-1} = D_{\text{KL}}\big(q(x_{t-1} \mid x_t, x_0) \,\big\|\, p_\theta(x_{t-1} \mid x_t)\big)$$
+(其中 $\tilde x_l = x + \sigma_l \epsilon$)
 
-我们已经知道两个分布是什么:
-
-- $q(x_{t-1} \mid x_t, x_0) = \mathcal{N}(\tilde\mu_t(x_t, x_0),\, \tilde\beta_t I)$ ← 闭式高斯,刚推过
-- $p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(\mu_\theta(x_t, t),\, \Sigma_\theta(x_t, t))$ ← 网络输出
-
-**问题**:怎么计算两个高斯之间的 KL?
+这是个统一的 MSE,可以训练。
 
 ---
 
-### 二、两个高斯的 KL 闭式公式
+## 十三、Annealed Langevin Dynamics
 
-我们之前提过这个公式,但没真正用过。现在用最简化的版本:**两个各向同性、方差相同的高斯**。
+采样时,从大噪声到小噪声**退火**:
 
-设 $p = \mathcal{N}(\mu_1, \sigma^2 I)$,$q = \mathcal{N}(\mu_2, \sigma^2 I)$,都是 $d$ 维。则:
+```
+初始化: x ~ N(0, σ_1^2 I)         # 大噪声分布
 
-$$D_{\text{KL}}(p \| q) = \frac{\| \mu_1 - \mu_2 \|^2}{2\sigma^2}$$
+for l = 1, 2, ..., L:              # 逐步退火
+    η_l = ε · σ_l^2 / σ_L^2        # 步长(随尺度变小而变小)
+    for k = 1, ..., K:             # 每个尺度跑 K 步 Langevin
+        z ~ N(0, I)
+        x ← x + (η_l / 2) · s_θ(x, σ_l) + sqrt(η_l) · z
 
-**这是个奇迹般简洁的公式**——两个相同方差的高斯之间的 KL,**就是均值之差的平方,除以 $2\sigma^2$**。
+返回 x
+```
 
-为什么这么简单?因为方差相同时,KL 公式里的 $\log(\sigma_2/\sigma_1)$ 项和 $\sigma_1^2/(2\sigma_2^2) - 1/2$ 项都消掉了,只剩均值差。
+**直观**:大尺度先把 $x$ 拉到正确的"大方向"上,小尺度再做精修。这绕开了"从纯噪声出发 score 不准"的问题——因为初始点 $\mathcal{N}(0, \sigma_1^2 I)$ 正好是 $q_{\sigma_1}$ 的高密度区域。
 
----
-
-### 三、DDPM 的简化:固定方差
-
-要套用这个简洁公式,**两个高斯必须有相同的方差**。但:
-
-- $q(x_{t-1} \mid x_t, x_0)$ 的方差是 $\tilde\beta_t I$(已知,闭式)
-- $p_\theta(x_{t-1} \mid x_t)$ 的方差是 $\Sigma_\theta(x_t, t)$(网络输出)
-
-DDPM 做了一个**简化设计**:**让 $p_\theta$ 的方差也固定**,不学,直接设成
-
-$$\Sigma_\theta(x_t, t) = \sigma_t^2 I$$
-
-其中 $\sigma_t^2$ 是预设的常数(论文实验了 $\sigma_t^2 = \beta_t$ 和 $\sigma_t^2 = \tilde\beta_t$,效果差不多)。
-
-**为什么可以这样简化?**
-
-- $\tilde\beta_t$ 已经是个**完全闭式**且**不依赖 $x_0, x_t$** 的量——它只依赖 $t$ 和 noise schedule
-- 既然方差已经"事先知道",网络再去学一个就是浪费
-- 理论上稍微损失一点表达力,但实践中效果反而更好(更稳定)
-
-**简化之后**,两个高斯方差都是 $\sigma_t^2 I$(假设取 $\sigma_t^2 = \tilde\beta_t$),套上面的简洁公式:
-
-$$L_{t-1} = D_{\text{KL}}\big(q \,\big\|\, p_\theta\big) = \frac{\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2}{2\sigma_t^2}$$
-
-如果两边方差不完全相等(比如 $\sigma_t^2 = \beta_t$ 但 $q$ 的方差是 $\tilde\beta_t$),会多出一些常数项,但**不依赖 $\theta$**,可以塞进 const:
-
-$$L_{t-1} = \frac{1}{2\sigma_t^2}\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2 + C$$
+NCSN 是 2019 年第一个用 score-based 方法在 CIFAR-10 上做出能看的图像的工作——比 GAN 还差一点,但已经证明了路线可行。
 
 ---
 
-### 四、关键转折:KL 变成了 MSE
+## 十四、和第一讲的对照
 
-让我们停下来,欣赏这个时刻。
+让我把两条线放一起,你会看到惊人的对称性:
 
-**之前**:训练 loss 是 $D_{\text{KL}}(q \| p_\theta)$,听起来是个抽象的"分布之间的距离"。
-
-**现在**:训练 loss 是 $\| \tilde\mu_t - \mu_\theta \|^2$,**就是两个向量之间的均方误差**——和回归问题完全一样!
-
-具体说,网络要做的事变成了:**给定 $x_t$ 和 $t$,输出一个向量 $\mu_\theta(x_t, t)$,让它逼近真实后验均值 $\tilde\mu_t(x_t, x_0)$**。
-
-这就是为什么我说这一步是"魔法"——一个看起来很复杂的概率论目标,化成了最朴素的 MSE 回归。
-
----
-
-### 五、$\tilde\mu_t$ 是什么 vs $\mu_\theta$ 是什么
-
-为了让这一步更具体,我们看清楚两边到底是什么:
-
-| | 表达式 | 来源 |
+| | 变分视角(第一讲) | Score 视角(这一讲) |
 |---|---|---|
-| $\tilde\mu_t(x_t, x_0)$ | $\frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t} x_0 + \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t} x_t$ | 闭式公式,用 $x_0, x_t$ 算出 |
-| $\mu_\theta(x_t, t)$ | 由神经网络输出 | 给定 $(x_t, t)$,网络预测 |
+| 起点 | Sohl-Dickstein 2015 | Hyvärinen 2005 |
+| 核心问题 | 边际化算不出来 | 归一化常数 $Z$ 算不出来 |
+| 解决思路 | ELBO 下界 | 学 score 绕开 $Z$ |
+| 第一版工程问题 | 方差大 | trace 项算不动 |
+| 关键补丁 | DDPM(简化目标) | DSM(去噪等价) |
+| 工程问题二 | 仍要 1000 步采样 | 低密度区域 score 不准 |
+| 突破 | 使用多步小噪声(自带) | NCSN 多尺度噪声 |
+| 训练目标 | $\| \epsilon - \epsilon_\theta(x_t, t) \|^2$ | $\sigma \| s_\theta(\tilde x, \sigma) + \epsilon/\sigma \|^2$ |
+| 采样 | 逆向链 | Annealed Langevin |
+| 提出年份 | 2020(DDPM) | 2019(NCSN) |
 
-**目标**:训练 $\mu_\theta$,让它在所有 $(x_0, x_t)$ 组合下都接近 $\tilde\mu_t(x_t, x_0)$。
-
-注意一个关键事实:**$\tilde\mu_t$ 依赖 $x_0$,而 $\mu_\theta$ 只能看到 $x_t$**。所以 $\mu_\theta$ 必须**从 $x_t$ 反推 $x_0$ 的信息**——这就是去噪。
-
----
-
-### 六、训练这个 MSE 怎么操作?
-
-来一遍完整的训练步骤,落实到代码层面:
-
-```python
-# 一次训练迭代
-x_0 = sample_data()                                           # 从数据集采
-t   = uniform(2, T)                                           # 采时刻
-eps = randn_like(x_0)                                         # 采噪声
-
-# 用一步公式造出 x_t(重参数化)
-x_t = sqrt(α_bar[t]) * x_0 + sqrt(1 - α_bar[t]) * eps
-
-# 算真实后验均值 μ̃_t(用闭式)
-target_mu = (sqrt(α_bar[t-1]) * β[t]) / (1 - α_bar[t]) * x_0 \
-          + (sqrt(α[t]) * (1 - α_bar[t-1])) / (1 - α_bar[t]) * x_t
-
-# 网络输出 μ_θ
-pred_mu = network(x_t, t)
-
-# MSE loss
-loss = ||target_mu - pred_mu||^2 / (2 * σ_t^2)
-
-loss.backward()
-```
-
-这就是把 $L_{t-1}$ 落实到训练里的**全部内容**——一个标准的回归任务。
+**两条独立发展的线,2019-2020 几乎同时成熟,得出几乎相同形式的目标函数**。这不是巧合——它们在数学上**本质等价**。下一讲 Score SDE 会把这件事完全说清。
 
 ---
 
-### 七、为什么 DDPM 还要再走一步?
-
-到这里其实已经能训练了,而且原则上和最终的 DDPM 是等价的。但**实践中"预测 $\mu$"比"预测 $\epsilon$"差**,原因是:
-
-#### 原因 1:数值尺度问题
-
-$\tilde\mu_t$ 是 $x_0$ 和 $x_t$ 的加权和,**它的数值范围接近 $x_t$ 本身**——也就是说,大部分输出就是"把 $x_t$ 输出回去"。网络要做的"修正"只是一个小偏移。
-
-让网络输出"几乎是输入本身 + 小修正" 是低效的——网络的大部分容量被花在"复刻输入"上。
-
-#### 原因 2:$\epsilon$ 的尺度更"标准化"
-
-对比一下,如果让网络预测 $\epsilon$:
-
-$$\epsilon \sim \mathcal{N}(0, I)$$
-
-——它的尺度永远是 0 均值、单位方差,**不依赖 $t$**。所有时刻 $t$ 的目标分布尺度统一,网络更好训练。
-
-#### 原因 3:残差结构
-
-预测 $\epsilon$ 在数学上等价于"网络预测残差"——即"$x_t$ 里的噪声成分是什么",然后从 $x_t$ 减掉。这是经典的残差学习思想,普遍比"直接学输入到输出的映射"更稳定。
-
-所以 DDPM 做了**重参数化**:把网络的预测目标从 $\mu_\theta$ 换成 $\epsilon_\theta$,数学等价,但训练效果好得多。
-
----
-
-### 八、所以这一步的本质是什么?
-
-回到你问的:"$L_{t-1}$ 化简核心一步"到底在做什么?
-
-**它做了三件事**:
-
-1. **认识到 $L_{t-1}$ 是两个高斯的 KL**——两边都已经被设计成高斯了
-2. **简化模型**:固定 $p_\theta$ 的方差为 $\sigma_t^2 I$,让两边方差相同
-3. **套用"相同方差高斯 KL = 均值差平方"的闭式公式**——把 KL 变成 MSE
-
-**结果**:训练 loss 从抽象的"两个分布的距离"变成了具体的"两个向量的 MSE"。
-
-这是 DDPM 让训练变简单的**最关键一步**——但其实它的本质就是"利用我们之前讲过的'高斯 KL 有闭式',把分布问题降维成回归问题"。
-
----
-
-### 九、和我们之前讨论的串起来
-
-回头看,这一切都是之前讨论的"闭式 vs 蒙特卡洛"故事的最终兑现:
-
-| 阶段 | loss 的形式 | 怎么算 |
-|---|---|---|
-| Sohl-Dickstein | $\log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}$ | 蒙特卡洛(方向不一致,无法 KL) |
-| DDPM 改写后 | $D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \| p_\theta(x_{t-1} \mid x_t))$ | 闭式 KL(都是高斯,方差还相同) |
-| DDPM 化简后 | $\| \tilde\mu - \mu_\theta \|^2$ | MSE,直接回归 |
-
-每一步都在**降低 loss 的计算复杂度**:从需要采样估计,到闭式 KL,到 MSE 回归。
-
----
-
-### 十、要点回顾
-
-- **KL 变 MSE 的魔法**:两个相同方差高斯的 KL 公式只剩均值差平方,$D_{\text{KL}} = \| \mu_1 - \mu_2 \|^2 / (2\sigma^2)$
-- DDPM 简化:**固定 $p_\theta$ 的方差**为 $\sigma_t^2 I$,让两边方差相同(代价小,收益大)
-- 简化后,$L_{t-1}$ 变成 $\| \tilde\mu_t - \mu_\theta \|^2$ 的 MSE
-- 训练目标:网络从 $x_t$ 出发,预测真实后验均值 $\tilde\mu_t$
-- 但这还不是最终形式——$\mu$-预测有数值尺度问题,后面用重参数化换成 $\epsilon$-预测会更好
-
-
-
-## 附录3：采样公式的推导
-
-
-这是个非常好的问题——采样这一步看起来"显然就该这样写",但每一行背后其实都有具体的数学依据。我们一行一行拆解,你会看到它**根本不是凭空设计的,而是每一步都从训练时的数学严格推出来的**。
-
----
-
-### 一、先把采样代码贴出来
-
-```
-x_T ~ N(0, I)                                 # 起点:纯噪声
-for t = T, T-1, ..., 1:
-    z = N(0, I) if t > 1 else 0               # 最后一步不加噪声
-    μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))
-    x_{t-1} = μ + σ_t * z
-return x_0
-```
-
-四个值得问"为什么"的地方:
-
-1. 为什么从 $\mathcal{N}(0, I)$ 出发?
-2. 那个 $\mu$ 公式怎么来的?
-3. 为什么再加一个 $\sigma_t z$ 噪声?
-4. 为什么最后一步($t=1$)不加噪声?
-
-我们逐个拆。
-
----
-
-### 二、为什么从 $\mathcal{N}(0, I)$ 出发?
-
-回忆训练目标 $L_T$:
-
-$$L_T = D_{\text{KL}}\big(q(x_T \mid x_0) \,\big\|\, p(x_T)\big)$$
-
-当 $T$ 大、$\bar\alpha_T \to 0$ 时,$q(x_T \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_T} x_0, (1-\bar\alpha_T) I) \to \mathcal{N}(0, I)$。
-
-我们定义先验 $p(x_T) = \mathcal{N}(0, I)$。这两者几乎相同,所以 $L_T \approx 0$,我们不训练它。
-
-**采样时**:既然真实的 $x_T$ 分布(无论 $x_0$ 是什么)都接近 $\mathcal{N}(0, I)$,那我们从 $\mathcal{N}(0, I)$ 采样作为起点,就是从训练分布采样——**不是任意选的"起点",而是数学上对应的那个分布**。
-
----
-
-### 三、那个 $\mu$ 的公式怎么来的?
-
-这是采样里最关键的一行。我们在训练时已经设计了:
-
-$$p_\theta(x_{t-1} \mid x_t) = \mathcal{N}\big(\mu_\theta(x_t, t),\, \sigma_t^2 I\big)$$
-
-所以采样时,从这个高斯采 $x_{t-1}$。**问题是 $\mu_\theta$ 等于什么?**
-
-回忆我们在训练阶段做了**重参数化**——让 $\mu_\theta$ 取以下形式:
-
-$$\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon_\theta(x_t, t)\right)$$
-
-**这个公式不是采样时凭空写出的——它是训练时网络的参数化定义本身**。我们就是这样让网络的输出(通过 $\epsilon_\theta$ 间接)给出 $\mu_\theta$ 的。
-
-所以采样代码里那行
-
-```
-μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))
-```
-
-就是把训练时的参数化定义代入,**给定网络预测的 $\epsilon_\theta$,算出 $\mu_\theta$**。这一步纯粹是代数代入,没有新东西。
-
-#### 这个公式的直观
-
-让我们看清楚它在做什么。回忆 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$。如果网络完美预测 $\epsilon_\theta = \epsilon$,那么:
-
-**第一步**:从 $x_t$ 反推 $x_0$:
-
-$$\hat x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta}{\sqrt{\bar\alpha_t}}$$
-
-这是把"加噪公式"反过来用。
-
-**第二步**:算逆向后验均值 $\tilde\mu_t(x_t, \hat x_0)$。直接套真实后验的公式:
-
-$$\tilde\mu_t = \frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}\hat x_0 + \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t} x_t$$
-
-**两步合并**(代入 $\hat x_0$,化简——这就是 $\tilde\mu_t \to \epsilon$ 那步代数化简的逆向使用),得到那个 $\mu$ 公式。
-
-**所以采样的 $\mu$ 步可以理解为**:
-
-> "用网络预测噪声 → 反推一个 $\hat x_0$ 估计 → 用真实后验公式算 $x_{t-1}$ 的均值"
-
-每次去噪一步,**间接地是在估计 $x_0$ 然后向 $x_0$ 走一步**。
-
----
-
-### 四、为什么还要再加 $\sigma_t z$ 噪声?
-
-这是最容易让初学者疑惑的一步——既然要去噪,为什么还要加噪声?
-
-#### 4.1 数学原因
-
-我们的逆向模型是
-
-$$p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(\mu_\theta, \sigma_t^2 I)$$
-
-——一个**有方差的高斯**,不是只输出均值。**从这个分布采样**就是"均值 + 标准差 × 标准高斯",即:
-
-$$x_{t-1} = \mu_\theta + \sigma_t z,\quad z \sim \mathcal{N}(0, I)$$
-
-代码里的 `μ + σ_t * z` 就是这个采样。所以这个噪声**本来就是逆向高斯分布的一部分**,没加就不是从 $p_\theta$ 采样了。
-
-#### 4.2 直觉原因
-
-为什么模型设计成有方差?因为**真实的逆向后验 $q(x_{t-1} \mid x_t, x_0)$ 也是有方差的高斯**($\tilde\beta_t I$)——不是确定性映射。
-
-直观看:已知 $x_t$ 和 $x_0$,$x_{t-1}$ **不是唯一确定的**——它有一个分布的可能值。$\tilde\beta_t$ 衡量了这种不确定性。
-
-更直观:前向加噪是随机过程,撤销它每一步也应该是随机的——给定 $x_t$,可能的"上一步" $x_{t-1}$ 有多种。如果逆向是确定的,我们就丢失了随机性,**最终生成的 $x_0$ 永远只有一个**(给定起点),失去多样性。
-
-#### 4.3 物理类比
-
-想象前向是"墨水扩散到水里"。如果你能逆转每个分子的运动,逆向也是确定的——但实际上,信息在扩散过程中**以热力学方式丢失**,逆向就必须有随机性来"补偿"丢失的信息。
-
-每一步采样加的 $\sigma_t z$,正是"补偿"前向那一步丢的信息。
-
-#### 4.4 一个常被问的细节:$\sigma_t$ 应该取什么?
-
-DDPM 论文里实验了两种选择:
-
-- $\sigma_t^2 = \beta_t$(前向方差)
-- $\sigma_t^2 = \tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t}\beta_t$(真实后验方差)
-
-两者效果相近。前者对应"假设 $x_0 \sim \mathcal{N}(0, I)$"的逆向后验,后者对应"假设 $x_0$ 是确定值"的逆向后验。实践中默认用前者(更简单)。
-
-后来 DDIM(我们之后讲)发现:**$\sigma_t$ 可以是任意值,甚至 $\sigma_t = 0$**(完全确定性采样),仍然能生成正确分布的样本——这是个重要的发现,会让采样可以加速 10-50 倍。
-
----
-
-### 五、为什么最后一步($t=1$)不加噪声?
-
-代码里:
-
-```
-z = N(0, I) if t > 1 else 0
-```
-
-也就是当 $t = 1$ 时,$z = 0$,我们只取 $\mu$,不加噪声。
-
-### 5.1 数学原因
-
-最后一步是从 $x_1$ 生成 $x_0$。$x_0$ 是**最终输出**,我们希望它是图像本身,而不是"图像 + 一点点噪声"。
-
-更精确地,DDPM 里 $L_0 = -\log p_\theta(x_0 \mid x_1)$ 是单独处理的——它对应真实数据的对数似然。在最后一步,我们直接取**最大似然估计**,即 $\mu_\theta$ 本身,不再加噪声。
-
-### 5.2 直观原因
-
-如果最后一步加噪声 $\sigma_1 z$,你的图像就会带一个最后的小噪声。$\sigma_1$ 虽然小,但对生成图像的清晰度还是有影响。
-
-把这一步噪声去掉,相当于"在最后做个 MAP(maximum a posteriori)估计"——取分布的众数(高斯的众数就是均值),作为最佳点估计。
-
-### 5.3 这是个工程选择
-
-严格说,**完全按 $p_\theta$ 采样应该最后一步也加噪声**。"$t=1$ 时不加"是个**实践上的优化**——理论上稍微偏离了概率模型,但生成质量更好。
-
-后来 Improved DDPM、DDIM 等都采用了这个约定。
-
----
-
-### 六、把整个采样过程串起来
-
-让我把所有"为什么"放在一起,画出完整图景:
-
-```
-起点 x_T = N(0, I)             ← 因为前向终点近似就是 N(0, I)
-
-for t = T, ..., 1:
-    
-    用网络预测 ε_θ(x_t, t)
-    
-    算 μ = ...                  ← 训练时的参数化定义,等价于
-                                  "反推 x_0 估计 → 算逆向后验均值"
-    
-    if t > 1:
-        x_{t-1} = μ + σ_t z     ← 从 p_θ(x_{t-1}|x_t) 采样
-                                  (有方差是因为真实后验也有方差)
-    else:
-        x_0 = μ                 ← 最后一步取最大似然估计
-
-return x_0
-```
-
-每一步都不是"魔法",而是训练阶段数学结构的直接对应:
-
-- 起点 ↔ $L_T$ 的训练目标
-- $\mu$ 公式 ↔ 训练时的参数化设计
-- 加噪声 ↔ $p_\theta$ 是高斯分布
-- 最后不加噪 ↔ $L_0$ 的处理约定
-
----
-
-### 七、采样到底在干什么?(更高层理解)
-
-最后一句话总结整个采样的"灵魂":
-
-**采样是把训练时学到的"逆向条件分布 $p_\theta(x_{t-1} \mid x_t)$"按马尔可夫链**反向运行**,从 $\mathcal{N}(0, I)$ 一步步走到数据分布 $p_{\text{data}}$。**
-
-每一步本质上是:
-
-> "网络看着 $x_t$,猜里面的噪声 $\epsilon$,然后:
->  - 大致知道'清掉 $\epsilon$ 后应该长什么样'
->  - 但不完全清掉,只走一小步,留一点噪声给下一步处理
->  - 这就是 $x_{t-1}$"
-
-走 $T$ 步,最终噪声彻底清完,得到 $x_0$。
-
----
-
-### 八、几个值得知道的细节
-
-#### 8.1 为什么必须 $T$ 步?能不能跳步?
-
-直接套这个采样过程,**必须走完整的 $T$ 步**——因为模型训练时假设了离散的 $t = 1, 2, \ldots, T$,逆向也按这个 schedule 走。
-
-跳步不行,因为:
-
-- 网络只在 $t \in \{1, \ldots, T\}$ 这些时刻"见过"
-- 跳步意味着用错误的方差/均值组合
-
-DDIM 后来重新设计了一个不依赖马尔可夫性的采样过程,**可以跳步,10-50 步搞定**。但那是另一个故事。
-
-#### 8.2 这个采样方法叫什么?
-
-正式名字叫 **Ancestral Sampling**(祖先采样)——按马尔可夫链定义的方向逐步采样。它是按字面意义"从 $p_\theta$ 采样"——所以是数学上"原汁原味"的方法。
-
-#### 8.3 和 Langevin 动力学的对比
-
-回忆第二讲里 NCSN 的 Langevin 采样:
-
-$$x_{k+1} = x_k + \frac{\eta}{2}\, s_\theta(x_k) + \sqrt{\eta}\, z_k$$
-
-DDPM 采样的形式:
-
-$$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\epsilon_\theta(x_t, t)\right) + \sigma_t z$$
-
-把 $\epsilon_\theta = -\sqrt{1-\bar\alpha_t}\, s_\theta$ 代入,展开后……
-
-**两者形式上几乎一样!** 都是"当前点 + 学到的方向 + 一点噪声"。这绝非巧合——下一讲 Score SDE 会证明它们其实是**同一个 SDE 的不同离散化**。
-
----
-
-### 九、要点回顾
-
-- 起点 $\mathcal{N}(0, I)$:对应训练时 $L_T$ 的目标分布
-- $\mu$ 公式:训练时的参数化定义,等价于"反推 $\hat x_0$ 后算后验均值"
-- 加噪声 $\sigma_t z$:$p_\theta$ 是有方差的高斯,采样必须加
-- 最后一步不加噪:工程优化,取 MAP
-- 整个采样 = 按马尔可夫链反向运行 $p_\theta$,从噪声走到数据
-- 每步直觉:**预测噪声 → 部分清除 → 留下少量给下一步**
-- 形式上和 Langevin 动力学几乎一样——这预示了下一讲的统一框架
-
-
-
-## 附录4：为什么不直接一步预测$x_0$
-
-
-这是个非常深刻的问题——你的直觉其实抓到了一个真实的"路径选择"。答案是:**确实可以这么做,而且这就是 DDIM 的核心思想**!但 DDPM 故意没这么做,原因值得仔细讲清楚。
-
----
-
-### 一、先把你的想法精确化
-
-你的直觉是:既然网络预测了 $\epsilon$,而且 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon$,那直接反解就能拿到 $x_0$:
-
-$$\hat x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}$$
-
-**一步到 $x_0$,为什么还要走 $T$ 步?**
-
-这个想法完全对——而且实践中是可行的。但有微妙的问题。让我们看清楚。
-
----
-
-### 二、第一种"直接"采样:一步式
-
-### 2.1 直接公式
-
-$$\hat x_0 = \frac{x_T - \sqrt{1-\bar\alpha_T}\, \epsilon_\theta(x_T, T)}{\sqrt{\bar\alpha_T}}$$
-
-#### 2.2 它能 work 吗?
-
-理论上,如果 $\epsilon_\theta$ 完美预测了 $\epsilon$,**这就是真实的 $x_0$**。
-
-实际上,**几乎完全不能用**。原因如下。
-
-#### 2.3 为什么不行?(这是关键)
-
-回想训练时的损失:
-
-$$L = \mathbb{E}_{x_0, t, \epsilon}\left[\| \epsilon - \epsilon_\theta(x_t, t) \|^2\right]$$
-
-这个损失训练出的 $\epsilon_\theta$ 是 $\epsilon$ 的**条件均值估计**,即:
-
-$$\epsilon_\theta(x_t, t) \approx \mathbb{E}[\epsilon \mid x_t]$$
-
-(MSE 损失的最优解永远是条件均值——这是统计学的基本结论)
-
-注意 $x_t$ 是**多个不同 $x_0$ 都能到达**的。给定一个 $x_t$,真实生成它的 $x_0$ **不唯一**——可能有许多个 $x_0$ 都"恰好"通过某个 $\epsilon$ 到达这个 $x_t$。$\epsilon$ 在这些可能性上**有一个分布**。
-
-网络只能学这个分布的**均值**——也就是"在所有可能的 $\epsilon$ 中取平均"。
-
-**当 $t$ 很大时,$x_t$ 和 $x_0$ 的关系几乎完全被噪声主导**——给定一个 $x_T \sim \mathcal{N}(0, I)$,**几乎任何 $x_0$ 都有可能生成它**(只是概率不同)。所以 $\mathbb{E}[\epsilon \mid x_T]$ 几乎不带 $x_0$ 的信息。
-
-**结果**:从 $x_T$ 直接反推的 $\hat x_0$ ≈ "所有数据的平均"——一张模糊的、所有图像取平均的灰图。
-
-这是个具体的、可观察的现象,Tweedie 公式给出了精确解释。我们看一下。
-
----
-
-### 三、Tweedie 公式视角
-
-Tweedie 公式说:
-
-$$\mathbb{E}[x_0 \mid x_t] = \frac{1}{\sqrt{\bar\alpha_t}}\left(x_t + (1-\bar\alpha_t)\nabla_{x_t} \log q(x_t)\right)$$
-
-把 score 和 $\epsilon$ 的关系 $\epsilon_\theta = -\sqrt{1-\bar\alpha_t}\, s_\theta$ 代入:
-
-$$\mathbb{E}[x_0 \mid x_t] = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}$$
-
-**这正是你想"直接减"得到的 $\hat x_0$**!
-
-所以**这个 $\hat x_0$ 不是真实的 $x_0$,而是 $x_0$ 在给定 $x_t$ 下的条件均值**——即"所有可能的 $x_0$ 的加权平均"。
-
-| $t$ 时刻 | 含义 |
-|---|---|
-| $t$ 小($x_t$ 接近 $x_0$) | $\mathbb{E}[x_0 \mid x_t] \approx x_0$,反推几乎精确 |
-| $t$ 大($x_t$ 接近噪声) | $\mathbb{E}[x_0 \mid x_t] \approx \mathbb{E}[x_0]$,得到"平均图像"——一团模糊 |
-
-**所以从纯噪声 $x_T$ 一步反推不行,因为 $\mathbb{E}[x_0 \mid x_T]$ 没有信息**,只能给你"训练集的平均长相"。
-
----
-
-### 四、为什么走 $T$ 步就 work?
-
-关键洞察:**每一步只走一小步,$\epsilon_\theta$ 的预测就足够好用了**。
-
-具体看:从 $x_t$ 走到 $x_{t-1}$,而不是直接到 $x_0$。
-
-$\mathbb{E}[\epsilon \mid x_t]$ 仍然是条件均值——但这一步的"目标"是从 $x_t$ 走到 $x_{t-1}$,只前进 $\beta_t$ 那么一点点。在这一小步内:
-
-- 即使条件均值"模糊",对应的"平均"也只是一小步范围内的平均
-- 留下大量信息给后续步骤来精修
-
-**多步走的物理直觉**:从 $x_T$ 想猜 $x_0$ 完全不可能,但猜"$x_T$ 上一步是什么样"是可行的——只要走得足够小。然后基于新的 $x_{T-1}$ 继续猜下一步,信息逐步注入。
-
-每一步都是局部的、合理的预测,$T$ 步累积下来,把"完全没信息"的 $x_T$ 逐步变成"完全有信息"的 $x_0$。
-
----
-
-### 五、一个更精确的图景
-
-让我用一个比喻。设想你要画一只猫,但只能闭着眼"扫"一遍画布。
-
-**方法 1(一步式)**:闭眼一次,猜整张画的所有像素。结果:平均起来"像猫"的概率密度——一团灰雾。
-
-**方法 2(多步式)**:每次只扫一小块,基于已经画好的部分推下一块。每一步只决定一点点,但每一点都基于充分的局部信息。最终整张画连贯。
-
-DDPM 是方法 2。每一步的"预测目标"很小,网络可以做出合理判断;$T$ 步累积出一张连贯的图像。
-
-**核心数学事实**:从噪声分布到数据分布,**直接的概率映射**是高度非线性、多模态的——一个 $x_T$ 对应所有可能的 $x_0$,**不是函数**。但**逐步**的概率映射 $x_t \to x_{t-1}$ 几乎是线性的(高斯之间),网络容易学。
-
----
-
-### 六、所以"直接减"完全不能用吗?
-
-不是。让我们看几个**部分采用了你的想法**的方法。
-
-#### 6.1 DDIM(Denoising Diffusion Implicit Models, 2020)
-
-DDIM 的核心思想就是:**确实利用 $\hat x_0$,但不直接跳到 $x_0$**。
-
-DDIM 的更新规则:
-
-$$x_{t-1} = \sqrt{\bar\alpha_{t-1}}\, \hat x_0(x_t) + \sqrt{1-\bar\alpha_{t-1}}\, \epsilon_\theta(x_t, t)$$
-
-**含义**:
-
-- 用网络反推一个 $\hat x_0$ 估计
-- 然后**重新加噪**到 $t-1$ 时刻——用同一个 $\epsilon_\theta$
-- 得到 $x_{t-1}$
-
-这看起来很奇怪——估出 $\hat x_0$ 后又加回噪声?但这有两个好处:
-
-1. **可以跳步**:不依赖马尔可夫性,$x_t$ 和 $x_{t-k}$ 之间可以直接跳
-2. **确定性**:没有随机噪声 $z$(对比 DDPM 的 $\sigma_t z$),完全可逆
-
-DDIM 让采样从 1000 步降到 20-50 步,质量几乎不变。
-
-#### 6.2 一步生成:Consistency Models(2023)
-
-Yang Song 等人的 **Consistency Models** 真的实现了"直接一步从 $x_T$ 跳到 $x_0$"——但代价是要**重新训练**一个网络,让它**学会**这个一步映射。
-
-他们的训练目标是:让网络在所有 $t$ 上,直接预测一个固定的 $x_0$(而不是预测 $\epsilon$):
-
-$$f_\theta(x_t, t) \approx x_0\quad \forall t$$
-
-这绕开了"一步反推不准"的问题——网络从训练时就被强迫学这个一步映射,而不是从一个本来不擅长的目标(预测 $\epsilon$)拿来"硬反推"。
-
-效果:CIFAR-10 上单步生成质量接近 DDPM 1000 步。
-
-#### 6.3 其他
-
-- **DPM-Solver**(2022):用高阶 ODE 数值求解器,4-10 步生成
-- **Distillation 方法**:把 DDPM 1000 步的"教师"知识蒸馏到 1-4 步的"学生"
-
-所有这些方法的共同点:**$\hat x_0$ 这个量是核心工具**,只是用法不同。
-
----
-
-### 七、回到你最初的疑问:DDPM 为什么"绕一圈"?
-
-现在你应该看清楚了:
-
-1. **直接减一步反推**确实是个自然想法——$\hat x_0$ 这个量是真实存在的,而且有 Tweedie 公式的精确意义
-2. **但它只是 $x_0$ 的"条件均值"**,不是真正的 $x_0$——所以一步直接到 $x_0$ 得到的是模糊的均值图像
-3. **DDPM 选择走 $T$ 步**,每步只前进一点点,让"条件均值"足够准
-4. **每一步内部**确实可以理解为"先反推 $\hat x_0$ 再算 $x_{t-1}$"——这就是 DDPM 公式的等价解读
-5. **DDIM/Consistency** 用更聪明的方式利用 $\hat x_0$,大幅减少步数
-
-所以你的直觉抓到的事:**$\hat x_0$ 是 diffusion 采样的核心量**——只是 DDPM 选择"间接使用"它来获得稳定性,DDIM 等改进在使用方式上做了文章。
-
----
-
-### 八、一个直观演示
-
-让我们想象一个具体的实验。设 $T = 1000$,你训练好了一个 DDPM。
-
-**实验 1**:对一张测试图像 $x_0$,做前向到 $x_{500}$。然后:
-
-- **直接反推**:$\hat x_0^{(500)} = \frac{x_{500} - \sqrt{1-\bar\alpha_{500}}\,\epsilon_\theta}{\sqrt{\bar\alpha_{500}}}$
-- 结果:$\hat x_0^{(500)}$ 是个**比较模糊但能看出大致内容**的图像
-
-**实验 2**:对 $x_{999}$(几乎纯噪声)做同样反推:
-
-- 结果:$\hat x_0^{(999)}$ 是一团**几乎看不出任何具体内容**的雾
-
-**实验 3**:从 $x_T \sim \mathcal{N}(0, I)$(任意噪声)直接反推:
-
-- 结果:**所有 $x_T$ 反推都给出几乎一样的雾**——因为 $\mathbb{E}[x_0 \mid x_T] \approx \mathbb{E}[x_0]$ 不依赖 $x_T$
-
-这就是为什么 DDPM 不能一步采样——但**它的多步采样里,每一步都隐含地包含了这个反推**。
-
----
-
-### 九、要点回顾
-
-- "直接减预测的噪声"得到的是 $\mathbb{E}[x_0 \mid x_t]$,**不是 $x_0$**(Tweedie 公式)
-- 这个量在 $t$ 大时几乎没有 $x_t$ 的信息——是"训练集的平均图像"
-- DDPM 的多步采样:每步只前进一点点,让条件均值足够准
-- **每步内部确实在做"反推 $\hat x_0$"** ——只是这个 $\hat x_0$ 是临时估计,不直接输出
-- DDIM、Consistency Models 等改进:更聪明地利用 $\hat x_0$,大幅减少步数
-- 你的直觉抓到了 diffusion 加速研究的**核心入口**
-
-
-
-## 附录5：$\hat{x_0}$不准确也可以用
-
-**是的,而且这正是为什么 diffusion 能 work 的根本原因**。让我把这个机制彻底讲清楚。
-
-### 一、先精确表述你的洞察
-
-你的问题翻译成数学:
-
-> 即使 $\hat x_0(x_t) := \mathbb{E}[x_0 \mid x_t]$ 是个"模糊的、不准确的"估计,我们仍然把它代入 $\tilde\mu_t$ 的公式来算 $x_{t-1}$。这居然能 work?
-
-**答案:能,而且这不是巧合,是数学上必然的**。
-
----
-
-### 二、为什么"不准确的 $\hat x_0$"在概率意义下是对的
-
-关键事实:**我们不需要 $\hat x_0$ 等于真实的 $x_0$,我们只需要 $p_\theta(x_{t-1} \mid x_t)$ 等于真实的 $q(x_{t-1} \mid x_t)$**。
-
-这两件事是不同的!让我们分开看。
-
-#### 2.1 我们想要的是什么?
-
-我们想让模型分布 $p_\theta(x_{0:T})$ 等于真实分布 $q(x_{0:T})$,这等价于让每个**条件分布**都对:
-
-$$p_\theta(x_{t-1} \mid x_t) = q(x_{t-1} \mid x_t)\quad \forall t$$
-
-**注意是 $q(x_{t-1} \mid x_t)$,不是 $q(x_{t-1} \mid x_t, x_0)$**。前者是真实的逆向过程(没有 $x_0$ 信息),后者是我们推出闭式的那个。
-
-#### 2.2 真实的 $q(x_{t-1} \mid x_t)$ 是什么?
-
-它是对所有 $x_0$ 边际化:
-
-$$q(x_{t-1} \mid x_t) = \int q(x_{t-1} \mid x_t, x_0)\, q(x_0 \mid x_t)\, dx_0$$
-
-这是个**混合高斯**——以 $q(x_0 \mid x_t)$ 为权重,把所有 $q(x_{t-1} \mid x_t, x_0)$ 平均起来。
-
-通常**不是高斯**——因为 $q(x_0 \mid x_t)$ 是一个复杂分布(后验数据分布)。
-
-#### 2.3 但 DDPM 用单个高斯逼近它!
-
-这正是 Sohl-Dickstein 那个 Feller 定理保证的事:**当 $\beta_t$ 足够小时,$q(x_{t-1} \mid x_t)$ 近似为高斯**。
-
-具体地,可以证明:
-
-$$q(x_{t-1} \mid x_t) \approx \mathcal{N}\left(\tilde\mu_t(x_t,\, \mathbb{E}[x_0 \mid x_t]),\, \tilde\beta_t I\right)$$
-
-**这是核心**!真实的逆向后验,**用 $\mathbb{E}[x_0 \mid x_t]$(即条件均值,即"模糊的 $\hat x_0$")代入 $\tilde\mu_t$ 公式,得到的高斯就是它的最佳高斯逼近**。
-
-也就是说:
-
-> **"模糊的 $\hat x_0$"代入 $\tilde\mu_t$ 公式,得到的 $\mu$ 不是某个具体 $x_0$ 对应的逆向均值——它是真实逆向分布的均值,本身就是混合高斯的均值。**
-
----
-
-### 三、关键洞察:训练目标实际上"自动追踪"这个最佳逼近
-
-让我们看 DDPM 的训练目标究竟在做什么。
-
-#### 3.1 训练目标的等价形式
-
-我们之前推过:
-
-$$L_{t-1} = \mathbb{E}_{x_0, x_t}\left[\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2\right] / (2\sigma_t^2)$$
-
-注意这是**对 $x_0$ 求期望**——不同的 $x_0$ 给出不同的 $\tilde\mu_t$ 目标,网络要学的是这些目标的"平均"。
-
-MSE 损失的最优解永远是条件均值:
-
-$$\mu_\theta^*(x_t, t) = \mathbb{E}_{x_0 \mid x_t}[\tilde\mu_t(x_t, x_0)]$$
-
-(给定 $x_t$,在所有可能的 $x_0$ 上,$\tilde\mu_t$ 的平均)
-
-#### 3.2 这个条件均值等于什么?
-
-由于 $\tilde\mu_t$ 是 $x_0$ 的**线性函数**(回忆公式:$\tilde\mu_t = c_1 x_0 + c_2 x_t$,$c_1, c_2$ 不依赖 $x_0$),**期望可以"穿过"**:
-
-$$\mathbb{E}_{x_0 \mid x_t}[\tilde\mu_t(x_t, x_0)] = c_1\, \mathbb{E}[x_0 \mid x_t] + c_2 x_t = \tilde\mu_t(x_t, \mathbb{E}[x_0 \mid x_t])$$
-
-**所以最优网络输出**:
-
-$$\boxed{\mu_\theta^*(x_t, t) = \tilde\mu_t(x_t,\, \mathbb{E}[x_0 \mid x_t])}$$
-
-——**正是把"模糊的条件均值 $\hat x_0$"代入 $\tilde\mu_t$ 公式得到的结果**。
-
-#### 3.3 这意味着什么?
-
-我们从来没有**显式**让网络学条件均值。我们只是让 $\mu_\theta$ 去回归各种 $\tilde\mu_t(x_t, x_0)$ 目标。但因为 MSE 损失的性质,**最优解自动等于"代入条件均值"的形式**。
-
-这是 diffusion 数学最优雅的事实之一——**用 $\hat x_0 = \mathbb{E}[x_0 \mid x_t]$ 作为 $x_0$ 的"代理"不是近似,而是 ELBO 优化的精确闭式解**。
-
----
-
-### 四、为什么这能 work?用一个简化例子
-
-让我用一个极端简化的例子说清楚。
-
-#### 4.1 设定
-
-假设数据只有两个点:$x_0 = +1$ 或 $x_0 = -1$,各占一半。前向加噪到 $x_t$。
-
-#### 4.2 一个具体的 $x_t$
-
-假设我们采到 $x_t = 0$(正中间)。这个 $x_t$ 既可能来自 $x_0 = +1$,也可能来自 $x_0 = -1$,**几率各半**。
-
-#### 4.3 真实的逆向后验 $q(x_{t-1} \mid x_t = 0)$
-
-它是两个高斯的混合:
-
-- 以概率 1/2 来自"$x_0 = +1$ 的链",对应 $q(x_{t-1} \mid x_t=0, x_0=+1)$
-- 以概率 1/2 来自"$x_0 = -1$ 的链",对应 $q(x_{t-1} \mid x_t=0, x_0=-1)$
-
-$q(x_{t-1} \mid x_t = 0)$ 是个**双峰分布**——不是单一高斯。
-
-#### 4.4 DDPM 的近似:用单个高斯
-
-DDPM 用 $p_\theta(x_{t-1} \mid x_t = 0) = \mathcal{N}(\mu_\theta, \sigma^2)$ ——单个高斯。它当然**不能完美匹配**双峰分布。
-
-但 MSE 训练让 $\mu_\theta$ 最优地落在**两个峰的中点**——也就是
-
-$$\mu_\theta^* = \mathbb{E}[x_{t-1} \mid x_t = 0] = \tilde\mu_t(0, \mathbb{E}[x_0 \mid x_t=0]) = \tilde\mu_t(0, 0)$$
-
-(因为 $\mathbb{E}[x_0 \mid x_t=0] = 0$,正中间)
-
-#### 4.5 这够好吗?
-
-对于**单步**:不够——$p_\theta$ 是单峰高斯,而真实 $q$ 是双峰。如果直接从这个 $p_\theta$ 一步采样,得到的样本是均值 0 附近的高斯——**不是 $\pm 1$**。
-
-**但走多步之后**:
-
-随着 $t$ 减小($x_t$ 离真实数据越来越近),$\hat x_0(x_t) = \mathbb{E}[x_0 \mid x_t]$ 会**逐渐倾向于某一边**——如果当前的 $x_t$ 偏向 +1,$\hat x_0$ 就接近 +1;偏向 -1 类似。
-
-具体说,逆向链每走一步,$x_t$ 会因为随机噪声 $\sigma_t z$ **稍微偏移**;偏移后 $\hat x_0$ 的"偏向"被放大;再下一步 $\hat x_0$ 更偏;以此类推。
-
-**多步累积下来,初始的随机性会逐步把 $x_t$ 推向其中一个真实的 $x_0$**——形成"对称破缺"。
-
-最终采样到的 $x_0$ 就在 $\pm 1$ 上,**符合真实的双峰分布**——尽管每一步都用单峰高斯逼近!
-
----
-
-### 五、这就是 diffusion 多步采样的精髓
-
-把上面这件事提炼成原则:
-
-**单峰高斯不能一步表达多峰分布,但多步逐渐"破缺"可以。**
-
-每一步:
-
-- 用 $p_\theta = \mathcal{N}(\mu, \sigma^2)$ 单峰逼近真实的 $q(x_{t-1} \mid x_t)$
-- $\mu$ 是在当前 $x_t$ 下"所有可能 $x_0$ 的平均"
-- 每一步加的 $\sigma_t z$ 噪声把 $x_t$ 推向其中一个具体的 $x_0$ 的分支
-- 下一步基于新 $x_t$ 重新算"平均",这个平均逐步偏向某一支
-
-**$T$ 步累积下来,从一个对所有 $x_0$ 都"模糊兼容"的 $x_T$,逐步分化到具体的某个 $x_0$**。
-
----
-
-### 六、回到你的问题:为什么"不准确"也能用?
-
-现在最直接地回答:
-
-> **$\hat x_0$ 不准确,但它是无偏的最佳估计**——具体地,它是**所有可能 $x_0$ 的概率加权平均**。
-
-> **代入 $\tilde\mu_t$ 公式得到的 $\mu_\theta$,正是真实逆向后验的均值**——这是混合分布的均值,而不是某个具体分支的均值。
-
-> **每一步用这个均值 + 一点随机噪声采样,等价于"平均地"探索所有可能的逆向路径**。
-
-> **多步累积后,具体某条路径胜出**(被随机性放大),最终生成的 $x_0$ 是真实分布中的具体一个样本。
-
-**关键不是 $\hat x_0$ 准不准,而是它在数学上是 ELBO 的最优解,这就够了**。
-
----
-
-### 七、用一个更深的视角:Score 视角
-
-回忆 $\hat x_0$ 和 score 的关系(Tweedie):
-
-$$\hat x_0 = \frac{x_t + (1-\bar\alpha_t)\, s_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}$$
-
-也就是 $\hat x_0$ 本质上**就是 score 的一个等价表达**。
-
-而 score $\nabla_{x_t} \log q(x_t)$ 的几何意义是"指向数据流形的方向"——它不是"指向某个具体的 $x_0$",而是"指向密度增大的整体方向"。
-
-所以:
-
-- 在大噪声时($x_t$ 离数据远),score "指向整团数据"——具体到不了某一个 $x_0$
-- 在小噪声时($x_t$ 接近数据),score "指向局部具体的高密度区域"——逐渐锁定某个 $x_0$
-- 多步采样 = 沿着 score 指引的方向逐步走 + 噪声扰动来"选择分支"
-
-这是 score-based 视角,Score SDE 会让这件事更精确。
-
----
-
-### 八、和你之前问题的串联
-
-我们一路问下来的几个问题,在这里全部串起来了:
-
-| 之前的问题 | 现在的答案 |
-|---|---|
-| "为什么改写 ELBO?" | 改写后 loss 变成 MSE,**MSE 最优解是条件均值**——这正是我们想要的 |
-| "为什么 KL 要闭式?" | 闭式让 MSE 形式干净,自动追踪条件均值 |
-| "$\hat x_0$ 不是 $x_0$,为什么用它?" | **$\hat x_0$ 在数学上就是 ELBO 最优 $\mu_\theta$ 的来源**——它是"模糊"的,但模糊正确 |
-| "为什么走 $T$ 步?" | 单步无法表达多峰分布,多步用随机性破缺,逐步从模糊到具体 |
-| "采样为什么加 $\sigma_t z$?" | 这个噪声驱动"对称破缺",让 $x_t$ 逐步偏向一个具体分支 |
-
-**所有这些选择都不是孤立的,它们共同构成一个自洽的概率框架**——MSE 损失逼着网络学条件均值,条件均值给出最优单步逼近,多步采样用随机性把"模糊"分解成"具体",最终得到真实数据分布的样本。
-
----
-
-### 九、要点回顾
-
-- $\hat x_0$ 是 $\mathbb{E}[x_0 \mid x_t]$,**不是真实 $x_0$**——是所有可能 $x_0$ 的概率加权平均
-- 但代入 $\tilde\mu_t$ 公式后,得到的 $\mu_\theta^*$ **正是真实逆向后验 $q(x_{t-1} \mid x_t)$ 的均值**——这是 MSE 损失的最优解性质保证的
-- 单步 $p_\theta$ 是单峰高斯,**不能精确表达多峰真实后验**——但 ELBO 让它成为最优的单峰逼近
-- 多步采样用随机噪声 $\sigma_t z$ **驱动对称破缺**——把"对所有 $x_0$ 模糊兼容"的状态逐步分化到具体某个 $x_0$
-- $T$ 步累积后,采到的样本符合真实数据分布——尽管每一步都只是单峰高斯
-- 这就是为什么 diffusion 能 work:**每步不准确不重要,$T$ 步联合起来精确**
-
-
-## 附录6：为什么要求KL散度有闭式解？
-
----
-
-### 一、问题的核心:有**两个**KL,你混淆了
-
-让我先把问题挑明。在 diffusion 数学里出现的 KL **不是同一个**——有两个层次,作用完全不同。一个**不需要**闭式,一个**需要**闭式。
-
-#### KL 类型 A:外层 KL(在恒等式里)
-
-$$\log p_\theta(x_0) = \text{ELBO} + D_{\text{KL}}(q(x_{1:T} \mid x_0) \,\|\, p_\theta(x_{1:T} \mid x_0))$$
-
-这个 KL 出现在"似然 = ELBO + KL"这个**恒等式**里。它的角色是:
-
-- **理论分析**:解释 ELBO 是下界、解释下界的间隙是什么
-- **不需要计算**:训练时我们**根本不算它**,只算 ELBO
-
-所以这个 KL **不需要闭式**——它只是个理论概念,告诉我们 ELBO 优化的本质。我们无需关心它具体值多少。
-
-#### KL 类型 B:内层 KL(ELBO 化简后出现)
-
-DDPM 把 ELBO 重写成:
-
-$$-\text{ELBO} = \mathbb{E}_q\left[\sum_{t=2}^T \underbrace{D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \,\|\, p_\theta(x_{t-1} \mid x_t))}_{\text{KL 类型 B}} + \cdots\right]$$
-
-这个 KL 出现在 **ELBO 的内部**——是 ELBO 化简后的求和项。它的角色是:
-
-- **每次训练都要算它**(因为它是 loss 的一部分)
-- **必须能高效计算**
-
-这个 KL **需要闭式**——闭式才能算得快、梯度精确。
-
----
-
-### 二、所以两者的关系是
-
-让我用一张图表示清楚:
-
-```
-log p(x_0)  =  ELBO  +  D_KL(q‖p)   ← 外层 KL(类型 A,理论用,不算)
-              ↓
-            ELBO 内部 = Σ E[ D_KL(...) ] + ...   ← 内层 KL(类型 B,训练算,要闭式)
-                          ↑
-                    这里的 KL 才需要闭式
-```
-
-**关键区分**:
-
-| | 外层 KL(类型 A) | 内层 KL(类型 B) |
-|---|---|---|
-| 出现位置 | 恒等式 $\log p = \text{ELBO} + \text{KL}$ | ELBO 化简后的求和项 |
-| 是 谁 vs 谁 的 KL | 完整变分分布 $q(x_{1:T}\mid x_0)$ vs 真实后验 $p_\theta(x_{1:T}\mid x_0)$ | 单步前向后验 $q(x_{t-1}\mid x_t,x_0)$ vs 单步逆向 $p_\theta(x_{t-1}\mid x_t)$ |
-| 是否需要计算 | 不需要 | 每次训练都要 |
-| 是否需要闭式 | 不需要 | 需要(否则训练慢/方差大) |
-| 性质 | 高维($T$ 维联合分布之间) | 低维($d$ 维单步分布之间) |
-
----
-
-### 三、为什么内层 KL 必须高效计算?
-
-回到训练流程。每次训练一步:
-
-1. 采一个数据点 $x_0$
-2. 采一个时刻 $t$
-3. 采一个噪声 $\epsilon$,得到 $x_t$
-4. **计算 loss**(就是某个 $t$ 的内层 KL 项)
-5. 反向传播
-
-第 4 步每次迭代都要做几百万次(整个训练过程)。如果它不闭式:
-
-- 要嵌套蒙特卡洛(里面再采样估计)→ 慢
-- 估计有方差 → 训练不稳
-- 梯度不精确 → 收敛慢
-
-**所以内层 KL 必须闭式**——这是工程必需。
-
----
-
-### 四、那"蒙特卡洛估计 ELBO"到底估的是什么?
-
-回到你的疑问:既然要蒙特卡洛估 ELBO,为什么还要闭式?
-
-答案是:**蒙特卡洛和闭式估的是不同维度的随机性**。我们**两者都在用**——把它们组合起来才得到最终的训练 loss。
-
-#### ELBO 的完整结构
-
-DDPM 改写后:
-
-$$\text{ELBO} = -\mathbb{E}_{q}\left[\sum_{t=2}^T D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \| p_\theta(x_{t-1} \mid x_t)) + \cdots\right]$$
-
-注意有**两层结构**:
-
-- **外层**:对 $q$ 的期望 $\mathbb{E}_q[\cdots]$ —— 这层用蒙特卡洛
-- **内层**:每个 KL —— 这层用闭式
-
-#### 训练时怎么算?
-
-**外层(蒙特卡洛)**:从 $q$ 采样 $x_t$、随机选 $t$,得到一个具体的 KL 项。这是单样本 MC 估计。
-
-**内层(闭式)**:对这个具体的 $(x_t, x_0, t)$,直接用高斯 KL 闭式公式算出 KL 的精确值——不需要再采样。
-
-具体地,对一个 batch 里的样本 $(x_0, t, \epsilon)$:
-
-$$\text{loss} = \underbrace{\frac{\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2}{2\sigma_t^2}}_{\text{KL 闭式公式,无需采样}}$$
-
-整个 loss 对**这一组** $(x_0, t, \epsilon)$ 而言是个**确定性的、可微的、精确的**值。多个样本平均就是对外层期望的 MC 估计。
-
----
-
-### 五、对比 Sohl-Dickstein:为什么"内层闭式"是关键
-
-现在你能精确看懂 Sohl-Dickstein 和 DDPM 的差异了:
-
-#### Sohl-Dickstein 的形式
-
-$$\text{ELBO} = \mathbb{E}_q\left[\sum_t \log \frac{p_\theta(x_{t-1} \mid x_t)}{q(x_t \mid x_{t-1})}\right]$$
-
-每一项 $\log \frac{p_\theta}{q}$ **依赖于** $x_{t-1}$ 和 $x_t$ **的具体值**——它本身就是个随机变量。
-
-**没有"内层闭式"——每一项都是采样得到的随机数**。
-
-外层蒙特卡洛要估这个随机变量的期望,但它方差大,估计困难。
-
-#### DDPM 的形式
-
-$$\text{ELBO} = \mathbb{E}_q\left[\sum_t D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \| p_\theta(x_{t-1} \mid x_t))\right]$$
-
-每一项是个 **KL**,不依赖于具体的 $x_{t-1}$ 取值——它只依赖 $x_t, x_0$,且**有闭式**。
-
-**有"内层闭式"——每一项是确定性的精确值**(给定 $x_t, x_0$)。
-
-外层蒙特卡洛只对 $x_t$ 的随机性估,因为内层已经被解析积掉了——方差大幅降低。
-
----
-
-### 六、用一个具体类比讲清楚
-
-想象你要估这个嵌套期望:
-
-$$J = \mathbb{E}_X\left[\mathbb{E}_Y[f(X, Y) \mid X]\right]$$
-
-**方法 1**:不用闭式,纯蒙特卡洛。采 $X_i$、再采 $Y_{i,j}$,平均所有 $f(X_i, Y_{i,j})$。两层采样,方差大。
-
-**方法 2**:如果内层期望 $g(X) := \mathbb{E}_Y[f(X, Y) \mid X]$ **有闭式**,直接采 $X_i$,平均 $g(X_i)$。一层采样,方差小。
-
-这就是 **Rao-Blackwell 化**——能解析积的就解析积,不要乱采样。
-
-**回到 diffusion**:外层期望(对 $x_0, x_t$ 的随机性)用蒙特卡洛——这没办法,只能采;内层期望(每个 KL 项中"对 $x_{t-1}$ 的随机性")**用闭式直接算**——这是降方差的关键。
-
----
-
-### 七、再用代码看一眼
-
-```python
-# 训练一步
-x_0 = sample_data()
-t   = uniform(1, T)
-eps = randn_like(x_0)
-
-# 第一层随机性 → 蒙特卡洛(就这一组采样)
-x_t = sqrt(alpha_bar[t]) * x_0 + sqrt(1 - alpha_bar[t]) * eps
-
-# 第二层"随机性"原本要积掉 → 用闭式 KL 公式直接算
-mu_q     = posterior_mean(x_0, x_t, t)    # 真实后验均值,闭式
-mu_theta = network(x_t, t)                 # 网络输出
-loss     = 0.5 * ||mu_q - mu_theta||^2 / sigma**2   # 高斯 KL 闭式
-
-loss.backward()
-```
-
-看到了吗?
-
-- 外层(`x_0, t, eps`):蒙特卡洛
-- 内层(`loss`):闭式公式,**不需要再采样估计**
-
-如果内层不闭式,这行 `loss = ...` 就要变成"再做一次蒙特卡洛估计",训练会慢得多、噪声大得多。
-
----
-
-### 八、总结:你的混淆是怎么解开的
-
-回到你最初的问题:
-
-> "我们不是用蒙特卡洛估计去估计 ELBO 的吗?为什么要求 KL 有闭式解?"
-
-**答案**:
-
-1. ELBO 里**有两层结构**:外层期望 + 内层每项
-2. **外层**:用蒙特卡洛估(对 $x_0, t, x_t$ 的随机性)
-3. **内层每项**:**最好是闭式**,这样不用再嵌套一层蒙特卡洛
-4. 闭式 + 蒙特卡洛是**配合关系,不是二选一**——把外层的"无法避免的随机性"留给 MC,把内层的"能算的部分"用闭式精确算掉
-5. "$\log p = \text{ELBO} + \text{KL}$"中的 KL(**外层 KL**)只是理论恒等式,不计算,不需要闭式
-6. ELBO 化简后出现的 KL(**内层 KL**)才是训练时真正算的,**必须闭式**
-
----
-
-### 九、要点回顾
-
-- diffusion 数学里**有两个 KL**,一定要分清:外层(理论用)和内层(训练算)
-- 蒙特卡洛 ≠ 闭式的对立面,**两者是配合关系**
-- Rao-Blackwell 化:能闭式就闭式,降方差靠这个
-- DDPM 比 Sohl-Dickstein 强的本质:**让内层有闭式**,把"两层蒙特卡洛"减少到"一层蒙特卡洛"
-- 训练 loss 对单个样本而言是**确定性、精确、可微**的——多样本平均才是 MC 估计
-
----
-
-清楚了吗?这个区分非常微妙,但理解了它你就抓到了 diffusion 数学优雅性的真正命门。
-
-继续推进的话,正好可以看一下 DDPM 的贝叶斯改写——你会**亲眼看到**"外层 KL"如何在等式中出现,"内层 KL"如何被造出来,以及高斯 KL 闭式如何把内层化简成 MSE。要不要现在就推这一段?
+## 十五、要点回顾
+
+- **Score** 是 $\nabla_x \log p(x)$,绕开了 $Z$ 的问题
+- **原版 Score Matching**(Hyvärinen 2005):用分部积分把损失变成不需要真实 score 的形式,但 trace 项算不动
+- **DSM**(Vincent 2011):用加噪后的 score,损失变成漂亮的 MSE,等价于"学去噪"
+- 关键洞察:**score ≈ 去噪方向**——这是连接两条线的桥梁
+- **Langevin 采样**:用 score 做"梯度上升 + 噪声"
+- **NCSN**(Song & Ermon 2019):多尺度噪声 + annealed Langevin,解决低密度区域问题
+- 形式上和 DDPM 几乎相同——下一讲统一两条线
