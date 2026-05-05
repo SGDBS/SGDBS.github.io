@@ -140,7 +140,7 @@ $$J_{\text{ESM}} = \mathbb{E}_{p_{\text{data}}}\left[\frac{1}{2}\| s_\theta(x) \
 
 这一步是 score matching 推导里的关键一步——分部积分。我们一行一行推清楚,顺便把这个工具讲透,因为它在后面 SDE 推导里还会频繁出现。
 
-### 一、先看一维情形(最容易理解)
+**一、先看一维情形(最容易理解)**
 
 一维分部积分公式(高中知识):
 
@@ -169,13 +169,13 @@ $$\int_{-\infty}^{\infty} s_\theta(x)\, \frac{dp_{\text{data}}}{dx}\, dx = \unde
 
 $$\int s_\theta(x)\, \frac{dp_{\text{data}}}{dx}\, dx = -\int p_{\text{data}}(x)\, \frac{ds_\theta}{dx}\, dx$$
 
-### 二、推广到多维:散度定理
+**二、推广到多维:散度定理**
 
 多维情形,我们要推的是:
 
 $$\int s_\theta(x)^\top \nabla_x p_{\text{data}}(x)\, dx = -\int p_{\text{data}}(x)\, \nabla_x \cdot s_\theta(x)\, dx$$
 
-#### 用散度恒等式推
+**用散度恒等式推**
 
 有一个标准的向量分析恒等式(乘积法则的多维版):
 
@@ -193,7 +193,7 @@ $$\nabla p_{\text{data}} \cdot s_\theta = \nabla \cdot (p_{\text{data}} s_\theta
 
 $$\int s_\theta^\top \nabla p_{\text{data}}\, dx = \int \nabla \cdot (p_{\text{data}} s_\theta)\, dx - \int p_{\text{data}}\, \nabla \cdot s_\theta\, dx$$
 
-#### 第一项消失:散度定理
+**第一项消失:散度定理**
 
 第一项 $\int \nabla \cdot (p_{\text{data}} s_\theta)\, dx$ 是关键。**散度定理(高斯-奥斯特罗格拉茨基定理)**:
 
@@ -209,7 +209,7 @@ $$\lim_{\|x\| \to \infty} p_{\text{data}}(x)\, s_\theta(x) = 0$$
 
 **所以散度积分 = 边界通量 = 0**。
 
-#### 得到结果
+**得到结果**
 
 $$\int s_\theta^\top \nabla p_{\text{data}}\, dx = - \int p_{\text{data}}\, \nabla \cdot s_\theta\, dx$$
 
@@ -217,7 +217,7 @@ $$\int s_\theta^\top \nabla p_{\text{data}}\, dx = - \int p_{\text{data}}\, \nab
 
 $$\int s_\theta^\top \nabla p_{\text{data}}\, dx = -\mathbb{E}_{p_{\text{data}}}[\nabla \cdot s_\theta]$$
 
-### 三、trace 和散度的关系
+**三、trace 和散度的关系**
 
 我们之前写成 $\text{tr}(\nabla_x s_\theta)$,这里又写成 $\nabla_x \cdot s_\theta$,这两个其实是**同一个东西**:
 
@@ -229,7 +229,7 @@ $$\text{tr}(\nabla_x s_\theta) = \sum_{i=1}^d J_{ii} = \sum_{i=1}^d \frac{\parti
 
 所以**散度 = 雅可比的迹**,只是不同记号。
 
-### 四、关键魔法
+**四、关键魔法**
 
 **起点**:$\mathbb{E}_{p_{\text{data}}}[s_\theta^\top \nabla_x \log p_{\text{data}}]$——里面有个 $\nabla_x \log p_{\text{data}}$,**这正是我们不知道、想学的东西**。
 
@@ -240,7 +240,7 @@ $$\text{tr}(\nabla_x s_\theta) = \sum_{i=1}^d J_{ii} = \sum_{i=1}^d \frac{\parti
 1. **对数导数公式**:把 $\log p$ 的梯度变成 $\nabla p / p$,然后 $p$ 约掉
 2. **分部积分(散度定理)**:把"$\nabla$ 在 $p$ 上"换成"$\nabla$ 在 $s_\theta$ 上",代价是边界项(为 0)
 
-### 五、这个技巧后面还会出现
+**五、这个技巧后面还会出现**
 
 为什么花这么多时间讲这个推导?因为**分部积分(散度定理)在 diffusion / score matching 框架里是反复出现的核心工具**。后面你会看到:
 
@@ -300,7 +300,7 @@ $$\arg\min_\theta J_{\text{DSM}}(\theta) = \arg\min_\theta J_{\text{ESM}}^{(\sig
 
 这是 Vincent 2011 论文的核心定理,推导很优雅。这个证明的技巧和上面分部积分非常类似——都是"把不知道的东西通过代数变换约掉"。
 
-### 一、先把两个目标写清楚
+**一、先把两个目标写清楚**
 
 设噪声分布 $q_\sigma(\tilde x \mid x) = \mathcal{N}(\tilde x; x, \sigma^2 I)$,加噪后的边际分布:
 
@@ -321,11 +321,11 @@ $$J_{\text{DSM}}(\theta) = \frac{1}{2}\mathbb{E}_{x \sim p_{\text{data}},\, \til
 
 我们要证:**两者作为 $\theta$ 的函数,只差一个常数**。
 
-### 二、整体策略
+**二、整体策略**
 
 证明 $J_{\text{DSM}}(\theta) = J_{\text{ESM}}^{(\sigma)}(\theta) + C$,其中 $C$ **不依赖于 $\theta$**。策略:把两个目标都展开,看交叉项是否相等。
 
-### 三、把两个目标展开
+**三、把两个目标展开**
 
 平方展开 $\| s_\theta - t \|^2 = \| s_\theta \|^2 - 2 s_\theta^\top t + \| t \|^2$:
 
@@ -339,7 +339,7 @@ $$J_{\text{DSM}} = \underbrace{\frac{1}{2}\mathbb{E}_{p_{\text{data}}(x)\, q_\si
 
 **目标**:证明 $(A) = (A')$、$(B) = (B')$。
 
-### 四、证 $(A) = (A')$:边际化等价
+**四、证 $(A) = (A')$:边际化等价**
 
 $(A')$ 里的双重期望可以重组:
 
@@ -351,7 +351,7 @@ $$= \frac{1}{2}\int \| s_\theta(\tilde x) \|^2 \underbrace{\int q_\sigma(\tilde 
 
 直觉:被积函数 $\| s_\theta(\tilde x) \|^2$ 只依赖 $\tilde x$,和 $x$ 无关,所以对 $x$ 边际化把联合分布塌缩成边际分布,期望不变。
 
-### 五、证 $(B) = (B')$:核心一步
+**五、证 $(B) = (B')$:核心一步**
 
 $$(B) = \int q_\sigma(\tilde x)\, s_\theta^\top \nabla_{\tilde x} \log q_\sigma(\tilde x)\, d\tilde x$$
 
@@ -369,7 +369,7 @@ $$(B) = \int \int p_{\text{data}}(x)\, q_\sigma(\tilde x \mid x)\, s_\theta(\til
 
 ✓
 
-### 六、合起来
+**六、合起来**
 
 $$J_{\text{DSM}}(\theta) - J_{\text{ESM}}^{(\sigma)}(\theta) = C_2 - C_1 = \text{常数(不依赖 } \theta \text{)}$$
 
@@ -379,21 +379,21 @@ $$\arg\min_\theta J_{\text{DSM}} = \arg\min_\theta J_{\text{ESM}}^{(\sigma)}$$
 
 证毕。
 
-### 七、关键技巧总结
+**七、关键技巧总结**
 
 整个证明就靠两个把戏,反复用:
 
-#### 技巧 1:对数导数公式
+**技巧 1:对数导数公式**
 
 $$\nabla \log p = \frac{\nabla p}{p}$$
 
 它的威力:把 $\log p$ 拆开后,$p$ 出现在分母,容易和外面的 $p$ 约掉。
 
-#### 技巧 2:交换积分顺序
+**技巧 2:交换积分顺序**
 
 边际分布是积分的结果。当我们对 $\tilde x$ 求梯度后,这个积分依然在,只是被积函数变了。**梯度算子可以"穿过"对 $x$ 的积分**(因为求导和积分变量不同)。
 
-### 八、为什么这个等价"看起来不可思议"?
+**八、为什么这个等价"看起来不可思议"?**
 
 直觉上,边际 score 和条件 score **完全不同**:
 
@@ -406,7 +406,7 @@ $$\nabla_{\tilde x} \log q_\sigma(\tilde x) = \mathbb{E}_{p(x \mid \tilde x)}[\n
 
 (这其实是 Tweedie 公式的雏形——边际 score 是条件 score 在后验下的期望)
 
-### 九、为什么这件事如此重要?
+**九、为什么这件事如此重要?**
 
 | | 我们想要的 | 实际可算的 |
 |---|---|---|
