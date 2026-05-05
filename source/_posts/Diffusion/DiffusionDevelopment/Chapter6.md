@@ -300,7 +300,393 @@ return x_0
 
 ---
 
-## 九、复盘:为什么这一切如此优雅?
+## 九、完整 PyTorch 实现:从数据到生成
+
+数学讲完了,这一节落到代码上。我们以 **CIFAR-10 / MNIST 上的图像生成**为例,从数据预处理一路写到采样,**每一步都标清楚输入、输出、形状、含义**。完整可运行版本约 200 行。
+
+### 9.1 数据预处理
+
+| 步骤 | 输入 | 输出 | 含义 |
+|---|---|---|---|
+| `ToTensor` | PIL `Image` | `Tensor` 形状 `(C, H, W)`,值 `[0, 1]` | 像素归一到 `[0, 1]` 并加通道维 |
+| `Normalize((0.5,...), (0.5,...))` | `[0, 1]` | `[-1, 1]` | 把数据中心化到 0,**这一步对 diffusion 至关重要** |
+
+为什么是 `[-1, 1]` 而不是 `[0, 1]`?因为前向 $q(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_t}\, x_0, (1-\bar\alpha_t) I)$ 假设噪声是 0 均值的高斯。如果 $x_0 \in [0, 1]$,加上 0 均值高斯后会"变黑"(均值往 0 偏);中心化到 `[-1, 1]` 让 $x_0$ 的均值约为 0,加噪后**均值守恒为 0**,和先验 $\mathcal{N}(0, I)$ 对得上。
+
+```python
+import torch
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  # → [-1, 1]
+])
+
+train_set = datasets.CIFAR10('./data', train=True, download=True, transform=transform)
+train_loader = DataLoader(train_set, batch_size=128, shuffle=True, num_workers=4)
+```
+
+每个 batch 出来的 `x_0` 形状 `(128, 3, 32, 32)`,值在 `[-1, 1]`。
+
+### 9.2 Noise schedule:预先算好的常数表
+
+| 量 | 形状 | 含义 |
+|---|---|---|
+| `beta` | `(T,)` | $\beta_1, \ldots, \beta_T$,每步的加噪强度,**预设的非学习参数** |
+| `alpha = 1 - beta` | `(T,)` | $\alpha_t = 1 - \beta_t$,每步的"信号保留比例" |
+| `alpha_bar` | `(T,)` | $\bar\alpha_t = \prod_{s=1}^t \alpha_s$,从 $x_0$ 一步跳到 $x_t$ 的累积衰减 |
+| `sqrt_alpha_bar` | `(T,)` | $\sqrt{\bar\alpha_t}$,$x_t$ 公式里 $x_0$ 的系数 |
+| `sqrt_one_minus_alpha_bar` | `(T,)` | $\sqrt{1-\bar\alpha_t}$,$x_t$ 公式里 $\epsilon$ 的系数 |
+
+这些都**只依赖 $t$**,训练前一次性算出来存好,后面查表用。
+
+```python
+T = 1000
+beta = torch.linspace(1e-4, 0.02, T)               # 线性 schedule
+alpha = 1.0 - beta
+alpha_bar = torch.cumprod(alpha, dim=0)
+
+# 训练/采样要用的预计算量
+sqrt_alpha_bar = torch.sqrt(alpha_bar)
+sqrt_one_minus_alpha_bar = torch.sqrt(1.0 - alpha_bar)
+sqrt_recip_alpha = torch.sqrt(1.0 / alpha)         # 采样里的 1/√α_t
+
+# 后验方差 σ_t² (取 β_t 这种简化设定)
+posterior_var = beta.clone()
+```
+
+后来的工作发现 **cosine schedule** 更好(Improved DDPM),但线性 schedule 是最朴素也最稳的版本。
+
+### 9.3 前向加噪 `q_sample`:核心一步公式
+
+| 项 | 内容 |
+|---|---|
+| **输入** | $x_0$ 形状 `(B, C, H, W)`、$t$ 形状 `(B,)`(每个样本独立采的 timestep)、$\epsilon$ 形状同 $x_0$(可选) |
+| **输出** | $x_t$,形状 `(B, C, H, W)` |
+| **意义** | 把"$T$ 步加噪"塌缩成**一步公式** $x_t = \sqrt{\bar\alpha_t}\, x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$,免去逐步采样 |
+
+```python
+def q_sample(x_0, t, eps=None):
+    if eps is None:
+        eps = torch.randn_like(x_0)
+    # 取出对应 t 的系数,reshape 成 (B, 1, 1, 1) 以广播到 (B, C, H, W)
+    a = sqrt_alpha_bar[t].view(-1, 1, 1, 1)
+    b = sqrt_one_minus_alpha_bar[t].view(-1, 1, 1, 1)
+    return a * x_0 + b * eps
+```
+
+一行公式,**没有任何网络**,没有循环——这是高斯可加性带来的礼物。
+
+### 9.4 时间嵌入:让网络知道当前是第几步
+
+DDPM 的网络要**接受 $t$ 作为输入**,因为不同时刻去噪强度不同。直接把整数 $t$ 喂进去太"low-level",标准做法是**正弦位置编码**(和 Transformer 一样):
+
+| 项 | 内容 |
+|---|---|
+| **输入** | $t$,形状 `(B,)`,整数 |
+| **输出** | 嵌入向量,形状 `(B, dim)` |
+| **意义** | 把离散的整数时间映射到一个连续、平滑、不同频率组成的向量,网络容易学 |
+
+```python
+import math
+
+class SinusoidalTimeEmbedding(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, t):
+        # t: (B,)  →  output: (B, dim)
+        half = self.dim // 2
+        # 生成 half 个递减频率
+        freqs = torch.exp(-math.log(10000) * torch.arange(half, device=t.device) / half)
+        args = t[:, None].float() * freqs[None, :]  # (B, half)
+        return torch.cat([torch.sin(args), torch.cos(args)], dim=-1)  # (B, dim)
+```
+
+实际使用时,通常再过两层 MLP:
+
+```python
+time_mlp = nn.Sequential(
+    SinusoidalTimeEmbedding(128),
+    nn.Linear(128, 512),
+    nn.SiLU(),
+    nn.Linear(512, 512),
+)
+# 调用: t_emb = time_mlp(t)   →  (B, 512)
+```
+
+这个 `t_emb` 会被注入到 UNet 的**每一层**,告诉每层"现在我们在第几步"。
+
+### 9.5 UNet 架构
+
+DDPM 的 noise predictor 是个 **UNet**:输入 `x_t` (加了噪的图)+ `t` (当前 timestep),输出 `ε_θ` (预测的噪声)——形状和输入一样。
+
+| 项 | 内容 |
+|---|---|
+| **输入** | $x_t$ 形状 `(B, C, H, W)` + $t$ 形状 `(B,)` |
+| **输出** | $\hat\epsilon$,形状 `(B, C, H, W)`,和输入完全一样 |
+| **架构** | encoder(下采样路径) → bottleneck → decoder(上采样路径),每层带 skip connection |
+| **关键设计** | 每个 ResBlock 都注入时间嵌入,让网络在不同 $t$ 下表现不同 |
+
+最小可工作版的 UNet 模块:
+
+```python
+class ResBlock(nn.Module):
+    """带时间条件的残差块"""
+    def __init__(self, in_ch, out_ch, t_dim):
+        super().__init__()
+        self.norm1 = nn.GroupNorm(8, in_ch)
+        self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
+        self.t_proj = nn.Linear(t_dim, out_ch)
+        self.norm2 = nn.GroupNorm(8, out_ch)
+        self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
+        self.skip = nn.Conv2d(in_ch, out_ch, 1) if in_ch != out_ch else nn.Identity()
+
+    def forward(self, x, t_emb):
+        h = self.conv1(F.silu(self.norm1(x)))           # (B, out_ch, H, W)
+        h = h + self.t_proj(t_emb)[:, :, None, None]    # 把时间信息加进 feature
+        h = self.conv2(F.silu(self.norm2(h)))
+        return h + self.skip(x)                          # 残差
+```
+
+时间条件**怎么注入**?把 `t_emb` 通过 `Linear` 投影到 `out_ch` 维,reshape 成 `(B, out_ch, 1, 1)`,加到 feature map 上(每个空间位置加同一个时间偏移)。这是最常见的做法。
+
+{% details 完整 UNet 骨架代码 %}
+
+```python
+class UNet(nn.Module):
+    """简化版 UNet for 32×32 图像"""
+    def __init__(self, in_ch=3, base_ch=64, t_dim=512):
+        super().__init__()
+        self.time_mlp = nn.Sequential(
+            SinusoidalTimeEmbedding(base_ch),
+            nn.Linear(base_ch, t_dim),
+            nn.SiLU(),
+            nn.Linear(t_dim, t_dim),
+        )
+
+        # Encoder (下采样)
+        self.in_conv = nn.Conv2d(in_ch, base_ch, 3, padding=1)
+        self.down1 = ResBlock(base_ch,     base_ch,     t_dim)   # 32×32
+        self.down2 = ResBlock(base_ch,     base_ch * 2, t_dim)   # 16×16(下采样后)
+        self.down3 = ResBlock(base_ch * 2, base_ch * 4, t_dim)   # 8×8
+
+        # Bottleneck
+        self.mid = ResBlock(base_ch * 4, base_ch * 4, t_dim)
+
+        # Decoder (上采样,带 skip)
+        self.up3 = ResBlock(base_ch * 4 + base_ch * 4, base_ch * 2, t_dim)
+        self.up2 = ResBlock(base_ch * 2 + base_ch * 2, base_ch,     t_dim)
+        self.up1 = ResBlock(base_ch     + base_ch,     base_ch,     t_dim)
+
+        self.out_conv = nn.Sequential(
+            nn.GroupNorm(8, base_ch),
+            nn.SiLU(),
+            nn.Conv2d(base_ch, in_ch, 3, padding=1),  # 输出和输入同形状
+        )
+
+    def forward(self, x, t):
+        t_emb = self.time_mlp(t)                       # (B, t_dim)
+
+        x0 = self.in_conv(x)                           # (B, C, 32, 32)
+        x1 = self.down1(x0, t_emb)
+        x2 = self.down2(F.avg_pool2d(x1, 2), t_emb)    # (B, 2C, 16, 16)
+        x3 = self.down3(F.avg_pool2d(x2, 2), t_emb)    # (B, 4C, 8, 8)
+
+        m = self.mid(x3, t_emb)
+
+        u3 = self.up3(torch.cat([m, x3], dim=1), t_emb)
+        u3 = F.interpolate(u3, scale_factor=2)         # (B, 2C, 16, 16)
+        u2 = self.up2(torch.cat([u3, x2], dim=1), t_emb)
+        u2 = F.interpolate(u2, scale_factor=2)         # (B, C, 32, 32)
+        u1 = self.up1(torch.cat([u2, x1], dim=1), t_emb)
+
+        return self.out_conv(u1)                        # (B, in_ch, 32, 32)
+```
+
+实际生产级 UNet(Stable Diffusion、Imagen)还会加:
+
+- **Self-Attention 块**:在低分辨率层(8×8、4×4)插自注意力,捕捉全局结构
+- **多个 ResBlock 串联**:每个分辨率层放 2 个 ResBlock 而不是 1 个
+- **EMA 模型权重**:保存一份指数平滑的权重用于推理,生成质量更好
+- **Dropout**:在 ResBlock 里加一点(0.1)
+
+但骨架就是上面这个:**编码下采样 → bottleneck → 解码上采样 + skip**,带时间条件。
+
+{% enddetails %}
+
+### 9.6 训练循环:5 行核心逻辑
+
+整套 DDPM 训练就是把 $L_{\text{simple}}$ 实现出来:
+
+```python
+device = 'cuda'
+model = UNet().to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=2e-4)
+
+# 把所有 schedule tensor 搬到 GPU
+beta = beta.to(device); alpha = alpha.to(device)
+alpha_bar = alpha_bar.to(device)
+sqrt_alpha_bar = sqrt_alpha_bar.to(device)
+sqrt_one_minus_alpha_bar = sqrt_one_minus_alpha_bar.to(device)
+
+for epoch in range(epochs):
+    for x_0, _ in train_loader:
+        x_0 = x_0.to(device)                                       # (B, 3, 32, 32) ∈ [-1, 1]
+        B = x_0.size(0)
+
+        # 1. 每个样本随机一个 timestep
+        t = torch.randint(0, T, (B,), device=device)                # (B,)
+
+        # 2. 采噪声
+        eps = torch.randn_like(x_0)                                 # (B, 3, 32, 32)
+
+        # 3. 一步加噪到 x_t
+        x_t = q_sample(x_0, t, eps)                                 # (B, 3, 32, 32)
+
+        # 4. 网络预测噪声
+        eps_pred = model(x_t, t)                                    # (B, 3, 32, 32)
+
+        # 5. MSE 损失,一行
+        loss = F.mse_loss(eps_pred, eps)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+```
+
+回头看每一步在做什么:
+
+1. **采 $t$**:不同样本独立采 timestep,等价于对 ELBO 的 $\sum_t$ 做蒙特卡洛
+2. **采 $\epsilon$**:这是真实"标签"——网络要预测的就是它
+3. **`q_sample`**:用闭式公式造出 $x_t$,避免一步步加噪
+4. **`model(x_t, t)`**:UNet 看着 $x_t$ 和当前时刻,猜里面藏的噪声
+5. **MSE**:$L_{\text{simple}} = \|\epsilon - \epsilon_\theta\|^2$,直接 `F.mse_loss`
+
+### 9.7 采样循环:逆向走 T 步
+
+训练完后,从 $\mathcal{N}(0, I)$ 出发,逐步去噪到图:
+
+| 项 | 内容 |
+|---|---|
+| **输入** | 形状 `shape = (n, 3, 32, 32)`,生成 n 张图 |
+| **输出** | $x_0$,形状 `(n, 3, 32, 32)`,值大致 `[-1, 1]` |
+| **意义** | 把训练学到的 $p_\theta(x_{t-1}\mid x_t)$ 按马尔可夫链反向运行 $T$ 次 |
+
+```python
+@torch.no_grad()
+def sample(model, shape, device='cuda'):
+    model.eval()
+    x = torch.randn(shape, device=device)                           # x_T ~ N(0, I)
+
+    for t in reversed(range(T)):                                    # t = T-1, ..., 0
+        t_batch = torch.full((shape[0],), t, device=device, dtype=torch.long)
+
+        # 1. 网络预测此刻的噪声
+        eps_pred = model(x, t_batch)                                # (n, 3, 32, 32)
+
+        # 2. 算后验均值(训练时参数化的 μ_θ 公式)
+        coef1 = 1.0 / torch.sqrt(alpha[t])
+        coef2 = beta[t] / torch.sqrt(1.0 - alpha_bar[t])
+        mean = coef1 * (x - coef2 * eps_pred)
+
+        # 3. 加一点新噪声(最后一步不加)
+        if t > 0:
+            sigma = torch.sqrt(beta[t])                              # σ_t = √β_t
+            z = torch.randn_like(x)
+            x = mean + sigma * z
+        else:
+            x = mean
+
+    return x  # x_0
+```
+
+每一步在做的事(对应"采样算法"那节的公式):
+
+1. **`eps_pred = model(x, t_batch)`**:UNet 估一下当前 $x_t$ 里的噪声成分
+2. **`mean = ...`**:用重参数化的 $\mu_\theta = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\epsilon_\theta)$ 公式算后验均值
+3. **`x = mean + sigma * z`**:从高斯 $p_\theta(x_{t-1}\mid x_t) = \mathcal{N}(\mu_\theta, \sigma_t^2 I)$ 采样
+4. **最后一步 `t = 0`**:取 MAP(均值),不加噪——直接得到清晰图
+
+### 9.8 把生成图变回去:反归一化
+
+采样得到的 `x` 在 `[-1, 1]`,显示前要还原到 `[0, 1]`:
+
+```python
+def to_image(x):
+    # x: (n, 3, 32, 32) ∈ [-1, 1]
+    x = (x + 1) / 2          # → [0, 1]
+    x = x.clamp(0, 1)        # 防止越界
+    return x
+```
+
+### 9.9 整体流程图
+
+```
+训练:
+                      时间 t ──→ time_mlp ──→ t_emb
+                                                 │
+                                                 ↓
+  x_0 ──→ q_sample(t) ──→ x_t  ──UNet(x_t, t)──→ ε_θ
+                          │                       │
+                          └──→ ε  ───────MSE──────┘
+                                                 │
+                                                 ↓
+                                              更新 θ
+
+生成:
+  x_T ~ N(0, I)
+        │
+        ├──→ for t = T-1, ..., 0:
+        │        ε_θ = UNet(x_t, t)
+        │        μ   = (x_t - β_t/√(1-ᾱ_t) · ε_θ) / √α_t
+        │        x_{t-1} = μ + σ_t · z   (t=0 时不加噪)
+        │
+        ↓
+       x_0
+```
+
+整个 DDPM 工程量不大——核心代码大约:
+
+- 数据预处理 5 行
+- noise schedule 10 行
+- `q_sample` 5 行
+- 时间嵌入 10 行
+- UNet 80 行
+- 训练循环 15 行
+- 采样循环 20 行
+
+合计 **不到 150 行**,就能在 CIFAR-10 上训出能看的生成图。生产级 Stable Diffusion 的复杂度主要堆在 UNet 的精细架构、attention、EMA、混合精度训练等工程上,**核心数学就是上面这些**。
+
+{% details 训练超参数参考(DDPM 原版) %}
+
+| 项 | CIFAR-10 默认值 | 备注 |
+|---|---|---|
+| 图像分辨率 | 32×32 | 也跑过 256×256 LSUN |
+| Batch size | 128 | 跨 8 GPU 数据并行 |
+| 优化器 | Adam | 没换 AdamW,β1=0.9, β2=0.999 |
+| 学习率 | 2e-4 | 不用 warmup |
+| Dropout | 0.1 | 在 ResBlock 内部 |
+| EMA decay | 0.9999 | 推理用 EMA 权重而非原始权重 |
+| 训练步数 | 800K | 32×32 大概 24 小时 8×V100 |
+| $T$ | 1000 | 推理也走完整 1000 步 |
+| schedule | linear $\beta_t$ from 1e-4 to 0.02 | DDPM 原版 |
+| UNet base channels | 128 | 三层下采样,channel 倍率 [1, 2, 2, 2] |
+| Attention 分辨率 | 16×16 | 在这一层加 self-attention |
+
+后来 Improved DDPM 改进了几处:
+
+- **cosine schedule** 替代 linear:训练更稳,FID 更好
+- **学方差** $\Sigma_\theta$ 而非固定:似然估计更准
+- **Importance sampling 选 $t$**:聚焦在高 loss 的 timestep
+
+{% enddetails %}
+
+---
+
+## 十、复盘:为什么这一切如此优雅?
 
 让我们回头看,DDPM 究竟做了什么:
 
@@ -321,7 +707,7 @@ return x_0
 
 ---
 
-## 十、要点回顾
+## 十一、要点回顾
 
 - DDPM 没有改 Sohl-Dickstein 的模型,只改了**表达方式**
 - 关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是闭式高斯,均值 $\tilde\mu_t$ 是 $x_0, x_t$ 的线性组合

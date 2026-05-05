@@ -139,7 +139,7 @@ $$p(x) = \int p(x, z)\, dz = \int p(x \mid z)\, p(z)\, dz$$
 数学上:
 
 - 选一个分布族 $\mathcal{Q}$(比如所有对角高斯)
-- 在 $\mathcal{Q}$ 中找 $q^*(z)$ 使得 $q^*(z)$ 最接近 $p(z \mid x)$
+- 在 $\mathcal{Q}$ 中找 $q^*(z)$ 使得 $q^{*}(z)$ 最接近 $p(z \mid x)$
 
 "最接近"用 KL 散度衡量:
 

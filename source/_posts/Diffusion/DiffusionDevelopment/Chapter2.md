@@ -357,9 +357,266 @@ $$\mathrm{KL}(q \| p) = \frac{1}{2} \sum_{i=1}^{d} \left( \mu_i^2 + \sigma_i^2 -
 
 ---
 
-## 5. 几何直觉与一个常见困惑
+## 5. 完整 PyTorch 实现:从数据到生成
 
-### 5.1 VAE 在做什么(几何视角)
+数学和工程结构讲完了,这一节我们把 VAE 落到代码上,完整跑通 MNIST。每一步都标清楚**输入、输出、形状、意义**。
+
+### 5.1 数据预处理
+
+VAE 训练前要把图像变成网络能吃的 tensor。
+
+| 步骤 | 输入 | 输出 | 意义 |
+|---|---|---|---|
+| 加载图像 | PIL `Image`(28×28 灰度) | `Tensor` 形状 `(1, 28, 28)`,值 `[0, 1]` | `transforms.ToTensor()` 把像素从 `[0,255]` 归一到 `[0,1]`,并加通道维 |
+| 展平(可选) | `(1, 28, 28)` | `(784,)` | 全连接 VAE 把图当成 784 维向量。卷积 VAE 不展平 |
+
+为什么是 `[0, 1]` 而不是 `[-1, 1]`?因为我们打算用 **Bernoulli 似然**(二值像素近似),decoder 输出经 sigmoid 后正好落在 `[0, 1]`,和重建目标对齐。如果用高斯似然 + MSE,通常归一到 `[-1, 1]`。
+
+```python
+import torch
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+transform = transforms.Compose([
+    transforms.ToTensor(),  # PIL → Tensor [0,1], 形状 (1, 28, 28)
+])
+
+train_set = datasets.MNIST('./data', train=True, download=True, transform=transform)
+train_loader = DataLoader(train_set, batch_size=128, shuffle=True, num_workers=2)
+```
+
+每个 batch 出来的 `x` 形状是 `(128, 1, 28, 28)`,值在 `[0, 1]`。
+
+### 5.2 Encoder:从图像到潜分布参数
+
+| 项 | 内容 |
+|---|---|
+| **输入** | $x$,形状 `(B, 1, 28, 28)`(一个 batch 的图) |
+| **输出** | 两个张量 $\mu, \log \sigma^2$,形状都是 `(B, latent_dim)` |
+| **意义** | 给定图像 $x$,预测后验分布 $q_\phi(z\mid x) = \mathcal{N}(z; \mu_\phi(x), \sigma_\phi(x)^2 I)$ 的参数。**注意网络输出的不是一个 $z$,而是一个分布**——这是 VAE 和普通 AE 的根本区别 |
+| **为什么输出 $\log\sigma^2$ 而不是 $\sigma^2$** | 方差必须为正,直接输出 $\sigma^2$ 要保证非负(加 softplus 等),不稳定。输出 log 后,$\sigma^2 = \exp(\log\sigma^2)$ 自动为正,且数值稳定 |
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+
+class Encoder(nn.Module):
+    def __init__(self, input_dim=784, hidden_dim=400, latent_dim=20):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc_mu = nn.Linear(hidden_dim, latent_dim)
+        self.fc_logvar = nn.Linear(hidden_dim, latent_dim)
+
+    def forward(self, x):
+        # x: (B, 1, 28, 28)  →  (B, 784)
+        x = x.view(x.size(0), -1)
+        h = F.relu(self.fc1(x))           # (B, 400)
+        mu = self.fc_mu(h)                # (B, 20)
+        logvar = self.fc_logvar(h)        # (B, 20)
+        return mu, logvar
+```
+
+### 5.3 重参数化:让随机采样可微
+
+| 项 | 内容 |
+|---|---|
+| **输入** | $\mu, \log\sigma^2$,形状 `(B, latent_dim)` |
+| **输出** | $z$,形状 `(B, latent_dim)`,从 $\mathcal{N}(\mu, \sigma^2 I)$ 采到的样本 |
+| **意义** | 把 "$z \sim \mathcal{N}(\mu, \sigma^2)$" 这个不可微的采样,改写成 "$z = \mu + \sigma \odot \epsilon$,其中 $\epsilon \sim \mathcal{N}(0, I)$"——梯度可以通过 $\mu, \sigma$ 反传回 encoder |
+
+```python
+def reparameterize(mu, logvar):
+    std = torch.exp(0.5 * logvar)         # σ = exp(0.5 log σ²)
+    eps = torch.randn_like(std)           # 外部随机源,不依赖参数
+    return mu + std * eps                 # (B, 20)
+```
+
+**关键**:`eps` 是**输入**(从 `randn` 来),不是网络的中间状态。梯度反传时它被当作常数,所以 $z$ 关于 $\mu, \sigma$ 是可导的。
+
+### 5.4 Decoder:从潜变量到图像
+
+| 项 | 内容 |
+|---|---|
+| **输入** | $z$,形状 `(B, latent_dim)` |
+| **输出** | $\hat x$,形状 `(B, 784)`,每个元素 `[0, 1]`(像素的 Bernoulli 概率) |
+| **意义** | 给定潜变量,生成对应图像。最后一层 sigmoid 让输出落在 `[0, 1]`,可以直接和真实像素值做交叉熵 |
+
+```python
+class Decoder(nn.Module):
+    def __init__(self, latent_dim=20, hidden_dim=400, output_dim=784):
+        super().__init__()
+        self.fc1 = nn.Linear(latent_dim, hidden_dim)
+        self.fc_out = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, z):
+        h = F.relu(self.fc1(z))           # (B, 400)
+        x_recon = torch.sigmoid(self.fc_out(h))  # (B, 784), [0, 1]
+        return x_recon
+```
+
+### 5.5 把三者组合:完整 VAE 模块
+
+```python
+class VAE(nn.Module):
+    def __init__(self, input_dim=784, hidden_dim=400, latent_dim=20):
+        super().__init__()
+        self.encoder = Encoder(input_dim, hidden_dim, latent_dim)
+        self.decoder = Decoder(latent_dim, hidden_dim, input_dim)
+
+    def forward(self, x):
+        mu, logvar = self.encoder(x)              # (B, 20), (B, 20)
+        z = reparameterize(mu, logvar)            # (B, 20)
+        x_recon = self.decoder(z)                 # (B, 784)
+        return x_recon, mu, logvar
+```
+
+### 5.6 损失函数:重建项 + KL 项
+
+回忆 ELBO:
+
+$$\mathcal{L} = \underbrace{\mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)]}_{\text{重建项}} - \underbrace{D_{\text{KL}}(q_\phi(z|x) \| p(z))}_{\text{正则项}}$$
+
+训练时**最小化 $-\mathcal{L}$**。两项分开实现:
+
+| 项 | 实现 | 输入形状 | 输出 |
+|---|---|---|---|
+| 重建项 | 二元交叉熵 `BCE(x_recon, x)` (和)|`(B, 784)` 两个 | 一个 batch 总和的标量 |
+| KL 项 | 闭式公式 $-\tfrac{1}{2}\sum_i (1 + \log\sigma_i^2 - \mu_i^2 - \sigma_i^2)$ | `(B, 20)` 两个 | 一个 batch 总和的标量 |
+
+```python
+def vae_loss(x_recon, x, mu, logvar):
+    # 重建损失:对 Bernoulli 像素用 BCE,等价于 -log p(x|z)
+    # 用 sum 而不是 mean,以匹配 KL 的 sum
+    x_flat = x.view(x.size(0), -1)
+    recon_loss = F.binary_cross_entropy(x_recon, x_flat, reduction='sum')
+
+    # KL 散度的解析公式:N(μ, σ²) || N(0, I)
+    # = -0.5 * Σ (1 + log σ² - μ² - σ²)
+    kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+    return recon_loss + kl_loss
+```
+
+### 5.7 训练循环
+
+```python
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+model = VAE().to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+for epoch in range(20):
+    model.train()
+    total = 0
+    for x, _ in train_loader:                    # x: (B, 1, 28, 28)
+        x = x.to(device)
+        x_recon, mu, logvar = model(x)
+        loss = vae_loss(x_recon, x, mu, logvar)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        total += loss.item()
+    print(f"Epoch {epoch}: avg loss {total / len(train_loader.dataset):.2f}")
+```
+
+每个 batch 做的事(对应 ELBO 的一次蒙特卡洛估计):
+
+1. encoder 看 `x` 输出 `(μ, logvar)`
+2. 重参数化采一个 `z`
+3. decoder 用 `z` 重建出 `x_recon`
+4. 算 BCE 重建损失 + KL 正则
+5. 反向传播,Adam 更新参数
+
+### 5.8 生成新样本:把 encoder 扔掉
+
+训练完后,从先验 $p(z) = \mathcal{N}(0, I)$ 采样,过 decoder 就是新样本:
+
+```python
+@torch.no_grad()
+def sample(model, n=64, latent_dim=20):
+    model.eval()
+    z = torch.randn(n, latent_dim).to(device)    # (n, 20)
+    x_gen = model.decoder(z)                     # (n, 784)
+    return x_gen.view(n, 1, 28, 28)              # 恢复成图像形状
+```
+
+**为什么这样能生成有意义的图?** 因为 KL 项把所有训练图像的 $q(z\mid x)$ 拉向 $\mathcal{N}(0, I)$,导致**聚合后验**近似等于先验。从 $\mathcal{N}(0, I)$ 采的 $z$ 落在 decoder 见过的潜空间区域,decoder 自然能把它解码成合理的图。
+
+### 5.9 一个进阶版:卷积 VAE
+
+MNIST 用 MLP 够了,但真实图像数据(CIFAR、CelebA)需要卷积 encoder/decoder。结构:
+
+- **Encoder**: 几层 `Conv2d` + `BatchNorm` + `ReLU` 下采样,最后展平接两个 `Linear` 出 `μ, logvar`
+- **Decoder**: 一个 `Linear` 把 `z` 升回 feature map,然后几层 `ConvTranspose2d` 上采样回原图大小
+
+{% details 卷积 VAE 的 PyTorch 框架 %}
+
+```python
+class ConvEncoder(nn.Module):
+    """适用于 32x32 RGB 图像(CIFAR-10)"""
+    def __init__(self, latent_dim=128):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(3, 32, 4, stride=2, padding=1),    # 32 → 16
+            nn.ReLU(),
+            nn.Conv2d(32, 64, 4, stride=2, padding=1),   # 16 → 8
+            nn.ReLU(),
+            nn.Conv2d(64, 128, 4, stride=2, padding=1),  # 8 → 4
+            nn.ReLU(),
+        )
+        self.fc_mu = nn.Linear(128 * 4 * 4, latent_dim)
+        self.fc_logvar = nn.Linear(128 * 4 * 4, latent_dim)
+
+    def forward(self, x):
+        h = self.conv(x).flatten(1)              # (B, 128*4*4)
+        return self.fc_mu(h), self.fc_logvar(h)
+
+
+class ConvDecoder(nn.Module):
+    def __init__(self, latent_dim=128):
+        super().__init__()
+        self.fc = nn.Linear(latent_dim, 128 * 4 * 4)
+        self.deconv = nn.Sequential(
+            nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),  # 4 → 8
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, 4, stride=2, padding=1),   # 8 → 16
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 3, 4, stride=2, padding=1),    # 16 → 32
+            nn.Sigmoid(),
+        )
+
+    def forward(self, z):
+        h = self.fc(z).view(-1, 128, 4, 4)
+        return self.deconv(h)
+```
+
+实际工程里还要加 `BatchNorm2d`、Residual block 等,但骨架就是这样:**下采样卷积压成低分辨率高通道 feature map → 全连接出潜分布参数 → 全连接展开 → 上采样反卷积回图**。
+
+{% enddetails %}
+
+### 5.10 整体流程图
+
+```
+训练:
+  x (1,28,28)  ──Encoder──→  (μ, logσ²)  ──reparam──→  z
+                                                       │
+                                                       ↓
+                                                   Decoder
+                                                       │
+                                                       ↓
+  loss = BCE(x_recon, x) + KL(q(z|x) || N(0, I))   x_recon
+
+生成:
+  z ~ N(0, I)  ──Decoder──→  x_gen
+```
+
+每一步在做什么、为什么这么做,前面都讲透了。完整的、能跑的代码不到 100 行——这就是 VAE 的全部精髓。
+
+---
+
+## 6. 几何直觉与一个常见困惑
+
+### 6.1 VAE 在做什么(几何视角)
 
 可以把 VAE 想象成两件事的合奏:
 
@@ -369,7 +626,7 @@ $$\mathrm{KL}(q \| p) = \frac{1}{2} \sum_{i=1}^{d} \left( \mu_i^2 + \sigma_i^2 -
 
 KL 项确保所有这些小区域**汇总起来**填满标准高斯,这样从 $\mathcal{N}(0,I)$ 采样才能落在 decoder 见过的区域里,生成有意义的图像。
 
-### 5.2 一个常见困惑
+### 6.2 一个常见困惑
 
 > 标准高斯 $\mathcal{N}(0, I)$ 在原点附近概率密度高,远离原点的地方概率密度低。如果不同图像被映射到 $z$ 空间的不同位置,那靠近原点的图像"更可能",远离原点的图像"更不可能"——这听起来确实有点奇怪。
 
@@ -390,9 +647,9 @@ VAE 训练时**同时优化两件事**(ELBO 的两项):
 
 ---
 
-## 6. VAE 的局限和变体
+## 7. VAE 的局限和变体
 
-### 6.1 VAE 的局限
+### 7.1 VAE 的局限
 
 **生成图像偏模糊**:这是 VAE 最常被诟病的问题。原因有几层:decoder 用高斯似然 + MSE 重建,本质上是在做平均;encoder 输出分布而非点,引入额外噪声;ELBO 是下界,优化它不等于优化真似然。
 
@@ -400,14 +657,14 @@ VAE 训练时**同时优化两件事**(ELBO 的两项):
 
 **Posterior collapse**:特别是当 decoder 表达能力很强时(如自回归 decoder),decoder 倾向于忽略 $z$,只用自身能力建模数据,导致 $z$ 完全没用。这是 VAE 实际部署中的典型坑。
 
-### 6.2 VAE 和其他模型的对比
+### 7.2 VAE 和其他模型的对比
 
 - **AE(自编码器)**:也是 encoder-decoder 结构,但潜空间没有概率约束,encoder 输出确定的 $z$ 而不是分布。AE 不能生成,因为潜空间没有"采样起点"。
 - **GAN**:不显式学 $p(x)$,通过对抗训练直接学一个生成器。生成质量通常更高,但训练不稳定,也没有 encoder。
 - **Normalizing Flow**:用可逆神经网络精确计算 $p(x)$,不需要变分近似。但要求网络可逆,架构受限。
 - **Diffusion Model**:可以看成多步 VAE 的级联。训练稳定、生成质量极高,是当前主流。
 
-### 6.3 常见变体
+### 7.3 常见变体
 
 - **β-VAE**:把 KL 项乘上系数 $\beta$,$\beta > 1$ 鼓励解耦的(disentangled)表示
 - **Conditional VAE**:condition 在标签上,$p(x|z, y)$,可控生成
@@ -417,7 +674,7 @@ VAE 训练时**同时优化两件事**(ELBO 的两项):
 
 ---
 
-## 7. EM 与 VAE 的对应关系
+## 8. EM 与 VAE 的对应关系
 
 如果你刚读完上面的 VAE,这里的对应应该非常清晰:
 
@@ -440,7 +697,7 @@ VAE 训练时**同时优化两件事**(ELBO 的两项):
 
 ---
 
-## 8. 这一讲和 diffusion 的关系
+## 9. 这一讲和 diffusion 的关系
 
 VAE 到 diffusion 的转变,可以这样理解:
 
@@ -455,7 +712,7 @@ VAE 和 diffusion 共享整个变分推断骨架,只是在"$q$ 怎么选"这一�
 
 ---
 
-## 9. 要点回顾
+## 10. 要点回顾
 
 - **EM** 是处理"含隐变量的极大似然"的经典工具——E 步用当前参数推断 $z$ 的分布,M 步用 $z$ 的分布更新参数,交替进行
 - **EM 收敛性**:每轮 $\log p$ 单调不减,证明依靠"E 步让下界与真值相切"

@@ -167,7 +167,148 @@ return x
 
 ---
 
-## 六、和 DDPM 的精确对应
+## 六、PyTorch 实现要点
+
+NCSN 的网络架构和 DDPM 的 UNet **几乎一样**——都是带条件输入(NCSN 是 σ,DDPM 是 t)的 noise predictor。所以我们重点说**和 DDPM 不同的几个关键点**,完整 UNet/数据预处理参考 [DDPM 那章的实现部分](Chapter6/)。
+
+### 6.1 多尺度噪声表
+
+| 量 | 形状 | 含义 |
+|---|---|---|
+| `sigmas` | `(L,)` | $\sigma_1 > \sigma_2 > \cdots > \sigma_L$,几何递减,$\sigma_1$ 远大于数据尺度 |
+
+```python
+import torch
+
+L = 232                              # 噪声尺度数量
+sigma_max = 50.0                     # 远大于数据尺度,让 q_{σ_1} ≈ N(0, σ_1² I)
+sigma_min = 0.01                     # 接近 0,让 q_{σ_L} ≈ p_data
+
+# 几何递减:σ_l = σ_max · (σ_min/σ_max)^((l-1)/(L-1))
+sigmas = torch.exp(torch.linspace(
+    math.log(sigma_max), math.log(sigma_min), L
+))
+```
+
+### 6.2 网络:把 σ 作为条件输入
+
+NCSN 的网络叫 **NCSN(Noise Conditional Score Network)**,接受 `(x, σ_idx)` 而不是 DDPM 的 `(x, t)`。架构基本一致——把"时间嵌入"换成"噪声尺度嵌入":
+
+```python
+class NoiseConditionalUNet(nn.Module):
+    def __init__(self, base_ch=128, n_sigmas=L):
+        super().__init__()
+        # 直接学一个 σ_idx → 嵌入的 lookup table(或者用正弦嵌入也行)
+        self.sigma_emb = nn.Embedding(n_sigmas, 4 * base_ch)
+        # ... 其余 ResBlock / 下采样 / 上采样和 DDPM 的 UNet 完全一样
+        # 只是网络的最后输出尺度上,常见做法是除以 σ:
+        # 即网络输出 raw,然后 score = raw / σ —— 让网络输出维持单位方差
+
+    def forward(self, x, sigma_idx, sigmas):
+        emb = self.sigma_emb(sigma_idx)              # (B, 4C)
+        # ... UNet 主体 ...
+        raw = unet_body(x, emb)                       # (B, C, H, W)
+        # 关键:把 score 除以 σ,等价于输出"标准化的 score"
+        sigma = sigmas[sigma_idx].view(-1, 1, 1, 1)
+        return raw / sigma
+```
+
+**为什么除以 σ?** 真实 score 在不同 σ 下尺度差异巨大($\nabla \log q_\sigma \sim 1/\sigma$),让网络直接输出原始 score 数值不稳。**让网络输出 $\sigma \cdot s_\theta$,即"归一化的预测",再除以 $\sigma$ 还原**——这是 NCSN 的工程稳健性技巧。
+
+### 6.3 训练:加权 DSM 损失
+
+回忆训练目标(第四节推过):
+
+$$\mathcal{L} = \frac{1}{2L}\sum_l \mathbb{E}_{x_0, \epsilon}\left[\| \sigma_l\, s_\theta(\tilde x_l, \sigma_l) + \epsilon \|^2\right]$$
+
+```python
+device = 'cuda'
+model = NoiseConditionalUNet().to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+sigmas = sigmas.to(device)
+
+for epoch in range(epochs):
+    for x_0, _ in train_loader:                       # x_0: (B, 3, 32, 32)
+        x_0 = x_0.to(device)
+        B = x_0.size(0)
+
+        # 1. 每个样本随机选一个噪声尺度
+        sigma_idx = torch.randint(0, L, (B,), device=device)
+        sigma = sigmas[sigma_idx].view(B, 1, 1, 1)
+
+        # 2. 加噪
+        eps = torch.randn_like(x_0)
+        x_tilde = x_0 + sigma * eps
+
+        # 3. 网络预测 score
+        score = model(x_tilde, sigma_idx, sigmas)     # (B, 3, 32, 32)
+
+        # 4. 加权 DSM 损失:权重 λ(σ) = σ²,展开后形式如下
+        # ‖ σ · s_θ + ε ‖² = ‖ σ · score + ε ‖²
+        target = -eps / sigma                         # 真实条件 score
+        loss = ((score - target) ** 2 * sigma ** 2).mean()
+        # 或等价写法:
+        # loss = ((sigma * score + eps) ** 2).mean()
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+```
+
+### 6.4 退火 Langevin 采样
+
+| 项 | 内容 |
+|---|---|
+| **输入** | 形状 `shape = (n, 3, 32, 32)` |
+| **输出** | $x_0$,从数据分布采的样本 |
+| **过程** | 从 $\mathcal{N}(0, \sigma_1^2 I)$ 出发,每个尺度跑 $K$ 步 Langevin,从大尺度到小尺度退火 |
+
+```python
+@torch.no_grad()
+def annealed_langevin(model, shape, sigmas, n_steps_per_sigma=100, eps_start=2e-5):
+    """
+    eps_start: 最小尺度的步长,其它按 σ²/σ_L² 缩放
+    """
+    model.eval()
+    L = len(sigmas)
+    x = torch.randn(shape, device='cuda') * sigmas[0]    # 从 N(0, σ_1² I) 开始
+
+    for l in range(L):
+        sigma_l = sigmas[l]
+        sigma_idx = torch.full((shape[0],), l, device='cuda', dtype=torch.long)
+        eta = eps_start * (sigma_l ** 2) / (sigmas[-1] ** 2)   # 步长缩放
+
+        for k in range(n_steps_per_sigma):
+            score = model(x, sigma_idx, sigmas)               # 学到的 score
+            z = torch.randn_like(x)
+            x = x + 0.5 * eta * score + torch.sqrt(eta) * z
+
+    return x
+```
+
+每个 σ 上跑 K 步 Langevin,做的事:
+
+1. **`score = model(x, ...)`**:在当前 noisy 样本处,网络给出 score 估计
+2. **漂移项 `0.5 * eta * score`**:把样本拉向 $q_{\sigma_l}$ 的高密度区
+3. **扩散项 `√eta * z`**:加随机性保证遍历
+
+### 6.5 NCSN vs DDPM 的代码差异速查
+
+| 维度 | NCSN | DDPM |
+|---|---|---|
+| 噪声参数 | $\sigma_l$(连续值) | $t$(整数 timestep) |
+| 嵌入方式 | `Embedding(L, dim)` 或 σ 的正弦嵌入 | `t` 的正弦嵌入 |
+| 加噪公式 | `x̃ = x + σ · ε`(VE,加性) | `x_t = √ᾱ_t · x_0 + √(1-ᾱ_t) · ε`(VP,收缩+加噪) |
+| 损失 | `‖ σ · score + ε ‖²` | `‖ ε - ε_θ ‖²` |
+| 采样 | annealed Langevin,每个 σ K 步 | ancestral sampling,T 步 |
+| 起点 | `N(0, σ_1² I)`,σ_1 远大于数据 | `N(0, I)`,直接标准高斯 |
+| 步数 | $L \times K$,如 232 × 100 = 23200(更多) | $T = 1000$ |
+
+**核心算法不变,只是参数化不同**——这就是为什么下一讲 Score SDE 能把它们统一在 SDE 框架下。
+
+---
+
+## 七、和 DDPM 的精确对应
 
 让我们把 NCSN 和 DDPM 摆在一起:
 
@@ -221,7 +362,7 @@ NCSN:退火 Langevin,每个尺度跑 $K$ 步,共 $L \times K$ 步。
 
 ---
 
-## 七、SDE 视角:统一两者
+## 八、SDE 视角:统一两者
 
 按上一讲的 Score SDE 框架:
 
@@ -261,7 +402,7 @@ DDPM 的离散步是 VP-SDE 的 Euler-Maruyama 离散化,ancestral sampling 是�
 
 ---
 
-## 八、NCSN 的历史意义
+## 九、NCSN 的历史意义
 
 NCSN 是 score-based 路线的"**第一次成功**":
 
@@ -280,7 +421,7 @@ NCSN 是 score-based 路线的"**第一次成功**":
 
 ---
 
-## 九、为什么 DDPM 比 NCSN 出名?
+## 十、为什么 DDPM 比 NCSN 出名?
 
 公平地说,DDPM 在工程实践中传播得更广。原因:
 
@@ -294,7 +435,7 @@ NCSN 是 score-based 路线的"**第一次成功**":
 
 ---
 
-## 十、要点回顾
+## 十一、要点回顾
 
 - **NCSN = Noise Conditional Score Network**,Song & Ermon 2019
 - 解决 score-based 方法的两个老问题:trace 算不动(用 DSM)、低密度 score 不准(用多尺度噪声)
