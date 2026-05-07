@@ -1,5 +1,5 @@
 ---
-title: Chapter2 对比学习（Contrastive Learning）的核心机理
+title: Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo
 categories: 学习笔记-大模型
 date: 2026-03-27 16:03:34
 mathjax: true
@@ -8,250 +8,322 @@ tags:
     - AI面试知识
 ---
 
-# 深度进阶：对比学习（Contrastive Learning）的核心机理
+> **本章定位**：从 Ch1 的"点之间的相似度"过渡到"用相似度训练表征模型"。SimCLR/MoCo 是对比学习的两个奠基性工作，**它们的损失函数（InfoNCE）和训练范式直接影响了后来的 CLIP（Ch3）和所有现代 embedding 模型**。
 
-对比学习的核心思想是 **"Instance Discrimination" (个体判别)**：通过构造正负样本对，在无标注数据下学习"物以类聚，人以群分"的特征表示。
-
-> 对 LLM 而言，对比学习是**两条关键路径**的核心训练范式：
-> 1. **Embedding 模型训练**（BGE、E5、text-embedding-3）—— RAG 的基石
-> 2. **多模态对齐**（CLIP）—— GPT-4V、LLaVA 等视觉语言模型的视觉编码器来源
+> **承上**：基于 Ch1 §3 的点积相似度和 §6 的交叉熵。
+> **启下**：本章只讲视觉范式；CLIP / SimCSE / BGE 等多模态与文本对比学习见 Ch3；BYOL/SimSiam/DINO 等无负样本路线见 Ch4。
 
 ---
 
-## 1. 样本生成：数据增强（Data Augmentation）
+# §A 数学原理
 
-对比学习不依赖标签，通过对同一样本 $x$ 应用两次随机增强 $t, t' \sim \mathcal{T}$，生成正样本对 $(x_i, x_j)$。
+## 1. 对比学习的核心思想
 
-### 1.1 视觉领域的核心增强算子
-* **Random Resized Crop（最关键）**：强迫模型学习局部与整体、不同尺度下的语义一致性。
-* **Color Jitter & Grayscale**：打破模型对色彩统计特性的依赖，防止模型通过颜色直方图"作弊"。
-* **Gaussian Blur**：模糊纹理细节，促使模型关注高层轮廓。
+**Instance Discrimination**：通过构造正负样本对，在无标注数据下学习"物以类聚，人以群分"的特征表示。
 
-### 1.2 NLP 领域的核心增强算子
+具体到视觉自监督：对同一张图 $x$ 应用两次随机增强 $t, t' \sim \mathcal{T}$，生成正样本对 $(x_i, x_j)$。模型必须把这两个增强视图在特征空间拉近，把它们与 batch 内其他样本拉远。
 
-文本是离散符号，无法直接做 Crop/Blur，因此 NLP 对比学习的"增强"思路完全不同：
+## 2. 视觉数据增强 —— 对比学习的"数据语义"
 
-* **Dropout 作为最小增强（SimCSE 的核心洞察）**：同一句话两次过同一个 BERT，但**两次 Dropout mask 不同**，得到两个略有差异的 embedding，作为正样本对。这个看似"简单到离谱"的方案在 STS 任务上吊打所有复杂增强。
-* **Back-translation（回译）**：中→英→中，得到语义等价但表达不同的句子。
-* **EDA (Easy Data Augmentation)**：同义词替换、随机插入、随机交换、随机删除。
-* **T5 / LLM Paraphrasing**：用大模型生成同义改写。
-* **Token Masking / Cutoff**：随机遮盖部分 token 或连续片段（类似图像 Cutout）。
+| 增强 | 作用 |
+| :--- | :--- |
+| **Random Resized Crop**（最关键） | 强迫模型学习局部与整体、多尺度语义一致性 |
+| **Color Jitter / Grayscale** | 防止模型用颜色直方图作弊 |
+| **Gaussian Blur** | 模糊纹理细节，迫使模型关注高层轮廓 |
+| **Horizontal Flip** | 引入左右镜像不变性 |
 
-> **直觉**：图像增强保留"语义不变性"靠像素级扰动；文本增强保留"语义不变性"靠**模型内部噪声（Dropout）或外部改写**。
+> 这些增强本质上是**人工注入的不变性先验**：什么样的变化"语义不变"是由我们选择的。
 
----
+## 3. InfoNCE 损失函数
 
-## 2. 数学本质：InfoNCE 损失函数
+$$\boxed{\mathcal{L}_{q, k_+} = -\log \frac{\exp(q \cdot k_+ / \tau)}{\exp(q \cdot k_+ / \tau) + \sum_{i=1}^{K} \exp(q \cdot k_i / \tau)}}$$
 
-对比学习本质上是在高维球面上进行 **$K+1$ 路分类**。
+形式上就是一个 $K+1$ 路 softmax 交叉熵：正类是 $k_+$，负类是 $K$ 个负样本。
 
-### 2.1 公式定义
-$$\mathcal{L}_{q, k_+} = -\log \frac{\exp(q \cdot k_+ / \tau)}{\exp(q \cdot k_+ / \tau) + \sum_{i=1}^{K} \exp(q \cdot k_i / \tau)}$$
-
-形式上就是一个以 $q \cdot k_+$ 为正类 logit、$K$ 个负样本 logit 的 softmax 交叉熵。
-
-### 2.2 与互信息（Mutual Information）的关系
+### 3.1 与互信息（MI）的关系
 
 InfoNCE 是互信息 $I(q; k_+)$ 的**下界**：
 $$I(q; k_+) \geq \log K - \mathcal{L}_{\text{InfoNCE}}$$
 
-* **结论**：负样本数 $K$ 越大，下界越紧，模型对特征空间分布的刻画越精准。
-* **直觉**：让模型在 $K+1$ 个候选里挑出正样本越难，$q$ 必须包含越多关于 $k_+$ 的信息。
+**推导直觉**：把 InfoNCE 看作"在 $K+1$ 个候选里挑出正样本"的 $\log K$-bit 分类任务。分类越准（loss 越低），$q$ 包含越多关于 $k_+$ 的信息。
 
-### 2.3 温度参数 $\tau$ 的双面性
+**结论**：负样本数 $K$ 越大，下界越紧，特征越好。这是 SimCLR 需要大 batch（4096–8192）和 MoCo 需要队列（65536）的根本原因。
+
+### 3.2 温度参数 $\tau$ 的双面性
 
 $\tau$ 控制 softmax 分布的**尖锐度**：
 
 | $\tau$ 大小 | softmax 形状 | 效应 |
 | :--- | :--- | :--- |
-| **大 $\tau$** (如 1.0) | 平滑、接近均匀 | 各样本权重接近，训练稳定但难以聚焦 hard negatives；可避免梯度爆炸 |
-| **小 $\tau$** (如 0.05) | 尖锐 | 极大放大"长得像但不是"的困难负样本的 loss，迫使编码器学到细致判别特征；但太小会导致梯度集中在少数样本上，训练不稳 |
+| **大 $\tau$** (如 1.0) | 平滑、接近均匀 | 各样本权重接近，训练稳定但难以聚焦 hard negatives |
+| **小 $\tau$** (如 0.05) | 尖锐 | 极大放大"长得像但不是"的困难负样本的 loss，学到细致判别特征；但太小会导致梯度集中在少数样本上 |
 
-* SimCLR 经验值：$\tau = 0.1 \sim 0.5$
-* MoCo / SimCSE 经验值：$\tau = 0.05 \sim 0.07$
-* CLIP：$\tau$ 设为**可学习参数**（$\log \tau$ 直接参与训练）
+经验值：SimCLR $\tau = 0.1\sim 0.5$，MoCo $\tau = 0.07$。
 
 ---
 
-## 3. 视觉对比学习算法
+# §B 模型结构（PyTorch 实现）
 
-### 3.1 SimCLR：端到端对称对比 (End-to-End)
-SimCLR 的核心逻辑是 **"在大 Batch 中寻找自己"**。
+## B.1 SimCLR：端到端对称对比
 
-**具体步骤：**
-1.  **输入分配**：取一个 Batch 的原始图像 $\{x_k\}_{k=1}^N$。
-2.  **双路增强**：对每张图 $x_k$ 进行两次随机增强，生成 $2N$ 张图。其中 $x_{2k-1}$ 和 $x_{2k}$ 互为**正样本对**。
-3.  **前向传播**：
-    * **提取特征**：所有图片通过同一个编码器 $f(\cdot)$，得到特征 $h = f(x)$。
-    * **非线性投影**：通过投影头 $g(\cdot)$（MLP）映射到对比空间：$z = g(h)$。
-4.  **计算相似度矩阵**：计算这 $2N$ 个向量两两之间的余弦相似度，形成一个 $2N \times 2N$ 的矩阵。
-5.  **损失计算**：对于每一个向量 $z_i$，其正样本只有一个（对应的增强版本），其余 $2N-2$ 个向量均为负样本。
-6.  **更新**：梯度同时流经 $g$ 和 $f$，同步更新全网参数。
+**核心逻辑**：在大 Batch 中寻找自己。
+
+```
+原图 x  ──┐
+          ├── 增强 t  ──→ x_i  ──┐
+          │                       ├── Encoder f ──→ h ── Projector g ──→ z
+          └── 增强 t' ──→ x_j  ──┘
+所有 2N 个 z 进入 InfoNCE 计算
+```
+
+### B.1.1 SimCLR 损失（NT-Xent）的 PyTorch 实现
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class NTXentLoss(nn.Module):
+    """SimCLR 的 InfoNCE 实现：2N 个样本两两计算相似度"""
+    def __init__(self, temperature=0.5):
+        super().__init__()
+        self.temperature = temperature
+
+    def forward(self, z1, z2):
+        """
+        z1, z2: [N, D] 同一 batch 的两个增强视图（已经过 projector）
+        """
+        N = z1.size(0)
+        z = torch.cat([z1, z2], dim=0)                     # [2N, D]
+        z = F.normalize(z, dim=-1)                         # L2 归一化
+
+        # 相似度矩阵：所有对所有
+        sim = z @ z.T / self.temperature                   # [2N, 2N]
+
+        # 屏蔽对角线（自己与自己的相似度）
+        mask = torch.eye(2 * N, dtype=torch.bool, device=z.device)
+        sim.masked_fill_(mask, float('-inf'))
+
+        # 正样本位置：z[i] 的正样本是 z[i+N]（i < N）或 z[i-N]（i >= N）
+        targets = torch.cat([torch.arange(N, 2*N), torch.arange(0, N)]).to(z.device)
+
+        return F.cross_entropy(sim, targets)
+```
+
+**关键点**：
+- 把 batch 内所有 $2N$ 个样本展平做相似度矩阵，**正样本由 `targets` 显式索引**
+- 对角线（自己 × 自己）必须屏蔽，否则它会成为最强的"正样本"
+- L2 归一化后点积 = 余弦相似度（呼应 Ch1 §2）
+
+### B.1.2 完整 SimCLR 模型
+
+```python
+class SimCLR(nn.Module):
+    def __init__(self, encoder, proj_dim=128):
+        super().__init__()
+        self.encoder = encoder                              # ResNet-50 等
+        feat_dim = encoder.fc.in_features
+        encoder.fc = nn.Identity()                          # 移除原 FC
+        # Projection Head：2 层 MLP
+        self.projector = nn.Sequential(
+            nn.Linear(feat_dim, feat_dim),
+            nn.ReLU(),
+            nn.Linear(feat_dim, proj_dim),
+        )
+
+    def forward(self, x):
+        h = self.encoder(x)                                 # 表征：用于下游任务
+        z = self.projector(h)                               # 投影：用于对比
+        return h, z
+```
+
+> **面试 Tip：为什么需要 Projection Head？** 投影头作为"防火墙"，让信息损失发生在 $z$ 层，保护 $h$ 层保留更多下游任务有用信息。下游任务用 $h$，而非 $z$。
+
+## B.2 MoCo：动量字典查询
+
+**核心逻辑**：维护一个平滑演变的负样本队列。
+
+```
+x ── 增强 ──┬── x_q ── Query Encoder θ_q ──→ q  (梯度更新)
+            └── x_k ── Key   Encoder θ_k ──→ k+ (动量更新)
+                                              │
+                          Queue ←─ 入队 ──── k+
+                                              │
+                负样本：q · k_i（i=1...K，来自 queue）
+```
+
+### B.2.1 MoCo 关键机制 PyTorch
+
+```python
+class MoCo(nn.Module):
+    def __init__(self, base_encoder, dim=128, K=65536, m=0.999, T=0.07):
+        super().__init__()
+        self.K, self.m, self.T = K, m, T                    # 队列大小 / 动量 / 温度
+
+        self.encoder_q = base_encoder(num_classes=dim)
+        self.encoder_k = base_encoder(num_classes=dim)
+
+        # Key encoder 初始化 = Query encoder
+        for p_q, p_k in zip(self.encoder_q.parameters(),
+                            self.encoder_k.parameters()):
+            p_k.data.copy_(p_q.data)
+            p_k.requires_grad = False                       # ⭐ 不通过梯度更新
+
+        # 负样本队列：FIFO，存历史 batch 的 key
+        self.register_buffer("queue", F.normalize(torch.randn(dim, K), dim=0))
+        self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
+
+    @torch.no_grad()
+    def _momentum_update_key_encoder(self):
+        for p_q, p_k in zip(self.encoder_q.parameters(),
+                            self.encoder_k.parameters()):
+            p_k.data = p_k.data * self.m + p_q.data * (1. - self.m)
+
+    @torch.no_grad()
+    def _dequeue_and_enqueue(self, keys):
+        batch_size = keys.shape[0]
+        ptr = int(self.queue_ptr)
+        self.queue[:, ptr:ptr+batch_size] = keys.T          # 入队
+        self.queue_ptr[0] = (ptr + batch_size) % self.K     # 环形缓冲
+
+    def forward(self, im_q, im_k):
+        q = F.normalize(self.encoder_q(im_q), dim=1)        # [N, D]
+
+        with torch.no_grad():
+            self._momentum_update_key_encoder()
+            k = F.normalize(self.encoder_k(im_k), dim=1)    # [N, D]
+
+        # 正对 logits: [N, 1]
+        l_pos = (q * k).sum(dim=1, keepdim=True)
+        # 负对 logits: [N, K] —— q 与 queue 中所有历史 key 的点积
+        l_neg = q @ self.queue.clone().detach()
+
+        logits = torch.cat([l_pos, l_neg], dim=1) / self.T  # [N, K+1]
+        labels = torch.zeros(logits.size(0), dtype=torch.long, device=q.device)
+
+        loss = F.cross_entropy(logits, labels)              # 正样本永远在第 0 位
+        self._dequeue_and_enqueue(k)
+        return loss
+```
+
+**MoCo 三个关键设计**：
+1. **动量更新 Key Encoder**：$\theta_k \leftarrow m\theta_k + (1-m)\theta_q$，$m=0.999$，保证 queue 中负样本的"特征一致性"
+2. **队列 FIFO**：负样本数 $K$ 与 batch size 解耦，单卡也能用 65536 个负样本
+3. **不对称编码**：Query 走梯度，Key 走动量。这一思想直接通往 Ch4 BYOL 的 EMA Target
 
 ---
 
-### 3.2 MoCo：动量字典查询 (Dictionary Lookup)
-MoCo 的核心逻辑是 **"维护一个平滑演变的负样本库"**。
+# §C 训练与推理
 
-**具体步骤：**
-1.  **双编码器输入**：
-    * 输入 $x$，增强得到 $x_q$ 和 $x_k$。
-    * $x_q$ 进入 **Query Encoder ($\theta_q$)**，得到向量 $q$。
-    * $x_k$ 进入 **Key Encoder ($\theta_k$)**，得到向量 $k_+$。
-2.  **归一化 (L2 Norm)**：将 $q, k_+$ 以及队列中所有的 $k$ 映射到单位超球面上。
-3.  **度量计算 (Logits)**：
-    * **正对**：计算 $q \cdot k_+$。
-    * **负对**：计算 $q$ 与 **Queue (队列)** 中存储的 $K$ 个历史特征的点积。
-4.  **对比损失**：将正对和 $K$ 个负对看作一个 $K+1$ 类的分类问题，计算 InfoNCE。
-5.  **动量更新 (核心)**：
-    * **梯度更新**：只对 $\theta_q$ 进行反向传播。
-    * **平滑跟随**：$\theta_k \leftarrow m\theta_k + (1-m)\theta_q$，$m$ 通常取 0.999。保证了 Key Encoder 生成的特征在队列中具有时空一致性。
-6.  **队列维护**：将当前 Batch 的 $k_+$ 加入队列（Enqueue），并剔除最老的特征（Dequeue, FIFO）。
+## C.1 训练流程：SimCLR 完整循环
 
-### 3.3 SimCLR vs MoCo
+```python
+def simclr_train_step(model, criterion, x, optimizer, augment):
+    # 1. 双路增强
+    x1 = augment(x)                                         # [B, 3, 224, 224]
+    x2 = augment(x)
 
-| 特性 | SimCLR | MoCo |
+    # 2. 前向：得到表征 h 和投影 z
+    _, z1 = model(x1)
+    _, z2 = model(x2)
+
+    # 3. NT-Xent loss
+    loss = criterion(z1, z2)
+
+    # 4. 反向 + 更新
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    return loss.item()
+```
+
+**关键超参（SimCLR 论文）**：
+- Batch size：**4096–8192**（这是最大瓶颈）
+- Optimizer：LARS (大 batch 友好)
+- Learning rate：`0.3 × batch_size / 256`，cosine schedule
+- Epochs：800–1000（自监督收敛慢）
+- 投影头：2 层 MLP，输出 128 维
+
+## C.2 训练流程：MoCo 完整循环
+
+MoCo 单卡可训，loss 形式与上面 forward 已包含。要点：
+
+| 配置 | SimCLR | MoCo v2 |
 | :--- | :--- | :--- |
-| **负样本规模** | 受 Batch Size 限制 (需超大 Batch) | 由 Queue 决定 (可达 65536) |
-| **负样本一致性** | 实时计算，一致性完美 | 依靠**动量更新**保证一致性 |
-| **解决模型坍塌** | 显式负样本排斥 | 显式负样本排斥 |
-| **硬件要求** | 极高 (TPU/多卡集群) | 友好 (单卡即可训练大模型) |
+| Batch size | 4096–8192 | 256 即可 |
+| 负样本数 | 2N - 2 | K = 65536（队列） |
+| 硬件 | TPU 集群 | 8×V100 |
+| Loss 形式 | 对称 NT-Xent | 单向 InfoNCE |
 
-> **面试 Tip**：为什么 SimCLR 需要 Projection Head？
-> 因为对比学习任务可能会由于过于关注"不变性"而损害特征的语义。非线性投影层 $g(h)$ 可以作为一个"防火墙"，让信息损失发生在 $z$ 层，从而保护 $h$ 层保留更多的下游任务有用信息（如颜色、形状）。
+## C.3 推理视角一：Linear Probe 评测协议
 
----
+自监督模型训练完后**怎么评估其表征质量**？标准协议是 **Linear Probe**：
+1. 冻结 encoder $f$
+2. 在其输出 $h$ 上加一个 **线性分类头**
+3. 用 ImageNet 标签做监督训练（只训练这个线性层）
+4. 看 top-1 accuracy
 
-## 4. CLIP：跨模态对比学习 —— 多模态 LLM 的基石
+```python
+# 冻结 backbone，只训练线性分类器
+for p in model.encoder.parameters():
+    p.requires_grad = False
 
-CLIP（Contrastive Language–Image Pretraining，OpenAI 2021）是对比学习史上最具影响力的工作之一，也是 **GPT-4V / LLaVA / Qwen-VL / Gemini** 等多模态 LLM 视觉编码器的标准来源。
+classifier = nn.Linear(feat_dim, num_classes)
+optimizer = torch.optim.SGD(classifier.parameters(), lr=0.1)
 
-### 4.1 双塔架构
+for x, y in loader:
+    with torch.no_grad():
+        h = model.encoder(x)                                # 冻结特征
+    logits = classifier(h)
+    loss = F.cross_entropy(logits, y)
+    loss.backward()
+    optimizer.step()
+```
 
-* **Image Encoder**：ViT 或 ResNet，输出图像向量 $v \in \mathbb{R}^d$
-* **Text Encoder**：Transformer，输出文本向量 $t \in \mathbb{R}^d$
-* 两个向量 L2 归一化到单位球面
+**关键数字**（ImageNet linear probe）：
+- 监督 ResNet-50：76.5%
+- SimCLR：69.3%（v2 76.5%）
+- MoCo v2：71.1%
 
-### 4.2 对称 InfoNCE 损失
+> Linear probe 高 = 表征"线性可分性"好 = encoder 学到了有意义的语义。
 
-设一个 batch 含 $N$ 个图文对 $\{(I_i, T_i)\}_{i=1}^N$，构造 $N \times N$ 相似度矩阵 $S_{ij} = v_i \cdot t_j / \tau$。
+## C.4 推理视角二：视觉骨干在 LLM 中的应用
 
-对角线 $S_{ii}$ 是正样本，其余为负样本。同时计算"图找文"和"文找图"两个方向的交叉熵：
+SimCLR/MoCo 训出的 ResNet 主要用作**下游分类/检测**的预训练初始化。但在多模态 LLM 时代，更常用的视觉骨干来自**对比学习 + 图文对**（CLIP，详见 Ch3）和**自蒸馏**（DINO，详见 Ch4）。
 
-$$\mathcal{L}_{\text{CLIP}} = \frac{1}{2}\left( \mathcal{L}_{i \to t} + \mathcal{L}_{t \to i} \right)$$
-
-### 4.3 关键工程细节
-* **训练规模**：4 亿图文对（WIT 数据集），batch size 32768
-* **温度可学习**：$\tau$ 不是超参数，而是一个可训练标量，初始化为 $\log(1/0.07)$
-* **零样本分类**：训练后可直接将类别名（如 "a photo of a dog"）编码成文本向量，与图像向量比相似度 → 不需要任何分类头
-
-> **CLIP 在 LLM 中扮演什么角色？**
-> 多模态 LLM（如 LLaVA）的标准做法是：**冻结 CLIP 的 Image Encoder** 提取图像特征，再接一个轻量的 projection layer 把视觉特征对齐到 LLM 的词嵌入空间。也就是说，你看到的所有"GPT-4 看图说话"，背后都是 CLIP 学到的对比表示在打底。
-
----
-
-## 5. NLP 中的对比学习：Sentence Embedding 与 RAG 检索器
-
-这是把 Chapter1 的余弦相似度落地到 LLM 实际应用的关键一环。
-
-### 5.1 SimCSE（EMNLP 2021）—— NLP 对比学习的"SimCLR 时刻"
-
-**核心思想**：不需要任何复杂数据增强，**只用 Dropout 当作噪声**。
-
-* **Unsupervised SimCSE**：同一句话 $x$ 两次过同一个 BERT，由于 Dropout mask 不同，得到 $h_1, h_2$，作为正样本对；batch 内其他句子作为负样本。
-* **Supervised SimCSE**：用 NLI 数据集，"蕴含 (entailment)" 关系当正样本，"矛盾 (contradiction)" 关系当 hard negative。
-
-> **为什么 Dropout 这么简单的方案有效？**
-> Dropout 在表示空间施加了**最小但语义保持**的扰动——既保留了 anchor 的语义，又制造了足够的随机性让模型学到鲁棒表征。复杂的文本增强（如同义词替换）反而可能改变语义，引入噪声标签。
-
-### 5.2 In-batch Negatives：检索训练的标配
-
-设 batch 内有 $N$ 个 (query, positive) 对，构造 $N \times N$ 相似度矩阵：
-* 对角线 $S_{ii}$ = 正样本得分
-* 非对角线 $S_{ij}, j \neq i$ = **同 batch 内其他样本的 positive 充当 query $i$ 的负样本**
-
-这样一次前向就拿到了 $N-1$ 个免费负样本，是 DPR、BGE、E5 等所有 retriever 的标配做法。
-
-### 5.3 Hard Negative Mining：让训练真正"难"起来
-
-In-batch 随机负样本太简单，模型很快就能区分。需要主动挖**长得像但不相关**的样本：
-
-| 方法 | 思路 |
-| :--- | :--- |
-| **BM25 Hard Negatives** | 用 BM25 召回 top-k，去掉真正的 positive，剩下的当 hard negatives |
-| **ANCE** (Microsoft) | 用上一版本模型自己挖难负例，定期刷新 |
-| **RocketQA** | Cross-encoder 二次过滤，去除"伪负样本"（其实是正样本但没标注） |
-| **MoCHi** (NeurIPS 2020) | 在特征空间通过混合（mixup）合成 hard negatives |
-
-### 5.4 BGE / E5 / GTE 的三阶段训练范式
-
-当前主流开源 Embedding 模型几乎都遵循：
-1. **大规模弱监督对比预训练**：用爬虫抓的"标题-正文"、"问题-答案"等天然配对（百亿规模）
-2. **监督对比微调**：用 MS MARCO、NLI 等高质量标注数据
-3. **Hard negative 蒸馏**：用 cross-encoder 教师挖难负例并重训
-
----
-
-## 6. 不需负样本的方向：BYOL / SimSiam / Barlow Twins
-
-> 完全不要负样本！这是对比学习一度被认为"不可能"的方向。
-
-### 6.1 BYOL（Bootstrap Your Own Latent）
-* **架构不对称**：Online network（含 Predictor）+ Target network（EMA 更新，无 Predictor）
-* **损失**：让 Online 的 prediction 去回归 Target 的输出
-* **关键技术**：**Stop-gradient**，梯度不流向 Target 网络
-
-### 6.2 为什么不会塌缩？（核心问题）
-
-如果两个网络一样，最优解就是输出常数。但 BYOL/SimSiam **打破了对称性**：
-* **Stop-gradient + EMA**：让 Target 成为 Online 网络的"过去自己"——一个移动平均。Online 想匹配的不是另一份当前自己，而是历史快照。
-* **Predictor MLP**：把 Online 的输出再经过一层非线性，相当于在表示空间中引入额外的"目标空间"，进一步打破对称。
-* **数学解释（SimSiam 论文）**：这种结构隐式实现了一种 EM 算法——交替优化"表征"和"目标"，类似 K-means 不会塌缩到单点。
-
-### 6.3 Barlow Twins：从协方差矩阵入手
-
-让正样本对的特征**互相关矩阵**趋近单位矩阵：
-* 对角线 → 1：同一样本不同视图的对应维度强相关
-* 非对角线 → 0：特征维度之间去相关，避免冗余
-
-这种方法不需要负样本，也不需要不对称架构，靠的是显式的"特征去相关"约束。
-
----
-
-## 7. 总结表：CV 与 NLP 的对照
-
-| 视觉方法 | NLP / LLM 对应 | 关键差异 |
+| 视觉骨干路线 | 代表 | 主要用途 |
 | :--- | :--- | :--- |
-| **SimCLR** | **SimCSE** | 增强：Crop/Color → Dropout |
-| **MoCo** | **MoCo for Sentence Embedding** | 队列机制相同 |
-| **CLIP** | **CLIP / BLIP / SigLIP** | 图文双塔 → 多模态 LLM 视觉编码器 |
-| **Hard Negative Mining (MoCHi)** | **ANCE / RocketQA** | 检索训练的核心技术 |
-| **BYOL / SimSiam** | （NLP 中较少用，因 Dropout 增强已足够） | — |
+| 视觉对比（本章） | SimCLR / MoCo | 早期下游任务初始化 |
+| 图文对比 | **CLIP**（Ch3） | LLaVA、GPT-4V、Qwen-VL 默认骨干 |
+| 自蒸馏 | **DINOv2**（Ch4） | 密集预测任务（分割、深度）更优 |
 
 ---
 
-## 8. 对比学习负样本是否重要？负样本构造成本过高怎么解决？
+# §D 负样本：到底为什么重要？
 
-### 8.1 负样本为什么重要？（数学本质）
+## D.1 数学本质
 
-从信息论角度，对比学习的目标是最大化正样本对之间的**互信息**：
-$$I(q; k_+) \geq \log K - \mathcal{L}_{\text{InfoNCE}}$$
+回到 InfoNCE 的 MI 下界 $I(q; k_+) \geq \log K - \mathcal{L}_{\text{InfoNCE}}$：
+- **没有负样本时**：模型最简单的"偷懒"是输出常数 → loss = 0 但什么都没学到（**塌缩**）
+- **负样本数 $K$ 越大**：MI 下界越紧 → 特征空间分布刻画越精准
 
-* **防止模型崩溃 (Model Collapse)**：没有负样本时，模型最简单的"偷懒"方式是输出常数，相似度永远最大。负样本提供"推开"的力，迫使模型寻找区分性特征。
-* **InfoNCE 紧致度**：负样本数 $K$ 越大，下界越紧——模型对特征空间的刻画就越精准。
+## D.2 解决负样本成本过高的四条路线
 
-### 8.2 负样本成本过高的四种解法
+| 路线 | 核心思路 | 代表方法 | 后续章节 |
+| :--- | :--- | :--- | :--- |
+| **A. 缓存机制** | 队列 + 动量 → 与 batch size 解耦 | **MoCo**（本章） | — |
+| **B. Hard Negative Mining** | 只挖"难"的几个负样本，权重高 | MoCHi、ANCE、RocketQA | Ch3 §C |
+| **C. 不对称结构** | 完全去掉负样本 | **BYOL / SimSiam** | **Ch4** |
+| **D. 特征去相关** | 协方差矩阵 → 单位矩阵 | Barlow Twins | Ch4 §B 简介 |
 
-* **A. 缓存机制（代表作：MoCo）**
-    * 用队列存储历史 batch 的特征 + 动量更新解决"特征陈旧"问题
-    * 极小显存即可获得上万负样本
+---
 
-* **B. 寻找"硬"负样本（Hard Negative Mining）**
-    * 与其要一万个无用负样本，不如要十个真正难的
-    * 代表方法：**MoCHi**（特征空间合成）、**ANCE**（自挖）、**RocketQA**（cross-encoder 过滤）
+## 承上启下
 
-* **C. 改变对称性 / 预测机制（代表作：BYOL, SimSiam）**
-    * 通过 Stop-gradient + Predictor 打破对称，无需负样本也不塌缩
+本章为对比学习打下了**数学（InfoNCE + MI 下界）+ 工程（队列 + 动量）**的底子。
 
-* **D. 特征去相关（代表作：Barlow Twins）**
-    * 让特征互相关矩阵趋近单位矩阵，从协方差层面防止塌缩
+下一章 **Ch3** 会把这套机制推广到两个新场景：
+- **跨模态**：CLIP 用图文对训练，4 亿对，一举成为多模态 LLM 的视觉骨干
+- **文本**：SimCSE 用 dropout 当增强、BGE/E5 用 Hard Negative Mining 训出现代 RAG 的 retriever
+
+随后 **Ch4** 会进入完全不同的路线：**没有负样本也能训表征模型**（BYOL/SimSiam/DINO）。

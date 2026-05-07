@@ -1,5 +1,5 @@
 ---
-title: Chapter3 对比学习BYOL， SimSiam
+title: Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器
 categories: 学习笔记-大模型
 date: 2026-03-28 16:03:34
 mathjax: true
@@ -8,184 +8,309 @@ tags:
     - AI面试知识
 ---
 
-> Chapter2 已概述了 BYOL/SimSiam 的非对称设计，本章深入其数学机理，并最终落到 **LLM 训练流程中 Stop-gradient + EMA 的真实对应**（RLHF / DPO 的 reference policy）。
+> **本章定位**：把 Ch2 的 InfoNCE 推广到 (1) 跨模态——CLIP 用图文对训练，成为多模态 LLM 的视觉骨干；(2) 文本——SimCSE 把 InfoNCE 引入 NLP，BGE/E5 训出现代 RAG 检索器。
+
+> **承上**：Ch2 §A 的 InfoNCE 损失、§B 的 In-batch 负样本机制。
+> **启下**：Ch4 转向无负样本路线（BYOL/SimSiam/DINO）。
 
 ---
 
-## BYOL (Bootstrap Your Own Latent)
+# §A 数学原理
 
-### 1. 核心理念
-BYOL 证明了在**完全没有负样本（Negative Pairs）**的情况下，通过构建**非对称结构（Asymmetric Architecture）**和**预测机制**，也能实现有效的自监督学习，并成功避免模型塌缩（Collapse）。
+## 1. CLIP 的对称 InfoNCE
 
-> **关键实验数字**：BYOL 用 ResNet-50 在 ImageNet 上 linear probe 准确率 **74.3%**，首次实现"无负样本方法超越 SimCLR"。
+CLIP（OpenAI 2021）的核心是**双塔对比**：图像塔与文本塔分别将各自模态映射到同一个表示空间。
 
-### 2. 网络架构
-BYOL 由两个互动的网络分支组成：
-* **Online Network（在线网络）**: 参数为 $\theta$。
-    * 组成：
-        * Encoder $f_\theta$：通常是 ResNet-50。它将增强后的图像 $v$ 映射为高维特征向量 $h_\theta$。
-        * Projector $g_\theta$：一个多层感知机（MLP）。它将 $h_\theta$ 投影到一个更紧凑的空间 $z_\theta$。
-        * Predictor $q_\theta$（核心层）：又一个 MLP。它试图将 $z_\theta$ 映射到 Target 网络的表示空间，输出 $\hat{z}_\theta$。
-    * 更新方式：通过梯度下降（SGD/Adam）实时更新。
-* **Target Network（目标网络）**: 参数为 $\xi$。
-    * 组成：
-        * Encoder $f_\xi$：结构与 $f_\theta$ 完全一致。
-        * Projector $g_\xi$：结构与 $g_\theta$ 完全一致。
-    * 更新方式：**动量更新（EMA）**，不计算梯度。其参数是 Online 参数的历史加权平均。
+设一个 batch 含 $N$ 个图文对 $\{(I_i, T_i)\}_{i=1}^N$：
+- Image Encoder（ViT 或 ResNet）$\to v_i \in \mathbb{R}^d$
+- Text Encoder（Transformer）$\to t_i \in \mathbb{R}^d$
+- 二者 L2 归一化到单位球面
 
-### 3. 具体算法流程 (Step-by-Step)
-1. **视图生成**：对原始图片 $x$ 进行两种随机数据增强，得到视图 $v$ 和 $v'$。
-2. **Online 前向传播**：视图 $v$ 经过编码器、投影层和**预测层**，输出
-$$\hat{z}_\theta = q_\theta(g_\theta(f_\theta(v)))$$
-3. **Target 前向传播**：视图 $v'$ 经过编码器和投影层，输出目标表示
-$$z_\xi = g_\xi(f_\xi(v'))$$
-4. **损失计算**：对 $\hat{z}_\theta$ 和 $z_\xi$ 进行 $L_2$ 归一化后计算均方误差：
-$$L = \|\bar{\hat{z}}_\theta - \bar{z}_\xi\|_2^2$$
-其中 $\bar{\cdot}$ 表示 L2 归一化向量。
+**对称损失**：构造 $N \times N$ 相似度矩阵 $S_{ij} = v_i^T t_j / \tau$。对角线为正样本，其余 $N-1$ 为负样本。两个方向的交叉熵相加：
 
-   **MSE 与余弦相似度的等价性**：当 $\|\bar{a}\| = \|\bar{b}\| = 1$ 时，
-   $$\|\bar{a} - \bar{b}\|_2^2 = \|\bar{a}\|^2 + \|\bar{b}\|^2 - 2\bar{a}^T\bar{b} = 2 - 2\cos\theta$$
-   所以**最小化归一化 MSE = 最大化余弦相似度**（与 Chapter1 §2 的转换公式完全对应）。
+$$\mathcal{L}_{\text{CLIP}} = \frac{1}{2}\left( \mathcal{L}_{\text{img→txt}} + \mathcal{L}_{\text{txt→img}} \right)$$
 
-5. **梯度与参数更新**：
-    * **Online**：计算 $L$ 对 $\theta$ 的梯度并执行更新。
-    * **Target**：不传梯度，执行动量平滑更新：$\xi \leftarrow m\xi + (1-m)\theta$，$m$ 通常取 0.99~0.999。
+$$\mathcal{L}_{\text{img→txt}} = -\frac{1}{N}\sum_{i=1}^N \log \frac{\exp(S_{ii})}{\sum_j \exp(S_{ij})}, \quad \mathcal{L}_{\text{txt→img}} \text{ 同理}$$
 
-### 4. 关键机制深度解析
+**关键工程细节**：
+- **温度 $\tau$ 是可学习参数**：CLIP 让 $\log(1/\tau)$ 直接参与训练，初始化为 $\log(1/0.07)$。这样模型自己决定相似度尺度。
+- **训练规模**：4 亿图文对（WIT 数据集），batch size 32768——巨大的 batch 等价于巨大的负样本池
 
-#### A. 为什么会陷入"平凡解"（塌缩）？
-**数学本质**：在没有负样本时，模型为了最小化 Loss，最简单的"捷径"是将所有输入映射为同一个常数向量。此时正样本对相似度为 1，Loss 为 0，但模型失去了特征区分能力。
+## 2. SimCSE：NLP 对比学习的"SimCLR 时刻"
 
-假设模型将所有输入 $x$ 都映射成单位向量 $c$（例如 $[1, 0, 0, \dots]$）：
-- 对于任意正样本 $(v, v')$，输出分别是 $z = c$ 和 $z' = c$。
-- 余弦相似度 $\cos(z, z') = 1$，损失 $L = 0$。
+文本是离散 token，无法做 Crop/Color Jitter。SimCSE（EMNLP 2021）发现一个**简单到震惊**的方案：**两次不同的 Dropout 当作正样本对**。
 
-#### B. 为什么 BYOL 能防止塌缩？
-* **Predictor 的预测作用**：Predictor 引入了非线性变换，使得 Online 端必须去"预测" Target 的特征，而不仅仅是简单的恒等拷贝。
-* **Stop-gradient（停止梯度）**：关键在于梯度不流向 Target 分支。这使得 Target 在优化过程中是一个"被动观察者"，不会为了减小 Loss 而主动向常数解靠拢。
-* **动量滞后性**：Target 网络是 Online 网络的一个"缓慢移动的影子"。这种时间上的滞后和不一致性打破了坍缩所需的同步性。
+### 2.1 Unsupervised SimCSE
 
-#### C. 动量更新（EMA）的具体作用
-* **提供稳定目标**：由于 Target 更新极慢，它为 Online 提供了一个连续且平滑的回归目标，起到了正则化作用。
-* **信息集成**：Target 实际上是 Online 历史多个版本的集成（Ensemble），包含了更丰富的特征空间信息。
+同一句话 $x$ 两次过同一个 BERT，由于 Dropout mask 不同，得到 $h_1, h_2$，作为正样本对。Batch 内其他句子作负样本。损失就是标准 InfoNCE：
 
-### 5. 面试考点总结
-* **对比 MoCo**：MoCo 的动量是为了维持负样本队列的一致性；BYOL 的动量是为了在无负样本时稳定目标、防止塌缩。
-* **Predictor 必要性**：若去掉预测层，双路结构完全对称，模型会立即陷入平凡解。
-* **核心结论**：BYOL 证明了"非对称性"是自监督学习中除了"负样本约束"外的另一种有效的防塌缩手段。
+$$\mathcal{L}_i = -\log \frac{\exp(\text{sim}(h_i^{(1)}, h_i^{(2)}) / \tau)}{\sum_{j=1}^N \exp(\text{sim}(h_i^{(1)}, h_j^{(2)}) / \tau)}$$
+
+### 2.2 Supervised SimCSE
+
+用 NLI（自然语言推理）数据：
+- 正样本：(premise, entailment)（蕴含）
+- **Hard Negative**：(premise, contradiction)（矛盾）
+- 加 hard negative 后效果显著提升
+
+### 2.3 为什么 Dropout 这么简单的方案有效？
+
+Dropout 在表示空间施加了**最小但语义保持**的扰动：
+- 保留 anchor 的语义（输入文本完全不变）
+- 制造足够的随机性让模型学到鲁棒特征
+- 复杂的文本增强（同义词替换、删词）反而可能改变语义，引入噪声标签
+
+> **核心洞察**：对比学习的成功核心是"**语义保持的扰动 + 互斥的负样本池**"。增强的强度只要够引入随机性即可，不必复杂。
+
+## 3. In-batch Negatives 的数学
+
+对 retrieval 任务，batch 内 $N$ 个 (query, positive) 对，构造 $N \times N$ 相似度矩阵：
+- 对角线 $S_{ii}$ = (query_i, positive_i) 得分
+- **非对角线 $S_{ij}, j \neq i$** = (query_i, positive_j) 得分 → **当作 query_i 的负样本**
+
+一次前向就拿到了 $N-1$ 个免费负样本。损失：
+$$\mathcal{L} = -\frac{1}{N}\sum_{i=1}^N \log \frac{\exp(S_{ii} / \tau)}{\sum_j \exp(S_{ij} / \tau)}$$
+
+这是 DPR、BGE、E5 等所有 retriever 的标配做法。**Batch size 越大，负样本越多，效果越好**——这与 SimCLR 的逻辑一致。
 
 ---
 
-## SimSiam (Simple Siamese)
+# §B 模型结构（PyTorch 实现）
 
-SimSiam 是何恺明团队对 BYOL 的极大简化。它证明了：**甚至不需要动量更新（Momentum），只要有 Stop-gradient 就能训练。**
-
-> **关键实验数字**：SimSiam 在 ImageNet 上 linear probe **71.3%**，仅略低于 BYOL，但**训练成本远低**（无 EMA 双网络、无需大 batch）。
-
-### 1. 网络结构
-SimSiam 采用完全共享权重的**孪生网络（Siamese Network）**：
-* Encoder $f$：通常是 ResNet。两路输入共享同一套参数 $\theta$。
-* Projector $g$：一个 MLP，将高维特征映射到中间空间。
-* Predictor $p$：仅在其中一路使用的非线性 MLP，将一路的输出匹配到另一路的表示。
-
-### 2. 具体算法流程
-
-假设输入一张图像 $x$：
-1. **数据增强**：对 $x$ 进行两次随机增强，得到视图 $x_1$ 和 $x_2$。
-2. **提取表示**：两张图都经过相同的 Encoder $f$ 和 Projector $g$，得到 $z_1 = g(f(x_1))$ 和 $z_2 = g(f(x_2))$。
-3. **预测映射**：$p_1 = p(z_1)$，$p_2 = p(z_2)$。
-4. **计算对称损失** (Symmetrized Loss)：
-    * $D(p_1, \text{stop\_grad}(z_2))$：$p_1$ 去追 $z_2$，但 $z_2$ 不准产生梯度。
-    * $D(p_2, \text{stop\_grad}(z_1))$：$p_2$ 去追 $z_1$，但 $z_1$ 不准产生梯度。
-    * 距离函数 $D$：负余弦相似度：$D(p, z) = -\frac{p \cdot z}{\|p\|_2 \|z\|_2}$。
-5. **更新参数**：
-$$L = \frac{1}{2}(L_1 + L_2), \quad \nabla \theta = \frac{1}{2} \frac{\partial D(p_1, z_2)}{\partial \theta} + \frac{1}{2} \frac{\partial D(p_2, z_1)}{\partial \theta}$$
+## B.1 CLIP 完整 forward + loss
 
 ```python
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
-def D(p, z):
-    return -F.cosine_similarity(p, z, dim=-1).mean()
+class CLIP(nn.Module):
+    def __init__(self, image_encoder, text_encoder, embed_dim=512):
+        super().__init__()
+        self.image_encoder = image_encoder
+        self.text_encoder = text_encoder
+        # ⭐ 可学习温度（log scale 训练更稳）
+        self.logit_scale = nn.Parameter(torch.tensor(2.6593))  # = log(1/0.07)
 
-# 1. 得到表示 (z) 和预测 (p)
-z1, z2 = model.backbone(x1), model.backbone(x2)  # backbone = encoder + projector
-p1, p2 = model.predictor(z1), model.predictor(z2)
+    def forward(self, images, text_tokens):
+        # 1. 各塔提取特征 + 归一化
+        v = F.normalize(self.image_encoder(images), dim=-1)         # [N, D]
+        t = F.normalize(self.text_encoder(text_tokens), dim=-1)     # [N, D]
 
-# 2. 计算损失：detach() 即 stop-gradient
-loss = (D(p1, z2.detach()) + D(p2, z1.detach())) * 0.5
+        # 2. 相似度矩阵 + 温度缩放
+        logit_scale = self.logit_scale.exp().clamp(max=100)         # 上限防爆
+        logits_per_image = logit_scale * v @ t.T                    # [N, N]
+        logits_per_text = logits_per_image.T
 
-# 3. 更新参数：梯度只从 p 路径回传，不从 z.detach() 回传
-loss.backward()
-optimizer.step()
+        # 3. 对称 InfoNCE：对角线是正样本
+        labels = torch.arange(v.size(0), device=v.device)
+        loss_i = F.cross_entropy(logits_per_image, labels)
+        loss_t = F.cross_entropy(logits_per_text, labels)
+        return (loss_i + loss_t) / 2
 ```
 
-### 3. 为什么有效？—— EM 视角下的紧凑推导
+**为什么用 `logit_scale.exp()` 而非直接学 $\tau$？**
+- $\tau > 0$ 是硬约束，直接学 $\tau$ 会导致优化时跑出可行域
+- 学 $\log(1/\tau)$ 然后取 exp 自动满足正性约束（参数化技巧，类似 reparameterization）
 
-何恺明在论文中实验证明：去掉 Stop-gradient，模型瞬间塌缩。SimSiam 的优化本质是 **EM 算法**。
+## B.2 SimCSE Dropout 增强 + 损失
 
-**目标函数**：假设每张图 $x$ 有"理想表示" $\eta_x$（隐变量），损失为
-$$E(\theta, \eta) = \mathbb{E}_{x, T} \left[ \| \mathcal{F}_{\theta}(T(x)) - \eta_x \|^2 \right]$$
+```python
+class SimCSE(nn.Module):
+    """Unsupervised SimCSE：同一文本两次 forward，Dropout 制造正样本"""
+    def __init__(self, bert, temperature=0.05):
+        super().__init__()
+        self.bert = bert                                            # 默认 dropout=0.1
+        self.temperature = temperature
 
-如果同时优化 $\theta$ 和 $\eta$，最优捷径是 $\eta_x \equiv C$ 且 $\mathcal{F}_\theta \equiv C$，即塌缩。SimSiam 通过交替优化避免这一陷阱：
+    def encode(self, input_ids, attention_mask):
+        out = self.bert(input_ids, attention_mask=attention_mask)
+        return out.pooler_output                                    # [N, D]
 
-| 步骤 | 操作 | 实现方式 |
+    def forward(self, input_ids, attention_mask):
+        # ⭐ 两次 forward，Dropout mask 不同，得到不同表示
+        z1 = self.encode(input_ids, attention_mask)
+        z2 = self.encode(input_ids, attention_mask)
+
+        z1 = F.normalize(z1, dim=-1)
+        z2 = F.normalize(z2, dim=-1)
+
+        # In-batch negatives：z1[i] 的正样本是 z2[i]，其余 z2[j] 都是负样本
+        sim = z1 @ z2.T / self.temperature                          # [N, N]
+        labels = torch.arange(sim.size(0), device=sim.device)
+        return F.cross_entropy(sim, labels)
+```
+
+**两个易错点**：
+1. **必须开启 model.train()**：否则 dropout 不生效，两次 forward 完全一样，loss 永远为 0
+2. **In-batch 负样本依赖 batch size**：常见 64–256，太小效果差
+
+## B.3 BGE/E5 Retrieval 模型 + Hard Negative
+
+实际 RAG 检索器训练时，每个 (query, pos) 还要配 $K$ 个 hard negatives：
+
+```python
+class RetrievalModel(nn.Module):
+    def forward(self, q_ids, pos_ids, neg_ids, q_mask, pos_mask, neg_mask):
+        """
+        q_ids:   [B, L_q]      pos_ids: [B, L_p]
+        neg_ids: [B, K, L_n]  K = hard negatives per query
+        """
+        B, K, L_n = neg_ids.shape
+        q_emb = self.encode(q_ids, q_mask)                           # [B, D]
+        pos_emb = self.encode(pos_ids, pos_mask)                     # [B, D]
+        neg_emb = self.encode(
+            neg_ids.view(B*K, L_n), neg_mask.view(B*K, L_n)
+        ).view(B, K, -1)                                             # [B, K, D]
+
+        q_emb = F.normalize(q_emb, dim=-1)
+        pos_emb = F.normalize(pos_emb, dim=-1)
+        neg_emb = F.normalize(neg_emb, dim=-1)
+
+        # 1. 当前 query 与自己的 positive
+        l_pos = (q_emb * pos_emb).sum(dim=-1, keepdim=True)          # [B, 1]
+
+        # 2. 与自己的 K 个 hard negatives
+        l_hard_neg = (q_emb.unsqueeze(1) * neg_emb).sum(dim=-1)      # [B, K]
+
+        # 3. ⭐ In-batch negatives：与其他 query 的 positive
+        l_in_batch = q_emb @ pos_emb.T                                # [B, B]
+        l_in_batch.fill_diagonal_(float('-inf'))                      # 排除自己
+
+        # 拼起来：[正样本, K 个 hard neg, B-1 个 in-batch neg]
+        logits = torch.cat([l_pos, l_hard_neg, l_in_batch], dim=-1) / self.temperature
+        labels = torch.zeros(B, dtype=torch.long, device=q_emb.device)
+        return F.cross_entropy(logits, labels)                       # 正样本永远在第 0 位
+```
+
+**这是 BGE / E5 训练的"压舱石"代码**——理解这段代码就理解了现代 RAG 检索器的训练。
+
+---
+
+# §C 训练与推理
+
+## C.1 训练视角：BGE / E5 / GTE 的三阶段训练
+
+当前主流开源 Embedding 模型几乎都遵循：
+
+| 阶段 | 数据 | 损失 | 数据规模 |
+| :--- | :--- | :--- | :--- |
+| **1. 弱监督对比预训练** | 爬虫"标题-正文"、"问题-答案"等天然配对 | In-batch InfoNCE | **百亿级** |
+| **2. 监督对比微调** | MS MARCO、NLI 等高质量标注 | InfoNCE | 千万级 |
+| **3. Hard Negative 蒸馏** | 用 cross-encoder 教师挖难负例 | InfoNCE + KL 蒸馏 | 百万级 |
+
+**Hard Negative Mining 的四种方法**：
+
+| 方法 | 思路 | 代价 |
 | :--- | :--- | :--- |
-| **E-step**（固定 $\theta$，更新 $\eta$） | $\eta_x^* = \mathbb{E}_T[\mathcal{F}_\theta(T(x))]$ | 期望不可算 → 用单样本 $\mathcal{F}_\theta(T'(x))$ 近似（即另一路 + stop-gradient） |
-| **M-step**（固定 $\eta$，更新 $\theta$） | $\theta \leftarrow \arg\min_\theta L(\theta, \eta)$ | 标准梯度下降 |
+| **BM25 Hard Negatives** | 用 BM25 召回 top-k，去掉真 positive | 便宜，但负样本质量一般 |
+| **ANCE** (Microsoft) | 用上一版本模型自挖负例，定期刷新 | 中等，需多轮训练 |
+| **RocketQA** | Cross-encoder 二次过滤"伪负样本" | 贵，但效果最好 |
+| **MoCHi** (NeurIPS 2020) | 在特征空间 mixup 合成 hard negatives | 中等 |
 
-**Predictor 的真正作用 = 学习条件期望**
+## C.2 推理视角一：FAISS 索引构建 + 召回
 
-由于 E-step 用单样本 $\mathcal{F}_\theta(T'(x))$ 替代了真期望，引入巨大噪声。Predictor $h$ 的优化目标可写成
-$$h^*(z_1) = \mathbb{E}_{T_2}[z_2 \mid z_1]$$
-即 Predictor 学到的是 $z_1$ 条件下 $z_2$ 的**条件期望**——它在"为单样本噪声去噪"，让模型朝真正的 $\eta$ 演进。这就是 Predictor 不可省略的根本原因。
+训练完 embedding 模型后，**RAG 系统的推理流程**：
+
+```python
+import faiss
+import numpy as np
+
+# ============ Index 构建（离线一次）============
+# 1. 全量文档向量化
+doc_embeddings = []
+for batch in doc_loader:
+    with torch.no_grad():
+        emb = retriever.encode(batch).cpu().numpy()
+    doc_embeddings.append(emb)
+doc_embeddings = np.concatenate(doc_embeddings).astype(np.float32)
+faiss.normalize_L2(doc_embeddings)                           # ⭐ 归一化
+
+# 2. 构建 IVF + PQ 索引（亿级文档常用）
+d = doc_embeddings.shape[1]
+quantizer = faiss.IndexFlatIP(d)
+index = faiss.IndexIVFPQ(quantizer, d, nlist=4096, m=8, nbits=8)
+index.train(doc_embeddings)
+index.add(doc_embeddings)
+
+# ============ Query 召回（每次请求）============
+def retrieve(query, k=10):
+    with torch.no_grad():
+        q_emb = retriever.encode([query]).cpu().numpy().astype(np.float32)
+    faiss.normalize_L2(q_emb)
+    distances, indices = index.search(q_emb, k)              # 内积索引
+    return indices[0]                                         # top-k 文档编号
+```
+
+**关键工程细节**：
+- **必须 L2 归一化**：embedding 模型训练时归一化的，索引也必须归一化
+- **用 IndexFlatIP 而非 IndexFlatL2**：内积比余弦快 30%（呼应 Ch1 §C.2）
+- **大规模用 IVF + PQ**：暴力 IndexFlatIP 在亿级数据上太慢，IVF + PQ 牺牲少量精度换速度
+
+## C.3 推理视角二：完整 RAG 流程
+
+```
+用户 Query
+   ↓
+[Embedding 模型] 编码 query → q_emb
+   ↓
+[FAISS 索引] 召回 top-100 文档（粗排）
+   ↓
+[Cross-Encoder Reranker] 重排 → top-5（精排，更准但更慢）
+   ↓
+[LLM] 把 top-5 文档塞进 prompt 生成答案
+```
+
+**为什么要两阶段（召回 + 重排）？**
+- 召回阶段：双塔模型，离线编码所有文档，向量检索极快但只看"语义相似"
+- 重排阶段：cross-encoder（query 和 doc 拼起来过一次模型），考虑细粒度交互，但只能处理少量候选
+
+## C.4 推理视角三：CLIP 在多模态 LLM 中扮演什么角色
+
+多模态 LLM（LLaVA、GPT-4V、Qwen-VL）的标准做法：
+
+```
+图像 ──→ [CLIP Vision Encoder] ──→ 视觉 token ──┐
+                       (冻结)                     ├──→ [LLM] ──→ 答案
+文字 ──→ [Tokenizer] ──→ 文本 token ──────────────┘
+```
+
+**关键工程点**：
+1. **冻结 CLIP**：训练时 vision encoder 通常不动，只训练投影层 + LLM 微调
+2. **投影层（Projection）**：一个轻量 MLP，把 CLIP 的视觉 token 维度对齐到 LLM 的词嵌入空间
+3. **训练成本**：相比从零训练 vision encoder，CLIP 已经把"看图"能力打包好了
+
+**为什么 CLIP 这么"通用"？**
+- 4 亿图文对训练 → 几乎覆盖了人类所有视觉概念的语言描述
+- 对比学习 → 视觉特征天然与"语言描述"对齐，LLM 理解起来天然顺畅
 
 ---
 
-## 横向对比：四大对比学习方法
+# §D 章末速查
 
-| 方法 | 负样本 | EMA Target | Predictor | Stop-grad | 关键贡献 |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **SimCLR** | ✓ | ✗ | ✗ | ✗ | 大 batch + 投影头 |
-| **MoCo** | ✓ (队列) | ✓ | ✗ | ✓ | 队列解耦显存与负样本数 |
-| **BYOL** | ✗ | ✓ | ✓ | ✓ | 证明无负样本可行 |
-| **SimSiam** | ✗ | ✗ | ✓ | ✓ | 证明 EMA 也非必需 |
+## D.1 三种 InfoNCE 变体对比
 
-> **演进逻辑**：从"显式排斥"（负样本）→ "时间不对称"（EMA）→ "结构不对称"（Predictor + Stop-grad）。每一步都在**剥离防塌缩的依赖项**，最终发现 Stop-gradient + Predictor 这两个最小条件就够了。
+| 方法 | 正样本来源 | 负样本来源 | 温度 | 典型 batch |
+| :--- | :--- | :--- | :--- | :---: |
+| **SimCLR**（Ch2） | 同图像两次增强 | Batch 内其他图像 | 固定 0.5 | 4096+ |
+| **CLIP** | 配对的图文 | Batch 内其他图文对 | **可学习** | 32768 |
+| **SimCSE** | 同句子两次 Dropout | Batch 内其他句子 | 固定 0.05 | 64–256 |
+| **BGE / E5** | 配对的 (q, pos) | In-batch + Hard Neg | 固定 0.02 | 数百到上千 |
+
+## D.2 关键工程要点回顾
+
+- ✅ **L2 归一化** + **内积索引** = 余弦相似度的工程化（Ch1 §C.2）
+- ✅ **可学习温度**：CLIP 的关键技巧，让模型自决定相似度尺度
+- ✅ **Dropout = 最小增强**：SimCSE 的洞察，复杂增强反而引入噪声
+- ✅ **In-batch + Hard Negative**：BGE/E5 训练范式
+- ✅ **召回 + 重排**：RAG 标准两阶段架构
 
 ---
 
-## 延伸：DINO / DINOv2 —— BYOL 的精神继承者
+## 承上启下
 
-* **DINO**（Caron et al., 2021）：自蒸馏 + 中心化 + 锐化（centering & sharpening），架构上与 BYOL 极相似（Student-Teacher EMA + Stop-gradient）。
-* **DINOv2**（Meta, 2023）：DINO 在 ViT-g 上的工程加强版，已成为 **CLIP 之外另一个主流视觉编码器选择**。
-* **在多模态 LLM 中的角色**：部分 VLM（如 Llama 3.2 Vision、某些 Qwen-VL 变体）采用 DINOv2 作为视觉骨干，因其在密集预测任务（分割、深度）上优于 CLIP。
+本章和 Ch2 一起，把对比学习的"有负样本路线"讲完了：
+- Ch2：视觉、SimCLR/MoCo
+- Ch3：跨模态/文本、CLIP/SimCSE/BGE
 
----
-
-## 落地 LLM：Stop-gradient + EMA 在大模型训练中的真实身影
-
-这是本章最该记住的部分。BYOL/SimSiam 看起来是 CV 技术，但其**核心机制在 LLM 训练流程中无处不在**：
-
-| BYOL/SimSiam 概念 | LLM 训练中的对应 |
-| :--- | :--- |
-| **Target Network** | **Reference Policy $\pi_{\text{ref}}$**（DPO/PPO/GRPO 中的参考模型） |
-| **Stop-gradient on Target** | $\pi_{\text{ref}}$ 不参与反向传播，只用于计算 KL/对数比 |
-| **EMA 更新 Target** | **Online DPO / SPIN / Self-Rewarding LM** 中用 EMA 缓慢更新 reference policy |
-| **Predictor 打破对称** | 知识蒸馏中 student 用额外结构匹配 teacher 软标签 |
-| **避免塌缩** | RLHF KL 惩罚防止策略塌缩到 reward-hacking 单点解 |
-
-### 案例：DPO 损失中的 Stop-gradient
-
-DPO 损失函数：
-$$\mathcal{L}_{\text{DPO}} = -\mathbb{E}_{(x, y_w, y_l)}\left[\log \sigma\left(\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)\right]$$
-
-* $\pi_\theta$（policy）= **Online network**：被梯度更新
-* $\pi_{\text{ref}}$（reference）= **Target network**：通常是 SFT 模型的冻结快照，**梯度被 stop**
-* $\beta$ 项 = **KL 隐式约束**：防止 $\pi_\theta$ 跑得太远（类似 BYOL 中"不让 Target 变化太快"）
-
-### 案例：Self-Rewarding / Online DPO 的 EMA 思想
-
-最新的迭代式对齐方法（如 SPIN、Self-Rewarding LM）会**周期性地**用当前 policy 替换 reference，本质上就是离散版的 EMA：
-$$\pi_{\text{ref}}^{(t+1)} = \pi_\theta^{(t)} \quad \text{(每 N 步替换一次)}$$
-
-> **统一视角**：无论是视觉自监督还是 LLM 对齐，"**用一个慢速演化的 Target 网络作为锚点，让 Online 网络去追赶**" 都是防止训练崩溃的通用工程范式。理解了 BYOL，就理解了 RLHF 中 reference policy 为什么必须存在、为什么必须冻结。
+下一章 **Ch4** 进入完全不同的路线：**没有负样本如何训表征模型？** BYOL/SimSiam/DINO 给出了惊人的答案——只要打破对称性（Stop-gradient + Predictor），模型就不会塌缩。这套机制后来直接被 RLHF 借鉴（Reference Policy ≈ Target Network）。
