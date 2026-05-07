@@ -1,503 +1,458 @@
 ---
-title: Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI
-categories: 学习笔记-大模型
-date: 2026-04-05 10:00:00
+title: RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化
+categories: 学习笔记-强化学习
+date: 2026-05-16 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：2024–2026 年最热门的对齐前沿。三条主线：
-> 1. **GRPO**：去掉 Critic 的 PPO 简化版，DeepSeek-R1 引爆
-> 2. **PRM**：对推理过程每一步打分，o1 / R1 时代的关键
-> 3. **RLAIF / Constitutional AI**：用 AI 反馈替代人类标注，Claude 路线
+> **本章定位**：本系列最关键的一章。TRPO 用 trust region 思想第一次稳定了 policy gradient 训练；PPO 把 trust region 工程化为简单的 clip 操作，成为 RLHF 时代的"瑞士军刀"。**理解 PPO 就理解了《学习笔记-大模型》Ch6 的 RLHF 核心**。
 
-> **承上**：Ch6 PPO + Ch7 DPO 的局限——前者太重，后者无法探索；本章给出新路径。
-> **本章是整套笔记的终点**。
+> **承上**：Ch5 PG 定理 + Ch6 GAE。
+> **启下**：Ch9 SAC 给连续控制最强基线；Ch11 引出 offline RL 与 DPO 的关系。
 
 ---
 
 # §A 数学原理
 
-## 1. GRPO：去掉 Critic 的 PPO 变体
+## 1. 为什么 PG 训练这么不稳？
 
-### 1.1 动机：Critic 是 PPO 最大的痛点
+回忆 Ch5/Ch6 的痛点：策略梯度方向是对的，但**步长无法控制**。
+- 步长太小 → 学得慢
+- 步长太大 → 策略一步走偏，后续轨迹质量崩坏
+- **崩了之后无法恢复**——因为坏策略采样到的全是坏数据
 
-回忆 Ch6，PPO 的"四模型架构"中 Critic 占用的资源：
-- 显存：与 Policy 同尺寸
-- 训练难度：response-level value 是高度抽象的概念，难学准
-- 不稳定性：Critic 误差会传导到 advantage 估计
+> **核心问题**：PG 是 non-stationary optimization——当前梯度只在当前策略附近"近似有效"，远离当前策略后，梯度估计全部失效。
 
-**有没有办法不要 Critic？**
+**解法思路**：限制每次更新的"策略变化幅度"，确保新策略 $\pi_{\theta_{\text{new}}}$ 与旧策略 $\pi_{\theta_{\text{old}}}$ 不要差太远。这就是 **Trust Region**（信赖域）思想。
 
-### 1.2 GRPO 的核心思想：用 Group 平均替代 Value Baseline
+## 2. TRPO：单调改进定理
 
-GRPO（Group Relative Policy Optimization, DeepSeek 2024）：对每个 prompt $x$，**采样 $G$ 个不同 response** $\{y_1, \dots, y_G\}$，每个由 RM 打分得到 $\{r_1, \dots, r_G\}$。
+### 2.1 期望回报的差分表达
 
-定义**组内归一化优势**：
-$$\boxed{\hat{A}_i = \frac{r_i - \text{mean}(r_1, \dots, r_G)}{\text{std}(r_1, \dots, r_G)}}$$
+**关键引理**（Kakade & Langford 2002）：
+$$J(\pi') - J(\pi) = \mathbb{E}_{s \sim d^{\pi'}, a \sim \pi'}[A^\pi(s, a)]$$
 
-这就完全替代了 Critic：
-- 不需要 $V_\phi$
-- 不需要 GAE
-- 优势是 **response-level**（而非 token-level）—— 一条 response 的所有 token 共享同一个 $\hat{A}_i$
+其中 $d^{\pi'}$ 是新策略下的状态访问分布。
 
-### 1.3 GRPO 损失函数
+**直观**：新策略的提升 = 在新策略访问的状态分布下，新策略选的 action 在**旧策略 advantage** 上的期望。
 
-形式上和 PPO 几乎一样：
-$$\mathcal{L}_{\text{GRPO}} = -\mathbb{E}\left[ \frac{1}{G}\sum_{i=1}^G \frac{1}{|y_i|}\sum_{t=1}^{|y_i|} \min\left(r_{i,t}(\theta) \hat{A}_i,\ \text{clip}(r_{i,t}(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_i \right) \right] + \beta \cdot D_{KL}(\pi_\theta \| \pi_{\text{ref}})$$
+### 2.2 局部近似（关键近似）
 
-差异：
-- 没有 $V_\phi$，没有 GAE
-- KL **直接显式加到 loss**（不像 PPO 加到 reward 里）
-- Advantage 是 response-level
+上式中 $d^{\pi'}$ 难以计算（依赖未知的 $\pi'$）。TRPO 用**旧策略的状态分布** $d^\pi$ 近似：
 
-### 1.4 为什么 GRPO 在推理任务上爆火？
+$$\tilde{J}(\pi') = J(\pi) + \mathbb{E}_{s \sim d^\pi, a \sim \pi'}[A^\pi(s, a)]$$
 
-1. **数学/代码任务有客观正确性** → RM 可以是规则验证器（unit test、答案匹配），完全无 hallucination
-2. **Group 采样天然适合 best-of-N** → 强模型挖出强样本
-3. **去 Critic** → 显存够训更大 Policy
-4. **DeepSeek-R1-Zero 的惊人发现**：完全跳过 SFT，纯 GRPO + 规则 reward，模型自己学会了 long CoT 推理（"Aha moment"）
+接着用重要性采样把 $a \sim \pi'$ 转回 $a \sim \pi$：
 
-## 2. PRM：从 Outcome 到 Process
+$$\tilde{J}(\pi') = J(\pi) + \mathbb{E}_{s, a \sim \pi}\left[\frac{\pi'(a \mid s)}{\pi(a \mid s)} A^\pi(s, a)\right]$$
 
-### 2.1 ORM 的局限
+记 $r(s, a) = \pi'(a \mid s) / \pi(a \mid s)$ 为 **importance ratio**。
 
-回忆 Ch6 §A.2，传统 RM 是 **ORM**（Outcome Reward Model）：只看最终答案对错。
+### 2.3 单调改进定理
 
-但对于多步推理任务（数学、代码），ORM 有致命缺陷：
-- 模型可能"蒙对答案但中间步骤错误"
-- 模型可能"中间几步对，最后一步错"
-- ORM 都给 0 分 / 1 分，无法定位问题
+**定理**（Schulman et al. 2015）：
+$$J(\pi') \geq \tilde{J}(\pi') - C \cdot D_{KL}^{\max}(\pi \| \pi')$$
 
-### 2.2 PRM 的数学
+其中 $C$ 是与 $\gamma$ 和 reward 范围相关的常数，$D_{KL}^{\max}$ 是 $\pi, \pi'$ 在所有状态下 KL 散度的最大值。
 
-PRM（Process Reward Model）对推理过程**每一步**打分。设 response 由 $K$ 个 step 组成 $y = (s_1, s_2, \dots, s_K)$：
+**含义**：只要新策略 $\pi'$ 在 KL 意义下离 $\pi$ 不远，**$\tilde{J}(\pi')$ 是 $J(\pi')$ 的下界**。优化下界 → 保证真实 $J$ 也在变好（**单调改进**）。
 
-$$r_{\text{PRM}}(x, s_{1:k}) = \text{score that step } s_k \text{ is correct given } s_{<k}$$
+### 2.4 TRPO 的优化形式
 
-**训练数据**：人工或 LLM 标注每一步是否正确。
-- OpenAI PRM800K 数据集：80 万步级标注
-- Math-Shepherd：用 MCTS 自动生成 PRM 数据
+把上面变成约束优化：
+$$\max_{\pi'} \mathbb{E}_{s, a \sim \pi}\left[r(s, a) A^\pi(s, a)\right] \quad \text{s.t.} \quad \mathbb{E}_{s \sim \pi}[D_{KL}(\pi(\cdot \mid s) \| \pi'(\cdot \mid s))] \leq \delta$$
 
-### 2.3 PRM 训练损失
+实际中用 mean KL（而非 max KL）作为约束，$\delta \approx 0.01$。
 
-把每步是否正确看作二分类：
-$$\mathcal{L}_{\text{PRM}} = -\sum_{k=1}^K \left[ y_k \log \sigma(r_\theta(s_{1:k})) + (1 - y_k) \log(1 - \sigma(r_\theta(s_{1:k}))) \right]$$
+### 2.5 TRPO 的工程难点
 
-其中 $y_k \in \{0, 1\}$ 是第 $k$ 步的人工标签。
+求解上面的约束优化需要：
+1. 计算 KL 约束的 Hessian（Fisher 信息矩阵 $F$）
+2. 用共轭梯度求解 $F^{-1} g$（natural gradient）
+3. 用 line search 确保 KL 约束满足
 
-### 2.4 PRM 在 RL 中的使用
+→ **二阶优化**，实现复杂、训练慢。
 
-**方式一：Step-level RL**
-- 每一步 reward 由 PRM 给出
-- 用 PPO/GRPO 优化整条推理路径
-- DeepSeek-R1、OpenAI o1 都用这种方式
+## 3. PPO：把 Trust Region 一阶化
 
-**方式二：Inference-time（best-of-N + PRM scoring）**
-- 推理时采样 $N$ 个 reasoning chain
-- 用 PRM 给每条打分
-- 选 PRM 分数最高的（或加权平均）
+PPO（Schulman 2017）的目标：保留 trust region 思想，但只用一阶优化器（Adam）。
 
-## 3. RLAIF / Constitutional AI
+### 3.1 PPO-Penalty（早期版本，已少用）
 
-### 3.1 动机：人类标注的瓶颈
+把 KL 约束变成软惩罚：
+$$\mathcal{L}^{\text{KLPEN}} = \mathbb{E}\left[\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}} A^{\pi_{\text{old}}} - \beta D_{KL}(\pi_{\theta_{\text{old}}} \| \pi_\theta)\right]$$
 
-- 人类标注**慢、贵、不一致**
-- 复杂任务（代码、长文档）人类很难判断
-- Scale 上不去：模型规模一旦增大，标注就成瓶颈
+$\beta$ 自适应调整（KL 大就增大 β）。但效果不稳定。
 
-### 3.2 Constitutional AI 两阶段
+### 3.2 PPO-Clip（主流版本）
 
-Anthropic 的 CAI 方法：
+**核心思路**：直接限制 importance ratio 的幅度。
 
-**阶段一：SL-CAI（Self-Critique 监督学习）**
-1. 让模型生成可能有害的 response
-2. 用 "constitution"（一组成文原则，如"无害、有用、诚实"）让模型 **自我批判 (self-critique)**
-3. 让模型 **根据批判改写 (self-revise)** response
-4. 用改写后的 (prompt, revised response) 对做 SFT
+$$\boxed{\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}_t\left[\min\left( r_t(\theta) \hat{A}_t, \ \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right)\right]}$$
 
-**阶段二：RLAIF**
-1. 让模型对 response 对做选择（"哪个更符合宪法？"），生成偏好数据
-2. 用这些 AI-generated 偏好训练 RM
-3. 后续与 PPO/DPO 一致
+其中：
+- $r_t(\theta) = \pi_\theta(a_t \mid s_t) / \pi_{\theta_{\text{old}}}(a_t \mid s_t)$
+- $\epsilon = 0.1$ 或 $0.2$
+- $\hat{A}_t$ 用 GAE 估计（Ch6 §A.3.4）
 
-### 3.3 数学上 RLAIF 与 RLHF 完全等价
+### 3.3 PPO-Clip 的几何理解
 
-形式上没有任何变化：
-- 都是 BT 模型 + Pairwise Ranking Loss 训练 RM
-- 都是 PPO/DPO 优化 Policy
+考虑两种情况：
 
-唯一区别在于**偏好数据来源**：
-- RLHF：人类标注员
-- RLAIF：用一个强 LLM（通常是另一个 Claude / GPT-4）作为 "judge"
+**情况 1：$\hat{A}_t > 0$（动作好，想增大概率）**
+- $r_t < 1 + \epsilon$：自由更新
+- $r_t \geq 1 + \epsilon$：clip 截断梯度，**不再奖励"大幅推高"**
+
+**情况 2：$\hat{A}_t < 0$（动作差，想降低概率）**
+- $r_t > 1 - \epsilon$：自由更新
+- $r_t \leq 1 - \epsilon$：clip 截断梯度，**不再惩罚"大幅压低"**
+
+**核心保护**：每次更新只允许 $\pi_\theta$ 在 ratio $\in [1-\epsilon, 1+\epsilon]$ 内变化。
+
+### 3.4 完整 PPO 损失
+
+$$\mathcal{L}^{\text{PPO}} = \mathcal{L}^{\text{CLIP}} - c_v \mathcal{L}^{\text{VF}} + c_h \mathbb{E}[H(\pi_\theta)]$$
+
+其中：
+- $\mathcal{L}^{\text{VF}} = (V_\phi(s_t) - V_t^{\text{target}})^2$（Critic 损失）
+- $\mathbb{E}[H(\pi_\theta)]$（熵正则，鼓励探索）
+- $c_v = 0.5$，$c_h = 0.01$
+
+### 3.5 PPO 的核心 trick：minibatch 多轮更新
+
+每次收集一批 rollout 数据后，**用同一批数据训练 K 轮**（通常 K=4），每轮内部分成多个 minibatch。
+
+为什么可以？因为：
+- $\theta_{\text{old}}$ 固定（rollout 时的策略）
+- ratio $r_t$ 自然把"采样分布的差异"修正回来
+- clip 保证 $\theta$ 不会跑太远
+
+**这让 PPO 数据效率显著优于 vanilla PG**。
+
+## 4. PPO 在 LLM 中的应用（RLHF）
+
+把 PPO 用在 LLM 上有几个特殊性：
+
+| 特性 | LLM 与经典 RL 的差异 |
+| :--- | :--- |
+| **状态** | 完整 prompt + 已生成 token |
+| **动作** | 词表中的下一个 token（动作空间几万-几十万） |
+| **轨迹长度** | 几十到几千 token |
+| **奖励** | 仅在 EOS 时由 RM 给一个标量 |
+| **per-token KL** | KL penalty 加在每个 token 上，作为 reward shaping |
+
+详见《学习笔记-大模型》Ch6（PPO RLHF）。
 
 ---
 
-# §B 模型结构（PyTorch 实现）
+# §B 模型架构
 
-## B.1 GRPO 完整实现
+## B.1 PPO 数据流（重要！）
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Phase 1: Rollout（采样数据，无梯度）                      │
+│   for t = 1...T:                                          │
+│     a_t ~ π_θ_old(·|s_t)                                  │
+│     log_prob_old, value_old = policy_old.act(s_t)         │
+│     s_{t+1}, r_t = env.step(a_t)                          │
+└──────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────┐
+│ Phase 2: 计算 GAE                                         │
+│   advantages, returns = compute_gae(rewards, values, ...) │
+└──────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────┐
+│ Phase 3: K 轮 minibatch 更新                              │
+│   for epoch = 1...K:                                      │
+│     for batch in shuffle(dataset):                        │
+│       log_prob_new = π_θ.log_prob(a_t)                    │
+│       ratio = exp(log_prob_new - log_prob_old)            │
+│       loss = -min(ratio·A, clip(ratio, 1-ε, 1+ε)·A)       │
+│           + c_v · (V(s_t) - returns)²                     │
+│           - c_h · entropy                                 │
+│       loss.backward(); optim.step()                       │
+└──────────────────────────────────────────────────────────┘
+```
+
+## B.2 PPO 完整 PyTorch 实现
 
 ```python
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
+import gymnasium as gym
+from torch.optim import Adam
 
-def grpo_train_step(policy, ref_model, reward_fn,
-                    prompts, optimizer,
-                    G=8, beta=0.04, eps_clip=0.2, ppo_epochs=4):
-    """
-    GRPO：对每个 prompt 采样 G 个 response，组内归一化作 advantage
-    """
-    # ============ Phase 1: Group Rollout ============
-    all_responses, all_logprobs_old, all_rewards = [], [], []
-    with torch.no_grad():
-        for _ in range(G):
-            responses = policy.generate(prompts, do_sample=True, temperature=1.0)
-            logprobs = compute_logprobs(policy, prompts, responses)        # [B, L]
-            rewards = reward_fn(prompts, responses)                        # [B] response-level
-            all_responses.append(responses)
-            all_logprobs_old.append(logprobs)
-            all_rewards.append(rewards)
-
-    # 形状: [B, G, ...]
-    rewards_group = torch.stack(all_rewards, dim=1)                        # [B, G]
-
-    # ============ Phase 2: ⭐ 组内归一化优势 ============
-    mean = rewards_group.mean(dim=1, keepdim=True)                          # [B, 1]
-    std = rewards_group.std(dim=1, keepdim=True) + 1e-8                     # [B, 1]
-    advantages = (rewards_group - mean) / std                               # [B, G] response-level
-
-    # ============ Phase 3: 多轮更新 ============
-    for _ in range(ppo_epochs):
-        for g in range(G):
-            responses = all_responses[g]
-            logprobs_old = all_logprobs_old[g]
-            adv = advantages[:, g].unsqueeze(-1)                            # [B, 1] 同一条 response 共享
-
-            logprobs_new = compute_logprobs(policy, prompts, responses)
-            ratio = torch.exp(logprobs_new - logprobs_old)                  # [B, L]
-
-            # ⭐ Clipped Surrogate（与 PPO 完全一致）
-            surr1 = ratio * adv
-            surr2 = torch.clamp(ratio, 1 - eps_clip, 1 + eps_clip) * adv
-            actor_loss = -torch.min(surr1, surr2).mean()
-
-            # ⭐ KL 显式加到 loss（不像 PPO 加到 reward）
-            with torch.no_grad():
-                ref_logprobs = compute_logprobs(ref_model, prompts, responses)
-            kl = (torch.exp(logprobs_new - ref_logprobs) - 1) - (logprobs_new - ref_logprobs)
-            kl_loss = beta * kl.mean()
-
-            loss = actor_loss + kl_loss
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-    return loss.item()
-```
-
-**与 PPO 代码对比**：
-- ❌ 没有 Critic、没有 `compute_gae`、没有 `V_target`
-- ✅ 多了 group 维度的 sampling 和归一化
-- ✅ KL 直接加 loss（而非通过 reward shaping）
-
-## B.2 PRM 训练代码
-
-```python
-class PRM(nn.Module):
-    """每个 step 输出一个分数"""
-    def __init__(self, base_model):
+class ActorCritic(nn.Module):
+    """Categorical Actor + V Critic"""
+    def __init__(self, obs_dim, n_actions, hidden=64):
         super().__init__()
-        self.backbone = base_model
-        self.value_head = nn.Linear(base_model.config.hidden_size, 1, bias=False)
+        self.shared = nn.Sequential(
+            nn.Linear(obs_dim, hidden), nn.Tanh(),
+            nn.Linear(hidden, hidden), nn.Tanh(),
+        )
+        self.actor = nn.Linear(hidden, n_actions)
+        self.critic = nn.Linear(hidden, 1)
 
-    def forward(self, input_ids, step_end_indices, attention_mask):
-        """
-        input_ids:        [B, L]   完整推理序列
-        step_end_indices: [B, K]   每个 step 结尾 token 的索引
-        """
-        outputs = self.backbone(input_ids, attention_mask=attention_mask,
-                               output_hidden_states=True)
-        hidden = outputs.hidden_states[-1]                                  # [B, L, D]
+    def forward(self, obs):
+        h = self.shared(obs)
+        return self.actor(h), self.critic(h).squeeze(-1)
 
-        # ⭐ 取每个 step 末尾 token 的隐状态，分别打分
-        B, K = step_end_indices.shape
-        step_hidden = torch.gather(
-            hidden, 1, step_end_indices.unsqueeze(-1).expand(-1, -1, hidden.size(-1))
-        )                                                                    # [B, K, D]
+    def act(self, obs):
+        logits, value = self.forward(obs)
+        dist = torch.distributions.Categorical(logits=logits)
+        a = dist.sample()
+        log_prob = dist.log_prob(a)
+        return a, log_prob, value
 
-        return self.value_head(step_hidden).squeeze(-1)                     # [B, K]
+    def evaluate(self, obs, action):
+        """给定 obs 和 action，返回 (log_prob, value, entropy)"""
+        logits, value = self.forward(obs)
+        dist = torch.distributions.Categorical(logits=logits)
+        log_prob = dist.log_prob(action)
+        entropy = dist.entropy()
+        return log_prob, value, entropy
 
 
-def prm_loss(step_logits, step_labels, step_mask):
-    """
-    step_logits: [B, K]  PRM 对每步的打分
-    step_labels: [B, K]  人工标注（0/1）
-    step_mask:   [B, K]  哪些 step 有标注
-    """
-    loss = F.binary_cross_entropy_with_logits(
-        step_logits, step_labels.float(), reduction='none'
-    )                                                                        # [B, K]
-    loss = (loss * step_mask).sum() / step_mask.sum()                       # 只在有标签的 step 上算
-    return loss
+def ppo_train(env_name="CartPole-v1", n_steps=int(2e5), n_envs=8,
+              rollout_len=128, n_epochs=4, n_minibatches=4,
+              gamma=0.99, lam=0.95, eps_clip=0.2,
+              lr=3e-4, c_v=0.5, c_h=0.01, max_grad_norm=0.5):
+
+    envs = gym.vector.SyncVectorEnv([lambda: gym.make(env_name) for _ in range(n_envs)])
+    obs_dim = envs.single_observation_space.shape[0]
+    n_actions = envs.single_action_space.n
+
+    model = ActorCritic(obs_dim, n_actions)
+    optim = Adam(model.parameters(), lr=lr)
+
+    obs, _ = envs.reset()
+    total_steps = 0
+
+    while total_steps < n_steps:
+        # ============ Phase 1: Rollout ============
+        # 存 [T, n_envs, ...] 的数据
+        obs_buf = torch.zeros(rollout_len, n_envs, obs_dim)
+        act_buf = torch.zeros(rollout_len, n_envs, dtype=torch.long)
+        logp_buf = torch.zeros(rollout_len, n_envs)
+        rew_buf = torch.zeros(rollout_len, n_envs)
+        val_buf = torch.zeros(rollout_len, n_envs)
+        done_buf = torch.zeros(rollout_len, n_envs)
+
+        for t in range(rollout_len):
+            obs_t = torch.tensor(obs, dtype=torch.float32)
+            with torch.no_grad():
+                a, log_prob, value = model.act(obs_t)
+            obs_new, r, terminated, truncated, _ = envs.step(a.numpy())
+            done = np.logical_or(terminated, truncated).astype(np.float32)
+
+            obs_buf[t] = obs_t
+            act_buf[t] = a
+            logp_buf[t] = log_prob
+            val_buf[t] = value
+            rew_buf[t] = torch.tensor(r, dtype=torch.float32)
+            done_buf[t] = torch.tensor(done)
+
+            obs = obs_new
+            total_steps += n_envs
+
+        # ============ Phase 2: GAE ============
+        with torch.no_grad():
+            obs_t = torch.tensor(obs, dtype=torch.float32)
+            _, last_val = model.forward(obs_t)
+            last_val = last_val.detach()
+
+        advantages = torch.zeros(rollout_len, n_envs)
+        last_gae = torch.zeros(n_envs)
+        for t in reversed(range(rollout_len)):
+            next_val = last_val if t == rollout_len - 1 else val_buf[t + 1]
+            delta = rew_buf[t] + gamma * next_val * (1 - done_buf[t]) - val_buf[t]
+            last_gae = delta + gamma * lam * (1 - done_buf[t]) * last_gae
+            advantages[t] = last_gae
+        returns = advantages + val_buf
+
+        # 展平 [T, n_envs, ...] → [T*n_envs, ...]
+        b_obs = obs_buf.reshape(-1, obs_dim)
+        b_act = act_buf.reshape(-1)
+        b_logp = logp_buf.reshape(-1)
+        b_adv = advantages.reshape(-1)
+        b_ret = returns.reshape(-1)
+
+        # ============ Phase 3: K 轮 minibatch 更新 ============
+        batch_size = rollout_len * n_envs
+        mb_size = batch_size // n_minibatches
+        idx = np.arange(batch_size)
+
+        for epoch in range(n_epochs):
+            np.random.shuffle(idx)
+            for start in range(0, batch_size, mb_size):
+                mb_idx = idx[start: start + mb_size]
+
+                # 当前 policy 的 logp 和 value
+                new_logp, new_val, entropy = model.evaluate(b_obs[mb_idx], b_act[mb_idx])
+
+                # ⭐ Importance ratio
+                ratio = torch.exp(new_logp - b_logp[mb_idx])
+
+                # 标准化 advantage
+                adv = b_adv[mb_idx]
+                adv = (adv - adv.mean()) / (adv.std() + 1e-8)
+
+                # ⭐ Clipped surrogate
+                surr1 = ratio * adv
+                surr2 = torch.clamp(ratio, 1 - eps_clip, 1 + eps_clip) * adv
+                actor_loss = -torch.min(surr1, surr2).mean()
+
+                # Critic loss（带 clip 的版本，可选）
+                v_loss = (new_val - b_ret[mb_idx]).pow(2).mean()
+
+                # 熵正则
+                entropy_loss = -entropy.mean()
+
+                loss = actor_loss + c_v * v_loss + c_h * entropy_loss
+
+                optim.zero_grad()
+                loss.backward()
+                nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+                optim.step()
+
+    return model
 ```
 
-## B.3 推理时的 PRM 应用：Best-of-N + Step Scoring
+> 这段代码是 PPO 的"生产级最简"实现，约 100 行。CleanRL 的实现与之高度一致。
+
+## B.3 PPO 在 LLM 上的对应（呼应 LLM 笔记 Ch6）
+
+LLM RLHF 中 PPO 的差别（参见之前的《学习笔记-大模型》Ch6）：
 
 ```python
-def generate_with_prm(policy, prm, prompt, N=16):
-    """采样 N 条推理路径，PRM 选最优"""
-    candidates = []
-    with torch.no_grad():
-        for _ in range(N):
-            response = policy.generate(prompt, do_sample=True, temperature=1.0)
-            steps = split_into_steps(response)                              # 按 \n\n 等分割
-            step_indices = compute_step_end_indices(response)
-            step_scores = prm(response, step_indices)                       # [K]
+# 经典 PPO（本章）的 reward
+rew_buf[t] = env.step(a)              # 来自环境
 
-            # 综合分数：最小值（最弱步骤决定整体）或平均
-            score = step_scores.min()                                        # ⭐ "瓶颈步骤"策略
-            candidates.append((response, score))
-
-    return max(candidates, key=lambda x: x[1])[0]
+# LLM PPO 的 reward（per-token KL + 末尾 RM）
+kl = log_prob_new - log_prob_ref       # per-token KL
+reward = -beta * kl                    # 每 token 一个负 KL
+reward[-1] += rm_score                 # 末尾加 RM 分
 ```
 
-> **OpenAI Let's Verify Step by Step 论文核心结论**：用 PRM 做 best-of-N 比用 ORM 好得多，尤其在数学题上 +20% 准确率。
-
-## B.4 RLAIF：AI-as-a-judge 生成偏好数据
-
-```python
-def generate_ai_preferences(prompts, candidate_model, judge_model, constitution):
-    """
-    用 judge_model（通常更强的 LLM）对 candidate_model 的输出做偏好标注
-    """
-    preferences = []
-    for prompt in prompts:
-        # 1. Candidate 生成两个不同的 response
-        y1 = candidate_model.generate(prompt, temperature=0.9)
-        y2 = candidate_model.generate(prompt, temperature=0.9)
-
-        # 2. ⭐ 让 judge 模型按宪法选择更好的
-        judge_prompt = f"""根据以下宪法原则评判哪个回答更好：
-{constitution}
-
-问题：{prompt}
-回答 A：{y1}
-回答 B：{y2}
-
-请输出 'A' 或 'B'。"""
-        choice = judge_model.generate(judge_prompt)
-
-        if choice == 'A':
-            preferences.append((prompt, y1, y2))                            # (chosen, rejected)
-        else:
-            preferences.append((prompt, y2, y1))
-
-    return preferences
-
-# 后续：用这些 preferences 走标准 DPO 或 RM+PPO 流程
-```
+其余（GAE、clip、minibatch 多轮更新）完全一致。
 
 ---
 
 # §C 训练与推理
 
-## C.1 DeepSeek-R1 训练流程：完整剖析
+## C.1 PPO 调参经验
 
-R1 是 GRPO + PRM 组合最经典的应用，训练流程：
-
-```
-┌──────────────────────────────────────────────────────────┐
-│ 阶段 1: R1-Zero（无 SFT）                                 │
-│   Base Model → 直接 GRPO + 规则 reward                    │
-│   规则 reward: 答案正确 +1, 格式正确 +0.1                  │
-│   → 模型自己学会 long CoT、自我反思、"Aha moment"          │
-└──────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────┐
-│ 阶段 2: 用 R1-Zero 生成"高质量推理数据" → 重新 SFT         │
-│   解决可读性、混合语言等问题                               │
-└──────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────┐
-│ 阶段 3: GRPO（这次有 SFT 起点）                            │
-│   规则 reward + 偏好 reward                                │
-└──────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────┐
-│ 阶段 4: 蒸馏到小模型                                       │
-│   用 R1 生成数据 → SFT 7B/14B/32B 小模型                  │
-└──────────────────────────────────────────────────────────┘
-```
-
-> **核心洞察**：R1-Zero 证明**纯 RL 也能涌现 long CoT 推理能力**——这是 LLM 训练史上的重要里程碑。
-
-## C.2 GRPO vs PPO vs DPO：完整对比
-
-| 维度 | PPO（Ch6） | DPO（Ch7） | GRPO（本章） |
-| :--- | :--- | :--- | :--- |
-| **是否需要 RM** | ✓ | ✗（隐式） | ✓ |
-| **是否需要 Critic** | ✓ | ✗ | **✗** |
-| **是否需要采样** | ✓ online | ✗ offline | ✓ online (group) |
-| **模型数** | 4 | 2 | 3（policy + ref + RM） |
-| **优势计算** | GAE (token-level) | — | Group 归一化 (response-level) |
-| **KL 处理** | 加到 reward | 闭式解隐含 | 显式加到 loss |
-| **代表模型** | InstructGPT, GPT-4 | Llama 3, Mistral | DeepSeek-R1, Qwen QwQ |
-
-## C.3 RLAIF vs RLHF 工程对比
-
-| 维度 | RLHF | RLAIF |
+| 参数 | 推荐值 | 备注 |
 | :--- | :--- | :--- |
-| **偏好来源** | 人类标注员 | LLM 自评 / 互评 |
-| **规模** | 数十万对 | 数百万对（爬山自由） |
-| **一致性** | 标注员之间分歧 | 同模型内部一致 |
-| **复杂任务** | 难标注 | LLM 可处理长文档、代码 |
-| **风险** | 人类偏见 | 模型偏见放大 |
-| **成本** | 每对 $0.5–$5 | 每对 $0.001–$0.01 |
+| `eps_clip` | 0.1-0.2 | 0.2 标配；连续控制可降到 0.1 |
+| `n_epochs` | 4-10 | 多了会过拟合"旧分布" |
+| `lam` | 0.95 | GAE 的 sweet spot |
+| `gamma` | 0.99 | 视任务远视程度调 |
+| `lr` | 3e-4 | Adam 默认 |
+| `c_v` | 0.5 | 太大 critic 主导 |
+| `c_h` | 0.01 | 复杂任务调到 0.001-0.05 |
+| `max_grad_norm` | 0.5 | 必须有，否则会爆 |
+| `rollout_len × n_envs` | ~2048 总样本 | 太小方差大、太大数据陈旧 |
 
-> **2024 后趋势**：Llama 3 用了 70%+ 的 AI 生成偏好数据；OpenAI、Anthropic、Meta 都在大规模 RLAIF。**人类反馈已经从主菜变成佐料**——只用于最关键的安全场景。
-
-## C.4 推理视角：测试时计算 (Test-Time Compute) 的兴起
-
-o1 / R1 时代的另一关键变化：**推理时也要花算力**。
-
-| 推理策略 | 计算开销 | 准确率提升 |
-| :--- | :---: | :---: |
-| **Greedy** | 1× | baseline |
-| **Best-of-N (ORM)** | N× | +5% |
-| **Best-of-N (PRM)** | N× | **+15%** |
-| **MCTS + PRM** | 10–100× | **+25%** |
-| **Long CoT (R1 风格)** | 模型自决定 | **+30%** |
-
-> **Scaling 范式转移**：从"训练时 scaling（更大模型 + 更多数据）"扩展到"**推理时 scaling**（生成更长 CoT、采样更多候选）"。
-
-## C.5 推理视角：long CoT 的 sampling 策略
-
-R1/o1 风格的 long CoT 模型（推理时主动生成几千 token 的思考链）需要不同的解码策略：
+## C.2 实验：CartPole + PPO
 
 ```python
-# 错误做法：低温度 + 短 max_tokens
-response = model.generate(prompt, temperature=0.0, max_tokens=200)
-# → 模型还没"想完"就被截断
-
-# 正确做法：保留多样性 + 充足空间
-response = model.generate(
-    prompt,
-    temperature=0.6,                                                         # 不能 0，需要探索
-    top_p=0.95,
-    max_tokens=4096,                                                         # 给足思考空间
-    stop=["</think>"],                                                       # 思考结束标志
-)
+model = ppo_train("CartPole-v1", n_steps=int(1e5))
 ```
 
-**关键观察**：
-- Long CoT 模型 `temperature=0` 反而更差（模型陷入单一思路）
-- 温度 0.5–0.7 + 高 top_p 是 R1 / o1 的官方推荐
-- max_tokens 必须 ≥ 4096，理想是 8192–16384
+典型结果：
+- 1万步：reward = 50
+- 3万步：reward = 200
+- 5万步：reward = 500（满分）
+
+PPO 在 CartPole 上的收敛速度通常比 A2C 快 1.5-2 倍，且更稳定。
+
+## C.3 PPO 推理
+
+PPO 推理时只用 Actor（与 A2C 一致），完全去掉 Critic：
+
+```python
+def inference(model, obs):
+    obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+    with torch.no_grad():
+        logits, _ = model.forward(obs_t)
+        a = logits.argmax(dim=-1).item()                 # greedy
+    return a
+```
+
+## C.4 工程经验
+
+**1. Reward normalization**：复杂任务（MuJoCo）reward 尺度差异大，必须用 running mean/std 归一化。
+
+**2. Observation normalization**：连续状态空间也用类似归一化。
+
+**3. Clip 不只是 actor**：PPO2 还可以 clip critic 的 value 更新（防止 critic 学过头）。
+
+**4. Hyper-parameter 互相影响**：`eps_clip` 大 → `n_epochs` 要小；反之亦然。
+
+**5. KL 监控**：训练时打印 mean KL，若 KL 突然飙升（> 0.05），说明 clip 失效，需调小 lr。
 
 ---
 
-# §D 整章速查与终章总结
+# §D 章末速查
 
-## D.1 现代对齐方法谱系（最终版）
+## D.1 关键公式
 
-| 方法 | 是否需要 RM | 是否需要 Critic | 是否需要 online 采样 | 代表模型 | 章节 |
-| :--- | :---: | :---: | :---: | :--- | :---: |
-| **PPO** | ✓ | ✓ | ✓ | InstructGPT, GPT-4 | Ch6 |
-| **DPO** | ✗（隐式） | ✗ | ✗ | Llama 3, Mistral, Qwen 2.5 | Ch7 |
-| **IPO/KTO/ORPO/SimPO** | ✗ | ✗ | ✗ | （DPO 变种） | Ch7 |
-| **GRPO** | ✓ | ✗ | ✓ | DeepSeek-R1, Qwen QwQ | **Ch8** |
-| **PRM-RL** | ✓ (PRM) | 可选 | ✓ | OpenAI o1, R1 | **Ch8** |
-| **RLAIF / CAI** | ✓ (AI 生成偏好) | ✓ | ✓ | Claude | **Ch8** |
+| # | 公式 | 含义 |
+| :---: | :--- | :--- |
+| 1 | $r_t(\theta) = \pi_\theta(a_t\|s_t) / \pi_{\theta_{\text{old}}}(a_t\|s_t)$ | importance ratio |
+| 2 | $\mathcal{L}^{\text{CLIP}} = \min(r_t \hat{A}_t, \text{clip}(r_t, 1\pm\epsilon)\hat{A}_t)$ | PPO 目标 |
+| 3 | $J(\pi') - J(\pi) \approx \mathbb{E}_{s, a \sim \pi}[r(s,a) A^\pi(s,a)]$ | 单调改进引理 |
+| 4 | $J(\pi') \geq \tilde{J}(\pi') - C \cdot D_{KL}^{\max}$ | TRPO 下界 |
+| 5 | $\hat{A}_t = \delta_t + \gamma\lambda \hat{A}_{t+1}$ | GAE 递推（Ch6） |
 
-> **演进核心逻辑**：
-> 1. **从 PPO 到 DPO**：去掉 RM 和 Critic，把 RL 变成监督学习
-> 2. **从 ORM 到 PRM**：从"看结果"到"看过程"
-> 3. **从 RLHF 到 RLAIF**：从人类反馈到 AI 反馈
-> 4. **从 Critic-based 到 Group-based**：从值函数估计到组内对比
+## D.2 常见面试题
 
-## D.2 整套笔记（Ch1–Ch8）的核心串联
+**Q1：PPO 的 clip 在数学上等价于 trust region 吗？**
+- **不严格等价**，只是工程化的近似
+- TRPO 用 KL 硬约束 + 二阶优化
+- PPO 用 ratio clip + 一阶优化
+- 但在大多数实验上 PPO ≥ TRPO，且简单很多
 
-```
-[Ch1] 数学工具箱
-   │ 点积 → Attention                CE → LM Loss             KL → 对齐约束
-   │   ↓                                ↓                        ↓
-[Ch2] InfoNCE 视觉对比          [Ch5] SFT (CE)             [Ch6] PPO (KL penalty)
-[Ch3] CLIP / SimCSE / BGE                                  [Ch7] DPO (KL 闭式解)
-[Ch4] BYOL / SimSiam / DINO   ←──── stop-grad + EMA ────→  Reference Policy
-                                                            [Ch8] GRPO / PRM / RLAIF
-```
+**Q2：为什么 PPO 能用同一批数据训 K 轮？**
+- $\theta_{\text{old}}$ 固定时，importance ratio $r_t$ 自然修正分布偏差
+- clip 保证 $\theta$ 不会跑远
+- K 轮内策略仍在"trust region"内，数据有效
+- K 太大（>10）会过拟合旧分布——KL 飙升
 
-每一章都建立在前面章节的概念之上：
-- Attention 的点积 ⊆ Ch1
-- 对比学习的 InfoNCE ⊆ Ch2
-- 多模态/文本对比的 CLIP/SimCSE ⊆ Ch3
-- BYOL 的 stop-grad ⊆ Ch4 → RLHF 的 reference policy ⊆ Ch6
-- Bradley-Terry ⊆ Ch6 → DPO 闭式解推导 ⊆ Ch7
-- PPO clip ⊆ Ch6 → GRPO 简化 ⊆ Ch8
+**Q3：PPO 与 A2C 的关系？**
+- PPO = A2C + importance ratio + clip + 多轮更新
+- 数据效率：PPO ≫ A2C
+- 稳定性：PPO ≫ A2C（clip 保护）
+- 实现复杂度：PPO 略高
 
-## D.3 终章答题：你应该已经能回答这些
+**Q4：PPO 为什么在 LLM RLHF 中是首选？**
+- 离散动作空间（token），PPO 天然支持
+- 训练稳定（KL clip 防策略崩坏）
+- 数据效率（rollout 一次更新多轮）
+- 工程社区成熟（TRL/DeepSpeed 等都有现成实现）
 
-- ✅ 为什么 Transformer 注意力要除 $\sqrt{d_k}$？（**Ch1**）
-- ✅ SimCLR / MoCo / CLIP 的 InfoNCE 公式分别长什么样？（**Ch2, Ch3**）
-- ✅ BYOL 没有负样本为什么不会塌缩？（**Ch4**）
-- ✅ LoRA 的低秩分解为什么有效？为什么 SFT 要把 prompt 部分 label 设为 -100？（**Ch5**）
-- ✅ PPO 的 clip 为什么叫 "Proximal"？per-token KL penalty 怎么计算？（**Ch6**）
-- ✅ DPO 怎么从 KL 约束 RL 闭式解推出来的？$\log Z(x)$ 为什么会消去？（**Ch7**）
-- ✅ GRPO 为什么能去掉 Critic？DeepSeek-R1 怎么靠纯 RL 学会 long CoT？（**Ch8**）
-
-如果有任何一题答不上，回到对应章节。
-
-## D.4 常见面试题（终章版）
-
-**Q1：为什么 GRPO 不用 Critic 也能稳？**
-- Group-level 归一化提供了 baseline（mean/std）
-- 当 group size $G \geq 8$ 时，归一化后的方差天然受控
-- 代价是采样成本 × G，但比训练 Critic 便宜
-
-**Q2：PRM 和 ORM 的训练数据怎么区别？**
-- ORM：(prompt, response, 0/1) 三元组，10 万级
-- PRM：(prompt, partial_response, 0/1) 大量条目（每条推理 K 个 step），需 80 万级
-- PRM 数据更贵，但只有它能"诊断哪一步出错"
-
-**Q3：RLAIF 的偏见放大问题怎么解？**
-- 用多个不同 LLM 作为 judge（ensemble）
-- 关键场景仍保留人类标注（hybrid pipeline）
-- 用 constitutional principles 显式约束 judge 的判断标准
-
-**Q4：DeepSeek-R1-Zero 的 "Aha moment" 是什么？**
-- 训练后期模型自发地在 CoT 中产生"等等，让我重新检查"这类反思 token
-- 这表明纯 RL（无监督模仿）也能涌现高级认知行为
-- 反驳了"RLHF 必须以 SFT 为起点"的传统观点
-
-**Q5：当前最 SOTA 的对齐 pipeline 长什么样？**
-- 基本配方（2026 年）：
-  1. **预训练** → Base Model
-  2. **SFT**（少量高质量数据，LIMA 风格）
-  3. **DPO**（大规模 AI 生成偏好对，RLAIF 路线）
-  4. **GRPO** + **规则 reward**（针对推理/代码/数学专项强化）
-  5. **PRM** + **best-of-N**（推理时增强，Test-Time Compute）
-
-## D.5 推荐继续学习方向
-
-- **更深的数学**：策略梯度定理、Natural Policy Gradient、TRPO 完整推导
-- **训练加速**：FlashAttention、ZeRO、TP/PP/SP 并行策略
-- **推理加速**：vLLM 的 PagedAttention、Speculative Decoding、Quantization (AWQ, GPTQ)
-- **多模态**：VLM (LLaVA, Qwen-VL), 多模态 RL (RLAIF for VLM)
-- **Agent 范式**：Tool Use, ReAct, AutoGen 类框架
+**Q5：PPO 的"Proximal"在哪？**
+- $\epsilon$-clip 限制策略变化幅度
+- 让 $\pi_\theta$ 始终"接近 (proximal to)" $\pi_{\theta_{\text{old}}}$
+- 这是 trust region 思想的本质
 
 ---
 
-## 终章寄语
+## 承上启下
 
-从 **Ch1 的点积** 一路走到 **Ch8 的 GRPO**，看似跨越了相似度度量、表示学习、对齐算法三个看似不相关的领域，但其实它们都建立在**少数几个数学原语**上：
+PPO 是 RL 与 LLM 时代的桥梁：
+- 经典 RL 中用它处理离散/连续控制
+- LLM RLHF 中用它把模型对齐到人类偏好
 
-- **点积** 串联 Attention、InfoNCE、对比学习
-- **KL 散度** 串联训练损失、PPO 约束、DPO 闭式解
-- **Stop-gradient + EMA** 串联 BYOL、Reference Policy、Iterative DPO
+下一章 **Ch9** 探讨**连续控制的另一条路**——DDPG 与 SAC。在机器人、自动驾驶等连续动作场景，SAC 是当前 SOTA。
 
-理解这些原语之间的转换规律，比记忆任何单个算法都重要。**这套笔记的真正目标，不是让你记住 SimCLR 和 GRPO 的公式，而是让你看到它们背后的同一套数学语言**。
-
-如果你能在面试或工作中，从一个新算法的损失函数中**一眼看出它属于哪一族、解决什么旧问题、可能引入什么新坑**——那这套笔记就完成了它的使命。
+理解了 PPO + SAC，你就掌握了现代 RL 的两大主流路径。

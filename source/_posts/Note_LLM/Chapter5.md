@@ -1,366 +1,460 @@
 ---
-title: Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA
-categories: 学习笔记-大模型
-date: 2026-03-30 16:03:34
+title: RL Chapter5 Policy Gradient：直接对策略求梯度
+categories: 学习笔记-强化学习
+date: 2026-05-13 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：从表示学习（Ch1–Ch4）跨入生成模型对齐（Ch5–Ch8）的第一站。SFT 是把"只会预测下一个词"的 Base Model 转变为"能听懂指令"的 Assistant 的关键步骤；LoRA/QLoRA/DoRA 是当今所有微调任务的工程标配。
+> **本章定位**：RL 的另一条主线——**直接参数化策略并求梯度上升**。Policy Gradient 是 PPO（Ch8）、DPO（Ch11/Ch13）、GRPO 的共同根基。本章包含整套 RL 中**最重要的一个证明**：策略梯度定理。
 
-> **承上**：Ch1 §6 的交叉熵 = SFT 的损失函数本身。
-> **启下**：Ch6 起的所有 RL 对齐方法都以 SFT 模型为初始化。
+> **承上**：Ch1 价值函数 + Ch3 期望估计。
+> **启下**：Ch6 把 PG + 价值函数 = Actor-Critic；Ch8 把 AC 加上 trust region = PPO。
 
 ---
 
 # §A 数学原理
 
-## 1. SFT 的本质：最大似然估计 (MLE)
+## 1. 为什么需要 Policy Gradient？
 
-给定数据集 $D_{\text{SFT}} = \{(x_i, y_i)\}$，其中 $x$ 是 prompt、$y$ 是 response，目标是最大化条件概率 $P_\theta(y \mid x)$：
+Q-Learning（Ch4）有三个无法逾越的限制：
 
-$$\max_\theta \mathbb{E}_{(x, y) \sim D_{\text{SFT}}} \log P_\theta(y \mid x)$$
+1. **离散动作空间**：$\arg\max_a Q$ 在连续动作下是优化问题（机器人关节角度怎么 max？）
+2. **确定性策略**：纯 greedy 没有随机性，部分可观测环境下不够
+3. **策略改进的间接性**：先估 $Q$ 再贪心，两步走
 
-由于 $y = (y_1, y_2, \dots, y_T)$ 是 token 序列，自回归模型把它分解为：
-$$P_\theta(y \mid x) = \prod_{t=1}^{T} P_\theta(y_t \mid x, y_{<t})$$
+**Policy Gradient 的解决方案**：
+- 直接参数化策略 $\pi_\theta(a \mid s)$（神经网络输出动作分布）
+- 对参数 $\theta$ 做梯度上升
+- **目标**：$\max_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$
 
-取负对数得到 SFT 的损失：
-$$\boxed{\mathcal{L}_{\text{SFT}}(\theta) = - \mathbb{E}_{(x, y) \sim D_{\text{SFT}}} \left[ \sum_{t=1}^{|y|} \log P_\theta(y_t \mid x, y_{<t}) \right]}$$
+## 2. 策略参数化
 
-这就是 Ch1 §6 的交叉熵：让模型分布逼近"标注员的分布"。
+### 2.1 离散动作：Categorical 分布
 
-## 2. 为什么只对 Response 计算 Loss？
+神经网络输出 $|\mathcal{A}|$ 维 logits，softmax 后得到概率：
+$$\pi_\theta(a \mid s) = \frac{\exp(f_\theta(s)_a)}{\sum_{a'} \exp(f_\theta(s)_{a'})}$$
 
-SFT 时，整条序列 `[Prompt][Response]` 都喂给模型，但**Loss Mask** 让 prompt 部分不参与 loss 计算：
+### 2.2 连续动作：Gaussian 分布
 
-$$\mathcal{L}_{\text{SFT}}(\theta) = -\sum_{t=|x|+1}^{|x|+|y|} \log P_\theta(y_t \mid x, y_{<t})$$
+神经网络输出均值 $\mu_\theta(s)$ 和（可选的）方差 $\sigma_\theta(s)$：
+$$\pi_\theta(a \mid s) = \mathcal{N}(a; \mu_\theta(s), \sigma_\theta(s)^2)$$
 
-**原因**：
-- 我们不希望模型学习"用户怎么提问"（prompt 是外部输入）
-- 只要求模型学习"给定 prompt 如何生成正确 response"
+实践中 $\log\sigma$ 通常作为独立可训练参数（与 state 无关）。
 
-**实现方式**：构造 `labels` 张量，prompt 位置设为 `-100`（PyTorch 默认 `ignore_index`，自动跳过）。
+## 3. Policy Gradient 定理（**最重要的证明**）
 
-## 3. LoRA：低秩适配的数学
+### 3.1 目标函数
 
-LoRA（Low-Rank Adaptation, Microsoft 2021）的核心假设：**预训练模型在下游任务上的更新量 $\Delta W$ 是低秩的**。
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)], \quad R(\tau) = \sum_{t=0}^T \gamma^t r_t$$
 
-### 3.1 参数化方式
+我们要算 $\nabla_\theta J(\theta)$。
 
-原始权重 $W_0 \in \mathbb{R}^{d \times d}$ 冻结，引入两个低秩矩阵：
-- $A \in \mathbb{R}^{r \times d}$，初始化为高斯分布
-- $B \in \mathbb{R}^{d \times r}$，**初始化为零矩阵**
+### 3.2 朴素尝试遇到的困难
 
-更新形式：
-$$W = W_0 + \Delta W = W_0 + BA$$
+$$\nabla_\theta J(\theta) = \nabla_\theta \int p_\theta(\tau) R(\tau) d\tau$$
 
-前向传播：
-$$h = Wx = W_0 x + BAx$$
+直接求导有问题：$R(\tau)$ 不依赖 $\theta$，但 $p_\theta(\tau)$ 是关于 $\theta$ 的复杂函数，**无法直接微分一个分布**。
 
-### 3.2 为什么 $B$ 初始化为零？
+### 3.3 Score Function Trick（log-derivative trick）
 
-如果 $A, B$ 都随机初始化，训练初期 $BA \neq 0$，模型从一开始就偏离了预训练。$B = 0$ 保证 $BAx = 0$，模型初始状态 = 预训练状态，**训练从一个已知的好起点出发**。
+利用恒等式：
+$$\nabla_\theta p_\theta(\tau) = p_\theta(\tau) \nabla_\theta \log p_\theta(\tau)$$
 
-### 3.3 参数量节省
+代回：
+$$\nabla_\theta J(\theta) = \int p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) d\tau = \mathbb{E}_{\tau \sim \pi_\theta}[\nabla_\theta \log p_\theta(\tau) R(\tau)]$$
 
-原始权重参数量：$d \times d = d^2$
-LoRA 参数量：$d \times r + r \times d = 2dr$
+**这一步把"对分布求导"变成"对 log-概率求导"**——后者就是 supervised learning 中常见的对 NLL 求导！
 
-设 $d = 4096, r = 8$：
-$$\frac{2 \times 4096 \times 8}{4096^2} \approx 0.4\%$$
+### 3.4 展开 $\log p_\theta(\tau)$
 
-**LoRA 把可训练参数压缩到原始的 1% 以下**。
+轨迹概率：
+$$p_\theta(\tau) = p(s_0) \prod_{t=0}^T \pi_\theta(a_t \mid s_t) P(s_{t+1} \mid s_t, a_t)$$
 
-### 3.4 缩放因子 $\alpha$
+取 log：
+$$\log p_\theta(\tau) = \log p(s_0) + \sum_t \log \pi_\theta(a_t \mid s_t) + \sum_t \log P(s_{t+1} \mid s_t, a_t)$$
 
-实际的 LoRA 公式还有一个缩放：
-$$\Delta W = \frac{\alpha}{r} BA$$
+求 $\nabla_\theta$ 时，**$p(s_0)$ 和 $P$ 都不依赖 $\theta$**，全部消去！
 
-$\alpha$ 通常设为 $r$ 的 2–4 倍（如 $r=8, \alpha=32$）。**作用**：当增大 $r$ 时，$\frac{\alpha}{r}$ 自动缩小，避免重新调整学习率。
+$$\nabla_\theta \log p_\theta(\tau) = \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
 
-## 4. QLoRA：4-bit 量化 + LoRA
+### 3.5 最终公式：Policy Gradient 定理
 
-QLoRA（Dettmers 2023）让 65B 模型可以**在单张 48GB 显卡上微调**：
+$$\boxed{\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R(\tau) \right]}$$
 
-| 技术 | 作用 |
-| :--- | :--- |
-| **4-bit NF4 量化** | Base model 权重压缩到 4-bit（NormalFloat 4，对正态分布权重最优） |
-| **Double Quantization** | 量化常数本身再量化，节省 ~0.4 bit/参数 |
-| **Paged Optimizer** | 用 NVIDIA 统一内存，optimizer state 临时换出到 CPU |
-| **LoRA on top** | 量化的 base model 不动，只训练 16-bit 的 LoRA 矩阵 |
+> **三个值得反复琢磨的特性**：
+> 1. **不需要环境模型 $P$**——它在 log-derivative 后自动消失
+> 2. **样本估计**：用 $N$ 条轨迹的均值替代期望
+> 3. **形式直观**：把 supervised learning 的 cross-entropy 损失乘以一个 reward 系数
 
-**核心数学**：base model 用 4-bit 存储但**前向传播时反量化为 BF16 计算**，loss 和梯度都是 BF16，所以训练精度几乎不损失。
+## 4. REINFORCE 算法
 
-## 5. DoRA：Weight Decomposed LoRA
+把策略梯度定理写成实用算法：
 
-DoRA（NVIDIA 2024）把权重分解为"幅值 + 方向"：
-$$W = m \cdot \frac{V}{\|V\|}$$
-其中 $m$ 是幅值（每列一个标量），$V/\|V\|$ 是方向。LoRA 只更新方向部分 $V$，幅值 $m$ 全量训练。
+```
+for episode = 1, 2, ...:
+    用 π_θ 采样轨迹 τ = (s_0, a_0, r_0, ..., s_T)
+    计算累积回报 G_0, G_1, ..., G_T
 
-**直觉**：预训练模型已经学到了大致的"权重幅值分布"，下游任务主要在调整"方向"。DoRA 在多个任务上比 LoRA 高 1–2 个点。
+    for t = 0, ..., T:
+        梯度 g = ∇_θ log π_θ(a_t | s_t) · G_t
+        θ ← θ + α g
+```
+
+REINFORCE（Williams 1992）是 PG 第一个实用算法。注意公式里的 $R(\tau)$ 应该是从 $t$ 开始的累积回报 $G_t$（"未来 reward 影响当前 action 的好坏"），不应包括 $t$ 之前的 reward——这叫 **causality** trick。
+
+## 5. Baseline 减方差
+
+### 5.1 问题
+
+REINFORCE 的方差极大：每条轨迹 $G_t$ 在数百到数千的范围波动，梯度估计噪声严重。
+
+### 5.2 关键观察：减一个 baseline 不影响期望
+
+**定理**：对任意只依赖 $s$（不依赖 $a$）的函数 $b(s)$，
+$$\mathbb{E}_{a \sim \pi_\theta}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = 0$$
+
+**证明**：
+$$\mathbb{E}_{a}[\nabla_\theta \log \pi_\theta(a \mid s) b(s)] = b(s) \int \pi_\theta(a \mid s) \nabla_\theta \log \pi_\theta(a \mid s) da$$
+$$= b(s) \int \nabla_\theta \pi_\theta(a \mid s) da = b(s) \nabla_\theta \int \pi_\theta(a \mid s) da = b(s) \nabla_\theta 1 = 0 \quad \square$$
+
+### 5.3 用法
+
+把 $G_t$ 替换为 $G_t - b(s_t)$，期望不变但方差通常更小：
+$$\nabla_\theta J(\theta) = \mathbb{E}\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) (G_t - b(s_t))\right]$$
+
+**最佳 baseline**：$b(s_t) = V^\pi(s_t)$（状态价值函数）。这时
+$$G_t - V^\pi(s_t) \approx Q^\pi(s_t, a_t) - V^\pi(s_t) = A^\pi(s_t, a_t)$$
+即**优势函数**（Advantage）。这就是下一章 Actor-Critic 的起点。
+
+### 5.4 直觉
+
+REINFORCE 用 $G_t$ 衡量"action 的绝对好坏"——但即使 $G_t > 0$ 也未必意味着 action 好（可能整条轨迹都好）。
+
+减去 baseline 后，衡量的是"**这个 action 比平均水平好/差多少**"，更精准。
+
+## 6. 方差分析（深入）
+
+REINFORCE 的方差为什么这么大？关键在于 $G_t$ 是"长期累积"。
+
+设每步 reward 方差为 $\sigma^2$，$G_t$ 的方差大致是 $T \sigma^2$（独立时）。乘以梯度后，方差进一步放大。
+
+减 baseline 后，方差降到 $\text{Var}(A_t) \cdot \|\nabla \log \pi\|^2$，通常小一两个数量级。
+
+> **核心思想**：PG 有正确的 expectation，但实战中关键是控制 variance。所有后续算法（Actor-Critic、TRPO、PPO）都在做"如何在保持低 bias 的前提下降 variance"。
+
+## 7. 重要性采样：On-policy → Off-policy 的桥梁
+
+PG 是 on-policy（每次更新需要新采样），数据效率低。**重要性采样** 把 off-policy 数据"修正"成 on-policy：
+
+$$\mathbb{E}_{\tau \sim \pi_\theta}[f(\tau)] = \mathbb{E}_{\tau \sim \pi_{\theta_{\text{old}}}}\left[\frac{p_\theta(\tau)}{p_{\theta_{\text{old}}}(\tau)} f(\tau)\right]$$
+
+这就是后续 PPO 和 TRPO 中 **importance ratio** $r_t(\theta) = \pi_\theta / \pi_{\theta_{\text{old}}}$ 的来源。
 
 ---
 
-# §B 模型结构（PyTorch 实现）
+# §B 模型架构
 
-## B.1 SFT 数据处理：构造 `labels = -100` 的 mask
-
-这是 SFT 工程上最容易写错的地方。
-
-```python
-def build_sft_labels(input_ids, prompt_length):
-    """
-    input_ids:     [B, L]  完整序列 (prompt + response)
-    prompt_length: [B]     每条样本的 prompt 长度
-    返回 labels: prompt 部分为 -100，response 部分保留 token id
-    """
-    labels = input_ids.clone()
-    for i, plen in enumerate(prompt_length):
-        labels[i, :plen] = -100                                  # ⭐ Prompt 不算 loss
-    return labels
-
-
-# 用法
-loss = F.cross_entropy(
-    logits.view(-1, logits.size(-1)),
-    labels.view(-1),
-    ignore_index=-100,                                            # 自动跳过 -100
-)
-```
-
-**TRL 库的现成实现**：
-```python
-from trl import DataCollatorForCompletionOnlyLM
-
-collator = DataCollatorForCompletionOnlyLM(
-    response_template="### Response:",                            # 标志 response 开始
-    tokenizer=tokenizer,
-)
-```
-
-## B.2 LoRA 的 PyTorch 手写实现
+## B.1 Categorical Policy 的 PyTorch 实现
 
 ```python
 import torch
 import torch.nn as nn
-import math
+import torch.nn.functional as F
 
-class LoRALinear(nn.Module):
-    """替换原始 Linear 层：W_0 + BA"""
-    def __init__(self, base_layer: nn.Linear, r=8, alpha=32, dropout=0.0):
+class CategoricalPolicy(nn.Module):
+    """离散动作策略（如 CartPole）"""
+    def __init__(self, obs_dim, n_actions, hidden=64):
         super().__init__()
-        self.base_layer = base_layer
-        # ⭐ 冻结原始权重
-        for p in self.base_layer.parameters():
-            p.requires_grad = False
+        self.net = nn.Sequential(
+            nn.Linear(obs_dim, hidden), nn.Tanh(),
+            nn.Linear(hidden, hidden), nn.Tanh(),
+            nn.Linear(hidden, n_actions),                # 输出 logits
+        )
 
-        in_features = base_layer.in_features
-        out_features = base_layer.out_features
+    def forward(self, obs):
+        """
+        obs: [B, obs_dim]
+        返回: Categorical 分布对象
+        """
+        logits = self.net(obs)                            # [B, n_actions]
+        return torch.distributions.Categorical(logits=logits)
 
-        # ⭐ 引入低秩矩阵 A 和 B
-        self.lora_A = nn.Parameter(torch.empty(r, in_features))
-        self.lora_B = nn.Parameter(torch.zeros(out_features, r))    # ⭐ B 初始化为 0
-        nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
-
-        self.scaling = alpha / r
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x):
-        # 原始权重的输出
-        result = self.base_layer(x)
-        # LoRA 旁路：x @ A^T @ B^T，乘以 scaling
-        lora_out = self.dropout(x) @ self.lora_A.T @ self.lora_B.T
-        return result + self.scaling * lora_out
-
-
-def replace_with_lora(model, target_modules=("q_proj", "v_proj"), r=8):
-    """递归替换 model 中所有 target_modules 为 LoRALinear"""
-    for name, module in model.named_modules():
-        for target in target_modules:
-            if target in name and isinstance(module, nn.Linear):
-                parent_name = ".".join(name.split(".")[:-1])
-                child_name = name.split(".")[-1]
-                parent = model.get_submodule(parent_name)
-                setattr(parent, child_name, LoRALinear(module, r=r))
-    return model
+    def sample(self, obs):
+        """采样 + 返回 log_prob"""
+        dist = self.forward(obs)
+        a = dist.sample()                                 # [B]
+        log_prob = dist.log_prob(a)                       # [B]
+        return a, log_prob
 ```
 
-## B.3 PEFT 库的工业级使用
-
-实际工程中用 PEFT 库就够了：
+## B.2 Gaussian Policy（连续动作）
 
 ```python
-from peft import LoraConfig, get_peft_model, TaskType
+class GaussianPolicy(nn.Module):
+    """连续动作策略（如 MuJoCo）"""
+    def __init__(self, obs_dim, act_dim, hidden=64):
+        super().__init__()
+        self.shared = nn.Sequential(
+            nn.Linear(obs_dim, hidden), nn.Tanh(),
+            nn.Linear(hidden, hidden), nn.Tanh(),
+        )
+        self.mu_head = nn.Linear(hidden, act_dim)        # 均值头
+        self.log_std = nn.Parameter(torch.zeros(act_dim))# log(σ)，独立参数
 
-config = LoraConfig(
-    task_type=TaskType.CAUSAL_LM,
-    r=8,
-    lora_alpha=32,
-    lora_dropout=0.1,
-    target_modules=[
-        "q_proj", "k_proj", "v_proj", "o_proj",                  # Attention 全层
-        "gate_proj", "up_proj", "down_proj",                     # FFN 全层（现代趋势）
-    ],
-)
+    def forward(self, obs):
+        h = self.shared(obs)
+        mu = self.mu_head(h)
+        std = self.log_std.exp().expand_as(mu)
+        return torch.distributions.Normal(mu, std)
 
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3-8B")
-model = get_peft_model(model, config)
-model.print_trainable_parameters()
-# 输出示例: trainable params: 41,943,040 || all params: 8,030,261,248 || trainable%: 0.52%
+    def sample(self, obs):
+        dist = self.forward(obs)
+        a = dist.sample()                                 # [B, act_dim]
+        log_prob = dist.log_prob(a).sum(dim=-1)           # 多维独立 → 求和
+        return a, log_prob
 ```
 
-**target_modules 的演进**：
-- 早期 LoRA 论文：只加在 $W_Q, W_V$
-- 现代趋势：**全层加 LoRA**（包括 FFN 和输出投影），效果显著提升
+> **为什么 log_std 不依赖 state？** 实验经验：让 std 随 state 变化反而更难训。固定 log_std 是 OpenAI baselines 的默认做法。
 
-## B.4 推理时合并 LoRA 权重
-
-LoRA 训练完后，**推理时可以把 $BA$ 合并回 $W_0$**，零额外开销：
-
-$$W_{\text{merged}} = W_0 + \frac{\alpha}{r} BA$$
+## B.3 完整 REINFORCE 实现
 
 ```python
-# PEFT 一键合并
-merged_model = model.merge_and_unload()                          # 合并 LoRA + 卸载 PEFT 包装
-merged_model.save_pretrained("./merged_model")
+import gymnasium as gym
+from torch.optim import Adam
+
+def reinforce(env_name="CartPole-v1", n_episodes=1000, gamma=0.99, lr=1e-3,
+              use_baseline=False):
+    env = gym.make(env_name)
+    obs_dim = env.observation_space.shape[0]
+    n_actions = env.action_space.n
+
+    policy = CategoricalPolicy(obs_dim, n_actions)
+    optim = Adam(policy.parameters(), lr=lr)
+
+    if use_baseline:
+        # 用一个简单的 V 网络作为 baseline
+        value_net = nn.Sequential(
+            nn.Linear(obs_dim, 64), nn.Tanh(),
+            nn.Linear(64, 1),
+        )
+        v_optim = Adam(value_net.parameters(), lr=lr)
+
+    rewards_history = []
+    for ep in range(n_episodes):
+        # ============ 采样 episode ============
+        obs, _ = env.reset()
+        log_probs, rewards, states = [], [], []
+
+        done = False
+        while not done:
+            obs_t = torch.tensor(obs, dtype=torch.float32)
+            a, log_prob = policy.sample(obs_t.unsqueeze(0))
+            obs_new, r, terminated, truncated, _ = env.step(a.item())
+            done = terminated or truncated
+
+            log_probs.append(log_prob)
+            rewards.append(r)
+            states.append(obs_t)
+            obs = obs_new
+
+        rewards_history.append(sum(rewards))
+
+        # ============ 计算累积回报 G_t ============
+        returns = []
+        G = 0
+        for r in reversed(rewards):
+            G = r + gamma * G
+            returns.insert(0, G)
+        returns = torch.tensor(returns, dtype=torch.float32)
+
+        # ⭐ 减 baseline（如果启用）
+        if use_baseline:
+            states_tensor = torch.stack(states)
+            values = value_net(states_tensor).squeeze(-1)
+            advantages = returns - values.detach()
+            # 同时训练 V 网络
+            v_loss = ((values - returns) ** 2).mean()
+            v_optim.zero_grad(); v_loss.backward(); v_optim.step()
+        else:
+            advantages = returns
+
+        # 标准化（trick：进一步降方差）
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
+        # ============ Policy Gradient Loss ============
+        log_probs = torch.stack(log_probs).squeeze()
+        loss = -(log_probs * advantages).sum()           # ⭐ 注意是负号
+
+        optim.zero_grad()
+        loss.backward()
+        optim.step()
+
+        if (ep + 1) % 50 == 0:
+            avg = sum(rewards_history[-50:]) / 50
+            print(f"Episode {ep+1}: avg reward = {avg:.1f}")
+
+    return policy, rewards_history
 ```
 
-合并后模型与原始模型结构完全一致，**推理时无任何性能损失**——这是 LoRA 比 Adapter（需推理时额外计算）优越的关键。
+**代码关键点**：
+1. `log_prob = dist.log_prob(a)`：score function trick 的核心
+2. `loss = -(log_probs * advantages).sum()`：最大化 J = 最小化 -J
+3. `advantages.detach()`：baseline 网络的输出不能反向传到 policy
+4. `(adv - mean) / std`：标准化是 PG 调参的"金标准 trick"
+
+## B.4 数据流总览
+
+```
+Obs (s_t)
+   │
+   ▼
+┌──────────────────┐
+│  Policy Network  │ → logits (or μ, σ)
+└──────────────────┘
+   │
+   ▼
+┌──────────────────┐
+│ Categorical /    │ → 采样 a_t, 计算 log π(a_t|s_t)
+│ Normal Dist      │
+└──────────────────┘
+   │           │
+   ▼           ▼
+执行 a_t   存储 log_prob
+   │
+   ▼
+观察 r_t, s_{t+1}
+   │
+   ▼
+[episode 结束后]
+   │
+   ▼
+计算 G_t (从后往前累加)
+   │
+   ▼
+loss = -Σ log π(a_t|s_t) · (G_t - b(s_t))
+   │
+   ▼
+loss.backward() → 更新 θ
+```
 
 ---
 
 # §C 训练与推理
 
-## C.1 训练流程：完整的 SFT 训练循环
+## C.1 在 CartPole 上的训练曲线
 
 ```python
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
-from peft import LoraConfig, get_peft_model, TaskType
-from trl import DataCollatorForCompletionOnlyLM
-
-# 1. 加载模型 + 配置 LoRA
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3-8B")
-model = AutoModelForCausalLM.from_pretrained(
-    "meta-llama/Llama-3-8B",
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-)
-
-config = LoraConfig(
-    task_type=TaskType.CAUSAL_LM,
-    r=8, lora_alpha=32, lora_dropout=0.1,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                    "gate_proj", "up_proj", "down_proj"],
-)
-model = get_peft_model(model, config)
-
-# 2. 数据 collator：自动 mask prompt 部分
-collator = DataCollatorForCompletionOnlyLM(
-    response_template="### Response:", tokenizer=tokenizer,
-)
-
-# 3. 训练参数
-training_args = TrainingArguments(
-    output_dir="./output_sft",
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=4,                                # 等价 batch=16
-    learning_rate=2e-4,                                            # LoRA 学习率比全量大
-    num_train_epochs=3,
-    bf16=True,
-    save_strategy="epoch",
-    logging_steps=10,
-    warmup_ratio=0.03,
-)
-
-# 4. 启动
-trainer = Trainer(
-    model=model, args=training_args,
-    train_dataset=dataset, data_collator=collator,
-)
-trainer.train()
+policy, rewards = reinforce("CartPole-v1", n_episodes=1000, use_baseline=True)
 ```
 
-## C.2 显存对比：Full FT vs LoRA vs QLoRA
+**典型结果**：
+- 不带 baseline：~500 episode 收敛到 reward=200（CartPole-v1 上限是 500，难收敛）
+- 带 baseline：~200 episode 收敛到 reward=500
+- 带 baseline + advantage normalization：~150 episode 收敛
 
-以 Llama-3 8B 为例（粗略估算）：
+## C.2 推理：评估学到的策略
 
-| 方式 | 模型权重 | 梯度 | Adam state | 总计 (~) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Full FT** (BF16) | 16 GB | 16 GB | 32 GB (FP32) | **64+ GB** |
-| **LoRA** (BF16) | 16 GB | 0.08 GB | 0.16 GB | **~17 GB** |
-| **QLoRA** (4-bit + LoRA) | 4 GB | 0.08 GB | 0.16 GB | **~5 GB** |
+```python
+def evaluate(policy, env_name="CartPole-v1", n_eval=10):
+    env = gym.make(env_name)
+    rewards = []
+    for _ in range(n_eval):
+        obs, _ = env.reset()
+        total_r = 0
+        done = False
+        while not done:
+            obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+            with torch.no_grad():
+                dist = policy(obs_t)
+                a = dist.probs.argmax(dim=-1).item()    # ⭐ greedy 推理
+            obs, r, terminated, truncated, _ = env.step(a)
+            total_r += r
+            done = terminated or truncated
+        rewards.append(total_r)
+    return sum(rewards) / n_eval
 
-> QLoRA 让单张 24GB 卡能微调 65B 模型，单张 48GB 卡能微调 70B 模型。
+print(f"Eval reward: {evaluate(policy):.1f}")
+```
 
-## C.3 SFT 解决了什么 / 还差什么
+**注意**：
+- 训练时：`dist.sample()` 探索
+- 推理时：`dist.probs.argmax()` 利用（greedy）
+- 也可以保留随机性（ensemble 风格）：`dist.sample()`
 
-**解决了**：
-- ✅ 格式对齐：模型学会"问答"形式
-- ✅ 能力激活：预训练知识被"提取"出来用于回答
+## C.3 工程经验
 
-**还差什么**：
-- ❌ **多解性**：写代码、写诗有多种正确答案，SFT 强迫模型只学某一种
-- ❌ **错误积累**：本质是模仿学习，标注里的错误会被学得很扎实
-- ❌ **没学到"什么是不好的"**：SFT 只展示正例，没有负例对比
+| 问题 | 解决 |
+| :--- | :--- |
+| 收敛慢 / 奖励震荡 | 加 advantage normalization |
+| 梯度爆炸 | 梯度裁剪 `nn.utils.clip_grad_norm_(policy.parameters(), 0.5)` |
+| 收敛到次优 | 加熵正则 `loss -= 0.01 * dist.entropy()` |
+| 大方差 | 用 baseline / Actor-Critic（Ch6） |
+| 数据效率低 | 用 PPO / DDPG 等 off-policy 方法（Ch8/Ch9） |
 
-→ 这就是为什么需要后续的 RLHF/DPO（Ch6, Ch7）。
+## C.4 熵正则（Entropy Regularization）
 
-## C.4 SFT 后的推理：解码策略
+为防止策略过早确定（mode collapse），常加一个熵奖励项：
+$$\mathcal{L} = -\sum_t \log \pi_\theta(a_t \mid s_t) A_t - \beta \cdot H(\pi_\theta(\cdot \mid s_t))$$
 
-SFT 训出的模型在推理时**和 base model 形式上没有区别**，都是自回归生成。但因为模型分布变得更"尖锐"（向标注者的语气和格式聚集），常用的解码策略需要调整：
+其中 $H(\pi) = -\sum_a \pi(a) \log \pi(a)$ 是熵。$\beta$ 通常取 0.001-0.01。
 
-| 策略 | 公式/做法 | 适用场景 |
-| :--- | :--- | :--- |
-| **Greedy** | $\arg\max_y P(y \mid \cdot)$ | 确定性任务（代码、数学） |
-| **Top-k** | 只从概率最高的 $k$ 个 token 中采样 | 一般生成 |
-| **Top-p (nucleus)** | 从累积概率 $\geq p$ 的最小集合中采样 | 创意生成、对话 |
-| **Temperature $T$** | $\text{softmax}(\text{logits} / T)$，$T < 1$ 更尖锐 | 控制确定性 |
-| **Repetition Penalty** | 已生成 token 的 logits 减去惩罚 | 避免循环输出 |
-
-> **常见组合**：对话默认 `temperature=0.7, top_p=0.9`；代码任务用 `temperature=0.0`（即 greedy）。
+**直觉**：策略越随机熵越大，鼓励熵 = 鼓励探索。
 
 ---
 
 # §D 章末速查
 
-## D.1 LoRA 的关键 Q&A
+## D.1 关键公式速记
 
-**Q1：LoRA 训练多少参数？**
-- 取决于 r 和 target_modules。典型 7B 模型：
-  - 只加 q,v：~4M（0.05%）
-  - 加全 7 个 module：~40M（0.5%）
+| # | 公式 | 含义 |
+| :---: | :--- | :--- |
+| 1 | $J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$ | 目标函数 |
+| 2 | $\nabla_\theta \log p_\theta(\tau) = \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)$ | log-derivative 化简 |
+| 3 | $\nabla_\theta J = \mathbb{E}[\sum_t \nabla \log \pi_\theta(a_t\|s_t) \cdot G_t]$ | PG 定理 |
+| 4 | $\mathbb{E}_a[\nabla \log \pi(a\|s) b(s)] = 0$ | baseline 减方差 |
+| 5 | $A^\pi = Q^\pi - V^\pi$ | 优势函数（Ch6 起核心） |
 
-**Q2：LoRA 学习率多大？**
-- 通常 2e-4 到 5e-4，比全量微调（2e-5）大 10 倍。
-- 因为只训练少量参数，需要更大的步长。
+## D.2 常见面试题
 
-**Q3：LoRA 推理时有额外开销吗？**
-- 训练时：有（额外 BA 计算）
-- 推理时：合并后零开销，与原模型完全一致
+**Q1：策略梯度定理的核心 trick 是什么？**
+- log-derivative trick（score function trick）
+- $\nabla p = p \nabla \log p$，把"对分布求导"变成"对 log-概率求导"
+- 关键好处：$\log p_\theta(\tau)$ 中环境项 $P, p(s_0)$ 自动消失，**不需要 model**
 
-**Q4：LoRA 合并后能再继续训练吗？**
-- 可以。但通常做法是保存多个 LoRA adapter，按需加载，**不合并**。这样一个 base model 可以服务多个任务。
+**Q2：为什么减 baseline 能降方差但不改变期望？**
+- $\mathbb{E}_a[\nabla \log \pi(a|s) b(s)] = 0$（积分中 $b(s)$ 是常数）
+- baseline 与 reward 越相关（如 $V^\pi$），方差降得越多
 
-## D.2 SFT 数据规模与质量
+**Q3：REINFORCE 与 supervised learning 的关系？**
+- 形式上几乎一样：$\sum_t \log \pi_\theta(a_t|s_t)$ 就是 NLL
+- 区别：监督学习每个样本权重为 1，REINFORCE 权重为 $G_t$（reward 加权 NLL）
+- 这是为什么 RLHF/DPO 看起来"像监督学习"——本质是带权重的 MLE
 
-| 数据规模 | 适用场景 | 代表 |
-| :--- | :--- | :--- |
-| **1k–10k** 高质量 | 概念验证、风格定制 | LIMA（"少即是多"） |
-| **10k–100k** | 通用 SFT | InstructGPT |
-| **100k–1M** | 全方位强化 | Llama 3 等 |
-| **>1M** | 边际收益递减 | 商业大模型 |
+**Q4：什么时候 PG 比 Q-Learning 好？**
+- 连续动作空间（PG 直接输出动作）
+- 需要随机策略（部分可观测、博弈论场景）
+- 大动作空间（不需要遍历所有 a）
 
-> **LIMA 论文核心结论**：1000 条精心筛选的 SFT 数据，能让 65B 模型达到 GPT-4 的对话质量。**质量远比数量重要**。
+**Q5：PG 与监督学习的关键差异？**
+- 数据分布依赖于 θ（policy 一变，数据分布就变）
+- 这导致 PG 是 **non-stationary optimization**——优化目标本身随训练变化
+- 这也是 PG 难训的根本原因
 
 ---
 
 ## 承上启下
 
-SFT 让模型学会了"听话"，但只学到了"标注者怎么写"，无法理解"什么是更好的"。下一章 **Ch6** 引入奖励模型（RM）和 PPO，让模型从**人类偏好**中学习——这是从 GPT-3.5 到 ChatGPT 的关键一跳。
+REINFORCE 给出了"对策略求梯度"的范式，但实战缺陷明显：
+- 必须等 episode 结束（与 Ch3 MC 的痛点完全相同）
+- 即使有 baseline，方差仍较大
 
-> Ch6 中的 SFT 模型在三个地方用到：
-> 1. **Policy 初始化**：SFT 模型直接作为 PPO 的初始 Policy
-> 2. **Reference Model**：SFT 模型的冻结副本（呼应 Ch4 §D 的 BYOL Target）
-> 3. **RM 初始化**：RM 也用 SFT 模型改造（去掉 LM Head，加 Scalar Head）
+下一章 **Ch6 Actor-Critic** 解决这两个问题：
+- 用 Critic（V 网络）作为可学习的 baseline
+- 用 TD-style bootstrap 替代 MC-style $G_t$
+- 把 reward 信号"局部化"到每一步
+
+这套思想最终发展成 **GAE**（Generalized Advantage Estimation），是 PPO 的核心组件。

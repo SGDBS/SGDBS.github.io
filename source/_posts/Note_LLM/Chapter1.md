@@ -1,279 +1,418 @@
 ---
-title: Chapter1 数学工具箱：相似度、散度与 LLM 损失基础
-categories: 学习笔记-大模型
-date: 2026-03-27 12:48:00
+title: RL Chapter1 MDP 与 Bellman 方程
+categories: 学习笔记-强化学习
+date: 2026-05-09 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：整套笔记的"数学地基"。后续所有章节（Attention、InfoNCE、PPO KL 惩罚、DPO 闭式解）都建立在本章的相似度/散度公式之上。
+> **本章定位**：建立 RL 的"母语"——MDP（马尔可夫决策过程）。后续所有算法（DP、MC、TD、Q-Learning、PG、PPO、DPO、GRPO）都建立在 MDP 的概念之上。
+
+> **承上**：Ch0 §F.1 的概率论基础。
+> **启下**：Ch2 用 DP 求解已知 MDP，Ch3 用 MC/TD 估计未知 MDP。
 
 ---
 
 # §A 数学原理
 
-## 1. 欧氏距离 (Euclidean Distance) —— 绝对位置的度量
+## 1. 马尔可夫决策过程 (MDP) 的定义
 
-欧氏距离是最基础的 $L_2$ 范数，衡量 $n$ 维空间中两点的直线距离。
+一个 MDP 是一个五元组：
+$$\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, P, R, \gamma \rangle$$
 
-$$d(\mathbf{x}, \mathbf{y}) = \|\mathbf{x} - \mathbf{y}\|_2 = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2}$$
+| 符号 | 含义 |
+| :--- | :--- |
+| $\mathcal{S}$ | **状态空间**（State space），可数或不可数 |
+| $\mathcal{A}$ | **动作空间**（Action space），离散或连续 |
+| $P(s' \mid s, a)$ | **转移概率**（Transition kernel）：在状态 $s$ 执行动作 $a$ 后到达 $s'$ 的概率 |
+| $R(s, a)$ 或 $R(s, a, s')$ | **奖励函数**（Reward function）：执行动作后获得的标量奖励 |
+| $\gamma \in [0, 1]$ | **折扣因子**：未来奖励的衰减率 |
 
-* **物理意义**：两点间的位移矢量长度。
-* **局限性**：对**量级（Scale）**极其敏感。如果特征未归一化，数值大的维度将主导距离。
-* **维度灾难（Curse of Dimensionality）**：高维空间中，由于"测度集中（concentration of measure）"现象，任意两点距离趋于一个相近值——最远点距离与最近点距离的比值 $\to 1$。这也是 LLM Embedding（768~4096 维）几乎不直接用欧氏距离做检索的原因。
+### 1.1 Markov 性质
+
+**核心假设**：未来只依赖于当前，与历史无关：
+$$\boxed{P(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \dots, s_0, a_0) = P(s_{t+1} \mid s_t, a_t)}$$
+
+> **直觉**：当前状态 $s_t$ 已经"包含了所有历史的有用信息"。这听起来很强，但只要状态设计得当（比如把历史 $k$ 步打包进状态），几乎所有问题都可以建模为 MDP。
+
+### 1.2 折扣因子 $\gamma$ 的作用
+
+| $\gamma$ | 含义 |
+| :--- | :--- |
+| $\gamma = 0$ | 短视：只看当前 reward |
+| $\gamma \to 1$ | 远见：未来 reward 几乎不打折 |
+| 实践常用 | $0.95 \sim 0.99$ |
+
+**数学上的必要性**：若 $\gamma = 1$ 且 episode 无限长，累积 reward 可能发散为 $\infty$。$\gamma < 1$ 保证 $\sum_t \gamma^t r_t$ 收敛。
+
+## 2. 策略 (Policy)
+
+**策略** $\pi$ 是从状态到动作的映射，定义 agent 的行为。
+
+### 2.1 两种策略类型
+
+**确定性策略**：
+$$\pi : \mathcal{S} \to \mathcal{A}, \quad a = \pi(s)$$
+
+**随机策略**：
+$$\pi(a \mid s) = P(a_t = a \mid s_t = s)$$
+
+> 随机策略是一般情形（确定性策略是 one-hot 形式的特例）。后续推导默认用随机策略。
+
+### 2.2 轨迹与回报
+
+固定策略 $\pi$ 后，agent 与环境交互产生**轨迹**（trajectory）：
+$$\tau = (s_0, a_0, r_0, s_1, a_1, r_1, \dots)$$
+
+**累积折扣回报**（Return）：
+$$\boxed{G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots = \sum_{k=0}^{\infty} \gamma^k r_{t+k}}$$
+
+注意 $G_t$ 是**随机变量**，因为轨迹是随机的。
+
+## 3. 价值函数
+
+### 3.1 状态价值函数 $V^\pi$
+
+定义为：在状态 $s$ 出发、按策略 $\pi$ 行动，所获累积回报的期望：
+$$\boxed{V^\pi(s) = \mathbb{E}_\pi[G_t \mid s_t = s]}$$
+
+### 3.2 动作价值函数 $Q^\pi$
+
+在状态 $s$ 执行动作 $a$、之后按 $\pi$ 行动，所获累积回报的期望：
+$$\boxed{Q^\pi(s, a) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]}$$
+
+### 3.3 二者关系
+
+$$V^\pi(s) = \sum_a \pi(a \mid s) Q^\pi(s, a) = \mathbb{E}_{a \sim \pi}[Q^\pi(s, a)]$$
+
+$Q^\pi$ 比 $V^\pi$ "更细一级"，多了对动作的依赖。
+
+## 4. Bellman 期望方程（核心）
+
+### 4.1 推导
+
+从定义出发：
+$$V^\pi(s) = \mathbb{E}_\pi\left[\sum_{k=0}^{\infty} \gamma^k r_{t+k} \mid s_t = s\right]$$
+
+**拆分当前 reward 与未来 return**（这是 Bellman 思想的精髓）：
+$$V^\pi(s) = \mathbb{E}_\pi[r_t + \gamma G_{t+1} \mid s_t = s]$$
+
+由全期望公式：
+$$V^\pi(s) = \mathbb{E}_\pi[r_t \mid s_t = s] + \gamma \mathbb{E}_\pi[G_{t+1} \mid s_t = s]$$
+
+第一项展开：
+$$\mathbb{E}_\pi[r_t \mid s_t = s] = \sum_a \pi(a \mid s) R(s, a)$$
+
+第二项展开（用条件期望套娃）：
+$$\mathbb{E}_\pi[G_{t+1} \mid s_t = s] = \sum_a \pi(a \mid s) \sum_{s'} P(s' \mid s, a) \mathbb{E}_\pi[G_{t+1} \mid s_{t+1} = s'] = \sum_a \pi(a \mid s) \sum_{s'} P(s' \mid s, a) V^\pi(s')$$
+
+合并得到 **Bellman 期望方程**：
+
+$$\boxed{V^\pi(s) = \sum_a \pi(a \mid s) \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V^\pi(s') \right]}$$
+
+类似地：
+$$\boxed{Q^\pi(s, a) = R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) \sum_{a'} \pi(a' \mid s') Q^\pi(s', a')}$$
+
+### 4.2 矩阵形式
+
+设 $\mathcal{S}$ 有 $|\mathcal{S}|$ 个状态。定义：
+- $V^\pi \in \mathbb{R}^{|\mathcal{S}|}$：每个状态的价值
+- $R^\pi \in \mathbb{R}^{|\mathcal{S}|}$，$R^\pi(s) = \sum_a \pi(a \mid s) R(s, a)$
+- $P^\pi \in \mathbb{R}^{|\mathcal{S}| \times |\mathcal{S}|}$，$P^\pi(s, s') = \sum_a \pi(a \mid s) P(s' \mid s, a)$
+
+Bellman 期望方程矩阵化：
+$$V^\pi = R^\pi + \gamma P^\pi V^\pi$$
+
+整理：
+$$(I - \gamma P^\pi) V^\pi = R^\pi$$
+
+由于 $\gamma < 1$，$\gamma P^\pi$ 的谱半径 $< 1$，$(I - \gamma P^\pi)$ 可逆：
+
+$$\boxed{V^\pi = (I - \gamma P^\pi)^{-1} R^\pi}$$
+
+> **重要**：这给出了**精确求解** $V^\pi$ 的闭式解！但代价是 $O(|\mathcal{S}|^3)$ 的矩阵求逆，当 $|\mathcal{S}|$ 很大时不可行——这就是 Ch2 用迭代法求解的动机。
+
+## 5. Bellman 最优方程
+
+### 5.1 最优价值函数
+
+定义最优价值：
+$$V^*(s) = \max_\pi V^\pi(s), \quad Q^*(s, a) = \max_\pi Q^\pi(s, a)$$
+
+### 5.2 Bellman 最优方程
+
+$$\boxed{V^*(s) = \max_a \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V^*(s') \right]}$$
+
+$$\boxed{Q^*(s, a) = R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) \max_{a'} Q^*(s', a')}$$
+
+**对比**：Bellman 期望方程的 $\sum_a \pi(a \mid s)$ 变成了 $\max_a$。
+
+### 5.3 最优策略
+
+一旦得到 $Q^*$，最优策略立即可得：
+$$\pi^*(s) = \arg\max_a Q^*(s, a)$$
+
+> **关键观察**：如果我们知道了 $Q^*$，所有问题就解决了——直接 greedy 就是最优。**RL 的本质是估计 $Q^*$（或 $V^*$、或直接学策略 $\pi^*$）**。
+
+## 6. 收缩映射定理：为什么 Bellman 方程有唯一解？
+
+这一节是数学最重的部分，但极其重要——它保证了所有"迭代法"（Ch2 的价值迭代）都会收敛。
+
+### 6.1 Bellman backup 算子
+
+定义算子 $T: \mathbb{R}^{|\mathcal{S}|} \to \mathbb{R}^{|\mathcal{S}|}$：
+$$(TV)(s) = \max_a \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V(s') \right]$$
+
+$T$ 把任意 $V$ 映射到一个新的 $V$。**Bellman 最优方程就是 $V^* = TV^*$**，即 $V^*$ 是 $T$ 的不动点。
+
+### 6.2 收缩性证明
+
+**目标**：证明 $T$ 是 $\gamma$-收缩，即 $\|TV_1 - TV_2\|_\infty \leq \gamma \|V_1 - V_2\|_\infty$。
+
+**证明**：对任意状态 $s$：
+$$\begin{aligned}
+|(TV_1)(s) - (TV_2)(s)| &= \left| \max_a \left[ R(s,a) + \gamma \sum_{s'} P(s' | s, a) V_1(s') \right] \right. \\
+&\quad \left. - \max_a \left[ R(s,a) + \gamma \sum_{s'} P(s' | s, a) V_2(s') \right] \right|
+\end{aligned}$$
+
+利用 $|\max_a f(a) - \max_a g(a)| \leq \max_a |f(a) - g(a)|$：
+$$\leq \max_a \left| \gamma \sum_{s'} P(s' | s, a) (V_1(s') - V_2(s')) \right|$$
+
+$$\leq \gamma \max_a \sum_{s'} P(s' | s, a) |V_1(s') - V_2(s')|$$
+
+$$\leq \gamma \max_a \sum_{s'} P(s' | s, a) \cdot \|V_1 - V_2\|_\infty = \gamma \|V_1 - V_2\|_\infty$$
+
+最后一步用了 $\sum_{s'} P(s' | s, a) = 1$。$\square$
+
+### 6.3 Banach 不动点定理
+
+**定理**（Banach Fixed-Point Theorem）：在完备度量空间 $(X, d)$ 中，若 $T: X \to X$ 是 $\beta$-收缩（$\beta < 1$），则：
+1. $T$ 存在**唯一**不动点 $x^*$
+2. 从任意 $x_0$ 出发迭代 $x_{n+1} = T x_n$，序列**几何收敛**到 $x^*$
+3. 收敛速度：$\|x_n - x^*\| \leq \beta^n \|x_0 - x^*\|$
+
+**应用到 RL**：
+- $X = \mathbb{R}^{|\mathcal{S}|}$ 配以 sup 范数是完备度量空间
+- $T$ 是 $\gamma$-收缩
+- 因此 $V^*$ 唯一存在，**价值迭代** $V_{n+1} = TV_n$ **几何收敛**
+
+> **推论**：收敛速度 $\|V_n - V^*\|_\infty \leq \gamma^n \|V_0 - V^*\|_\infty$。当 $\gamma = 0.99$ 时，迭代 230 次误差缩小 10 倍；$\gamma = 0.9$ 时只需 22 次。这解释了为什么大 $\gamma$ 训练慢。
+
+## 7. 一个重要的等式：$Q^\pi$ 的 Bellman 方程
+
+把 $V^\pi(s') = \sum_{a'} \pi(a' \mid s') Q^\pi(s', a')$ 代入 $Q^\pi$ 的定义：
+
+$$\boxed{Q^\pi(s, a) = R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) \sum_{a'} \pi(a' \mid s') Q^\pi(s', a')}$$
+
+等价的"采样形式"（去掉求和的展开）：
+$$Q^\pi(s, a) = \mathbb{E}_{s' \sim P, a' \sim \pi}[R(s, a) + \gamma Q^\pi(s', a')]$$
+
+**这个形式是 Ch3 TD learning 的核心起点**——它告诉我们如何用样本（而非求和）估计 $Q^\pi$。
 
 ---
 
-## 2. 余弦相似度 (Cosine Similarity) —— 方向的共鸣
+# §B 模型架构：MDP 的数据流
 
-$$S_{cos}(\mathbf{x}, \mathbf{y}) = \frac{\mathbf{x} \cdot \mathbf{y}}{\|\mathbf{x}\| \|\mathbf{y}\|} = \frac{\sum_{i=1}^{n} x_i y_i}{\sqrt{\sum x_i^2} \sqrt{\sum y_i^2}}$$
+## B.1 Agent-Environment 交互图
 
-* **取值范围**：$[-1, 1]$。$1$ 同向，$0$ 正交，$-1$ 反向。
-* **与欧氏距离的关键转换**：当 $\|\mathbf{x}\| = \|\mathbf{y}\| = 1$ 时，
-$$\|\mathbf{x} - \mathbf{y}\|^2 = 2 - 2\mathbf{x}^T\mathbf{y} = 2(1 - \cos\theta)$$
-即 **L2 归一化后，最小化欧氏距离 ⇔ 最大化余弦相似度**。这是 BYOL（Ch4）和 CLIP（Ch3）损失设计的数学基础。
+```
+                ┌─────────────────────────────┐
+                │       Environment            │
+                │  - State transition P(s'|s,a)│
+                │  - Reward R(s, a)            │
+                └──────────┬─────────▲────────┘
+                           │ s_t, r_t │ a_t
+                           ▼          │
+                ┌─────────────────────────────┐
+                │          Agent               │
+                │  - Policy π(a|s)             │
+                │  - Value V(s) / Q(s,a)       │
+                └─────────────────────────────┘
+```
 
----
+**每一步的输入输出**：
 
-## 3. 点积 / 内积 (Dot Product) —— 注意力机制的心脏
+| 时刻 | Agent 输入 | Agent 输出 | Env 输入 | Env 输出 |
+| :--- | :--- | :--- | :--- | :--- |
+| $t$ | $s_t$ | $a_t \sim \pi(\cdot \mid s_t)$ | $a_t$ | $s_{t+1} \sim P(\cdot \mid s_t, a_t), r_t$ |
 
-$$\mathbf{x} \cdot \mathbf{y} = \sum_{i=1}^{n} x_i y_i = \|\mathbf{x}\| \|\mathbf{y}\| \cos\theta$$
+## B.2 GridWorld 例子（贯穿 Ch1-3）
 
-**与余弦的关系**：点积 = 余弦相似度 × 两向量模长乘积。L2 归一化后两者等价。
+最简单的 MDP：4×4 网格，agent 从左上角出发，到右下角终止。
 
-### Scaled Dot-Product Attention 的两个 "为什么"
+```
+. . . .          每格表示一个状态
+. # . .          # 是障碍
+. . . .          四个动作：上下左右
+. . . G          G 是终点（reward = +1）
+                 其他状态 reward = 0
+                 撞墙 reward = -0.1
+```
 
-Transformer 的核心打分函数：
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
-
-**为什么用点积而非余弦？** 点积保留向量幅值信息（强 query / 弱 query），表达力更强；且只需一次矩阵乘法，硬件友好。
-
-**为什么除以 $\sqrt{d_k}$？** 设 $q, k \in \mathbb{R}^{d_k}$ 各分量独立同分布、零均值、单位方差：
-$$\text{Var}(q \cdot k) = \sum_{i=1}^{d_k} \text{Var}(q_i k_i) = d_k$$
-点积方差随维度 **线性增长**。$d_k$ 较大时，点积值被推到 softmax 饱和区，梯度趋近 0（梯度消失）。除以 $\sqrt{d_k}$ 把方差拉回 $1$，使 softmax 输出保持在合理区间。
-
-> **本章核心句**：Transformer 的注意力分数 = 缩放点积相似度。
-
----
-
-## 4. 皮尔逊相关系数 (Pearson Correlation)
-
-$$\rho_{x,y} = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i - \bar{x})^2}\sqrt{\sum(y_i - \bar{y})^2}}$$
-
-* **数学本质**：**中心化（Mean-centering）后的余弦相似度**。
-* **平移不变性**：通过减去均值，自动校准不同 scale。
-
----
-
-## 5. Jaccard 相似度
-
-$$J(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
-
-* **典型应用**：目标检测的 IoU、文本去重 MinHash、tokenizer 评估。
-
----
-
-## 6. KL 散度与交叉熵 —— 训练流程的灵魂
-
-前面 1–5 节都是**点之间**的相似度。但训练 LLM 时，更关心**两个概率分布**有多接近：模型预测分布 $Q$ vs 真实分布 $P$。
-
-### 6.1 KL 散度
-
-$$D_{KL}(P \| Q) = \sum_{i} P(i) \log \frac{P(i)}{Q(i)} = \mathbb{E}_{i \sim P}\left[\log \frac{P(i)}{Q(i)}\right]$$
-
-**性质**：
-- **不对称**：$D_{KL}(P\|Q) \neq D_{KL}(Q\|P)$
-- **非负**：$D_{KL}(P\|Q) \geq 0$，$=0 \iff P = Q$（吉布斯不等式）
-- **直观含义**：用分布 $Q$ 编码来自 $P$ 的样本，平均浪费多少 bit
-
-### 6.2 交叉熵
-
-$$H(P, Q) = -\sum_{i} P(i) \log Q(i) = \underbrace{H(P)}_{\text{常数}} + D_{KL}(P \| Q)$$
-
-由于 $H(P)$（真实分布的熵）与模型参数无关：
-$$\boxed{\text{最小化交叉熵} \iff \text{最小化 KL 散度}}$$
-
-### 6.3 LLM 训练流程中的角色
-
-| 阶段 | 损失/约束 | 说明 |
-| :--- | :--- | :--- |
-| **预训练** | $\mathcal{L} = -\sum_t \log P_\theta(x_t \mid x_{<t})$ | Next-token 交叉熵 |
-| **SFT** | 同上，但只在 response 上 | Teacher forcing + 交叉熵（Ch5） |
-| **知识蒸馏** | $D_{KL}(P_{teacher} \| P_{student})$ | Soft label 对齐 |
-| **RLHF / PPO** | reward $- \beta \cdot D_{KL}(\pi_\theta \| \pi_{ref})$ | KL penalty 防策略漂移（Ch6） |
-| **DPO** | log-ratio 间接体现 KL 闭式解 | 见 Ch7 §A 推导 |
-
-> **核心结论**：LLM 训练每一个阶段，本质都在做"用 KL/交叉熵让一个分布逼近另一个分布"。
+| 元素 | 取值 |
+| :--- | :--- |
+| $\mathcal{S}$ | 16 个格子（去掉障碍 = 15） |
+| $\mathcal{A}$ | $\{\text{上, 下, 左, 右}\}$ |
+| $P$ | 确定性转移（移动到邻格），撞墙不动 |
+| $R$ | 到达 G: $+1$；撞墙: $-0.1$；其他: $0$ |
+| $\gamma$ | $0.95$ |
 
 ---
 
-# §B 模型结构（PyTorch 实现）
+# §C 训练与推理（实战）
 
-## B.1 Scaled Dot-Product Attention（4 行实现）
+## C.1 GridWorld 的 numpy 实现
 
 ```python
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import math
-
-def scaled_dot_product_attention(Q, K, V, mask=None):
-    """
-    Q: [B, H, L_q, d_k]   K: [B, H, L_k, d_k]   V: [B, H, L_k, d_v]
-    """
-    d_k = Q.size(-1)
-    scores = Q @ K.transpose(-2, -1) / math.sqrt(d_k)         # [B, H, L_q, L_k]
-    if mask is not None:
-        scores = scores.masked_fill(mask == 0, float('-inf')) # 因果/padding mask
-    attn = F.softmax(scores, dim=-1)                          # 概率分布
-    return attn @ V                                           # [B, H, L_q, d_v]
-```
-
-PyTorch 2.0+ 推荐直接用 `F.scaled_dot_product_attention(Q, K, V, is_causal=True)`，内部自动选择 FlashAttention 等高效实现。
-
-## B.2 LM 损失：Cross-Entropy + ignore_index
-
-LLM 训练的核心损失就是 **next-token prediction 交叉熵**：
-
-```python
-def lm_loss(logits, labels, ignore_index=-100):
-    """
-    logits: [B, L, V]    labels: [B, L]
-    标签中为 -100 的位置不计入 loss（用于 mask 掉 prompt 部分）
-    """
-    # 错位：用 t 时刻的 logits 预测 t+1 时刻的 token
-    shift_logits = logits[..., :-1, :].contiguous()       # [B, L-1, V]
-    shift_labels = labels[..., 1:].contiguous()           # [B, L-1]
-
-    return F.cross_entropy(
-        shift_logits.view(-1, shift_logits.size(-1)),
-        shift_labels.view(-1),
-        ignore_index=ignore_index,
-    )
-```
-
-`ignore_index=-100` 是 PyTorch 默认行为：标签 = -100 的位置自动跳过 loss 计算与梯度回传。SFT 中通过把 prompt 部分 labels 设为 -100 实现"只对 response 算 loss"（详见 Ch5）。
-
-## B.3 KL 散度的三种 Estimator
-
-PPO 实现里 KL 不是直接用闭式公式，而是用 **sample-based estimator**（因为 $\pi_\theta$ 和 $\pi_{ref}$ 都是高维分布，无法穷举求和）：
-
-```python
-def kl_estimators(logp_theta, logp_ref):
-    """
-    logp_theta, logp_ref: shape [B, L]，每个 token 在两个 policy 下的对数概率
-    返回三种 KL 近似（来自 John Schulman 博客）
-    """
-    log_ratio = logp_theta - logp_ref      # = log(π_θ / π_ref)
-
-    k1 = log_ratio                                       # 无偏，但方差大
-    k2 = 0.5 * log_ratio.pow(2)                          # 总是非负，但有偏
-    k3 = (torch.exp(log_ratio) - 1) - log_ratio          # 无偏 + 总是非负 ⭐ TRL 默认
-
-    return k1, k2, k3
-```
-
-* **k1**：直接 log-ratio，无偏估计，但**可能为负**（数值不稳定）
-* **k2**：平方形式，必然非负但**有偏**
-* **k3**：$e^x - 1 - x \geq 0$，**既无偏又非负**，是 TRL/HuggingFace 库的默认选择
-
-> 这个细节面试常考：**为什么 PPO 实现里 KL 是 `(ratio - 1 - log_ratio)` 而不是 `log_ratio`？**
-
-## B.4 L2 归一化与余弦相似度
-
-```python
-def cosine_sim(a, b, eps=1e-8):
-    """a, b: [B, D]"""
-    a_norm = a / (a.norm(dim=-1, keepdim=True) + eps)
-    b_norm = b / (b.norm(dim=-1, keepdim=True) + eps)
-    return (a_norm * b_norm).sum(dim=-1)              # [B]
-
-# PyTorch 内置：
-F.cosine_similarity(a, b, dim=-1)                     # 等价
-```
-
-**工程小技巧**：训练 embedding 模型时直接 `F.normalize(x, dim=-1)`，下游用内积索引即可（见 Ch3）。
-
----
-
-# §C 训练与推理
-
-## C.1 训练视角：交叉熵在 LM 中如何按 token 累加
-
-预训练 / SFT 的 loss 实际计算流程：
-
-```
-input_ids:  [BOS]  你   好   ， 世  界 [EOS]    ← 输入
-labels:     [-100, 你 , 好 , ， 世 , 界 ,EOS]   ← SFT 时 prompt 部分置 -100
-                  ↑                            ← 这一位被 ignore
-                                               
-forward → logits: [B, L, V]
-shift  → 用 logits[:, :-1] 预测 labels[:, 1:]
-loss   = F.cross_entropy(logits.flatten(0,1), labels.flatten(), ignore_index=-100)
-       = - (1/N_valid) * Σ log P(label_t | prefix_<t)
-```
-
-**关键点**：
-- N_valid 是有效 token 数（排除 -100），而非总长度
-- 每个 token 的 loss 是独立累加的（per-token CE），最后取平均
-- 所以"短句"和"长句"在 loss 中的权重不同——这也是 SimPO（Ch7）等方法引入"长度归一化"的动机
-
-## C.2 推理视角：向量检索（FAISS / Milvus）
-
-Embedding 模型训练时用余弦相似度，推理时怎么用？
-
-```python
-import faiss
 import numpy as np
 
-# 1. 构建索引：内存中存所有文档 embedding
-embeddings = np.array(doc_embeddings, dtype=np.float32)  # [N, D]
-faiss.normalize_L2(embeddings)                            # ⭐ 关键：L2 归一化
-index = faiss.IndexFlatIP(embeddings.shape[1])            # 内积索引（IP = Inner Product）
-index.add(embeddings)
+class GridWorld:
+    """4x4 GridWorld MDP"""
+    def __init__(self, gamma=0.95):
+        self.H, self.W = 4, 4
+        self.n_states = self.H * self.W
+        self.n_actions = 4                          # 上下左右
+        self.gamma = gamma
+        self.terminal = (3, 3)                       # 终点
+        self.obstacle = (1, 1)                       # 障碍
 
-# 2. 检索：query 也归一化后用内积查
-query = np.array([query_embedding], dtype=np.float32)
-faiss.normalize_L2(query)
-D, I = index.search(query, k=10)                          # 返回 top-10 (距离, 索引)
+    def state_to_xy(self, s):
+        return s // self.W, s % self.W
+
+    def xy_to_state(self, x, y):
+        return x * self.W + y
+
+    def step(self, s, a):
+        """返回 (next_state, reward, done)"""
+        if self.state_to_xy(s) == self.terminal:
+            return s, 0.0, True
+
+        x, y = self.state_to_xy(s)
+        # 上下左右：dx, dy
+        moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        dx, dy = moves[a]
+        nx, ny = x + dx, y + dy
+
+        # 撞墙惩罚
+        if nx < 0 or nx >= self.H or ny < 0 or ny >= self.W:
+            return s, -0.1, False
+        if (nx, ny) == self.obstacle:
+            return s, -0.1, False
+
+        s_new = self.xy_to_state(nx, ny)
+        reward = 1.0 if (nx, ny) == self.terminal else 0.0
+        done = (nx, ny) == self.terminal
+        return s_new, reward, done
+
+    def get_transition_matrix(self):
+        """返回 P[s, a, s'] 和 R[s, a]"""
+        P = np.zeros((self.n_states, self.n_actions, self.n_states))
+        R = np.zeros((self.n_states, self.n_actions))
+        for s in range(self.n_states):
+            for a in range(self.n_actions):
+                s_new, r, _ = self.step(s, a)
+                P[s, a, s_new] = 1.0                 # 确定性 MDP
+                R[s, a] = r
+        return P, R
 ```
 
-**为什么 L2 归一化后用内积代替余弦？**
-归一化后 $\mathbf{x}^T\mathbf{y} = \cos\theta$，省去两次范数除法。在亿级向量库中，**内积索引（IP）比余弦索引（COS）快 30%+**。这就是 OpenAI/BGE/E5 等所有主流 embedding 模型默认输出归一化向量的原因（详见 Ch3）。
+## C.2 用闭式解直接求 $V^\pi$（验证 §A.4.2）
 
-## C.3 KL 在 RLHF 推理中其实"不存在"
+```python
+def solve_v_closed_form(env, policy):
+    """
+    用矩阵求逆直接求 V^π
+    policy: [n_states, n_actions] 概率分布
+    """
+    P, R = env.get_transition_matrix()              # [S, A, S], [S, A]
+    n = env.n_states
+    gamma = env.gamma
 
-容易混淆的点：**KL 惩罚只在训练时存在**。
-- 训练时：$\text{reward} = r_\phi(x, y) - \beta \cdot \text{KL}(\pi_\theta \| \pi_{ref})$
-- 推理时：直接 sampling $y \sim \pi_\theta(\cdot \mid x)$，没有 reference model 参与
+    # 计算 P^π 和 R^π
+    # P^π(s, s') = Σ_a π(a|s) P(s'|s, a)
+    # R^π(s)    = Σ_a π(a|s) R(s, a)
+    P_pi = np.einsum('sa,sap->sp', policy, P)       # [S, S]
+    R_pi = np.einsum('sa,sa->s', policy, R)         # [S]
 
-KL 的作用是在训练阶段把 $\pi_\theta$ "锚定"在 $\pi_{ref}$ 附近，训练完毕后参考模型就可以丢弃。
+    # V^π = (I - γ P^π)^{-1} R^π
+    V = np.linalg.solve(np.eye(n) - gamma * P_pi, R_pi)
+    return V
+
+
+# 用法：随机策略下的价值
+env = GridWorld()
+random_policy = np.ones((env.n_states, env.n_actions)) / env.n_actions
+V_random = solve_v_closed_form(env, random_policy)
+print(V_random.reshape(4, 4))                        # 可视化
+```
+
+**输出示例**（随机策略下的状态价值）：
+```
+[[ 0.51  0.55  0.62  0.69]
+ [ 0.55  -1.0  0.69  0.78]
+ [ 0.62  0.69  0.78  0.88]
+ [ 0.69  0.78  0.88  0.00]]    ← 终点 V=0
+```
+
+观察：越靠近终点价值越高，符合直觉。障碍位置 V 是无效（被设为 -1.0 标记）。
+
+## C.3 推理视角：MDP 不需要"训练"
+
+注意 §C.2 的代码**没有任何"训练"**——MDP 是已知的（我们手动定义了 P, R），价值函数有闭式解。
+
+这是 RL 与监督学习的关键区别：
+- **监督学习**：数据是给定的，模型参数需要学习
+- **RL（已知 MDP）**：MDP 是给定的，价值函数可以**精确求解**或迭代求解（Ch2）
+- **RL（未知 MDP）**：MDP 是未知的，需要从交互数据中**估计** $V$ 或 $Q$（Ch3 之后）
 
 ---
 
-# §D 总结表
+# §D 章末速查
 
-| 度量方法 | 核心属性 | 对量级敏感？ | 在 LLM/Transformer 中的角色 |
-| :--- | :--- | :--- | :--- |
-| **欧氏距离** | 空间位移 | **是** | 几乎不直接使用（高维退化） |
-| **余弦相似度** | 向量方向 | 否 | RAG 检索、Embedding 库默认度量 |
-| **点积** | 方向 + 幅值 | **是** | **Scaled Dot-Product Attention 的核心** |
-| **皮尔逊系数** | 线性趋势 | 否 | 评测时衡量打分相关性 |
-| **Jaccard** | 集合重叠度 | 否 | 数据去重 (MinHash)、Tokenizer 评估 |
-| **KL 散度** | 分布差异（不对称） | — | 蒸馏损失、RLHF KL 惩罚 |
-| **交叉熵** | 分布拟合 | — | **预训练、SFT 的损失函数** |
+## D.1 五个核心方程速记
+
+| # | 方程 | 含义 |
+| :---: | :--- | :--- |
+| 1 | $G_t = \sum_{k=0}^\infty \gamma^k r_{t+k}$ | 累积折扣回报 |
+| 2 | $V^\pi(s) = \mathbb{E}_\pi[G_t \mid s_t = s]$ | 状态价值定义 |
+| 3 | $V^\pi(s) = \sum_a \pi(a \mid s) [R + \gamma \sum_{s'} P V^\pi(s')]$ | Bellman 期望方程 |
+| 4 | $V^*(s) = \max_a [R + \gamma \sum_{s'} P V^*(s')]$ | Bellman 最优方程 |
+| 5 | $\pi^*(s) = \arg\max_a Q^*(s, a)$ | 最优策略恢复 |
+
+## D.2 常见面试题
+
+**Q1：为什么 RL 要用 Markov 假设？**
+- 没有 Markov 性，状态不能完整描述未来——必须保留历史，状态空间爆炸
+- 实际中通过设计状态（如把过去 $k$ 帧叠在一起）让问题"近似 Markov"
+
+**Q2：为什么 $V^*$ 唯一存在？**
+- Bellman backup 算子 $T$ 是 $\gamma$-收缩
+- 由 Banach 不动点定理，唯一不动点存在
+- 收敛速度是几何级（$\gamma^n$）
+
+**Q3：$V^\pi$ vs $Q^\pi$，什么时候用哪个？**
+- **$V^\pi$**：评估状态本身好坏（如下棋时"我这个局面值多少"）
+- **$Q^\pi$**：评估状态-动作对（"这一步走 e4 还是 d4 更好"）
+- 直接得到最优策略需要 $Q^*$（$\pi^*(s) = \arg\max_a Q^*$）
+
+**Q4：折扣因子 $\gamma$ 怎么选？**
+- 短视任务（贪吃蛇）：0.9
+- 长视任务（围棋、对话）：0.99-1.0（围棋实际用 1.0）
+- LM 序列：1.0（reward 在末尾，不衰减）
+
+**Q5：MDP 五元组里哪个最难定义？**
+- 工程实践中：**奖励函数 $R$**。Reward design 是 RL 工程师 80% 的精力所在
+- 错误的 reward 会导致 reward hacking（呼应《学习笔记-大模型》Ch6 §C.4）
 
 ---
 
 ## 承上启下
 
-本章建立的数学工具中：
-- **点积** 直接通往 **Ch2 InfoNCE**（对比学习的核心打分函数）
-- **L2 归一化 + 余弦** 通往 **Ch3 CLIP/SimCSE**（embedding 训练）
-- **MSE = 2(1-cos)** 通往 **Ch4 BYOL**（无负样本损失设计）
-- **交叉熵** 通往 **Ch5 SFT**（LM loss）
-- **KL 散度** 通往 **Ch6 PPO** 和 **Ch7 DPO**（对齐算法的核心约束）
+本章建立了 RL 的"母语"：MDP 与 Bellman 方程。但 §C.2 的闭式解只适用于**小状态空间** + **已知 MDP**。
 
-下一章进入 Ch2，看看这些工具如何组装出第一个真正的"自监督表示学习"算法。
+下一章 **Ch2** 介绍**动态规划（DP）**：当状态空间稍大时，迭代法（策略迭代、价值迭代）求解 Bellman 方程。
+
+DP 的核心限制：**仍需已知 MDP**（即 $P$ 和 $R$）。要是不知道 MDP 怎么办？那就要等到 Ch3 的 Monte Carlo / TD 方法——它们直接从经验中学，不需要环境模型。

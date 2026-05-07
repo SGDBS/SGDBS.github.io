@@ -1,316 +1,495 @@
 ---
-title: Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器
-categories: 学习笔记-大模型
-date: 2026-03-28 16:03:34
+title: RL Chapter3 Monte Carlo 与 TD：从样本估计价值
+categories: 学习笔记-强化学习
+date: 2026-05-11 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：把 Ch2 的 InfoNCE 推广到 (1) 跨模态——CLIP 用图文对训练，成为多模态 LLM 的视觉骨干；(2) 文本——SimCSE 把 InfoNCE 引入 NLP，BGE/E5 训出现代 RAG 检索器。
+> **本章定位**：DP（Ch2）需要已知 MDP，但现实中 $P, R$ 几乎总是未知。本章引入 RL 的核心思想——**从交互样本估计 Bellman 方程**，奠定后续所有 model-free 算法的基础。
 
-> **承上**：Ch2 §A 的 InfoNCE 损失、§B 的 In-batch 负样本机制。
-> **启下**：Ch4 转向无负样本路线（BYOL/SimSiam/DINO）。
+> **承上**：Ch1 §A.7 的 $Q^\pi$ 采样形式 + Ch2 §6 的 GPI 框架。
+> **启下**：Ch4 把 TD 思想用到 control（Q-Learning/SARSA）。
 
 ---
 
 # §A 数学原理
 
-## 1. CLIP 的对称 InfoNCE
+## 1. Monte Carlo 估计
 
-CLIP（OpenAI 2021）的核心是**双塔对比**：图像塔与文本塔分别将各自模态映射到同一个表示空间。
+### 1.1 核心思想
 
-设一个 batch 含 $N$ 个图文对 $\{(I_i, T_i)\}_{i=1}^N$：
-- Image Encoder（ViT 或 ResNet）$\to v_i \in \mathbb{R}^d$
-- Text Encoder（Transformer）$\to t_i \in \mathbb{R}^d$
-- 二者 L2 归一化到单位球面
+**用样本平均代替真实期望**：
+$$V^\pi(s) = \mathbb{E}_\pi[G_t \mid s_t = s] \approx \frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i^{(s)}$$
 
-**对称损失**：构造 $N \times N$ 相似度矩阵 $S_{ij} = v_i^T t_j / \tau$。对角线为正样本，其余 $N-1$ 为负样本。两个方向的交叉熵相加：
+其中 $G_i^{(s)}$ 是第 $i$ 次 episode 中从状态 $s$ 出发的实际累积回报。
 
-$$\mathcal{L}_{\text{CLIP}} = \frac{1}{2}\left( \mathcal{L}_{\text{img→txt}} + \mathcal{L}_{\text{txt→img}} \right)$$
+### 1.2 流程
 
-$$\mathcal{L}_{\text{img→txt}} = -\frac{1}{N}\sum_{i=1}^N \log \frac{\exp(S_{ii})}{\sum_j \exp(S_{ij})}, \quad \mathcal{L}_{\text{txt→img}} \text{ 同理}$$
+1. 跑完一整个 episode：$(s_0, a_0, r_0, s_1, a_1, r_1, \dots, s_T)$
+2. 对每个 $t$，计算实际累积回报 $G_t = \sum_{k=0}^{T-t-1} \gamma^k r_{t+k}$
+3. 把 $G_t$ 加入 $V(s_t)$ 的样本池，更新均值
 
-**关键工程细节**：
-- **温度 $\tau$ 是可学习参数**：CLIP 让 $\log(1/\tau)$ 直接参与训练，初始化为 $\log(1/0.07)$。这样模型自己决定相似度尺度。
-- **训练规模**：4 亿图文对（WIT 数据集），batch size 32768——巨大的 batch 等价于巨大的负样本池
+### 1.3 增量式更新
 
-## 2. SimCSE：NLP 对比学习的"SimCLR 时刻"
+避免存储所有 $G$，用增量均值公式：
+$$V(s) \leftarrow V(s) + \frac{1}{N(s)} \left[ G - V(s) \right]$$
 
-文本是离散 token，无法做 Crop/Color Jitter。SimCSE（EMNLP 2021）发现一个**简单到震惊**的方案：**两次不同的 Dropout 当作正样本对**。
+或更一般地用学习率 $\alpha$（**常量学习率 = 指数移动平均**）：
+$$\boxed{V(s) \leftarrow V(s) + \alpha \left[ G - V(s) \right]}$$
 
-### 2.1 Unsupervised SimCSE
+### 1.4 First-Visit vs Every-Visit MC
 
-同一句话 $x$ 两次过同一个 BERT，由于 Dropout mask 不同，得到 $h_1, h_2$，作为正样本对。Batch 内其他句子作负样本。损失就是标准 InfoNCE：
+**First-Visit MC**：每个 episode 中状态 $s$ 第一次出现时才更新。
+**Every-Visit MC**：每次出现都更新。
 
-$$\mathcal{L}_i = -\log \frac{\exp(\text{sim}(h_i^{(1)}, h_i^{(2)}) / \tau)}{\sum_{j=1}^N \exp(\text{sim}(h_i^{(1)}, h_j^{(2)}) / \tau)}$$
+- First-Visit 是无偏估计，理论分析更友好
+- Every-Visit 数据利用率更高，实践常用
+- 两者在 episode 数趋于无穷时都收敛到 $V^\pi$
 
-### 2.2 Supervised SimCSE
+### 1.5 MC 的优缺点
 
-用 NLI（自然语言推理）数据：
-- 正样本：(premise, entailment)（蕴含）
-- **Hard Negative**：(premise, contradiction)（矛盾）
-- 加 hard negative 后效果显著提升
+✅ **优点**：
+- 无偏（$\mathbb{E}[G] = V^\pi(s)$）
+- 不需要 $P, R$
+- 不依赖 Markov 性
 
-### 2.3 为什么 Dropout 这么简单的方案有效？
+❌ **缺点**：
+- **必须等 episode 结束才能更新**——无法处理无终止任务
+- **方差高**：$G$ 是几十上百步 reward 的累加，方差爆炸
+- 数据效率低
 
-Dropout 在表示空间施加了**最小但语义保持**的扰动：
-- 保留 anchor 的语义（输入文本完全不变）
-- 制造足够的随机性让模型学到鲁棒特征
-- 复杂的文本增强（同义词替换、删词）反而可能改变语义，引入噪声标签
+## 2. Temporal Difference (TD) Learning
 
-> **核心洞察**：对比学习的成功核心是"**语义保持的扰动 + 互斥的负样本池**"。增强的强度只要够引入随机性即可，不必复杂。
+### 2.1 核心洞察
 
-## 3. In-batch Negatives 的数学
+回忆 Ch1 §A.7 的采样形式：
+$$Q^\pi(s, a) = \mathbb{E}_{s', a'}[r + \gamma Q^\pi(s', a')]$$
 
-对 retrieval 任务，batch 内 $N$ 个 (query, positive) 对，构造 $N \times N$ 相似度矩阵：
-- 对角线 $S_{ii}$ = (query_i, positive_i) 得分
-- **非对角线 $S_{ij}, j \neq i$** = (query_i, positive_j) 得分 → **当作 query_i 的负样本**
+如果 $V^\pi$ 已知，则一步交互 $(s_t, a_t, r_t, s_{t+1})$ 给出**无偏单点估计**：
+$$\hat{V}(s_t) \approx r_t + \gamma V^\pi(s_{t+1})$$
 
-一次前向就拿到了 $N-1$ 个免费负样本。损失：
-$$\mathcal{L} = -\frac{1}{N}\sum_{i=1}^N \log \frac{\exp(S_{ii} / \tau)}{\sum_j \exp(S_{ij} / \tau)}$$
+但 $V^\pi$ 未知！TD 的天才之处：**用当前 $V$ 的估计去估计 $V^\pi$**——这叫 **bootstrap**。
 
-这是 DPR、BGE、E5 等所有 retriever 的标配做法。**Batch size 越大，负样本越多，效果越好**——这与 SimCLR 的逻辑一致。
+### 2.2 TD(0) 更新公式
+
+$$\boxed{V(s_t) \leftarrow V(s_t) + \alpha \underbrace{[r_t + \gamma V(s_{t+1}) - V(s_t)]}_{\delta_t \ \text{TD-error}}}$$
+
+**关键概念 TD-error**：
+$$\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$$
+
+直观：用"实际看到的一步 reward + bootstrap 的下一步 V"替代 V(s_t) 的现有估计。
+
+### 2.3 TD 的优缺点（与 MC 对比）
+
+| 维度 | MC | TD |
+| :--- | :--- | :--- |
+| **更新时机** | episode 结束 | 每步立即 |
+| **偏差** | 无偏 | **有偏**（用 V 估计 V） |
+| **方差** | **高** | 低 |
+| **是否需要 episode 终止** | 必须 | 不需要 |
+| **是否依赖 Markov 性** | 不依赖 | 强烈依赖 |
+
+> **核心 trade-off**：MC 是**高方差无偏**，TD 是**低方差有偏**。这个 bias-variance trade-off 贯穿整个 RL。
+
+### 2.4 收敛性
+
+**TD(0) 收敛性定理**：在 tabular 设置下（$V$ 用表格存储），若学习率满足 Robbins-Monro 条件：
+$$\sum_t \alpha_t = \infty, \quad \sum_t \alpha_t^2 < \infty$$
+（如 $\alpha_t = 1/t$），则 TD(0) **依概率 1 收敛**到 $V^\pi$。
+
+实践中常用常量 $\alpha \in [0.01, 0.1]$，等价于做指数移动平均。
+
+## 3. n-step TD：连接 MC 与 TD
+
+### 3.1 思想
+
+TD(0) 只看一步，MC 看到底。中间地带是**看 n 步**：
+
+$$\hat{G}_t^{(n)} = r_t + \gamma r_{t+1} + \dots + \gamma^{n-1} r_{t+n-1} + \gamma^n V(s_{t+n})$$
+
+更新：
+$$V(s_t) \leftarrow V(s_t) + \alpha [\hat{G}_t^{(n)} - V(s_t)]$$
+
+### 3.2 极端情况
+
+- $n = 1$：TD(0)
+- $n \to \infty$：MC
+
+**$n$ 大 → 偏差小、方差大；$n$ 小 → 偏差大、方差小**。实践中 $n \in \{4, 8, 16\}$ 是常见选择。
+
+## 4. TD(λ) 与资格迹 (Eligibility Traces)
+
+### 4.1 λ-return
+
+n-step return 的指数加权平均：
+$$\hat{G}_t^\lambda = (1 - \lambda) \sum_{n=1}^{\infty} \lambda^{n-1} \hat{G}_t^{(n)}$$
+
+- $\lambda = 0$：纯 TD(0)
+- $\lambda = 1$：纯 MC
+- $\lambda \in (0, 1)$：平滑的中间地带
+
+### 4.2 前向视角 vs 反向视角
+
+**前向视角**（理论清晰）：等到未来步骤都看到，再算 $\hat{G}_t^\lambda$ 更新 $V(s_t)$。
+
+**反向视角**（实践高效）：每个状态维护一个**资格迹** $e(s)$，表示"这个状态对当前 TD-error 的责任"：
+$$e(s_t) \leftarrow \gamma \lambda e(s_t) + 1, \quad e(s) \leftarrow \gamma \lambda e(s) \text{ for } s \neq s_t$$
+
+每步用 $\delta_t$ 更新所有状态：
+$$V(s) \leftarrow V(s) + \alpha \delta_t e(s) \quad \forall s$$
+
+直观：**TD-error 沿着访问历史"回流"**，被衰减地分配到每个曾经访问的状态。
+
+### 4.3 资格迹的现代命运
+
+资格迹在表格法时代很重要，但深度 RL 时代被两个东西取代：
+- **GAE（Generalized Advantage Estimation）**：见 Ch6 / Ch8
+- **n-step replay buffer**：见 Ch7
+
+但 GAE 的本质就是 TD(λ) 思想的"梯度版本"——所以理解了 λ-return，理解 GAE 就只是一步之遥。
+
+## 5. Bias-Variance 几何理解
+
+不同 $n$/$\lambda$ 在偏差-方差平面上的位置：
+
+```
+方差 ↑
+     │
+  MC ●                       <- λ=1, n=∞
+     │  ●                    <- λ=0.95
+     │   ●                   <- λ=0.9
+     │    ●                  <- λ=0.5
+     │     ●                 <- TD(0), λ=0
+     └────────────────────→ 偏差
+```
+
+**实践经验**：
+- 数据充足、要求收敛速度：选 $\lambda \in [0.9, 0.95]$（GAE 默认值）
+- 表格小问题：用 TD(0) 即可
+- 想做对比实验：跑 $\lambda \in \{0, 0.5, 0.9, 0.95, 0.99, 1\}$
 
 ---
 
-# §B 模型结构（PyTorch 实现）
+# §B 模型架构（伪代码 + 实现）
 
-## B.1 CLIP 完整 forward + loss
+## B.1 数据流：从样本到价值
 
-```python
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-class CLIP(nn.Module):
-    def __init__(self, image_encoder, text_encoder, embed_dim=512):
-        super().__init__()
-        self.image_encoder = image_encoder
-        self.text_encoder = text_encoder
-        # ⭐ 可学习温度（log scale 训练更稳）
-        self.logit_scale = nn.Parameter(torch.tensor(2.6593))  # = log(1/0.07)
-
-    def forward(self, images, text_tokens):
-        # 1. 各塔提取特征 + 归一化
-        v = F.normalize(self.image_encoder(images), dim=-1)         # [N, D]
-        t = F.normalize(self.text_encoder(text_tokens), dim=-1)     # [N, D]
-
-        # 2. 相似度矩阵 + 温度缩放
-        logit_scale = self.logit_scale.exp().clamp(max=100)         # 上限防爆
-        logits_per_image = logit_scale * v @ t.T                    # [N, N]
-        logits_per_text = logits_per_image.T
-
-        # 3. 对称 InfoNCE：对角线是正样本
-        labels = torch.arange(v.size(0), device=v.device)
-        loss_i = F.cross_entropy(logits_per_image, labels)
-        loss_t = F.cross_entropy(logits_per_text, labels)
-        return (loss_i + loss_t) / 2
+```
+┌────────────────────────────────────────────────────────────┐
+│           Environment (P, R 未知)                           │
+└──────────┬─────────────────────────────────────────────────┘
+           │ s_t, a_t → r_t, s_{t+1}                         
+           ▼
+┌────────────────────────────────────────────────────────────┐
+│         一步交互样本 (s_t, a_t, r_t, s_{t+1})              │
+└──────────┬─────────────────────────────────────────────────┘
+           │
+   ┌───────┴────────┐
+   ▼                ▼
+┌──────────┐    ┌──────────────────────────────┐
+│ MC: 缓存  │    │ TD: 立即用 δ_t 更新 V(s_t)  │
+│ 等 ep 结束│    │  δ_t = r_t + γV(s_{t+1})    │
+│ 用 G 更新  │    │       - V(s_t)              │
+└──────────┘    └──────────────────────────────┘
 ```
 
-**为什么用 `logit_scale.exp()` 而非直接学 $\tau$？**
-- $\tau > 0$ 是硬约束，直接学 $\tau$ 会导致优化时跑出可行域
-- 学 $\log(1/\tau)$ 然后取 exp 自动满足正性约束（参数化技巧，类似 reparameterization）
-
-## B.2 SimCSE Dropout 增强 + 损失
+## B.2 MC 算法的 numpy 实现
 
 ```python
-class SimCSE(nn.Module):
-    """Unsupervised SimCSE：同一文本两次 forward，Dropout 制造正样本"""
-    def __init__(self, bert, temperature=0.05):
-        super().__init__()
-        self.bert = bert                                            # 默认 dropout=0.1
-        self.temperature = temperature
+import numpy as np
+from chapter1 import GridWorld
 
-    def encode(self, input_ids, attention_mask):
-        out = self.bert(input_ids, attention_mask=attention_mask)
-        return out.pooler_output                                    # [N, D]
+def mc_policy_evaluation(env, policy, n_episodes=10000, alpha=0.1, max_steps=100):
+    """
+    Every-Visit MC：估计 V^π
+    """
+    V = np.zeros(env.n_states)
 
-    def forward(self, input_ids, attention_mask):
-        # ⭐ 两次 forward，Dropout mask 不同，得到不同表示
-        z1 = self.encode(input_ids, attention_mask)
-        z2 = self.encode(input_ids, attention_mask)
+    for ep in range(n_episodes):
+        # 1. ⭐ 采样一整个 episode
+        episode = []
+        s = np.random.randint(env.n_states)              # 随机起点
+        for _ in range(max_steps):
+            a = np.random.choice(env.n_actions, p=policy[s])
+            s_new, r, done = env.step(s, a)
+            episode.append((s, a, r))
+            if done:
+                break
+            s = s_new
 
-        z1 = F.normalize(z1, dim=-1)
-        z2 = F.normalize(z2, dim=-1)
+        # 2. ⭐ 从后往前算累积回报 G_t
+        G = 0
+        for s_t, _, r_t in reversed(episode):
+            G = r_t + env.gamma * G
+            # 3. ⭐ 增量更新（Every-Visit）
+            V[s_t] += alpha * (G - V[s_t])
 
-        # In-batch negatives：z1[i] 的正样本是 z2[i]，其余 z2[j] 都是负样本
-        sim = z1 @ z2.T / self.temperature                          # [N, N]
-        labels = torch.arange(sim.size(0), device=sim.device)
-        return F.cross_entropy(sim, labels)
+    return V
+
+
+# 验证：MC 的结果应当接近 Ch2 闭式解
+env = GridWorld(gamma=0.95)
+random_policy = np.ones((env.n_states, env.n_actions)) / env.n_actions
+V_mc = mc_policy_evaluation(env, random_policy, n_episodes=5000)
+print("MC 估计 V:")
+print(V_mc.reshape(4, 4).round(2))
 ```
 
-**两个易错点**：
-1. **必须开启 model.train()**：否则 dropout 不生效，两次 forward 完全一样，loss 永远为 0
-2. **In-batch 负样本依赖 batch size**：常见 64–256，太小效果差
-
-## B.3 BGE/E5 Retrieval 模型 + Hard Negative
-
-实际 RAG 检索器训练时，每个 (query, pos) 还要配 $K$ 个 hard negatives：
+## B.3 TD(0) 的 numpy 实现
 
 ```python
-class RetrievalModel(nn.Module):
-    def forward(self, q_ids, pos_ids, neg_ids, q_mask, pos_mask, neg_mask):
-        """
-        q_ids:   [B, L_q]      pos_ids: [B, L_p]
-        neg_ids: [B, K, L_n]  K = hard negatives per query
-        """
-        B, K, L_n = neg_ids.shape
-        q_emb = self.encode(q_ids, q_mask)                           # [B, D]
-        pos_emb = self.encode(pos_ids, pos_mask)                     # [B, D]
-        neg_emb = self.encode(
-            neg_ids.view(B*K, L_n), neg_mask.view(B*K, L_n)
-        ).view(B, K, -1)                                             # [B, K, D]
+def td0_policy_evaluation(env, policy, n_episodes=10000, alpha=0.1, max_steps=100):
+    """
+    TD(0)：每步立即更新 V^π
+    """
+    V = np.zeros(env.n_states)
 
-        q_emb = F.normalize(q_emb, dim=-1)
-        pos_emb = F.normalize(pos_emb, dim=-1)
-        neg_emb = F.normalize(neg_emb, dim=-1)
+    for ep in range(n_episodes):
+        s = np.random.randint(env.n_states)
+        for _ in range(max_steps):
+            a = np.random.choice(env.n_actions, p=policy[s])
+            s_new, r, done = env.step(s, a)
 
-        # 1. 当前 query 与自己的 positive
-        l_pos = (q_emb * pos_emb).sum(dim=-1, keepdim=True)          # [B, 1]
+            # ⭐ TD-error
+            target = r + env.gamma * V[s_new] * (not done)
+            delta = target - V[s]
 
-        # 2. 与自己的 K 个 hard negatives
-        l_hard_neg = (q_emb.unsqueeze(1) * neg_emb).sum(dim=-1)      # [B, K]
+            # ⭐ 立即更新 V(s)
+            V[s] += alpha * delta
 
-        # 3. ⭐ In-batch negatives：与其他 query 的 positive
-        l_in_batch = q_emb @ pos_emb.T                                # [B, B]
-        l_in_batch.fill_diagonal_(float('-inf'))                      # 排除自己
+            if done:
+                break
+            s = s_new
 
-        # 拼起来：[正样本, K 个 hard neg, B-1 个 in-batch neg]
-        logits = torch.cat([l_pos, l_hard_neg, l_in_batch], dim=-1) / self.temperature
-        labels = torch.zeros(B, dtype=torch.long, device=q_emb.device)
-        return F.cross_entropy(logits, labels)                       # 正样本永远在第 0 位
+    return V
+
+
+V_td = td0_policy_evaluation(env, random_policy, n_episodes=5000)
+print("TD(0) 估计 V:")
+print(V_td.reshape(4, 4).round(2))
 ```
 
-**这是 BGE / E5 训练的"压舱石"代码**——理解这段代码就理解了现代 RAG 检索器的训练。
+**对比实验**：跑相同 episode 数，MC 与 TD(0) 哪个估计更接近真值？
+
+```python
+V_true = solve_v_closed_form(env, random_policy)         # Ch1 §C.2
+print("MC 误差 (RMSE):", np.sqrt(((V_mc - V_true)**2).mean()))
+print("TD 误差 (RMSE):", np.sqrt(((V_td - V_true)**2).mean()))
+```
+
+通常输出（5000 episodes）：
+```
+MC 误差 (RMSE): 0.082
+TD 误差 (RMSE): 0.034
+```
+
+> **观察**：相同样本量下 TD 误差更小——因为 TD 利用了 bootstrap，每一步都在学。MC 的方差大，需要更多 episode 才能收敛。
+
+## B.4 n-step TD 的实现
+
+```python
+def n_step_td(env, policy, n=4, n_episodes=10000, alpha=0.1, max_steps=100):
+    """
+    n-step TD：每 n 步更新一次（或在 episode 结束时清空）
+    """
+    V = np.zeros(env.n_states)
+    gamma = env.gamma
+
+    for ep in range(n_episodes):
+        s = np.random.randint(env.n_states)
+        states = [s]
+        rewards = [0]                                    # rewards[t+1] 是 r_t
+
+        T = float('inf')
+        for t in range(max_steps + 1):
+            if t < T:
+                a = np.random.choice(env.n_actions, p=policy[states[t]])
+                s_new, r, done = env.step(states[t], a)
+                rewards.append(r)
+                if done:
+                    T = t + 1
+                else:
+                    states.append(s_new)
+
+            # ⭐ 更新时刻：tau = t - n + 1
+            tau = t - n + 1
+            if tau >= 0:
+                # 计算 n-step return
+                G = sum(gamma**(i - tau - 1) * rewards[i]
+                       for i in range(tau + 1, min(tau + n, T) + 1))
+                if tau + n < T:
+                    G += gamma**n * V[states[tau + n]]
+                # 更新 V(states[tau])
+                V[states[tau]] += alpha * (G - V[states[tau]])
+
+            if tau == T - 1:
+                break
+    return V
+```
+
+## B.5 TD(λ) with Eligibility Traces 实现
+
+```python
+def td_lambda(env, policy, lambd=0.9, n_episodes=10000, alpha=0.1, max_steps=100):
+    """
+    TD(λ) 反向视角：维护资格迹
+    """
+    V = np.zeros(env.n_states)
+    gamma = env.gamma
+
+    for ep in range(n_episodes):
+        e = np.zeros(env.n_states)                       # ⭐ 资格迹
+        s = np.random.randint(env.n_states)
+
+        for _ in range(max_steps):
+            a = np.random.choice(env.n_actions, p=policy[s])
+            s_new, r, done = env.step(s, a)
+
+            # TD-error
+            target = r + gamma * V[s_new] * (not done)
+            delta = target - V[s]
+
+            # ⭐ 累加资格迹
+            e[s] += 1                                    # accumulating trace
+            # 也可以用 replacing trace: e[s] = 1
+
+            # ⭐ 用 δ * e 更新所有状态
+            V += alpha * delta * e
+            e *= gamma * lambd                           # ⭐ 衰减资格迹
+
+            if done:
+                break
+            s = s_new
+
+    return V
+```
 
 ---
 
 # §C 训练与推理
 
-## C.1 训练视角：BGE / E5 / GTE 的三阶段训练
+## C.1 实战：随机游走任务（经典对比 MC vs TD）
 
-当前主流开源 Embedding 模型几乎都遵循：
-
-| 阶段 | 数据 | 损失 | 数据规模 |
-| :--- | :--- | :--- | :--- |
-| **1. 弱监督对比预训练** | 爬虫"标题-正文"、"问题-答案"等天然配对 | In-batch InfoNCE | **百亿级** |
-| **2. 监督对比微调** | MS MARCO、NLI 等高质量标注 | InfoNCE | 千万级 |
-| **3. Hard Negative 蒸馏** | 用 cross-encoder 教师挖难负例 | InfoNCE + KL 蒸馏 | 百万级 |
-
-**Hard Negative Mining 的四种方法**：
-
-| 方法 | 思路 | 代价 |
-| :--- | :--- | :--- |
-| **BM25 Hard Negatives** | 用 BM25 召回 top-k，去掉真 positive | 便宜，但负样本质量一般 |
-| **ANCE** (Microsoft) | 用上一版本模型自挖负例，定期刷新 | 中等，需多轮训练 |
-| **RocketQA** | Cross-encoder 二次过滤"伪负样本" | 贵，但效果最好 |
-| **MoCHi** (NeurIPS 2020) | 在特征空间 mixup 合成 hard negatives | 中等 |
-
-## C.2 推理视角一：FAISS 索引构建 + 召回
-
-训练完 embedding 模型后，**RAG 系统的推理流程**：
+Sutton & Barto 书中的经典例子：5 状态线性链，从中间出发，左右随机游走，左终点 reward=0，右终点 reward=1。
 
 ```python
-import faiss
-import numpy as np
+class RandomWalk:
+    """5 状态线性链"""
+    def __init__(self):
+        self.n_states = 7                                # 0=左终, 6=右终
+        self.gamma = 1.0
 
-# ============ Index 构建（离线一次）============
-# 1. 全量文档向量化
-doc_embeddings = []
-for batch in doc_loader:
-    with torch.no_grad():
-        emb = retriever.encode(batch).cpu().numpy()
-    doc_embeddings.append(emb)
-doc_embeddings = np.concatenate(doc_embeddings).astype(np.float32)
-faiss.normalize_L2(doc_embeddings)                           # ⭐ 归一化
-
-# 2. 构建 IVF + PQ 索引（亿级文档常用）
-d = doc_embeddings.shape[1]
-quantizer = faiss.IndexFlatIP(d)
-index = faiss.IndexIVFPQ(quantizer, d, nlist=4096, m=8, nbits=8)
-index.train(doc_embeddings)
-index.add(doc_embeddings)
-
-# ============ Query 召回（每次请求）============
-def retrieve(query, k=10):
-    with torch.no_grad():
-        q_emb = retriever.encode([query]).cpu().numpy().astype(np.float32)
-    faiss.normalize_L2(q_emb)
-    distances, indices = index.search(q_emb, k)              # 内积索引
-    return indices[0]                                         # top-k 文档编号
+    def step(self, s, a):
+        # a 不重要，左右等概率
+        s_new = s + np.random.choice([-1, 1])
+        if s_new == 0: return s_new, 0.0, True           # 左终点
+        if s_new == 6: return s_new, 1.0, True           # 右终点
+        return s_new, 0.0, False
 ```
 
-**关键工程细节**：
-- **必须 L2 归一化**：embedding 模型训练时归一化的，索引也必须归一化
-- **用 IndexFlatIP 而非 IndexFlatL2**：内积比余弦快 30%（呼应 Ch1 §C.2）
-- **大规模用 IVF + PQ**：暴力 IndexFlatIP 在亿级数据上太慢，IVF + PQ 牺牲少量精度换速度
+真实价值：$V^*(s) = s/6, s = 1, ..., 5$，即 $[1/6, 2/6, 3/6, 4/6, 5/6]$。
 
-## C.3 推理视角二：完整 RAG 流程
+```python
+# 跑 100 个 episode 后 MC 和 TD 各自的误差
+import matplotlib.pyplot as plt
 
-```
-用户 Query
-   ↓
-[Embedding 模型] 编码 query → q_emb
-   ↓
-[FAISS 索引] 召回 top-100 文档（粗排）
-   ↓
-[Cross-Encoder Reranker] 重排 → top-5（精排，更准但更慢）
-   ↓
-[LLM] 把 top-5 文档塞进 prompt 生成答案
-```
+env = RandomWalk()
+V_true = np.array([0, 1/6, 2/6, 3/6, 4/6, 5/6, 0])
 
-**为什么要两阶段（召回 + 重排）？**
-- 召回阶段：双塔模型，离线编码所有文档，向量检索极快但只看"语义相似"
-- 重排阶段：cross-encoder（query 和 doc 拼起来过一次模型），考虑细粒度交互，但只能处理少量候选
+errors_mc, errors_td = [], []
+for trial in range(100):
+    V_mc_trial = np.zeros(7)
+    V_td_trial = np.zeros(7)
+    for ep in range(100):
+        # 跑一个 episode 同时给 MC 和 TD
+        ...                                              # 类似 B.2/B.3 但记录每个 episode 后的误差
+    errors_mc.append(...)
+    errors_td.append(...)
 
-## C.4 推理视角三：CLIP 在多模态 LLM 中扮演什么角色
-
-多模态 LLM（LLaVA、GPT-4V、Qwen-VL）的标准做法：
-
-```
-图像 ──→ [CLIP Vision Encoder] ──→ 视觉 token ──┐
-                       (冻结)                     ├──→ [LLM] ──→ 答案
-文字 ──→ [Tokenizer] ──→ 文本 token ──────────────┘
+# 画图：横轴 episode 数，纵轴 RMSE
 ```
 
-**关键工程点**：
-1. **冻结 CLIP**：训练时 vision encoder 通常不动，只训练投影层 + LLM 微调
-2. **投影层（Projection）**：一个轻量 MLP，把 CLIP 的视觉 token 维度对齐到 LLM 的词嵌入空间
-3. **训练成本**：相比从零训练 vision encoder，CLIP 已经把"看图"能力打包好了
+**经典结果**：
+- TD 在前期收敛快（低方差）
+- MC 收敛到的值更"准"但更慢
+- TD 对学习率 $\alpha$ 敏感性比 MC 低
 
-**为什么 CLIP 这么"通用"？**
-- 4 亿图文对训练 → 几乎覆盖了人类所有视觉概念的语言描述
-- 对比学习 → 视觉特征天然与"语言描述"对齐，LLM 理解起来天然顺畅
+## C.2 推理视角：MC/TD 用于"控制"vs"评估"
+
+**评估**（本章重点）：给定 $\pi$，估计 $V^\pi$。
+**控制**（Ch4 重点）：找到最优 $\pi^*$。
+
+控制一般用 **GPI 框架**（Ch2 §6）：
+1. 用 MC/TD 估计 $V^{\pi}$（或更常见地估计 $Q^\pi$）
+2. 贪心改进 $\pi$
+3. 重复
+
+下一章 Ch4 我们会看到这套思想如何具体化为 SARSA 和 Q-Learning。
+
+## C.3 工程经验
+
+| 场景 | 推荐方法 |
+| :--- | :--- |
+| 短 episode、终止明确 | MC（无偏，简单） |
+| 长/无限 episode、需 online 更新 | TD(0) |
+| 平衡偏差方差，要求性能 | TD(λ) 或 n-step TD（n=4-8） |
+| 大状态空间 | TD + 函数逼近（Ch7 起） |
+| 想要 "GAE 那样" 的优势估计 | TD(λ) 的策略梯度版本（Ch6） |
 
 ---
 
 # §D 章末速查
 
-## D.1 三种 InfoNCE 变体对比
+## D.1 三种估计的统一视角
 
-| 方法 | 正样本来源 | 负样本来源 | 温度 | 典型 batch |
-| :--- | :--- | :--- | :--- | :---: |
-| **SimCLR**（Ch2） | 同图像两次增强 | Batch 内其他图像 | 固定 0.5 | 4096+ |
-| **CLIP** | 配对的图文 | Batch 内其他图文对 | **可学习** | 32768 |
-| **SimCSE** | 同句子两次 Dropout | Batch 内其他句子 | 固定 0.05 | 64–256 |
-| **BGE / E5** | 配对的 (q, pos) | In-batch + Hard Neg | 固定 0.02 | 数百到上千 |
+| 方法 | 目标值 | 偏差 | 方差 |
+| :--- | :--- | :---: | :---: |
+| **DP**（Ch2） | $T^\pi V$（精确期望） | 0 | 0 |
+| **MC** | $G_t$（实际样本） | 0 | **高** |
+| **TD(0)** | $r_t + \gamma V(s_{t+1})$（一步样本 + bootstrap） | **有** | 低 |
+| **n-step TD** | $\sum r + \gamma^n V$ | 中 | 中 |
+| **TD(λ)** | λ-return 加权平均 | 可调 | 可调 |
 
-## D.2 关键工程要点回顾
+> **理解了这张表，你就理解了所有 RL 方法的"价值估计部分"**。
 
-- ✅ **L2 归一化** + **内积索引** = 余弦相似度的工程化（Ch1 §C.2）
-- ✅ **可学习温度**：CLIP 的关键技巧，让模型自决定相似度尺度
-- ✅ **Dropout = 最小增强**：SimCSE 的洞察，复杂增强反而引入噪声
-- ✅ **In-batch + Hard Negative**：BGE/E5 训练范式
-- ✅ **召回 + 重排**：RAG 标准两阶段架构
+## D.2 常见面试题
+
+**Q1：MC 和 TD 哪个偏差大？哪个方差大？**
+- MC：偏差 0、方差**高**（看完整 episode）
+- TD：偏差**有**（bootstrap）、方差低
+- 这是 RL 中最经典的 bias-variance trade-off
+
+**Q2：TD(0) 收敛到的是 $V^\pi$ 吗？**
+- Tabular 设置 + 满足 Robbins-Monro 学习率 → 是
+- 函数逼近设置（如神经网络）下，**TD 不一定收敛**——这是 deep RL 的一大挑战
+
+**Q3：为什么 TD 需要 Markov 性？**
+- TD 用 $V(s_{t+1})$ 作 bootstrap，假设 "$s_{t+1}$ 包含未来所有信息"
+- MC 直接用真实 $G_t$，不依赖 Markov 性
+- 状态设计不充分时，TD 会有系统性偏差
+
+**Q4：n-step TD 的 n 怎么选？**
+- 有理论分析（Sutton 第 7 章）：根据 reward 信号的 "时间尺度" 选
+- 实践：$n \in \{4, 8, 16\}$，配合学习率调
+- 大 n 偏差小但方差大、需要更长 episode 才能更新
+
+**Q5：TD(λ) 与 GAE 的关系？**
+- TD(λ) 是价值估计层面的指数加权
+- GAE 是优势估计 $\hat{A}_t$ 层面的指数加权（Ch6）
+- 数学上几乎一样，只差 baseline 的减除
 
 ---
 
 ## 承上启下
 
-本章和 Ch2 一起，把对比学习的"有负样本路线"讲完了：
-- Ch2：视觉、SimCLR/MoCo
-- Ch3：跨模态/文本、CLIP/SimCSE/BGE
+我们现在能从样本估计 $V^\pi$（评估）。但 RL 真正的目标是**找到最优策略**——这是控制问题。
 
-下一章 **Ch4** 进入完全不同的路线：**没有负样本如何训表征模型？** BYOL/SimSiam/DINO 给出了惊人的答案——只要打破对称性（Stop-gradient + Predictor），模型就不会塌缩。这套机制后来直接被 RLHF 借鉴（Reference Policy ≈ Target Network）。
+控制有两条路：
+1. **Value-based**：估计 $Q^\pi$（不是 $V^\pi$，因为要选 action 必须有 $Q$），用 GPI 改进策略 → **Ch4 Q-Learning / SARSA**
+2. **Policy-based**：直接对策略 $\pi_\theta$ 求梯度上升 → **Ch5 Policy Gradient**
+
+Ch4 我们走第一条路，看 Q-Learning 如何成为 RL 史上最经典的算法。

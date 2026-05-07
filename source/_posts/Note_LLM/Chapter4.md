@@ -1,401 +1,458 @@
 ---
-title: Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角
-categories: 学习笔记-大模型
-date: 2026-03-29 16:03:34
+title: RL Chapter4 Q-Learning 与 SARSA：从评估到控制
+categories: 学习笔记-强化学习
+date: 2026-05-12 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：完全不同于 Ch2/Ch3 的"有负样本"路线，本章探讨**完全不需要负样本**的自监督方法。BYOL/SimSiam/DINO 给出的答案：**只要打破对称性（Stop-gradient + Predictor），模型就不会塌缩**。这套机制是 Ch6 RLHF Reference Policy 设计的精神来源。
+> **本章定位**：把 Ch3 的 TD 思想从"评估"扩展到"控制"——直接从交互经验中**学最优策略**，不需要已知 MDP。Q-Learning 是 RL 史上最经典的算法，第一个在理论上保证收敛到最优的 model-free 控制方法。
 
-> **承上**：Ch2 §D.2 提到的"路线 C：不对称结构"和"路线 D：特征去相关"。
-> **启下**：Ch6 的 Reference Policy = 本章的 Target Network。
+> **承上**：Ch2 §6 GPI 框架 + Ch3 §A.2 TD-error。
+> **启下**：Ch7 把 Q-Learning 与神经网络结合 → DQN。
 
 ---
 
 # §A 数学原理
 
-## 1. BYOL 的非对称设计
+## 1. 从估计 V 到估计 Q：为什么必须切换？
 
-BYOL（Bootstrap Your Own Latent，DeepMind 2020）首次证明：**在没有负样本的情况下也能训出 SOTA 表征**。
+Ch3 的 TD/MC 估计的是 $V^\pi(s)$。但要从 $V$ 改进策略需要：
+$$\pi'(s) = \arg\max_a \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V^\pi(s') \right]$$
 
-> **关键实验数字**：BYOL 用 ResNet-50 在 ImageNet linear probe 达 **74.3%**，首次实现"无负样本 > SimCLR"。
+**问题**：这个公式需要 $P, R$！MDP 未知时无法用。
 
-### 1.1 网络架构
+**解决**：直接估计 $Q^\pi$。从 $Q$ 改进策略不需要 $P, R$：
+$$\pi'(s) = \arg\max_a Q^\pi(s, a)$$
 
-* **Online Network**（参数 $\theta$）：Encoder $f_\theta$ + Projector $g_\theta$ + **Predictor $q_\theta$**（核心）
-* **Target Network**（参数 $\xi$）：Encoder $f_\xi$ + Projector $g_\xi$（**没有 Predictor**）
+> **这是 model-free 控制的根本原因**：估计 $Q$ 而非 $V$，让策略改进不再依赖 MDP 模型。
 
-### 1.2 损失函数
+## 2. SARSA：On-policy TD 控制
 
-视图 $v$ 经过 Online，$v'$ 经过 Target。L2 归一化后计算 MSE：
-$$L = \|\bar{q_\theta(g_\theta(f_\theta(v)))} - \bar{g_\xi(f_\xi(v'))}\|_2^2$$
+### 2.1 名字由来
 
-**MSE 与余弦的等价性**（呼应 Ch1 §2）：
-$$\|\bar{a} - \bar{b}\|^2 = 2 - 2\bar{a}^T\bar{b} = 2(1 - \cos\theta)$$
+SARSA = 用样本 $(s_t, a_t, r_t, s_{t+1}, a_{t+1})$ 来更新——五个字母的首字母。
 
-最小化归一化 MSE = 最大化余弦相似度。
+### 2.2 更新规则
 
-### 1.3 参数更新
+把 Ch3 §A.2.2 的 TD(0) 公式从 $V$ 移植到 $Q$：
 
-* **Online**：标准梯度下降 $\theta \leftarrow \theta - \eta \nabla_\theta L$
-* **Target**：动量更新（不传梯度）
-$$\xi \leftarrow m \xi + (1-m) \theta, \quad m \approx 0.99\sim 0.999$$
+$$\boxed{Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]}$$
 
-### 1.4 为什么不会塌缩？
+**关键**：$a_{t+1}$ 是**根据当前策略 $\pi$ 实际采样到的动作**。这就是 "on-policy" 的含义——更新用的是策略自己的轨迹。
 
-设想塌缩解：所有输入 $\to$ 同一向量 $c$。则 $L = 0$，但模型无意义。BYOL 用三重机制避免此解：
+### 2.3 ε-greedy 探索
 
-1. **Predictor $q_\theta$ 引入非线性**：Online 必须"预测"Target 的输出，而非简单复制
-2. **Stop-gradient 切断 Target 梯度**：Target 不会主动向常数解漂移
-3. **EMA 滞后性**：Target 是 Online 的"过去自己"，时间不一致性打破同步塌缩
+如果策略一直选 $\arg\max Q$，会陷入局部最优——某些动作永远不被尝试，$Q$ 估计永远更新不到。
 
----
+**ε-greedy 策略**：
+$$\pi(a \mid s) = \begin{cases} 1 - \epsilon + \epsilon/|\mathcal{A}|  & \text{if } a = \arg\max_a Q(s, a) \\ \epsilon/|\mathcal{A}| & \text{otherwise} \end{cases}$$
 
-## 2. SimSiam 的极简化：连 EMA 都不需要
+简言之：以概率 $1-\epsilon$ 选最优，以概率 $\epsilon$ 随机探索。$\epsilon$ 通常从 1.0 衰减到 0.01。
 
-SimSiam（何恺明 2021）证明：**Stop-gradient + Predictor 已是充要条件，EMA 可去掉**。
+### 2.4 SARSA 算法
 
-> **关键实验数字**：SimSiam ImageNet linear probe **71.3%**，仅略低于 BYOL，但训练成本远低（无 EMA 双网络）。
+```
+初始化: Q(s, a) = 0 for all s, a
+for episode = 1, 2, ...:
+    s ← 环境初始化
+    a ← ε-greedy(Q, s)
+    while not done:
+        执行 a，观察 r, s'
+        a' ← ε-greedy(Q, s')
+        Q(s, a) ← Q(s, a) + α [r + γ Q(s', a') - Q(s, a)]    # ⭐ SARSA
+        s, a ← s', a'
+```
 
-### 2.1 架构与流程
+## 3. Q-Learning：Off-policy TD 控制
 
-完全共享权重的孪生网络：
-- Encoder $f$、Projector $g$、Predictor $h$ 都共享
-- 两路输入 $x_1, x_2$ 都经过 $f$ 和 $g$，得到 $z_1, z_2$
-- **只对 $z_1$ 用 Predictor**：$p_1 = h(z_1)$
-- **对称损失**：
-$$L = \frac{1}{2} D(p_1, \text{stop\_grad}(z_2)) + \frac{1}{2} D(p_2, \text{stop\_grad}(z_1))$$
-其中 $D(p, z) = -\frac{p^T z}{\|p\| \|z\|}$ 是负余弦相似度。
+### 3.1 关键改动
 
-### 2.2 EM 推导（紧凑版）
+把 SARSA 的 $Q(s_{t+1}, a_{t+1})$ 替换为 $\max_{a'} Q(s_{t+1}, a')$：
 
-何恺明在论文中给出"为什么不塌缩"的数学解释：SimSiam 实际是 **EM 算法**。
+$$\boxed{Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_{a'} Q(s_{t+1}, a') - Q(s_t, a_t) \right]}$$
 
-**目标函数**：假设每张图 $x$ 有"理想表示" $\eta_x$（隐变量），损失为
-$$E(\theta, \eta) = \mathbb{E}_{x, T}\left[\|\mathcal{F}_\theta(T(x)) - \eta_x\|^2\right]$$
+**这一改动的本质**：Q-Learning 的更新目标是 **Bellman 最优方程**（不是期望方程），直接朝 $Q^*$ 靠拢。
 
-直接同时优化 $\theta$ 和 $\eta$ → 必然塌缩（$\eta_x \equiv c$）。SimSiam 通过**交替优化**避免：
+### 3.2 Off-policy 的含义
 
-| 步骤 | 操作 | SimSiam 中的实现 |
+| 方面 | On-policy (SARSA) | Off-policy (Q-Learning) |
 | :--- | :--- | :--- |
-| **E-step**（固定 $\theta$，求 $\eta$） | $\eta_x^* = \mathbb{E}_T[\mathcal{F}_\theta(T(x))]$ | 期望不可算 → **用单样本 $\mathcal{F}_\theta(T'(x))$ 近似**（即另一路 + stop-grad） |
-| **M-step**（固定 $\eta$，更新 $\theta$） | $\theta \leftarrow \arg\min_\theta L(\theta, \eta)$ | 标准梯度下降 |
+| 更新使用的 action | 实际策略采样的 $a_{t+1}$ | $\arg\max Q(s_{t+1}, \cdot)$ |
+| 行为策略 | 与目标策略相同（都是 ε-greedy） | 行为是 ε-greedy，目标是 greedy |
+| 数据来源 | 必须是当前策略生成 | **可以是任何策略生成**（包括历史数据、其他 agent） |
 
-### 2.3 Predictor 的真正作用 = 学习条件期望
+> **为什么 Q-Learning 能用历史数据？** 因为 $\max_{a'}$ 只依赖 Q 函数，不依赖采样动作。这个性质后来被 DQN（Ch7）的经验回放（Experience Replay）大规模利用。
 
-E-step 用单样本替代真期望，引入巨大噪声。Predictor $h$ 的作用是**为这种噪声"去噪"**：
+### 3.3 Q-Learning 算法
 
-$$h^*(z_1) = \mathbb{E}_{T_2}[z_2 \mid z_1]$$
+```
+初始化: Q(s, a) = 0
+for episode = 1, 2, ...:
+    s ← 初始化
+    while not done:
+        a ← ε-greedy(Q, s)
+        执行 a，观察 r, s'
+        Q(s, a) ← Q(s, a) + α [r + γ max_a' Q(s', a') - Q(s, a)]    # ⭐ Q-Learning
+        s ← s'
+```
 
-即 Predictor 学到的是**条件期望**——给定 $z_1$，最优预测是 $z_2$ 的期望。这就是为什么：
-- ❌ 没有 Predictor → 模型直接对齐两个噪声样本 → 塌缩
-- ✅ 有 Predictor → 模型对齐"去噪后的 $z_1$"和"原始 $z_2$" → 隐式估计条件期望，避免塌缩
+### 3.4 Q-Learning 的收敛性
+
+**定理**（Watkins 1989）：在 tabular 设置下，若：
+1. 所有 $(s, a)$ 都被访问无限多次
+2. 学习率满足 Robbins-Monro 条件 $\sum \alpha_t = \infty, \sum \alpha_t^2 < \infty$
+
+则 $Q$ 依概率 1 收敛到 $Q^*$。
+
+> **关键**：Q-Learning 即使在使用 ε-greedy 探索（行为策略 ≠ 目标策略）下，仍能收敛到最优。这是 RL 史上的重大结果。
+
+## 4. SARSA vs Q-Learning：经典对比
+
+### 4.1 Cliff Walking 例子（Sutton & Barto 经典）
+
+```
+S . . . . . . . . . . G       S 起点, G 终点
+T T T T T T T T T T T T       T 是悬崖：reward = -100
+                              其他: reward = -1
+```
+
+agent 走悬崖边缘可以最快到达，但稍偏一点就摔死。
+
+**SARSA 学到**："小心翼翼"路线，离悬崖远一些（因为 ε-greedy 的随机性会让它偶尔掉下去）。
+
+**Q-Learning 学到**：贴着悬崖走的最优路径（理论最短）。但**实际行动时**用 ε-greedy 偶尔会掉下去。
+
+> **直觉**：
+> - SARSA 学的是 "ε-greedy 策略下" 的最优 Q（保守）
+> - Q-Learning 学的是 "完全 greedy 策略下" 的最优 Q（理想最优）
+> - 实战中如果 ε-greedy 是真实部署策略，SARSA 反而更好
+
+### 4.2 一图总结
+
+| 维度 | SARSA | Q-Learning |
+| :--- | :--- | :--- |
+| 更新公式 | $r + \gamma Q(s', a')$ | $r + \gamma \max Q(s', \cdot)$ |
+| 策略类型 | On-policy | Off-policy |
+| 数据要求 | 当前策略生成 | 任意策略生成 |
+| 学到的是 | 实际部署策略的 Q | 最优策略的 Q |
+| 安全性 | **更保守** | 激进 |
+| 经典应用 | 安全攸关任务 | DQN（Ch7）的基础 |
+
+## 5. 最大化偏差 (Maximization Bias)
+
+Q-Learning 的 $\max_{a'}$ 操作引入一个微妙的问题——**对噪声的过估计**。
+
+### 5.1 问题来源
+
+设真实 $Q^*(s, a) = 0$ for all $a$，但因为采样噪声，估计 $\hat{Q}(s, a)$ 有方差。
+$$\mathbb{E}[\max_a \hat{Q}(s, a)] > \max_a \mathbb{E}[\hat{Q}(s, a)] = 0$$
+
+即 $\max$ 一组带噪估计，平均下来比真值大。这就是**最大化偏差**。
+
+### 5.2 Double Q-Learning
+
+**思想**：用两组独立的 Q 估计 $Q_A, Q_B$，让"选 action"和"评估 Q"由不同的网络做：
+
+$$Q_A(s, a) \leftarrow Q_A(s, a) + \alpha \left[ r + \gamma Q_B\left(s', \arg\max_{a'} Q_A(s', a')\right) - Q_A(s, a) \right]$$
+
+每步随机选 $A$ 或 $B$ 来更新（另一个固定）。
+
+### 5.3 现代意义
+
+Double Q-Learning 直接启发了 **Double DQN**（Ch7 §B.3）——DQN 时代最常用的改进之一。在 Atari 任务上 Double DQN 比原 DQN 性能高 10-30%。
 
 ---
 
-## 3. DINO：自蒸馏 + 中心化 + 锐化
+# §B 模型架构
 
-DINO（**Di**stillation with **NO** labels，Caron et al. 2021）：BYOL 的"亲表兄"，但用了**软标签蒸馏 + 防塌缩 trick**而非 MSE。
+## B.1 数据流：表格法控制循环
 
-### 3.1 架构
-
-Student $f_{\theta_s}$ + Teacher $f_{\theta_t}$（EMA）。两者都输出 $K$ 维 logits（不是 d 维向量），然后 softmax 得到分布。
-
-### 3.2 损失：交叉熵（而非 MSE）
-
-$$L = -\sum_K p_t(x)^{(K)} \log p_s(x)^{(K)}$$
-
-其中 $p_s, p_t$ 是 student/teacher 的 softmax 输出。
-
-### 3.3 防塌缩两件套
-
-DINO 不靠 Predictor，而是靠两个 trick：
-
-**Centering**：对 teacher 输出维护一个 EMA 中心 $C$，每次输出前减去：
-$$p_t = \text{softmax}((g_{\theta_t}(x) - C) / \tau_t)$$
-$$C \leftarrow m_C \cdot C + (1 - m_C) \cdot \frac{1}{B}\sum_b g_{\theta_t}(x_b)$$
-
-**Sharpening**：teacher 用更小的温度 $\tau_t$（如 0.04），student 用更大的温度 $\tau_s$（如 0.1）。
-- Sharpening：让 teacher 输出尖锐（接近 one-hot），强迫 student 学到"决断的"分类
-- Centering：防止 teacher 总是偏向某些维度（避免另一种塌缩形式）
-
-> 两者**互相牵制**：Sharpening 倾向于让某些维度主导（一种塌缩），Centering 把它们拉平。组合在一起达成动态平衡。
-
----
-
-# §B 模型结构（PyTorch 实现）
-
-## B.1 BYOL 完整实现
-
-```python
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import copy
-
-class BYOL(nn.Module):
-    def __init__(self, encoder, hidden_dim=4096, proj_dim=256, m=0.996):
-        super().__init__()
-        feat_dim = encoder.fc.in_features
-        encoder.fc = nn.Identity()
-
-        # Online: Encoder + Projector + Predictor
-        self.online_encoder = encoder
-        self.online_projector = self._make_mlp(feat_dim, hidden_dim, proj_dim)
-        self.online_predictor = self._make_mlp(proj_dim, hidden_dim, proj_dim)
-
-        # Target: 深拷贝 Online（无 Predictor）
-        self.target_encoder = copy.deepcopy(encoder)
-        self.target_projector = copy.deepcopy(self.online_projector)
-        for p in self.target_encoder.parameters():
-            p.requires_grad = False                                  # ⭐ 不参与反传
-        for p in self.target_projector.parameters():
-            p.requires_grad = False
-
-        self.m = m
-
-    def _make_mlp(self, in_dim, hidden_dim, out_dim):
-        return nn.Sequential(
-            nn.Linear(in_dim, hidden_dim), nn.BatchNorm1d(hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, out_dim),
-        )
-
-    @torch.no_grad()
-    def update_target(self):
-        """EMA 更新 Target 网络"""
-        for online_p, target_p in zip(
-            list(self.online_encoder.parameters()) + list(self.online_projector.parameters()),
-            list(self.target_encoder.parameters()) + list(self.target_projector.parameters()),
-        ):
-            target_p.data = self.m * target_p.data + (1 - self.m) * online_p.data
-
-    def forward(self, v1, v2):
-        # Online 路径：含 Predictor
-        p1 = self.online_predictor(self.online_projector(self.online_encoder(v1)))
-        p2 = self.online_predictor(self.online_projector(self.online_encoder(v2)))
-
-        # Target 路径：无 Predictor，无梯度
-        with torch.no_grad():
-            z1 = self.target_projector(self.target_encoder(v1))
-            z2 = self.target_projector(self.target_encoder(v2))
-
-        # 对称损失：归一化 MSE = -2·cos
-        loss = byol_loss(p1, z2.detach()) + byol_loss(p2, z1.detach())
-        return loss.mean()
-
-
-def byol_loss(p, z):
-    p = F.normalize(p, dim=-1)
-    z = F.normalize(z, dim=-1)
-    return 2 - 2 * (p * z).sum(dim=-1)                               # 即 ||p-z||^2
+```
+                    ┌────────────────────┐
+                    │ Q[s, a] 表（状态×动作） │
+                    └──────────┬─────────┘
+                               │ 查询
+                               ▼
+   ┌──────────┐  s        ┌────────────────┐  a
+   │  Env     │─────────▶│ ε-greedy 策略   │────┐
+   └──────────┘           └────────────────┘    │
+        ▲                                        ▼
+        │ s', r                            ┌──────────┐
+        └──────────────────────────────────│  执行 a  │
+                                            └──────────┘
+                                                  │
+                                                  ▼
+                            ┌────────────────────────────┐
+                            │  TD 更新:                  │
+                            │  Q[s,a] += α(target - Q)   │
+                            │  target = r + γ·next_term  │
+                            │   - SARSA:    γ Q(s', a')  │
+                            │   - Q-Learn: γ max_a' Q    │
+                            └────────────────────────────┘
 ```
 
-## B.2 SimSiam 完整实现
+## B.2 Q-Learning 完整 numpy 实现
 
 ```python
-class SimSiam(nn.Module):
-    """SimSiam = BYOL 去掉 EMA 和 Target 网络"""
-    def __init__(self, encoder, proj_dim=2048, pred_dim=512):
-        super().__init__()
-        feat_dim = encoder.fc.in_features
-        encoder.fc = nn.Identity()
-        self.encoder = encoder
-        self.projector = self._make_proj(feat_dim, proj_dim)
-        self.predictor = self._make_pred(proj_dim, pred_dim)
+import numpy as np
+import gymnasium as gym
 
-    def _make_proj(self, in_dim, out_dim):
-        return nn.Sequential(
-            nn.Linear(in_dim, in_dim, bias=False), nn.BatchNorm1d(in_dim), nn.ReLU(),
-            nn.Linear(in_dim, in_dim, bias=False), nn.BatchNorm1d(in_dim), nn.ReLU(),
-            nn.Linear(in_dim, out_dim, bias=False), nn.BatchNorm1d(out_dim, affine=False),
-        )
+def q_learning(env, n_episodes=2000, alpha=0.1, gamma=0.99,
+               eps_start=1.0, eps_end=0.05, eps_decay=0.995):
+    """
+    Tabular Q-Learning on a discrete state/action env (e.g. FrozenLake)
+    """
+    n_states = env.observation_space.n
+    n_actions = env.action_space.n
+    Q = np.zeros((n_states, n_actions))                  # ⭐ Q 表
 
-    def _make_pred(self, in_dim, hidden_dim):
-        return nn.Sequential(
-            nn.Linear(in_dim, hidden_dim, bias=False), nn.BatchNorm1d(hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, in_dim),
-        )
+    eps = eps_start
+    rewards_history = []
 
-    def forward(self, x1, x2):
-        z1 = self.projector(self.encoder(x1))
-        z2 = self.projector(self.encoder(x2))
-        p1 = self.predictor(z1)
-        p2 = self.predictor(z2)
+    for ep in range(n_episodes):
+        s, _ = env.reset()
+        total_r = 0
+        done = False
 
-        # ⭐ 关键：z 上加 detach() 实现 stop-gradient
-        loss = -(F.cosine_similarity(p1, z2.detach(), dim=-1).mean() +
-                 F.cosine_similarity(p2, z1.detach(), dim=-1).mean()) * 0.5
-        return loss
+        while not done:
+            # ⭐ ε-greedy 选择动作
+            if np.random.random() < eps:
+                a = env.action_space.sample()             # 探索
+            else:
+                a = Q[s].argmax()                         # 利用
+
+            s_new, r, terminated, truncated, _ = env.step(a)
+            done = terminated or truncated
+
+            # ⭐ Q-Learning 更新
+            target = r + gamma * Q[s_new].max() * (not terminated)
+            Q[s, a] += alpha * (target - Q[s, a])
+
+            s = s_new
+            total_r += r
+
+        eps = max(eps_end, eps * eps_decay)              # ε 衰减
+        rewards_history.append(total_r)
+
+    return Q, rewards_history
+
+
+# ============ 在 FrozenLake 上跑通 ============
+env = gym.make("FrozenLake-v1", is_slippery=False)
+Q, rewards = q_learning(env)
+
+# 评估学到的策略
+def eval_policy(env, Q, n_eval=100):
+    successes = 0
+    for _ in range(n_eval):
+        s, _ = env.reset()
+        done = False
+        while not done:
+            a = Q[s].argmax()                            # greedy
+            s, r, terminated, truncated, _ = env.step(a)
+            done = terminated or truncated
+            if r > 0: successes += 1
+    return successes / n_eval
+
+print(f"Success rate: {eval_policy(env, Q):.2%}")
 ```
 
-> **面试考点**：去掉 `z.detach()` 立即塌缩。原因见 §A.2 EM 推导——E-step 必须固定 $\eta$ 才能避免 $\eta = $ 常数的退化解。
-
-## B.3 DINO 关键模块
+## B.3 SARSA 实现（对比 Q-Learning 的差异）
 
 ```python
-class DINOLoss(nn.Module):
-    """DINO 的 centering + sharpening loss"""
-    def __init__(self, out_dim, teacher_temp=0.04, student_temp=0.1, center_momentum=0.9):
-        super().__init__()
-        self.teacher_temp = teacher_temp
-        self.student_temp = student_temp
-        self.center_momentum = center_momentum
-        self.register_buffer("center", torch.zeros(1, out_dim))      # ⭐ 中心向量
+def sarsa(env, n_episodes=2000, alpha=0.1, gamma=0.99,
+          eps_start=1.0, eps_end=0.05, eps_decay=0.995):
+    n_states = env.observation_space.n
+    n_actions = env.action_space.n
+    Q = np.zeros((n_states, n_actions))
+    eps = eps_start
 
-    def forward(self, student_output, teacher_output):
-        student_out = student_output / self.student_temp
-        # ⭐ Teacher 输出：先减 center，再除小温度（更尖锐）
-        teacher_out = F.softmax((teacher_output - self.center) / self.teacher_temp, dim=-1)
-        teacher_out = teacher_out.detach()                           # stop-grad
+    def epsilon_greedy(s):
+        if np.random.random() < eps:
+            return env.action_space.sample()
+        return Q[s].argmax()
 
-        # 交叉熵
-        loss = -(teacher_out * F.log_softmax(student_out, dim=-1)).sum(dim=-1).mean()
+    for ep in range(n_episodes):
+        s, _ = env.reset()
+        a = epsilon_greedy(s)                            # ⭐ 第一个 action
+        done = False
 
-        # ⭐ EMA 更新 center
-        self.update_center(teacher_output)
-        return loss
+        while not done:
+            s_new, r, terminated, truncated, _ = env.step(a)
+            done = terminated or truncated
+            a_new = epsilon_greedy(s_new)                # ⭐ 用 ε-greedy 选下一动作
 
-    @torch.no_grad()
-    def update_center(self, teacher_output):
-        batch_center = teacher_output.mean(dim=0, keepdim=True)
-        self.center = self.center * self.center_momentum + batch_center * (1 - self.center_momentum)
+            # ⭐ SARSA 更新（注意是 Q[s_new, a_new] 而非 max）
+            target = r + gamma * Q[s_new, a_new] * (not terminated)
+            Q[s, a] += alpha * (target - Q[s, a])
+
+            s, a = s_new, a_new                          # ⭐ 双更新
+
+        eps = max(eps_end, eps * eps_decay)
+
+    return Q
+```
+
+**两份代码的关键差异（Q-Learning vs SARSA）**：
+
+| Q-Learning | SARSA |
+| :--- | :--- |
+| `target = r + γ Q[s_new].max()` | `target = r + γ Q[s_new, a_new]` |
+| 不需要预先选 `a_new` | 必须用 ε-greedy 选 `a_new` |
+| 内层循环只更新 `s` | 内层循环更新 `s, a` |
+
+## B.4 Double Q-Learning 实现
+
+```python
+def double_q_learning(env, n_episodes=2000, alpha=0.1, gamma=0.99):
+    n_states = env.observation_space.n
+    n_actions = env.action_space.n
+    Q_A = np.zeros((n_states, n_actions))
+    Q_B = np.zeros((n_states, n_actions))
+    eps = 0.1
+
+    for ep in range(n_episodes):
+        s, _ = env.reset()
+        done = False
+        while not done:
+            # ε-greedy 用 Q_A + Q_B
+            if np.random.random() < eps:
+                a = env.action_space.sample()
+            else:
+                a = (Q_A[s] + Q_B[s]).argmax()
+
+            s_new, r, terminated, truncated, _ = env.step(a)
+            done = terminated or truncated
+
+            # ⭐ 一半概率更新 A，一半概率更新 B
+            if np.random.random() < 0.5:
+                # 用 A 选 action，用 B 评估
+                a_star = Q_A[s_new].argmax()
+                target = r + gamma * Q_B[s_new, a_star] * (not terminated)
+                Q_A[s, a] += alpha * (target - Q_A[s, a])
+            else:
+                a_star = Q_B[s_new].argmax()
+                target = r + gamma * Q_A[s_new, a_star] * (not terminated)
+                Q_B[s, a] += alpha * (target - Q_B[s, a])
+
+            s = s_new
+
+    return (Q_A + Q_B) / 2
 ```
 
 ---
 
 # §C 训练与推理
 
-## C.1 训练循环：通用模板
-
-无负样本自监督的训练循环都长这样（以 BYOL 为例）：
+## C.1 实验：Cliff Walking 上的 SARSA vs Q-Learning
 
 ```python
-def train_byol(model, loader, optimizer, augment, epochs):
-    for epoch in range(epochs):
-        for x in loader:
-            # 1. 双路增强
-            v1 = augment(x)
-            v2 = augment(x)
+import gymnasium as gym
+import matplotlib.pyplot as plt
 
-            # 2. 前向 + 损失
-            loss = model(v1, v2)
+env = gym.make("CliffWalking-v0")
 
-            # 3. 反向 + Online 网络更新
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+Q_sarsa = sarsa(env, n_episodes=500, eps_start=0.1, eps_end=0.1)
+Q_qlearn, rewards_q = q_learning(env, n_episodes=500, eps_start=0.1, eps_end=0.1)
 
-            # 4. ⭐ EMA 更新 Target（关键步骤）
-            model.update_target()
+# 评估时关闭探索（greedy）
+def visualize_path(env, Q):
+    s, _ = env.reset()
+    path = [s]
+    for _ in range(100):
+        a = Q[s].argmax()
+        s, r, terminated, truncated, _ = env.step(a)
+        path.append(s)
+        if terminated or truncated: break
+    return path
+
+print("SARSA 路径:", visualize_path(env, Q_sarsa))
+print("Q-Learning 路径:", visualize_path(env, Q_qlearn))
 ```
 
-**SimSiam** 没有第 4 步（不需要 EMA），其他完全一致。
-**DINO** 第 4 步包含 Teacher EMA 更新和 Center EMA 更新。
+**经典结论**（与 Sutton & Barto Figure 6.5 一致）：
+- **SARSA**：选远离悬崖的"安全路径"
+- **Q-Learning**：选贴着悬崖的"最优路径"
+- **训练期间 reward**：SARSA 更高（不掉悬崖），Q-Learning 更低（ε 探索导致摔死）
 
-## C.2 训练 vs 推理：模型状态的差异
+## C.2 推理视角：训练完后
 
-| 阶段 | Online / Student | Target / Teacher | Predictor |
-| :--- | :--- | :--- | :--- |
-| **训练** | 梯度更新 | EMA 跟随（或 detach 共享） | 训练 |
-| **推理** | **只用 Encoder $f_\theta$** | 丢弃 | 丢弃 |
-
-> **关键**：所有 Projector / Predictor / Target 网络在推理时都**丢弃**——只保留主干 Encoder $f_\theta$ 用于下游任务。
-
-## C.3 评测协议：Linear Probe / KNN
-
-无监督方法训完怎么评估？两个标准协议：
-
-**Linear Probe**（详见 Ch2 §C.3）：冻结 encoder，加线性头做监督训练。
-
-**KNN Classification**：
+训练完后只用 Q 表的 greedy：
 ```python
-# 1. 全训练集 forward 得到特征库
-features_train = model.encoder(x_train)                              # [N_train, D]
-features_train = F.normalize(features_train, dim=-1)
-
-# 2. 测试样本检索 K 个最近邻
-features_test = F.normalize(model.encoder(x_test), dim=-1)
-sim = features_test @ features_train.T                                # [N_test, N_train]
-topk_indices = sim.topk(k=20, dim=-1).indices
-
-# 3. 投票
-predictions = labels_train[topk_indices].mode(dim=-1).values
+def deploy(env, Q):
+    s, _ = env.reset()
+    while True:
+        a = Q[s].argmax()                                # 关闭探索
+        s, r, terminated, truncated, _ = env.step(a)
+        if terminated or truncated: break
 ```
 
-> **关键数字**（ImageNet linear probe / KNN top-1）：
-> - SimCLR：69.3% / 64.5%
-> - MoCo v2：71.1% / 67.5%
-> - **BYOL：74.3% / 69.6%**
-> - **SimSiam：71.3% / 67.0%**
-> - **DINO (ViT-B/16)：78.2% / 76.1%** —— ViT 上效果惊人
+注意：
+- 训练时 ε-greedy（探索 + 利用）
+- 推理时纯 greedy（只利用）
+- ε 衰减策略：通常 1.0 → 0.05 在 ~10% 训练步骤完成
 
-## C.4 推理视角：DINOv2 在多模态 LLM 中的应用
+## C.3 工程经验
 
-DINOv2（Meta 2023）是 DINO 在 ViT-g 上的工程加强版，已成为 **CLIP 之外的另一主流视觉骨干**：
-
-| 视觉骨干 | 代表 VLM | 优势 |
-| :--- | :--- | :--- |
-| **CLIP**（Ch3） | LLaVA, Qwen-VL, GPT-4V | 与语言对齐，"看图说话"自然 |
-| **DINOv2** | Llama 3.2 Vision, 部分 Qwen-VL 变体 | **密集预测任务（分割、深度）更优** |
-| **混合**（CLIP + DINOv2） | 一些 SOTA VLM | 两者特征拼接，兼顾 |
-
-**为什么 DINOv2 在密集任务上更强？**
-- DINOv2 用纯视觉自监督，特征更"忠实于像素"
-- CLIP 用图文对，倾向于"对象级别语义"，对像素级细节没那么敏感
+| 问题 | 解决 |
+| :--- | :--- |
+| Q 一直不更新 | 学习率太小 / ε 太小（探索不足） |
+| Q 震荡 | 学习率太大 / ε 太大 |
+| 收敛慢 | 试试 Double Q-Learning / TD(λ) |
+| 状态空间过大 | 上 DQN（Ch7） |
+| 动作空间是连续的 | 用 Policy Gradient（Ch5） |
 
 ---
 
-# §D 落地 LLM：Stop-gradient + EMA 在大模型训练中的真实身影
+# §D 章末速查
 
-这是本章最重要的一节。BYOL/SimSiam 看似 CV 技术，但其**核心机制在 LLM 训练流程中无处不在**：
+## D.1 三个核心公式
 
-| BYOL/SimSiam 概念 | LLM 训练中的对应 | 详见 |
-| :--- | :--- | :--- |
-| **Target Network** | **Reference Policy $\pi_{\text{ref}}$**（PPO/DPO/GRPO 的参考模型） | Ch6, Ch7 |
-| **Stop-gradient on Target** | $\pi_{\text{ref}}$ 不参与反向传播 | Ch6 §B |
-| **EMA 更新 Target** | **Online DPO / SPIN / Self-Rewarding LM** 中的周期性 reference 更新 | Ch7 §C |
-| **Predictor 打破对称** | 知识蒸馏中 student 用额外结构匹配 teacher | Ch5 |
-| **避免塌缩** | RLHF KL 惩罚防止策略塌缩到 reward-hacking 单点 | Ch6 §C |
+| 算法 | 更新公式 |
+| :--- | :--- |
+| **TD(0)** (Ch3) | $V(s) \leftarrow V(s) + \alpha[r + \gamma V(s') - V(s)]$ |
+| **SARSA** | $Q(s,a) \leftarrow Q(s,a) + \alpha[r + \gamma Q(s', a') - Q(s,a)]$ |
+| **Q-Learning** | $Q(s,a) \leftarrow Q(s,a) + \alpha[r + \gamma \max_{a'} Q(s', a') - Q(s,a)]$ |
 
-### 案例预告：DPO 损失中的 Stop-gradient（详见 Ch7）
+## D.2 常见面试题
 
-DPO 损失：
-$$\mathcal{L}_{\text{DPO}} = -\mathbb{E}\left[\log \sigma\left(\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)\right]$$
+**Q1：Q-Learning 为什么是 off-policy？**
+- 更新目标 $\max_{a'} Q(s', a')$ 不依赖采样的 $a'$
+- 因此训练数据可来自任何策略（历史数据、其他 agent）
+- 这一性质让 DQN 的经验回放成为可能
 
-* $\pi_\theta$（policy）= **Online network**：被梯度更新
-* $\pi_{\text{ref}}$（reference）= **Target network**：通常是 SFT 模型的冻结快照
+**Q2：SARSA 和 Q-Learning 学到的策略一样吗？**
+- 不一样
+- SARSA 学到"ε-greedy 下的最优"
+- Q-Learning 学到"完全 greedy 下的最优"
+- 当 $\epsilon \to 0$，两者收敛到同一最优策略
 
-这就是 BYOL 的精神在 LLM 上的直接应用。
+**Q3：为什么 Q-Learning 会有 maximization bias？**
+- $\max$ 一组带噪估计 → 偏向高估
+- $\mathbb{E}[\max \hat{Q}] > \max \mathbb{E}[\hat{Q}]$（Jensen 不等式反向）
+- Double Q-Learning 用两个独立网络解耦"选 action"和"评估"
 
----
+**Q4：ε-greedy 的 ε 怎么衰减？**
+- 经典：$\epsilon_t = \epsilon_0 \cdot \text{decay}^t$，decay=0.99-0.995
+- 或线性衰减：$\epsilon = \max(\epsilon_{\min}, 1 - t/T_{\text{anneal}})$
+- DQN 标配：1.0 → 0.05 在前 10% 训练步内完成
 
-# §E 横向对比：四大对比学习方法
-
-| 方法 | 负样本 | EMA Target | Predictor | Stop-grad | 关键贡献 | 章节 |
-| :--- | :---: | :---: | :---: | :---: | :--- | :---: |
-| **SimCLR** | ✓ | ✗ | ✗ | ✗ | 大 batch + 投影头 | Ch2 |
-| **MoCo** | ✓ (队列) | ✓ | ✗ | ✓ | 队列解耦显存与负样本数 | Ch2 |
-| **BYOL** | ✗ | ✓ | ✓ | ✓ | 证明无负样本可行 | **Ch4** |
-| **SimSiam** | ✗ | ✗ | ✓ | ✓ | 证明 EMA 也非必需 | **Ch4** |
-| **DINO** | ✗ | ✓ | ✗ | ✓ | Centering + Sharpening 防塌缩 | **Ch4** |
-
-> **演进逻辑**：从"显式负样本排斥" → "时间不对称（EMA）" → "结构不对称（Predictor + Stop-grad）" → "概率分布动态平衡（Centering + Sharpening）"。每一步都在剥离防塌缩的依赖项。
+**Q5：Q-Learning 在大状态空间会怎样？**
+- 表格法存不下 → 函数逼近（神经网络）
+- 但 Q-Learning + 神经网络容易发散，需要 **Replay Buffer + Target Network**（DQN，Ch7）
 
 ---
 
 ## 承上启下
 
-至此（Ch1–Ch4），笔记的"**表示学习**"部分完整结束：
-- Ch1：数学工具（点积、KL、CE）
-- Ch2：视觉对比学习（SimCLR/MoCo）
-- Ch3：跨模态/文本对比（CLIP/SimCSE/BGE）
-- Ch4：无负样本自监督（BYOL/SimSiam/DINO）
+到此我们已经掌握 RL 的"前现代"工具：MDP（Ch1）、DP（Ch2）、MC/TD（Ch3）、Q-Learning/SARSA（Ch4）。但表格法只能处理小状态空间。
 
-从下一章 **Ch5** 起，笔记进入"**生成模型对齐**"部分：
-- **Ch5**：SFT + LoRA（让 Base Model 学会"听话"）
-- **Ch6**：经典 RLHF（RM + PPO，把 Ch4 的 Stop-grad + EMA 思想用到对齐上）
-- **Ch7**：DPO 家族（用闭式解砍掉 RM 和 Critic）
-- **Ch8**：推理时代（GRPO + PRM + RLAIF）
+接下来分两条路：
+- **Value-based 路线**：Ch7 把 Q-Learning 扩展到神经网络 → DQN
+- **Policy-based 路线**：Ch5 直接对策略求梯度 → REINFORCE
+
+下一章 **Ch5** 走 policy-based 路线。这条路线不需要"先估 Q 再贪心"，而是**直接对策略 $\pi_\theta(a \mid s)$ 求导**，是后续 PPO、DPO 的根基。

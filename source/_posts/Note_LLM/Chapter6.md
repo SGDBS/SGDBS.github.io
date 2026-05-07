@@ -1,357 +1,418 @@
 ---
-title: Chapter6 经典 RLHF：奖励模型 RM + PPO
-categories: 学习笔记-大模型
-date: 2026-04-01 10:00:00
+title: RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化
+categories: 学习笔记-强化学习
+date: 2026-05-14 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：经典 RLHF 的"完整故事"。RM 把人类排序压缩成标量奖励，PPO 用它在 KL 约束下优化 Policy。RM + PPO 是不可分割的组合——PPO 的 reward 来自 RM。
+> **本章定位**：把 Policy Gradient（Ch5）从 "MC 风格"升级为 "TD 风格"——引入 Critic 网络作为可学习的 baseline + 用 bootstrap 估计优势。最终诞生的 **GAE**（Generalized Advantage Estimation）是 PPO 的核心。
 
-> **承上**：Ch5 SFT 提供 Policy / Reference / RM 的初始化；Ch1 §6 的 KL 散度提供 PPO 的"防漂移"约束；Ch4 的 Stop-grad + EMA 思想直接对应 Reference Policy 的设计。
-> **启下**：Ch7 用闭式解砍掉 RM 和 Critic（DPO）。
+> **承上**：Ch5 §A.5 baseline + Ch3 §A.4 TD(λ)。
+> **启下**：Ch8 在 AC 之上加 trust region 得到 TRPO/PPO。
 
 ---
 
 # §A 数学原理
 
-## 1. 奖励模型 (RM) 的数学：Bradley-Terry 模型
+## 1. 核心思想：用 Critic 学习 baseline
 
-### 1.1 为什么用排序而非打分？
+回忆 Ch5 §A.5：减 baseline 不改变期望但降方差。最佳 baseline 是 $V^\pi(s_t)$。
 
-人类不擅长打分（80 分还是 82 分？），但**非常擅长两两比较**。RM 的目标是把"人类偏好排序"压缩成一个标量打分函数 $r_\phi(x, y)$。
+**Actor-Critic 核心**：
+- **Actor** = 策略网络 $\pi_\theta(a \mid s)$，做动作
+- **Critic** = 价值网络 $V_\phi(s)$，评估状态
+- Actor 用 $A_t = G_t - V_\phi(s_t)$ 作梯度信号
+- Critic 用回归损失 $(V_\phi(s_t) - G_t)^2$ 学习
 
-### 1.2 Bradley-Terry 模型
+## 2. 优势函数 (Advantage Function)
 
-假设每个 response $y$ 有一个潜在分数 $r(x, y)$，则人类选 $y_w$ 优于 $y_l$ 的概率为：
+定义：
+$$A^\pi(s, a) = Q^\pi(s, a) - V^\pi(s)$$
 
-$$P(y_w \succ y_l \mid x) = \frac{\exp(r(x, y_w))}{\exp(r(x, y_w)) + \exp(r(x, y_l))} = \sigma(r(x, y_w) - r(x, y_l))$$
+**含义**：在状态 $s$ 选 action $a$ 比"按策略 $\pi$ 平均水平"好多少。
 
-这是 logistic 模型的经典形式。
+**关键性质**：
+- 若 $A^\pi(s, a) > 0$：动作 $a$ 比平均好 → 提高 $\pi(a \mid s)$
+- 若 $A^\pi(s, a) < 0$：动作 $a$ 比平均差 → 降低 $\pi(a \mid s)$
+- $\mathbb{E}_{a \sim \pi}[A^\pi(s, a)] = 0$（按定义）
 
-### 1.3 Pairwise Ranking Loss
+**PG 定理优势函数版**：
+$$\nabla_\theta J(\theta) = \mathbb{E}\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) A^\pi(s_t, a_t)\right]$$
 
-对 BT 模型做极大似然估计，得到 RM 的损失：
+## 3. 优势函数的多种估计方式
 
-$$\boxed{\mathcal{L}_{\text{RM}}(\phi) = -\mathbb{E}_{(x, y_w, y_l) \sim D}\left[\log \sigma(r_\phi(x, y_w) - r_\phi(x, y_l))\right]}$$
+回到 Ch3 的"价值估计"工具箱，可用于估计 $A_t$：
 
-**直觉**：拉大 $y_w$ 与 $y_l$ 的分差，分差越大 → $\sigma(\cdot)$ 越接近 1 → loss 越小。
+### 3.1 单步 TD（最简单）
+$$A_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t) = \delta_t$$
 
-> **关键观察**：BT 模型也是 Ch7 DPO 推导的起点，那里我们会看到这个 loss 怎么变成"无需 RM 的"DPO loss。
+即 TD-error。优点：方差最小；缺点：偏差最大（依赖 $V_\phi$ 准确）。
 
-## 2. ORM vs PRM：推理模型时代的关键分化
+### 3.2 n-step
+$$A_t^{(n)} = \sum_{k=0}^{n-1} \gamma^k r_{t+k} + \gamma^n V_\phi(s_{t+n}) - V_\phi(s_t)$$
 
-| 类型 | 打分粒度 | 用途 | 代表 |
-| :--- | :--- | :--- | :--- |
-| **ORM (Outcome Reward Model)** | 整条 response 一个分 | 对话、写作、传统 RLHF | InstructGPT RM |
-| **PRM (Process Reward Model)** | 推理过程**每一步**打分 | 数学/代码推理 (CoT) | OpenAI Let's Verify Step by Step |
+### 3.3 蒙特卡洛
+$$A_t^{(\infty)} = G_t - V_\phi(s_t) = \sum_{k=0}^\infty \gamma^k r_{t+k} - V_\phi(s_t)$$
 
-PRM 是 o1 / R1 这类推理模型的核心组件——只奖励"对的最终答案"远不够，要奖励"对的中间步骤"。详细将在 Ch8 展开。
+偏差最小（$G_t$ 无偏），方差最大。
 
-## 3. PPO 的奖励设计：Per-Token KL Penalty
+### 3.4 GAE：连接两端的"指数加权"
 
-经典 RLHF 的实际 reward **不是 RM 一个分**，而是逐 token 累加：
+借鉴 Ch3 的 TD(λ)，定义**广义优势估计**：
 
-$$r_t = \begin{cases}
--\beta \cdot \log \frac{\pi_\theta(y_t \mid x, y_{<t})}{\pi_{\text{ref}}(y_t \mid x, y_{<t})} & t < T \\
--\beta \cdot \log \frac{\pi_\theta(y_T \mid \cdot)}{\pi_{\text{ref}}(y_T \mid \cdot)} + r_\phi(x, y) & t = T
-\end{cases}$$
+$$\boxed{\hat{A}_t^{\text{GAE}(\gamma, \lambda)} = \sum_{l=0}^\infty (\gamma \lambda)^l \delta_{t+l}}$$
 
-- **每个 token 上的 log-ratio**：防止 Policy 与 Reference 偏离（Ch1 §B.3 的 KL estimator）
-- **末尾加 RM 分数**：只有最后一个 token 拿到 RM 给的最终回报
-- **$\beta$**：KL 强度系数，通常 0.01–0.1
-
-## 4. GAE：Generalized Advantage Estimation
-
-PPO 不直接用原始 reward，需要计算**优势函数 (Advantage)** $A_t$：在状态 $s_t$ 选 action $a_t$ 比"平均水平"好多少。
-
-GAE 用 TD-error 加权累加：
-$$\hat{A}_t^{\text{GAE}(\gamma, \lambda)} = \sum_{l=0}^{T-t-1} (\gamma\lambda)^l \delta_{t+l}$$
 其中 $\delta_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$ 是 TD-error。
 
-| 参数选择 | 偏差 | 方差 |
-| :--- | :---: | :---: |
-| $\lambda = 0$（纯 TD） | 高 | 低 |
-| $\lambda = 1$（蒙特卡洛） | 0 | 高 |
-| **$\lambda \approx 0.95$**（实践常用） | 中 | 中 |
+**关键参数**：
+- $\lambda = 0$：$\hat{A}_t = \delta_t$（单步 TD）
+- $\lambda = 1$：$\hat{A}_t = \sum_l \gamma^l \delta_{t+l}$，可证等于 MC（带 V baseline）
+- $\lambda \in (0, 1)$：bias-variance trade-off 上的中间地带
 
-LM 序列短，通常 $\gamma = 1.0$（不打折）。
+**实践常用**：$\lambda = 0.95$，$\gamma = 0.99$。
 
-## 5. PPO 目标函数：Clipped Surrogate Objective
+### 3.5 GAE 的递推形式（实现关键）
 
-定义重要性采样比：
-$$r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}$$
+从定义可以推出递推公式：
+$$\hat{A}_t = \delta_t + \gamma \lambda \hat{A}_{t+1}$$
 
-PPO 目标（Actor 部分）：
-$$\boxed{\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}_t \left[ \min\left( r_t(\theta) \hat{A}_t, \ \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]}$$
+这意味着可以**从后往前一次扫描计算所有 $\hat{A}_t$**，复杂度 $O(T)$。
 
-- $\epsilon$ 通常取 0.1 或 0.2
-- **clip 的作用**：当 $r_t(\theta)$ 超出 $[1-\epsilon, 1+\epsilon]$ 时，梯度被截断为 0，**强制 Policy 每一步只能小幅更新**
+## 4. Actor-Critic 完整算法
 
-完整目标（含 Critic value loss + entropy bonus）：
-$$\mathcal{L}^{\text{PPO}} = \mathcal{L}^{\text{CLIP}} - c_1 \mathcal{L}^{\text{VF}} + c_2 \mathcal{L}^{\text{entropy}}$$
+### 4.1 损失函数
 
-其中 $\mathcal{L}^{\text{VF}} = (V_\phi(s_t) - V_t^{\text{target}})^2$ 是 Critic 的 MSE 回归损失。
+**Actor 损失**：
+$$\mathcal{L}^{\text{actor}} = -\sum_t \log \pi_\theta(a_t \mid s_t) \hat{A}_t \quad (\text{stop-grad on } \hat{A}_t)$$
 
-## 6. 为什么叫 "Proximal"：Trust Region 的工程化
+**Critic 损失**：
+$$\mathcal{L}^{\text{critic}} = \sum_t \left( V_\phi(s_t) - V_t^{\text{target}} \right)^2$$
 
-PPO 的精神继承自 TRPO（Trust Region Policy Optimization）：
-- **TRPO**：硬约束 $\text{KL}(\pi_{\theta_{\text{old}}} \| \pi_\theta) \le \delta$，需要二阶优化（Fisher 矩阵），计算昂贵
-- **PPO**：用 clip 隐式实现"信赖域"，**只用一阶优化器（Adam）即可**——这就是 "Proximal"（接近原 Policy）的工程化
+其中 $V_t^{\text{target}} = \hat{A}_t + V_\phi(s_t) = $ "GAE-corrected return"。
+
+**完整目标**（含熵正则）：
+$$\mathcal{L} = \mathcal{L}^{\text{actor}} + c_v \mathcal{L}^{\text{critic}} - c_h \mathbb{E}[H(\pi_\theta)]$$
+
+经验值：$c_v = 0.5$，$c_h = 0.01$。
+
+### 4.2 A2C vs A3C
+
+| 算法 | 特点 |
+| :--- | :--- |
+| **A2C** (Advantage AC) | 同步版本，多个 worker 同时跑收集数据，集中更新 |
+| **A3C** (Asynchronous AC) | 异步，每个 worker 独立更新（OpenAI 早期用这个加速 Atari 训练） |
+
+实践中 A2C 简单且效果不差，A3C 现已较少用。
+
+## 5. On-policy vs Off-policy
+
+AC 是 **on-policy**：
+- 每次更新需要新采样
+- 数据用过即丢
+- 数据效率低
+
+PPO（Ch8）通过 importance sampling 让 AC 可以**在 minibatch 内重复使用数据**，把 on-policy 数据效率拉到接近 off-policy。
 
 ---
 
-# §B 模型结构（PyTorch 实现）
+# §B 模型架构
 
-## B.1 RM Scalar Head
+## B.1 数据流：Actor-Critic 双头网络
 
-由 SFT 模型改造：去掉 LM Head（输出 $V$ 维概率），换成 Scalar Head（输出 1 维分数）。
+```
+            obs (s_t)
+              │
+              ▼
+    ┌────────────────────┐
+    │  Shared Encoder    │   (可选共享)
+    └─────────┬──────────┘
+              │
+        ┌─────┴─────┐
+        ▼           ▼
+   ┌─────────┐ ┌─────────┐
+   │ Actor   │ │ Critic  │
+   │ Head    │ │ Head    │
+   └────┬────┘ └────┬────┘
+        ▼           ▼
+   π(a|s)        V(s)
+```
+
+## B.2 Actor-Critic 网络的 PyTorch 实现
 
 ```python
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class GPTRewardModel(nn.Module):
-    def __init__(self, base_model):
+class ActorCritic(nn.Module):
+    def __init__(self, obs_dim, n_actions, hidden=64):
         super().__init__()
-        self.config = base_model.config
-        self.backbone = base_model
-        # ⭐ Scalar Head：随机初始化的线性层
-        self.v_head = nn.Linear(self.config.hidden_size, 1, bias=False)
+        # 共享底层
+        self.shared = nn.Sequential(
+            nn.Linear(obs_dim, hidden), nn.Tanh(),
+            nn.Linear(hidden, hidden), nn.Tanh(),
+        )
+        # Actor head
+        self.actor_head = nn.Linear(hidden, n_actions)
+        # Critic head
+        self.critic_head = nn.Linear(hidden, 1)
 
-    def forward(self, input_ids, attention_mask):
-        outputs = self.backbone(input_ids, attention_mask=attention_mask,
-                                output_hidden_states=True)
-        hidden_states = outputs.hidden_states[-1]                # [B, L, D]
+    def forward(self, obs):
+        """
+        obs: [B, obs_dim]
+        返回: (action distribution, state value)
+        """
+        h = self.shared(obs)
+        logits = self.actor_head(h)
+        value = self.critic_head(h).squeeze(-1)           # [B]
+        dist = torch.distributions.Categorical(logits=logits)
+        return dist, value
 
-        # ⭐ 取最后一个非 padding token 的隐状态
-        last_idx = attention_mask.sum(dim=1) - 1
-        batch = input_ids.size(0)
-        last_hidden = hidden_states[torch.arange(batch), last_idx]  # [B, D]
-
-        return self.v_head(last_hidden)                           # [B, 1]
+    def act(self, obs):
+        """采样 + 返回 log_prob, value"""
+        dist, value = self.forward(obs)
+        a = dist.sample()
+        log_prob = dist.log_prob(a)
+        return a, log_prob, value
 ```
 
-## B.2 RM 的 Pairwise Ranking Loss
+> **要不要共享 backbone？** 
+> - 共享：参数少，policy 和 value 可以互相规约
+> - 不共享：训练更稳，policy / value 各自学习曲线不互相干扰
+> - 实践：CartPole / 简单环境共享，复杂环境（Atari、MuJoCo）不共享
+
+## B.3 GAE 计算（最关键的代码段）
 
 ```python
-def compute_rm_loss(chosen_rewards, rejected_rewards):
+def compute_gae(rewards, values, dones, gamma=0.99, lam=0.95):
     """
-    chosen_rewards:   [B, 1] 胜出回答的分数
-    rejected_rewards: [B, 1] 落败回答的分数
+    GAE 的反向递推实现
+    rewards: [T] 每步 reward
+    values:  [T+1] 每步 V(s)，最后一个是 V(s_T)
+    dones:   [T] 每步是否 episode 结束（1 = 结束）
+    返回:
+        advantages: [T]
+        returns:    [T] = advantages + values[:-1]
     """
-    # ⭐ Bradley-Terry MLE：-log σ(r_w - r_l)
-    return -F.logsigmoid(chosen_rewards - rejected_rewards).mean()
-```
-
-> **数值稳定性**：用 `F.logsigmoid` 而非 `torch.log(torch.sigmoid(x))`，前者底层用 `log(1 + exp(-x))` 更稳。
-
-## B.3 PPO 完整训练循环
-
-```python
-def ppo_train_step(actor, critic, ref_model, reward_model,
-                   prompts, optimizer_actor, optimizer_critic,
-                   beta=0.05, gamma=1.0, lam=0.95, eps_clip=0.2,
-                   ppo_epochs=4):
-
-    # ============ Phase 1: Rollout（无梯度采样）============
-    with torch.no_grad():
-        responses = actor.generate(prompts, max_new_tokens=256)
-        old_logprobs = compute_logprobs(actor, prompts, responses)    # π_old
-        ref_logprobs = compute_logprobs(ref_model, prompts, responses)# π_ref
-        values = critic(prompts, responses)                            # V(s_t)
-        rewards_rm = reward_model(prompts, responses).squeeze(-1)      # 末尾 RM 分
-
-    # ============ Phase 2: 计算 per-token reward + GAE ============
-    # KL penalty: r_KL_t = -β * (log π_θ - log π_ref)
-    kl = old_logprobs - ref_logprobs                                   # [B, L]
-    rewards = -beta * kl                                                # [B, L]
-    rewards[:, -1] += rewards_rm                                        # 末尾加 RM
-
-    # GAE：从后往前累加
-    advantages = compute_gae(rewards, values, gamma, lam)              # [B, L]
-    returns = advantages + values                                       # [B, L]
-
-    # ============ Phase 3: 多轮 minibatch 更新 ============
-    for _ in range(ppo_epochs):                                         # 通常 4 轮
-        new_logprobs = compute_logprobs(actor, prompts, responses)
-        new_values = critic(prompts, responses)
-
-        # ⭐ Importance Sampling Ratio
-        ratio = torch.exp(new_logprobs - old_logprobs)
-
-        # ⭐ Clipped Surrogate Objective
-        surr1 = ratio * advantages
-        surr2 = torch.clamp(ratio, 1 - eps_clip, 1 + eps_clip) * advantages
-        actor_loss = -torch.min(surr1, surr2).mean()
-
-        # Critic loss: MSE
-        critic_loss = ((new_values - returns) ** 2).mean()
-
-        optimizer_actor.zero_grad()
-        actor_loss.backward()
-        optimizer_actor.step()
-
-        optimizer_critic.zero_grad()
-        critic_loss.backward()
-        optimizer_critic.step()
-
-    return actor_loss.item(), critic_loss.item()
-
-
-def compute_gae(rewards, values, gamma=1.0, lam=0.95):
-    """从后往前累加 GAE"""
-    advantages = torch.zeros_like(rewards)
-    last_gae = 0
-    T = rewards.size(1)
+    T = len(rewards)
+    advantages = torch.zeros(T)
+    last_gae = 0.0
     for t in reversed(range(T)):
-        next_v = values[:, t + 1] if t + 1 < T else 0
-        delta = rewards[:, t] + gamma * next_v - values[:, t]
-        last_gae = delta + gamma * lam * last_gae
-        advantages[:, t] = last_gae
-    return advantages
+        # ⭐ 如果 t 步是 episode 末尾，下一状态价值为 0
+        next_value = values[t + 1] * (1 - dones[t])
+        delta = rewards[t] + gamma * next_value - values[t]      # TD-error
+        # ⭐ GAE 递推
+        last_gae = delta + gamma * lam * (1 - dones[t]) * last_gae
+        advantages[t] = last_gae
+    returns = advantages + values[:-1]
+    return advantages, returns
 ```
 
-## B.4 KL Estimator（呼应 Ch1 §B.3）
+**理解 dones 的作用**：episode 边界处不能让 GAE "跨 episode" 累加，所以遇到 done=1 时 GAE 重置。
 
-PPO 实现里 KL 实际是用 **k3 estimator**（无偏 + 非负）：
+## B.4 完整 A2C 训练循环
 
 ```python
-def kl_div_k3(logp_theta, logp_ref):
-    """John Schulman's k3 estimator: 无偏且总是非负"""
-    log_ratio = logp_theta - logp_ref
-    return (torch.exp(log_ratio) - 1) - log_ratio                       # ⭐
+import gymnasium as gym
+from torch.optim import Adam
+
+def a2c(env_name="CartPole-v1", n_steps=100000, n_envs=8, n_step_rollout=16,
+        gamma=0.99, lam=0.95, lr=3e-4, c_v=0.5, c_h=0.01):
+    """
+    Synchronous Advantage Actor-Critic
+    """
+    envs = gym.vector.SyncVectorEnv([lambda: gym.make(env_name) for _ in range(n_envs)])
+    obs_dim = envs.single_observation_space.shape[0]
+    n_actions = envs.single_action_space.n
+
+    model = ActorCritic(obs_dim, n_actions)
+    optim = Adam(model.parameters(), lr=lr)
+
+    obs, _ = envs.reset()
+    total_steps = 0
+
+    while total_steps < n_steps:
+        # ============ Rollout：收集 n_step_rollout 步数据 ============
+        log_probs, values, rewards, dones, entropies = [], [], [], [], []
+
+        for _ in range(n_step_rollout):
+            obs_t = torch.tensor(obs, dtype=torch.float32)
+            dist, v = model.forward(obs_t)
+            a = dist.sample()
+            log_prob = dist.log_prob(a)
+            entropy = dist.entropy()
+
+            obs_new, r, terminated, truncated, _ = envs.step(a.numpy())
+            done = np.logical_or(terminated, truncated).astype(np.float32)
+
+            log_probs.append(log_prob)
+            values.append(v)
+            rewards.append(torch.tensor(r, dtype=torch.float32))
+            dones.append(torch.tensor(done))
+            entropies.append(entropy)
+
+            obs = obs_new
+            total_steps += n_envs
+
+        # ============ 计算 GAE ============
+        # 末尾状态的 V (用于 bootstrap)
+        with torch.no_grad():
+            obs_t = torch.tensor(obs, dtype=torch.float32)
+            _, last_v = model.forward(obs_t)
+
+        # 拼接成 [T+1, n_envs] 形状的 values
+        values_full = torch.stack(values + [last_v])     # [T+1, n_envs]
+        rewards = torch.stack(rewards)                    # [T, n_envs]
+        dones = torch.stack(dones)                        # [T, n_envs]
+
+        # 对每个 env 独立计算 GAE
+        T = rewards.shape[0]
+        advantages = torch.zeros_like(rewards)
+        last_gae = 0.0
+        for t in reversed(range(T)):
+            next_v = values_full[t + 1] * (1 - dones[t])
+            delta = rewards[t] + gamma * next_v - values_full[t]
+            last_gae = delta + gamma * lam * (1 - dones[t]) * last_gae
+            advantages[t] = last_gae
+        returns = advantages + values_full[:-1]
+
+        # 标准化优势（重要 trick）
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
+        # ============ Loss ============
+        log_probs = torch.stack(log_probs)               # [T, n_envs]
+        entropies = torch.stack(entropies)
+        values_t = values_full[:-1]                       # [T, n_envs]
+
+        actor_loss = -(log_probs * advantages.detach()).mean()
+        critic_loss = (values_t - returns.detach()).pow(2).mean()
+        entropy_loss = -entropies.mean()                  # 负号：最大化熵
+        loss = actor_loss + c_v * critic_loss + c_h * entropy_loss
+
+        optim.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)   # ⭐ 梯度裁剪
+        optim.step()
+
+    return model
 ```
 
-实际工程中，TRL 库对 reward 的计算就是：
-```python
-kl_per_token = kl_div_k3(logp_theta, logp_ref)                          # [B, L]
-rewards = -beta * kl_per_token
-rewards[:, -1] += rewards_rm
-```
+**几个关键工程细节**：
+1. `n_envs` 个并行环境提供 batch（大 batch 更稳定）
+2. `n_step_rollout` 是 rollout 长度（典型 16-128）
+3. `advantages.detach()`：防止梯度从 actor loss 流回 critic
+4. `returns.detach()`：critic 用 TD target，target 不应反传
+5. **梯度裁剪** 是 PG 系列调参的"必备"（PPO 也用）
 
 ---
 
 # §C 训练与推理
 
-## C.1 训练流程：四模型架构总览
+## C.1 实战：CartPole 上的 A2C
 
-经典 PPO RLHF 的"四模并行"：
-
-| 模型 | 角色 | 是否更新 | 显存占用 | 初始化 |
-| :--- | :--- | :--- | :---: | :--- |
-| **Actor (Policy) $\pi_\theta$** | 主角，生成 response | ✓ | 1× | SFT 模型 |
-| **Critic (Value) $V_\phi$** | 教练，预估 state value | ✓ | 1× | RM 或独立初始化 |
-| **Reference $\pi_{\text{ref}}$** | 标杆，防 Policy 跑偏 | ✗ 冻结 | 1× | SFT 模型副本 |
-| **Reward Model $r_\phi$** | 判官，给 response 打分 | ✗ 冻结 | 1× | 第二阶段产物 |
-
-> **回忆 Ch4 §D**：Reference Model 就是 BYOL 中的 Target Network——一个被 stop-gradient 的、提供稳定锚点的旧自己。
-
-## C.2 训练流程：PPO 完整阶段图
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ Phase 1: Rollout（无梯度，纯采样）                                │
-│   prompts → Actor.generate → responses                            │
-│   responses → Actor / Ref / Critic / RM 各自前向，得到：           │
-│      old_logprobs, ref_logprobs, values, RM 分数                  │
-└──────────────────────────────────────────────────────────────────┘
-                                    ↓
-┌──────────────────────────────────────────────────────────────────┐
-│ Phase 2: 计算 per-token reward + GAE                              │
-│   rewards = -β · KL(π_θ || π_ref)                                 │
-│   rewards[末尾] += RM 分数                                        │
-│   advantages = GAE(rewards, values)                               │
-└──────────────────────────────────────────────────────────────────┘
-                                    ↓
-┌──────────────────────────────────────────────────────────────────┐
-│ Phase 3: 多轮 minibatch 更新（通常 4 轮）                          │
-│   ratio = π_θ / π_θ_old                                           │
-│   actor_loss = -min(ratio · A, clip(ratio, 1±ε) · A)              │
-│   critic_loss = (V - returns)^2                                    │
-└──────────────────────────────────────────────────────────────────┘
-                                    ↓
-                         回到 Phase 1，下一轮 rollout
+```python
+model = a2c("CartPole-v1", n_steps=50000, n_envs=8)
 ```
 
-## C.3 训练资源消耗（Llama-3 8B 估算）
+典型结果：
+- 5000 步：reward ~ 50
+- 10000 步：reward ~ 200
+- 20000 步：reward ~ 500（满分）
 
-| 项 | 数值 |
+对比 Ch5 的 REINFORCE：A2C 收敛速度通常快 3-5 倍。
+
+## C.2 不同 λ 的影响（GAE 调参）
+
+```python
+for lam in [0.0, 0.5, 0.9, 0.95, 0.99, 1.0]:
+    model = a2c("CartPole-v1", n_steps=30000, lam=lam)
+    # 评测
+```
+
+经验：
+- $\lambda = 0$（纯 TD）：偏差大，CartPole 很难收敛
+- $\lambda = 0.9 \sim 0.95$：实战甜点
+- $\lambda = 1$（纯 MC）：方差大，收敛慢但最终可以
+
+## C.3 推理视角：A2C 训练完后
+
+推理时只用 Actor，丢弃 Critic：
+```python
+def inference(model, obs):
+    obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+    with torch.no_grad():
+        dist, _ = model(obs_t)
+        a = dist.probs.argmax(dim=-1)                     # greedy
+    return a.item()
+```
+
+> **关键观察**：所有 PG 系列（包括 PPO、DPO）训练时都需要 Critic 或 reference，**推理时只保留 Actor**。
+
+## C.4 工程经验
+
+| 问题 | 解决 |
 | :--- | :--- |
-| **显存** | 4 × 16GB = 64GB（4 个 BF16 模型）+ 梯度 + Adam state ≈ 120GB+ |
-| **典型硬件** | 8×A100 80GB |
-| **训练时间** | 数十万 prompt rollout，需 1–2 周 |
-| **数据需求** | RM：10万–100万对偏好；PPO：5万–20万 prompt 即可 |
-
-> 这就是为什么 PPO 工程门槛极高，催生了 Ch7 的 DPO（少 2 个模型，offline，单机可训）。
-
-## C.4 Reward Hacking：典型案例
-
-PPO 训练中最常见的失败模式——Policy 学会"骗 RM 高分"而非"真正变好"：
-
-| 类型 | 表现 | 缓解方法 |
-| :--- | :--- | :--- |
-| **长度偏差** | RM 偏爱长回答 → Policy 学会冗长 | RM 训练时加 length penalty |
-| **Sycophancy（谄媚）** | Policy 迎合用户已有观点 | 偏好数据中加入"反 sycophancy"案例 |
-| **Format gaming** | 滥用 markdown / emoji / 列表 | RM 训练数据多样化 |
-| **特定 token 利用** | 重复 RM "见过的好回答里的标志短语" | online RM refresh |
-| **拒答漂移** | 过度安全化，"我无法回答..." | RM 训练时平衡 helpful/harmless |
-
-**核心防线**：
-1. **per-token KL penalty** 是第一道防线（不让 Policy 跑离 SFT 太远）
-2. **RM 训练数据多样化** 是治本之道
-3. **online RM refresh**（每轮 PPO 后用新 Policy 生成的 response 重训 RM）
-
-## C.5 推理视角：PPO 后的模型与 SFT 模型有何不同？
-
-PPO 训完后的 Actor **结构上与 SFT 完全相同**——都是自回归 LM。但**输出分布发生显著变化**：
-
-| 维度 | SFT 模型 | PPO 后模型 |
-| :--- | :--- | :--- |
-| **输出分布尖锐度** | 中等 | **更尖锐**（向 RM 偏好聚集） |
-| **创造性** | 高 | 略下降（mode collapse 风险） |
-| **遵循指令** | 中 | **更强** |
-| **拒答倾向** | 中 | **更强**（向 harmless 偏好对齐） |
-| **温度 0 输出质量** | 一般 | **显著更好** |
-
-> **常见现象**：PPO 后的模型在 `temperature=0`（greedy）下表现最好，因为分布已经"足够尖锐"；继续加温度反而引入垃圾。这与 SFT 模型常用 temperature=0.7 形成鲜明对比。
+| 训练发散 | 学习率过大 / 梯度未裁剪 |
+| Critic 不学习 | $c_v$ 过小 / Critic 学习率单独调 |
+| 收敛后又爆炸 | 学习率衰减 / `polyak averaging` |
+| 早期就熵塌缩 | $c_h$ 调大到 0.05+ |
+| 长 episode 稀疏 reward | 上 PPO（Ch8）+ reward shaping |
 
 ---
 
-# §D 章末速查：常见问题
+# §D 章末速查
 
-**Q1：RM 模型和 Policy 一定要一样大吗？**
-- 早期（InstructGPT 时代）RM 较小（如 175B Policy + 6B RM）
-- **现代趋势是 RM ≥ Policy**（如 Llama 3.3 70B + 70B），因为 RM 质量直接决定 RL 上限，小 RM 容易被 Policy 钻空子
+## D.1 核心公式速记
 
-**Q2：为什么必须加 KL 惩罚？**
-- 防止 Reward Hacking
-- 没有 KL 时，Policy 会学到"骗 RM 高分"的捷径
-- KL 把 Policy 锚定在 SFT 模型附近——这就是 Ch4 §D 的"Stop-grad + EMA Target"思想
+| # | 公式 | 含义 |
+| :---: | :--- | :--- |
+| 1 | $A^\pi(s, a) = Q^\pi(s,a) - V^\pi(s)$ | 优势函数 |
+| 2 | $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD-error |
+| 3 | $\hat{A}_t^{\text{GAE}} = \sum_l (\gamma\lambda)^l \delta_{t+l}$ | GAE |
+| 4 | $\hat{A}_t = \delta_t + \gamma\lambda \hat{A}_{t+1}$ | GAE 递推 |
+| 5 | $V_t^{\text{target}} = \hat{A}_t + V(s_t)$ | Critic 目标 |
 
-**Q3：PPO 为什么训 4 轮 minibatch？**
-- 每次 rollout 成本高（要 generate 整条序列）
-- 一份数据训多轮 = 提高数据利用率
-- 但训太多轮会让 $\pi_\theta$ 偏离 $\pi_{\theta_{\text{old}}}$ 太远，clip 失效
+## D.2 常见面试题
 
-**Q4：Critic 和 RM 是同一个模型吗？**
-- 形状相同（都输出标量），但**任务不同**：
-  - RM：判断 (x, y) 这一对的好坏
-  - Critic：给定状态 $s_t$，预估"未来累计 reward"
-- 实践中 Critic 通常**用 RM 初始化**，但训练目标不同
+**Q1：什么是优势函数？为什么用它而不直接用 Q？**
+- $A = Q - V$，衡量"action 比平均好/差多少"
+- 用 A 比 Q 更稳：$A$ 期望为 0，避免梯度估计被 Q 的"基线水平"干扰
+- 标准化 $A$ 后梯度更小、更稳定
 
-**Q5：PPO 训完后能再做 DPO 吗？**
-- 可以，常见做法是 PPO 后接 DPO 做"安全性微调"
-- 但很少反过来（DPO → PPO），因为 DPO 已经把模型推到"边界"，PPO 容易让它崩
+**Q2：GAE 的两个超参 $\gamma, \lambda$ 各起什么作用？**
+- $\gamma$：折扣因子（与环境本身的"远视程度"相关）
+- $\lambda$：偏差-方差权衡（与 $V$ 估计的准确性相关）
+- $\gamma$ 大、$\lambda$ 大 → 方差大、偏差小
+
+**Q3：Actor 和 Critic 的更新可以共享 backbone 吗？**
+- 可以，参数少
+- 但 actor 和 critic 的"梯度尺度"不同，共享时需要小心 $c_v$ 调整
+- 复杂任务通常分开（独立 backbone）
+
+**Q4：A2C 是 on-policy 还是 off-policy？**
+- On-policy：每次更新需要新采样
+- 用过即丢，数据效率低
+- PPO（Ch8）通过 importance sampling 在 minibatch 内复用数据
+
+**Q5：GAE 与 TD(λ) 的关系？**
+- TD(λ)：用于估计 V（基于价值的指数加权）
+- GAE：用于估计 A（基于优势的指数加权）
+- 数学上几乎一样：GAE = TD(λ) - V(s)
 
 ---
 
 ## 承上启下
 
-PPO 是经典 RLHF 的完整故事，但工程上太重（4 模型、online 采样、不稳定）。**Ch7** 将看到一个革命性的简化——**DPO 用闭式解砍掉 RM 和 Critic，把 RL 变成纯监督学习**。这是 2024–2026 年的主流方向。
+我们现在有了 PG 的"工业级"实现：A2C + GAE。但还有两大痛点：
+1. **数据效率低**（on-policy）
+2. **训练步长不稳**：策略更新太激进会崩
 
-关键问题：**PPO 优化的 KL 约束 RL 目标，是否有闭式解？**
-答案是：**有！** 而且这个闭式解一旦写出来，整个 RM + PPO 流程都可以坍缩成一个简单的 loss。下一章揭晓。
+下一章 **Ch7 DQN** 走完 value-based 路线（看 Q-Learning 如何在大状态空间下工作），然后 **Ch8 TRPO/PPO** 解决 PG 的两大痛点：
+- **重要性采样** 让数据可以复用 → 数据效率
+- **Trust Region** 让步长不会过大 → 训练稳定
+
+PPO 是 RLHF 的核心算法，是连接经典 RL 与 LLM 时代的关键桥梁。

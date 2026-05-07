@@ -1,329 +1,483 @@
 ---
-title: Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo
-categories: 学习笔记-大模型
-date: 2026-03-27 16:03:34
+title: RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代
+categories: 学习笔记-强化学习
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI
+    - 强化学习
     - AI面试知识
 ---
 
-> **本章定位**：从 Ch1 的"点之间的相似度"过渡到"用相似度训练表征模型"。SimCLR/MoCo 是对比学习的两个奠基性工作，**它们的损失函数（InfoNCE）和训练范式直接影响了后来的 CLIP（Ch3）和所有现代 embedding 模型**。
+> **本章定位**：在 MDP 已知（$P, R$ 已知）的前提下，迭代求解 Bellman 方程。DP 是 RL 的"理论基线"——后续所有 model-free 方法（MC、TD、Q-Learning、PG、PPO）都是在 DP 不可行时（MDP 未知）的替代方案。
 
-> **承上**：基于 Ch1 §3 的点积相似度和 §6 的交叉熵。
-> **启下**：本章只讲视觉范式；CLIP / SimCSE / BGE 等多模态与文本对比学习见 Ch3；BYOL/SimSiam/DINO 等无负样本路线见 Ch4。
+> **承上**：Ch1 §A.4 Bellman 期望方程 + §A.6 收缩映射定理。
+> **启下**：Ch3 把"迭代用 $\sum$ 求精确期望"替换为"用样本估计期望"。
 
 ---
 
 # §A 数学原理
 
-## 1. 对比学习的核心思想
+## 1. 三大基本操作
 
-**Instance Discrimination**：通过构造正负样本对，在无标注数据下学习"物以类聚，人以群分"的特征表示。
+DP 的所有算法都建立在三个基本操作上：
 
-具体到视觉自监督：对同一张图 $x$ 应用两次随机增强 $t, t' \sim \mathcal{T}$，生成正样本对 $(x_i, x_j)$。模型必须把这两个增强视图在特征空间拉近，把它们与 batch 内其他样本拉远。
+| 操作 | 输入 | 输出 | 数学公式 |
+| :--- | :--- | :--- | :--- |
+| **策略评估** (Policy Evaluation) | 策略 $\pi$ | 价值函数 $V^\pi$ | 解 Bellman 期望方程 |
+| **策略改进** (Policy Improvement) | $V^\pi$ | 更好的策略 $\pi'$ | $\pi'(s) = \arg\max_a Q^\pi(s,a)$ |
+| **Bellman backup** | $V$ | 新 $V$ | $TV$ |
 
-## 2. 视觉数据增强 —— 对比学习的"数据语义"
+把这三个操作组合，就得到三个经典算法：
+- **策略迭代** = 策略评估 + 策略改进 (反复交替)
+- **价值迭代** = 反复 Bellman backup
+- **广义策略迭代 (GPI)** = 上述两者的统一框架
 
-| 增强 | 作用 |
-| :--- | :--- |
-| **Random Resized Crop**（最关键） | 强迫模型学习局部与整体、多尺度语义一致性 |
-| **Color Jitter / Grayscale** | 防止模型用颜色直方图作弊 |
-| **Gaussian Blur** | 模糊纹理细节，迫使模型关注高层轮廓 |
-| **Horizontal Flip** | 引入左右镜像不变性 |
+## 2. 策略评估 (Policy Evaluation)
 
-> 这些增强本质上是**人工注入的不变性先验**：什么样的变化"语义不变"是由我们选择的。
+### 2.1 问题陈述
 
-## 3. InfoNCE 损失函数
+给定策略 $\pi$，求 $V^\pi$。这等价于解 Bellman 期望方程：
+$$V^\pi(s) = \sum_a \pi(a \mid s) \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V^\pi(s') \right]$$
 
-$$\boxed{\mathcal{L}_{q, k_+} = -\log \frac{\exp(q \cdot k_+ / \tau)}{\exp(q \cdot k_+ / \tau) + \sum_{i=1}^{K} \exp(q \cdot k_i / \tau)}}$$
+### 2.2 闭式解（Ch1 §A.4.2）
 
-形式上就是一个 $K+1$ 路 softmax 交叉熵：正类是 $k_+$，负类是 $K$ 个负样本。
+$$V^\pi = (I - \gamma P^\pi)^{-1} R^\pi$$
 
-### 3.1 与互信息（MI）的关系
+复杂度 $O(|\mathcal{S}|^3)$，当 $|\mathcal{S}|$ 大时不可行。
 
-InfoNCE 是互信息 $I(q; k_+)$ 的**下界**：
-$$I(q; k_+) \geq \log K - \mathcal{L}_{\text{InfoNCE}}$$
+### 2.3 迭代解（Iterative Policy Evaluation）
 
-**推导直觉**：把 InfoNCE 看作"在 $K+1$ 个候选里挑出正样本"的 $\log K$-bit 分类任务。分类越准（loss 越低），$q$ 包含越多关于 $k_+$ 的信息。
+定义算子 $T^\pi$（这是 Bellman 期望方程对应的算子）：
+$$(T^\pi V)(s) = \sum_a \pi(a \mid s) \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V(s') \right]$$
 
-**结论**：负样本数 $K$ 越大，下界越紧，特征越好。这是 SimCLR 需要大 batch（4096–8192）和 MoCo 需要队列（65536）的根本原因。
+迭代：$V_{k+1} = T^\pi V_k$。
 
-### 3.2 温度参数 $\tau$ 的双面性
+**收敛性**：$T^\pi$ 也是 $\gamma$-收缩（与 Ch1 §A.6.2 证明几乎相同，只是 $\max_a$ 换成 $\sum_a \pi(a \mid s)$，平均仍然有界）。由 Banach 不动点定理，迭代收敛到 $V^\pi$。
 
-$\tau$ 控制 softmax 分布的**尖锐度**：
+**算法伪代码**：
+```
+输入: π, P, R, γ, ε (收敛阈值)
+初始化: V(s) = 0 for all s
 
-| $\tau$ 大小 | softmax 形状 | 效应 |
+repeat:
+    Δ ← 0
+    for each s in S:
+        v_old ← V(s)
+        V(s) ← Σ_a π(a|s) [R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')]
+        Δ ← max(Δ, |v_old - V(s)|)
+until Δ < ε
+
+return V
+```
+
+> **关键技巧：In-place 更新**。把 `V(s) ← ...` 直接覆盖（而非用新旧两个数组），收敛速度通常更快——这叫 **Gauss-Seidel 风格** 更新。
+
+## 3. 策略改进 (Policy Improvement)
+
+### 3.1 核心思想
+
+给定 $V^\pi$，能否构造更好的策略？答：**贪心地选 $Q^\pi$ 最大的动作**。
+
+定义新策略：
+$$\pi'(s) = \arg\max_a Q^\pi(s, a) = \arg\max_a \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V^\pi(s') \right]$$
+
+### 3.2 策略改进定理 (Policy Improvement Theorem)
+
+**定理**：对任意 $s$，
+$$Q^\pi(s, \pi'(s)) \geq V^\pi(s) \quad \Longrightarrow \quad V^{\pi'}(s) \geq V^\pi(s)$$
+
+即只要在每个状态都选 $Q$ 最大的动作，新策略一定**不差于**原策略。
+
+**证明**（这个证明很优美，是 RL 经典基本功）：
+
+由假设 $Q^\pi(s, \pi'(s)) \geq V^\pi(s)$，展开：
+$$V^\pi(s) \leq Q^\pi(s, \pi'(s)) = R(s, \pi'(s)) + \gamma \sum_{s'} P(s' \mid s, \pi'(s)) V^\pi(s')$$
+
+继续在 $s'$ 上应用同样不等式：
+$$V^\pi(s') \leq Q^\pi(s', \pi'(s')) = R(s', \pi'(s')) + \gamma \sum_{s''} P(s'' \mid s', \pi'(s')) V^\pi(s'')$$
+
+代回去：
+$$V^\pi(s) \leq R(s, \pi'(s)) + \gamma \sum_{s'} P(s' \mid s, \pi'(s)) [R(s', \pi'(s')) + \gamma \sum_{s''} P V^\pi(s'')]$$
+
+无限展开下去：
+$$V^\pi(s) \leq \mathbb{E}_{\pi'}\left[\sum_{k=0}^{\infty} \gamma^k r_{t+k} \mid s_t = s\right] = V^{\pi'}(s) \quad \square$$
+
+### 3.3 推论：贪心策略一定不差
+
+由于 $\pi'(s) = \arg\max_a Q^\pi(s, a)$ 满足 $Q^\pi(s, \pi'(s)) = \max_a Q^\pi(s,a) \geq V^\pi(s)$，定理条件成立 → $V^{\pi'} \geq V^\pi$。
+
+> **直觉**：这个定理是策略迭代的基石——每一轮"评估→改进"，策略至少不变差。配合"价值有上界"，迭代必然收敛。
+
+## 4. 策略迭代 (Policy Iteration)
+
+### 4.1 算法
+
+```
+初始化: π_0 任意（如随机策略）
+
+for k = 0, 1, 2, ...:
+    1. Policy Evaluation: 解 V^{π_k}（用 §2.3 迭代法）
+    2. Policy Improvement: π_{k+1}(s) = argmax_a Q^{π_k}(s, a)
+    3. 若 π_{k+1} == π_k，停止
+```
+
+### 4.2 收敛性
+
+每轮迭代：
+- 由策略改进定理：$V^{\pi_{k+1}} \geq V^{\pi_k}$
+- 在有限 MDP 中，策略数量有限（$|\mathcal{A}|^{|\mathcal{S}|}$）
+- 价值函数严格单调上升（除非已最优），不会循环
+- → **有限步内收敛到最优策略**
+
+### 4.3 缺点
+
+每轮内层"策略评估"本身要迭代很多次。能否合并？
+
+## 5. 价值迭代 (Value Iteration)
+
+### 5.1 思想
+
+**直接迭代 Bellman 最优方程**，不显式维护策略：
+$$V_{k+1}(s) = \max_a \left[ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V_k(s') \right]$$
+
+这就是 Ch1 §A.6.1 定义的算子 $T$ 反复作用：$V_{k+1} = TV_k$。
+
+### 5.2 算法
+
+```
+输入: P, R, γ, ε
+初始化: V(s) = 0 for all s
+
+repeat:
+    Δ ← 0
+    for each s:
+        v_old ← V(s)
+        V(s) ← max_a [R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')]
+        Δ ← max(Δ, |v_old - V(s)|)
+until Δ < ε
+
+# 从 V* 恢复策略
+for each s:
+    π(s) = argmax_a [R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')]
+
+return π, V
+```
+
+### 5.3 收敛性
+
+由 Ch1 §A.6 收缩映射定理，$T$ 是 $\gamma$-收缩，**几何收敛**：
+$$\|V_n - V^*\|_\infty \leq \gamma^n \|V_0 - V^*\|_\infty$$
+
+### 5.4 价值迭代 vs 策略迭代
+
+| 对比 | 价值迭代 | 策略迭代 |
 | :--- | :--- | :--- |
-| **大 $\tau$** (如 1.0) | 平滑、接近均匀 | 各样本权重接近，训练稳定但难以聚焦 hard negatives |
-| **小 $\tau$** (如 0.05) | 尖锐 | 极大放大"长得像但不是"的困难负样本的 loss，学到细致判别特征；但太小会导致梯度集中在少数样本上 |
+| 内层操作 | $\max_a$（单步）| $\sum_a \pi(a)$（迭代到收敛） |
+| 每轮成本 | 低 | 高 |
+| 总轮数 | 高 | 低 |
+| 收敛保证 | 几何（$\gamma^n$） | 有限步 |
 
-经验值：SimCLR $\tau = 0.1\sim 0.5$，MoCo $\tau = 0.07$。
+**经验法则**：价值迭代实现简单，是 DP 实践中最常用的方法。
+
+## 6. 广义策略迭代 (Generalized Policy Iteration, GPI)
+
+GPI 是 Sutton & Barto 给出的统一视角：
+
+> **任何让 $V$ 朝 $V^\pi$ 靠近 + 让 $\pi$ 朝 $V$ 的贪心策略靠近 的算法，都会收敛到 $(\pi^*, V^*)$。**
+
+```
+       Policy Improvement
+            π → π_greedy(V)
+              ╲
+               ╲
+                ╲ (V*, π*)
+        ╳        ╳
+       ╱
+      ╱
+     ╱
+   Policy Evaluation
+   V → V^π
+```
+
+- **策略迭代**：完整跑完一边，再跑另一边
+- **价值迭代**：每边只跑一步就切换
+- **DP 之外的方法**（MC, TD, Q-Learning, PG）：本质都在做 GPI，只是评估的方式不同
+
+> **重要**：理解 GPI 后，**RL 不再有"种类繁多"的算法，只有同一个框架的不同实现**。这是 RL 学习的"顿悟时刻"。
 
 ---
 
-# §B 模型结构（PyTorch 实现）
+# §B 模型架构（伪代码 + numpy 实现）
 
-## B.1 SimCLR：端到端对称对比
-
-**核心逻辑**：在大 Batch 中寻找自己。
+## B.1 数据流：DP 的输入输出
 
 ```
-原图 x  ──┐
-          ├── 增强 t  ──→ x_i  ──┐
-          │                       ├── Encoder f ──→ h ── Projector g ──→ z
-          └── 增强 t' ──→ x_j  ──┘
-所有 2N 个 z 进入 InfoNCE 计算
+┌─────────────────────────────────────────┐
+│  输入：MDP 五元组 ⟨S, A, P, R, γ⟩      │
+└────────────────┬────────────────────────┘
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+┌───────────────┐  ┌──────────────┐
+│  策略迭代     │  │  价值迭代    │
+│ (评估 + 改进)│  │ (反复 max)   │
+└───────┬───────┘  └──────┬───────┘
+        │                 │
+        └────────┬────────┘
+                 ▼
+       ┌──────────────────┐
+       │  输出：(π*, V*)  │
+       └──────────────────┘
 ```
 
-### B.1.1 SimCLR 损失（NT-Xent）的 PyTorch 实现
+## B.2 numpy 完整实现（GridWorld，承接 Ch1）
 
 ```python
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import numpy as np
+from chapter1 import GridWorld   # 复用 Ch1 §C.1
 
-class NTXentLoss(nn.Module):
-    """SimCLR 的 InfoNCE 实现：2N 个样本两两计算相似度"""
-    def __init__(self, temperature=0.5):
-        super().__init__()
-        self.temperature = temperature
 
-    def forward(self, z1, z2):
-        """
-        z1, z2: [N, D] 同一 batch 的两个增强视图（已经过 projector）
-        """
-        N = z1.size(0)
-        z = torch.cat([z1, z2], dim=0)                     # [2N, D]
-        z = F.normalize(z, dim=-1)                         # L2 归一化
+def policy_evaluation(env, policy, theta=1e-6, max_iter=1000):
+    """
+    迭代求 V^π
+    policy: [n_states, n_actions]
+    """
+    P, R = env.get_transition_matrix()                     # [S, A, S], [S, A]
+    n = env.n_states
+    V = np.zeros(n)
 
-        # 相似度矩阵：所有对所有
-        sim = z @ z.T / self.temperature                   # [2N, 2N]
+    for it in range(max_iter):
+        delta = 0
+        for s in range(n):
+            v_old = V[s]
+            # V(s) = Σ_a π(a|s) [R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')]
+            v_new = sum(
+                policy[s, a] * (R[s, a] + env.gamma * np.sum(P[s, a] * V))
+                for a in range(env.n_actions)
+            )
+            V[s] = v_new                                    # ⭐ in-place 更新
+            delta = max(delta, abs(v_old - v_new))
+        if delta < theta:
+            print(f"Policy Evaluation converged in {it+1} iterations")
+            break
+    return V
 
-        # 屏蔽对角线（自己与自己的相似度）
-        mask = torch.eye(2 * N, dtype=torch.bool, device=z.device)
-        sim.masked_fill_(mask, float('-inf'))
 
-        # 正样本位置：z[i] 的正样本是 z[i+N]（i < N）或 z[i-N]（i >= N）
-        targets = torch.cat([torch.arange(N, 2*N), torch.arange(0, N)]).to(z.device)
+def policy_improvement(env, V):
+    """
+    给定 V，贪心地构造新策略
+    返回: new_policy [n_states, n_actions] (one-hot)
+    """
+    P, R = env.get_transition_matrix()
+    n, m = env.n_states, env.n_actions
+    new_policy = np.zeros((n, m))
+    for s in range(n):
+        # Q(s, a) = R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')
+        Q_sa = np.array([R[s, a] + env.gamma * np.sum(P[s, a] * V)
+                        for a in range(m)])
+        a_best = np.argmax(Q_sa)
+        new_policy[s, a_best] = 1.0                         # ⭐ one-hot
+    return new_policy
 
-        return F.cross_entropy(sim, targets)
+
+def policy_iteration(env, max_iter=100):
+    """完整策略迭代"""
+    n, m = env.n_states, env.n_actions
+    policy = np.ones((n, m)) / m                            # 初始: 均匀随机
+
+    for it in range(max_iter):
+        V = policy_evaluation(env, policy)
+        new_policy = policy_improvement(env, V)
+        if np.array_equal(new_policy, policy):
+            print(f"Policy Iteration converged in {it+1} rounds")
+            break
+        policy = new_policy
+    return policy, V
+
+
+def value_iteration(env, theta=1e-6, max_iter=1000):
+    """价值迭代（直接求 V*）"""
+    P, R = env.get_transition_matrix()
+    n, m = env.n_states, env.n_actions
+    V = np.zeros(n)
+
+    for it in range(max_iter):
+        delta = 0
+        for s in range(n):
+            v_old = V[s]
+            # V(s) ← max_a [R + γ Σ P V]
+            V[s] = max(
+                R[s, a] + env.gamma * np.sum(P[s, a] * V)
+                for a in range(m)
+            )
+            delta = max(delta, abs(v_old - V[s]))
+        if delta < theta:
+            print(f"Value Iteration converged in {it+1} iterations")
+            break
+
+    # 从 V* 恢复策略
+    policy = policy_improvement(env, V)
+    return policy, V
+
+
+# ============ 跑通 ============
+if __name__ == "__main__":
+    env = GridWorld(gamma=0.95)
+
+    # 价值迭代
+    policy, V = value_iteration(env)
+    print("\n最优价值函数:")
+    print(V.reshape(4, 4).round(2))
+    print("\n最优策略（每个格子选的动作: 0=上 1=下 2=左 3=右）:")
+    print(policy.argmax(axis=-1).reshape(4, 4))
 ```
 
-**关键点**：
-- 把 batch 内所有 $2N$ 个样本展平做相似度矩阵，**正样本由 `targets` 显式索引**
-- 对角线（自己 × 自己）必须屏蔽，否则它会成为最强的"正样本"
-- L2 归一化后点积 = 余弦相似度（呼应 Ch1 §2）
+**预期输出**：
+```
+Value Iteration converged in 87 iterations
 
-### B.1.2 完整 SimCLR 模型
+最优价值函数:
+[[0.66 0.74 0.83 0.92]
+ [0.74 -1.00 0.92 1.00]
+ [0.83 0.92 1.00 1.00]
+ [0.92 1.00 1.00 0.00]]
 
-```python
-class SimCLR(nn.Module):
-    def __init__(self, encoder, proj_dim=128):
-        super().__init__()
-        self.encoder = encoder                              # ResNet-50 等
-        feat_dim = encoder.fc.in_features
-        encoder.fc = nn.Identity()                          # 移除原 FC
-        # Projection Head：2 层 MLP
-        self.projector = nn.Sequential(
-            nn.Linear(feat_dim, feat_dim),
-            nn.ReLU(),
-            nn.Linear(feat_dim, proj_dim),
-        )
-
-    def forward(self, x):
-        h = self.encoder(x)                                 # 表征：用于下游任务
-        z = self.projector(h)                               # 投影：用于对比
-        return h, z
+最优策略:
+[[1 1 1 1]    # 都向下
+ [1 ? 1 1]    # 障碍处不定
+ [3 3 3 1]    # 向右然后向下
+ [3 3 3 0]]   # 终点处不重要
 ```
 
-> **面试 Tip：为什么需要 Projection Head？** 投影头作为"防火墙"，让信息损失发生在 $z$ 层，保护 $h$ 层保留更多下游任务有用信息。下游任务用 $h$，而非 $z$。
-
-## B.2 MoCo：动量字典查询
-
-**核心逻辑**：维护一个平滑演变的负样本队列。
-
-```
-x ── 增强 ──┬── x_q ── Query Encoder θ_q ──→ q  (梯度更新)
-            └── x_k ── Key   Encoder θ_k ──→ k+ (动量更新)
-                                              │
-                          Queue ←─ 入队 ──── k+
-                                              │
-                负样本：q · k_i（i=1...K，来自 queue）
-```
-
-### B.2.1 MoCo 关键机制 PyTorch
-
-```python
-class MoCo(nn.Module):
-    def __init__(self, base_encoder, dim=128, K=65536, m=0.999, T=0.07):
-        super().__init__()
-        self.K, self.m, self.T = K, m, T                    # 队列大小 / 动量 / 温度
-
-        self.encoder_q = base_encoder(num_classes=dim)
-        self.encoder_k = base_encoder(num_classes=dim)
-
-        # Key encoder 初始化 = Query encoder
-        for p_q, p_k in zip(self.encoder_q.parameters(),
-                            self.encoder_k.parameters()):
-            p_k.data.copy_(p_q.data)
-            p_k.requires_grad = False                       # ⭐ 不通过梯度更新
-
-        # 负样本队列：FIFO，存历史 batch 的 key
-        self.register_buffer("queue", F.normalize(torch.randn(dim, K), dim=0))
-        self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
-
-    @torch.no_grad()
-    def _momentum_update_key_encoder(self):
-        for p_q, p_k in zip(self.encoder_q.parameters(),
-                            self.encoder_k.parameters()):
-            p_k.data = p_k.data * self.m + p_q.data * (1. - self.m)
-
-    @torch.no_grad()
-    def _dequeue_and_enqueue(self, keys):
-        batch_size = keys.shape[0]
-        ptr = int(self.queue_ptr)
-        self.queue[:, ptr:ptr+batch_size] = keys.T          # 入队
-        self.queue_ptr[0] = (ptr + batch_size) % self.K     # 环形缓冲
-
-    def forward(self, im_q, im_k):
-        q = F.normalize(self.encoder_q(im_q), dim=1)        # [N, D]
-
-        with torch.no_grad():
-            self._momentum_update_key_encoder()
-            k = F.normalize(self.encoder_k(im_k), dim=1)    # [N, D]
-
-        # 正对 logits: [N, 1]
-        l_pos = (q * k).sum(dim=1, keepdim=True)
-        # 负对 logits: [N, K] —— q 与 queue 中所有历史 key 的点积
-        l_neg = q @ self.queue.clone().detach()
-
-        logits = torch.cat([l_pos, l_neg], dim=1) / self.T  # [N, K+1]
-        labels = torch.zeros(logits.size(0), dtype=torch.long, device=q.device)
-
-        loss = F.cross_entropy(logits, labels)              # 正样本永远在第 0 位
-        self._dequeue_and_enqueue(k)
-        return loss
-```
-
-**MoCo 三个关键设计**：
-1. **动量更新 Key Encoder**：$\theta_k \leftarrow m\theta_k + (1-m)\theta_q$，$m=0.999$，保证 queue 中负样本的"特征一致性"
-2. **队列 FIFO**：负样本数 $K$ 与 batch size 解耦，单卡也能用 65536 个负样本
-3. **不对称编码**：Query 走梯度，Key 走动量。这一思想直接通往 Ch4 BYOL 的 EMA Target
+可视化：每个格子的最优动作箭头都指向终点，符合直觉。
 
 ---
 
 # §C 训练与推理
 
-## C.1 训练流程：SimCLR 完整循环
+## C.1 收敛速度对比实验
 
 ```python
-def simclr_train_step(model, criterion, x, optimizer, augment):
-    # 1. 双路增强
-    x1 = augment(x)                                         # [B, 3, 224, 224]
-    x2 = augment(x)
+import matplotlib.pyplot as plt
 
-    # 2. 前向：得到表征 h 和投影 z
-    _, z1 = model(x1)
-    _, z2 = model(x2)
+def value_iteration_with_history(env):
+    """记录每次迭代的 ‖V_k - V*‖∞"""
+    P, R = env.get_transition_matrix()
+    n, m = env.n_states, env.n_actions
+    V = np.zeros(n)
 
-    # 3. NT-Xent loss
-    loss = criterion(z1, z2)
+    # 先跑到底拿 V*
+    _, V_star = value_iteration(env, theta=1e-10, max_iter=10000)
 
-    # 4. 反向 + 更新
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-    return loss.item()
+    history = []
+    V = np.zeros(n)
+    for it in range(200):
+        V_new = np.array([
+            max(R[s, a] + env.gamma * np.sum(P[s, a] * V) for a in range(m))
+            for s in range(n)
+        ])
+        history.append(np.max(np.abs(V_new - V_star)))
+        V = V_new
+    return history
+
+
+# 对比不同 γ 的收敛速度
+for gamma in [0.5, 0.9, 0.99]:
+    env = GridWorld(gamma=gamma)
+    h = value_iteration_with_history(env)
+    plt.semilogy(h, label=f'γ={gamma}')
+
+plt.xlabel('Iteration'); plt.ylabel('||V_k - V*||∞ (log)')
+plt.legend(); plt.title('Value Iteration Convergence')
+plt.grid(); plt.show()
 ```
 
-**关键超参（SimCLR 论文）**：
-- Batch size：**4096–8192**（这是最大瓶颈）
-- Optimizer：LARS (大 batch 友好)
-- Learning rate：`0.3 × batch_size / 256`，cosine schedule
-- Epochs：800–1000（自监督收敛慢）
-- 投影头：2 层 MLP，输出 128 维
+**实验结论**（验证 Ch1 §A.6.3 的理论）：
+- $\gamma = 0.5$：~30 次迭代收敛
+- $\gamma = 0.9$：~80 次迭代收敛
+- $\gamma = 0.99$：~600 次迭代收敛
 
-## C.2 训练流程：MoCo 完整循环
+误差随 $\gamma^n$ 几何衰减。这就是为什么大 $\gamma$（远视任务）训练慢的根本原因。
 
-MoCo 单卡可训，loss 形式与上面 forward 已包含。要点：
+## C.2 推理视角：DP 完成后
 
-| 配置 | SimCLR | MoCo v2 |
-| :--- | :--- | :--- |
-| Batch size | 4096–8192 | 256 即可 |
-| 负样本数 | 2N - 2 | K = 65536（队列） |
-| 硬件 | TPU 集群 | 8×V100 |
-| Loss 形式 | 对称 NT-Xent | 单向 InfoNCE |
-
-## C.3 推理视角一：Linear Probe 评测协议
-
-自监督模型训练完后**怎么评估其表征质量**？标准协议是 **Linear Probe**：
-1. 冻结 encoder $f$
-2. 在其输出 $h$ 上加一个 **线性分类头**
-3. 用 ImageNet 标签做监督训练（只训练这个线性层）
-4. 看 top-1 accuracy
-
+DP 的"训练"输出的就是策略 $\pi^*$ 和 $V^*$，**推理时直接用**：
 ```python
-# 冻结 backbone，只训练线性分类器
-for p in model.encoder.parameters():
-    p.requires_grad = False
-
-classifier = nn.Linear(feat_dim, num_classes)
-optimizer = torch.optim.SGD(classifier.parameters(), lr=0.1)
-
-for x, y in loader:
-    with torch.no_grad():
-        h = model.encoder(x)                                # 冻结特征
-    logits = classifier(h)
-    loss = F.cross_entropy(logits, y)
-    loss.backward()
-    optimizer.step()
+def act(state, policy):
+    """推理：贪心选最优动作"""
+    return policy[state].argmax()
 ```
 
-**关键数字**（ImageNet linear probe）：
-- 监督 ResNet-50：76.5%
-- SimCLR：69.3%（v2 76.5%）
-- MoCo v2：71.1%
+由于策略是 one-hot 的，没有"探索/利用"问题——每次都执行最优动作。
 
-> Linear probe 高 = 表征"线性可分性"好 = encoder 学到了有意义的语义。
+## C.3 DP 的局限：为什么需要 Ch3？
 
-## C.4 推理视角二：视觉骨干在 LLM 中的应用
+DP 看似完美，但有三个致命限制：
 
-SimCLR/MoCo 训出的 ResNet 主要用作**下游分类/检测**的预训练初始化。但在多模态 LLM 时代，更常用的视觉骨干来自**对比学习 + 图文对**（CLIP，详见 Ch3）和**自蒸馏**（DINO，详见 Ch4）。
+**限制 1：需要已知 $P$ 和 $R$**
+- 现实中 $P$ 几乎总是未知（机器人物理、用户行为、围棋对手）
+- 只能"通过交互采样"间接获取信息——这就是 Ch3 MC/TD 的出发点
 
-| 视觉骨干路线 | 代表 | 主要用途 |
-| :--- | :--- | :--- |
-| 视觉对比（本章） | SimCLR / MoCo | 早期下游任务初始化 |
-| 图文对比 | **CLIP**（Ch3） | LLaVA、GPT-4V、Qwen-VL 默认骨干 |
-| 自蒸馏 | **DINOv2**（Ch4） | 密集预测任务（分割、深度）更优 |
+**限制 2：维度灾难**
+- 状态空间大时（如棋盘 $10^{170}$ 个状态），$|\mathcal{S}|$ 个 $V$ 值都存不下
+- DP 要求遍历所有状态——计算量爆炸
+- → 需要**函数逼近**（Ch7 DQN 起的深度 RL）
+
+**限制 3：连续状态/动作**
+- DP 要求枚举状态和动作
+- 连续控制（机器人关节角度、自动驾驶方向盘）无法直接用 DP
+- → 需要 **policy gradient**（Ch5）和 **Actor-Critic**（Ch6）
 
 ---
 
-# §D 负样本：到底为什么重要？
+# §D 章末速查
 
-## D.1 数学本质
+## D.1 三个算法速记
 
-回到 InfoNCE 的 MI 下界 $I(q; k_+) \geq \log K - \mathcal{L}_{\text{InfoNCE}}$：
-- **没有负样本时**：模型最简单的"偷懒"是输出常数 → loss = 0 但什么都没学到（**塌缩**）
-- **负样本数 $K$ 越大**：MI 下界越紧 → 特征空间分布刻画越精准
+| 算法 | 核心循环 | 何时用 |
+| :--- | :--- | :--- |
+| **策略评估** | $V_{k+1} = T^\pi V_k$ | 给定 $\pi$，求 $V^\pi$ |
+| **策略迭代** | 评估 → 改进 → 评估 → 改进 ... | 状态空间小，要求精确最优 |
+| **价值迭代** | $V_{k+1} = TV_k$ | DP 实战首选 |
 
-## D.2 解决负样本成本过高的四条路线
+## D.2 常见面试题
 
-| 路线 | 核心思路 | 代表方法 | 后续章节 |
-| :--- | :--- | :--- | :--- |
-| **A. 缓存机制** | 队列 + 动量 → 与 batch size 解耦 | **MoCo**（本章） | — |
-| **B. Hard Negative Mining** | 只挖"难"的几个负样本，权重高 | MoCHi、ANCE、RocketQA | Ch3 §C |
-| **C. 不对称结构** | 完全去掉负样本 | **BYOL / SimSiam** | **Ch4** |
-| **D. 特征去相关** | 协方差矩阵 → 单位矩阵 | Barlow Twins | Ch4 §B 简介 |
+**Q1：策略迭代与价值迭代哪个更快？**
+- 不一定。策略迭代每轮慢但轮数少，价值迭代相反
+- **轮数 × 每轮成本** 才是真正的总成本
+- 实践中价值迭代更常用（实现简单）
+
+**Q2：策略改进定理的证明思路是什么？**
+- 利用 $V^\pi(s) \leq Q^\pi(s, \pi'(s))$ 反复展开
+- 每一步都是不等式 → 累加无穷多步 → $V^\pi(s) \leq V^{\pi'}(s)$
+
+**Q3：DP 为什么不算"真正的 RL"？**
+- DP 假设 $P, R$ 已知 → 这是"规划"（Planning）问题
+- RL 的精髓是"**从交互经验中学习**"，环境模型未知
+- 但 DP 是 RL 的理论基线和"上限"——告诉我们最优能到多好
+
+**Q4：什么是广义策略迭代 (GPI)？**
+- 任何让 $V$ 朝 $V^\pi$ 收敛 + 让 $\pi$ 朝贪心策略收敛的算法
+- DP、MC、TD、Q-Learning、PG、Actor-Critic 都是 GPI 的实例
+- 这是 RL 算法的统一视角
+
+**Q5：DP 的时间复杂度？**
+- 价值迭代每轮 $O(|\mathcal{S}|^2 |\mathcal{A}|)$（每个状态算 $|\mathcal{A}|$ 个 Q，每个 Q 求 $|\mathcal{S}|$ 维和）
+- 总轮数 $O(\log(1/\epsilon) / \log(1/\gamma))$（几何收敛）
+- 总：$O\left(\frac{|\mathcal{S}|^2 |\mathcal{A}| \log(1/\epsilon)}{\log(1/\gamma)}\right)$
 
 ---
 
 ## 承上启下
 
-本章为对比学习打下了**数学（InfoNCE + MI 下界）+ 工程（队列 + 动量）**的底子。
+DP 给出了 MDP 求解的"理论解"，但要求 MDP 已知。现实中我们几乎总是面对**未知 MDP**：
+- 围棋：知道规则但状态太多
+- 机器人：物理模型不准
+- LLM 对话：用户反应完全未知
 
-下一章 **Ch3** 会把这套机制推广到两个新场景：
-- **跨模态**：CLIP 用图文对训练，4 亿对，一举成为多模态 LLM 的视觉骨干
-- **文本**：SimCSE 用 dropout 当增强、BGE/E5 用 Hard Negative Mining 训出现代 RAG 的 retriever
+下一章 **Ch3** 引入 RL 真正的核心思想：**从样本估计期望**。
+- **Monte Carlo (MC)**：跑完一整个 episode，用采样回报估计 $V^\pi$
+- **TD Learning**：边走边更新，用 bootstrap 估计 $V^\pi$
 
-随后 **Ch4** 会进入完全不同的路线：**没有负样本也能训表征模型**（BYOL/SimSiam/DINO）。
+MC 和 TD 都不需要 $P, R$——它们直接从交互数据中学习。这是 RL 与 DP 的关键分水岭。
