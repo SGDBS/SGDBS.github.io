@@ -114,7 +114,7 @@ LayerNorm 等:还有几个 b·s·h。
 
 这就是为什么长序列训练**激活值才是头号显存杀手**,也是为什么 FlashAttention(不存那个 s² 矩阵)和 activation checkpointing 这么重要。
 
-### 1.6 总账:7B 模型 + s = 8192 + b = 1
+### 1.6 总账:7B 模型
 
 | 类别 | 占用 | 是否随 batch/seq 变化 |
 |---|---|---|
@@ -458,7 +458,89 @@ x = checkpoint_sequential(self.blocks, segments=4, input=x, use_reentrant=False)
 5. 不够再上 ZeRO-2/3 或 FSDP —— 切分参数/优化器
 6. 还不够上张量并行、流水线并行
 
-## 五、面试高频追问
+## 五、梯度裁剪 (Gradient Clipping):训练的安全护栏
+
+前面三节都在讨论"显存怎么省",这一节谈"训练怎么不崩"。梯度裁剪和显存优化是正交的工程手段,但几乎所有大模型训练脚本都会带它,所以放在这里一起讲清楚。
+
+### 5.1 解决什么问题
+
+反向传播算出的梯度,有时会因为某一步特别陡峭(比如 RNN 的长程依赖、Transformer 早期的 attention 不稳定、loss spike 等)突然变得非常大。这时候参数更新
+
+$$\theta \leftarrow \theta - \eta \cdot g$$
+
+就会一次跨出去太远,直接把模型推进 loss 曲面的一个糟糕区域,表现为 **loss 突然飙到 NaN 或者训练曲线崩盘**。裁剪就是给 g 的范数设个天花板,超过就缩回来——是大模型训练里防止 loss spike 的标准护栏。
+
+### 5.2 两种常见做法
+
+#### 按范数裁剪 (clip by global norm)——最常用
+
+$$g \leftarrow g \cdot \min\left(1, \frac{\text{max\_norm}}{\|g\|_2}\right)$$
+
+把所有参数的梯度拼起来当一个大向量,算 L2 范数;超过阈值就整体等比例缩小。**方向不变,只是步长变小**——这是关键,保证优化方向仍然是真实梯度方向,只是被压扁了。
+
+```python
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+```
+
+返回值是裁剪前的梯度范数,通常会顺手 log 出来监控训练健康度。
+
+#### 按值裁剪 (clip by value)
+
+```python
+torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=0.5)
+```
+
+把每个梯度元素 clamp 到 `[-c, c]`。简单粗暴但**会改变方向**(因为不同维度被独立 clip),现代 LLM 训练几乎不用,这里只作了解。
+
+### 5.3 在训练循环里的位置
+
+必须在 `backward()` 之后、`optimizer.step()` 之前,这样裁剪的是已经累计好的、即将被用来更新的那份梯度:
+
+```python
+loss.backward()
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+optimizer.step()
+```
+
+**梯度累积场景下要在累积完之后裁**(就像第 2.5 节里写的那样),不是每个 micro-batch 都裁——否则裁的是局部梯度,语义不对,且会让真实的 global 梯度方向失真。
+
+### 5.4 阈值怎么选
+
+| 场景 | 典型阈值 |
+|---|---|
+| LLM 预训练 (GPT、LLaMA、PaLM) | **1.0**(事实标准) |
+| LLM 微调 | 0.5 ~ 1.0 |
+| RNN/LSTM | 5.0 ~ 10.0(梯度本身就大) |
+
+可以一开始训练时把 `grad_norm` 打印出来看,正常稳定后通常在 0.1 ~ 几之间;如果经常超 100、1000 就说明训练有问题(学习率太大、初始化炸、数据有脏样本),光靠裁剪压不住,要从根上排查。
+
+### 5.5 混合精度下的坑
+
+用 `GradScaler` 做 FP16 训练时,梯度被 scale 放大过(防止 underflow),**必须先 unscale 再裁剪**,否则裁的是放大后的梯度,阈值就失效了:
+
+```python
+scaler.scale(loss).backward()
+scaler.unscale_(optimizer)        # 先还原回真实梯度尺度
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+scaler.step(optimizer)
+scaler.update()
+```
+
+BF16 没有 loss scaling,直接裁就行,这也是 LLM 训练偏爱 BF16 的小理由之一。
+
+### 5.6 在分布式训练里的微妙之处
+
+**DDP**:`clip_grad_norm_` 算的是单卡本地的范数,但 DDP 在 backward 中已经做了 AllReduce 让各卡梯度一致,所以各卡裁出来的结果也一致,语义正确。
+
+**FSDP/ZeRO-3**:每张卡只持有 1/N 的梯度分片,`clip_grad_norm_` 直接调用会得到错误的范数。FSDP 提供了专门的 `model.clip_grad_norm_(max_norm)` 方法,内部会做跨卡归一化,**必须用这个**而不是 `torch.nn.utils.clip_grad_norm_`。
+
+**流水线并行**:每个 stage 只持有一部分参数,需要在所有 stage 间 AllReduce 范数后再统一缩放,Megatron-LM、DeepSpeed Pipeline 内部已经处理好了。
+
+### 5.7 一句话总结
+
+梯度裁剪就是**梯度的限速器**——不改变更新方向,只在某次梯度异常大时把步长拉回安全区间,几乎所有 LLM 训练脚本都会带上 `clip_grad_norm_(..., 1.0)` 这一行,组合上 BF16、warmup、合理初始化,基本就能把"loss 突然 NaN"挡在门外。
+
+## 六、面试高频追问
 
 **Q1: 训练时显存到底被什么吃掉了?**
 
@@ -499,3 +581,11 @@ BN 的均值方差是在 batch 维度内统计的,每个 micro-batch 单独算 B
 **Q10: 7B 模型 + 32k 序列要怎么训练?**
 
 按瓶颈拆:参数+梯度+OS = 112 GB,激活在 32k 下能上千 GB。组合:**bf16 + FlashAttention(消 s²)+ activation checkpointing(消 L)+ FSDP/ZeRO-3(切静态部分)**,如果还紧再加 micro-batch=1 + 梯度累积、CPU offload。这就是现代长序列大模型训练的标准菜单。
+
+**Q11: 梯度裁剪用 clip by norm 还是 clip by value?**
+
+LLM 训练几乎只用 **clip by global norm**(`clip_grad_norm_`)。原因:它把所有参数的梯度看成一个大向量做整体缩放,**保留方向只压步长**;而 clip by value 是逐元素 clamp,会让不同维度被独立 clip 掉,改变梯度方向,优化轨迹会偏离真实梯度。GPT、LLaMA、PaLM 都是 `max_norm=1.0` 这套。
+
+**Q12: FSDP/ZeRO-3 下为什么不能直接用 `torch.nn.utils.clip_grad_norm_`?**
+
+因为每张卡只持有 1/N 的梯度分片,本地算出来的范数是 $\|g_{\text{local}}\|$,而不是真正的全局 $\|g\|$。直接用会导致各卡按错的尺度缩放,梯度被裁得过狠或过松。FSDP 提供了 `model.clip_grad_norm_(max_norm)`,内部先 AllReduce 各分片的平方和、开方得到全局范数,再做缩放——必须用这个 API。Megatron-LM、DeepSpeed Pipeline 同理,框架内部都做了跨 rank 的范数归一化。
