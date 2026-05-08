@@ -10,7 +10,8 @@
       "Bash(node:*)",
       "Bash(bash:*)",
       "Bash(npx hexo:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:zhuanlan.zhihu.com)"
     ]
   }
 }

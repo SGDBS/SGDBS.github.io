@@ -1,5 +1,5 @@
 ---
-title: 模型训练之Pipeline Parallel
+title: Pipeline Parallel之Gpipe
 categories: 学习笔记- AI Infra
 date: 2026-05-08 20:00:00
 mathjax: true
