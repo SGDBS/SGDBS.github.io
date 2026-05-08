@@ -11,7 +11,8 @@
       "Bash(bash:*)",
       "Bash(npx hexo:*)",
       "Bash(npm install:*)",
-      "WebFetch(domain:zhuanlan.zhihu.com)"
+      "WebFetch(domain:zhuanlan.zhihu.com)",
+      "PowerShell(Get-ChildItem -Path \"public\" -Directory -Name | Where-Object { $_ -match '^\\\\d{4}$' })"
     ]
   }
 }
