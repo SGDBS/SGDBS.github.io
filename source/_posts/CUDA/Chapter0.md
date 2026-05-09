@@ -1,6 +1,6 @@
 ---
 title: 0. 从C++到CUDA
-categories: 学习笔记- AI Infra 
+categories: LeetGPU 
 date: 2026-05-09 22:30:00
 mathjax: true
 tags:
