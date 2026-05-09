@@ -57,11 +57,36 @@ if (_catName) {
         return sizeFn(b) - sizeFn(a);
     }
 
-    treeOrder.sort(function(a, b) {
+    /* ── compute category folder name (parts[1] of any post's source) ── */
+    var catFolder = '';
+    if (allPosts.length > 0) {
+        var _fp0 = (allPosts[0].source || '').replace(/\\/g, '/').split('/');
+        catFolder = _fp0.length >= 2 ? _fp0[1] : _catName;
+    }
+
+    /* ── sort sub-folder keys by parent config.json's `order` array,
+          falling back to a comparator when not listed / no order field. ── */
+    function applyFolderOrderConfig(folderKeys, parentCfg, fallbackCmp) {
+        var orderArr = (parentCfg && Array.isArray(parentCfg.order)) ? parentCfg.order : null;
+        if (!orderArr || orderArr.length === 0) {
+            return folderKeys.slice().sort(fallbackCmp);
+        }
+        var orderMap = {};
+        orderArr.forEach(function(name, idx) { orderMap[String(name)] = idx; });
+        return folderKeys.slice().sort(function(a, b) {
+            var ia = orderMap.hasOwnProperty(a) ? orderMap[a] : Infinity;
+            var ib = orderMap.hasOwnProperty(b) ? orderMap[b] : Infinity;
+            if (ia !== ib) return ia - ib;
+            return fallbackCmp(a, b);
+        });
+    }
+
+    var l1FallbackCmp = function(a, b) {
         var sizeA = tree[a].posts.length + tree[a].sgOrder.reduce(function(s,k){ return s + tree[a].subgroups[k].posts.length; }, 0);
         var sizeB = tree[b].posts.length + tree[b].sgOrder.reduce(function(s,k){ return s + tree[b].subgroups[k].posts.length; }, 0);
         return chapterCmp(a, b, function(k){ return k === a ? sizeA : sizeB; });
-    });
+    };
+    treeOrder = applyFolderOrderConfig(treeOrder, folderConfigs[catFolder], l1FallbackCmp);
 
     /* ── apply per-folder `order` from config.json ──
        cfg.order is an array of post filenames (without .md, .md tolerated).
@@ -93,9 +118,10 @@ if (_catName) {
         var L1cfg   = folderConfigs[node.relPath] || {};
         var L1label = L1cfg.name || L1key;
 
-        node.sgOrder.sort(function(a, b) {
+        var l2FallbackCmp = function(a, b) {
             return chapterCmp(a, b, function(k){ return node.subgroups[k].posts.length; });
-        });
+        };
+        node.sgOrder = applyFolderOrderConfig(node.sgOrder, L1cfg, l2FallbackCmp);
 
         var isL1Active = false;
 
@@ -118,11 +144,6 @@ if (_catName) {
     });
 
     /* ── sidebar top title: CatFolder's config.json name or folder name ── */
-    var catFolder = '';
-    if (allPosts.length > 0) {
-        var _fp = (allPosts[0].source || '').replace(/\\/g, '/').split('/');
-        catFolder = _fp.length >= 2 ? _fp[1] : _catName;
-    }
     var catFolderLabel = (folderConfigs[catFolder] && folderConfigs[catFolder].name)
         ? folderConfigs[catFolder].name
         : (catFolder || _catName);
