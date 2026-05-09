@@ -13,7 +13,9 @@
       "Bash(npm install:*)",
       "WebFetch(domain:zhuanlan.zhihu.com)",
       "PowerShell(Get-ChildItem -Path \"public\" -Directory -Name | Where-Object { $_ -match '^\\\\d{4}$' })",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(awk *)",
+      "Bash(git mv *)"
     ]
   }
 }

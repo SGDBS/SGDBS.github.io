@@ -1,10 +1,12 @@
 {
     "name": "1. Data Parallel",
     "order": [
+        "MemoryBudget",
         "DDP",
-        "PipelineParallel",
         "AsyncCompute",
+        "MixedPrecision",
         "ZeRO",
-        "FlashAttention"
+        "MultiNode",
+        "Checkpoint"
     ]
 }

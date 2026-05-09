@@ -1,6 +1,11 @@
 {
     "name": "AI Infra 从入门到入土",
     "order": [
-        "1.DataParallel"
+        "0.Introduction",
+        "1.DataParallel",
+        "2.PipelineParallel",
+        "3.TensorParallel",
+        "4.GPUKernel",
+        "5.Inference"
     ]
 }

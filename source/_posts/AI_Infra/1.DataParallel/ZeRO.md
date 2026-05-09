@@ -1,5 +1,5 @@
 ---
-title: 4.ZeRO (Zero Redundancy Optimizer)
+title: 5. ZeRO 与 FSDP
 categories: 学习笔记- AI Infra
 date: 2026-04-28 22:48:00
 mathjax: true

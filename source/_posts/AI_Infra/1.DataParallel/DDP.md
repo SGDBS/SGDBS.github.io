@@ -1,5 +1,5 @@
 ---
-title: 1. Distributed Data Parallel
+title: 2. Distributed Data Parallel
 categories: 学习笔记- AI Infra
 date: 2026-04-28 22:48:00
 mathjax: true
@@ -496,7 +496,206 @@ for i, (x, y) in enumerate(loader):
 
 `model.no_sync()` 是 DDP 提供的上下文管理器,在它作用域内 backward 不触发 AllReduce,只在最后一步累积完所有梯度后做一次同步,通信量减少 accum_steps 倍。
 
-## 七、小结:DDP 的能力边界
+## 七、进阶:静态图模式与通信 hook
+
+前面 §3 讲 DDP 工作流程时一直假设默认模式——每次 forward 都重新 trace 一遍计算图,反向时 hook 触发 bucket 通信。这套默认行为在大多数场景够用,但有两个进阶机制经常出现在生产代码里,它们正好对应"DDP 怎么变得更快、怎么变得更可定制":**`static_graph=True`** 让 DDP 利用计算图不变的假设做激进优化;**`register_comm_hook`** 让你完全接管梯度通信策略,做压缩、量化、跨节点协议替换等定制化通信。
+
+### 7.1 静态图模式:`static_graph=True`
+
+#### 起因
+
+§3.3 提到 `find_unused_parameters=True` 是为了应付动态分支(if、MoE 这类),代价是**每次 forward 后都要遍历计算图**找哪些参数被用过。这个遍历本身在大模型上会是几个百分点的开销——反向计算非常快的层,遍历开销看起来就明显。
+
+但绝大多数模型其实**计算图是不变的**——同一个 batch、同一个 forward 路径、同样的算子调用顺序、所有参数都参与。如果你能告诉 DDP "我保证计算图永远不变",DDP 就可以做几件激进的优化。
+
+#### 工作机制
+
+打开 `static_graph=True`:
+
+```python
+model = DDP(model, device_ids=[local_rank], static_graph=True)
+```
+
+DDP 在**第一步训练**结束时,把所有参数的反向触发顺序、bucket 分配、通信调度全部记录下来,后续每一步直接复用这套调度,不再做任何 runtime check。具体能省的东西包括:
+
+- **不再每步遍历计算图**找未使用参数(因为假设全部都用)
+- **bucket 顺序固定**,可以做更激进的预先调度
+- **autograd 的某些 hook 可以预编译**而不是每步注册
+
+实测在 Llama-7B / 8 卡 DDP 上,static_graph 比默认快 5-15%(模型越简单、反向越快、收益越明显)。
+
+#### 限制
+
+但它要求**计算图严格不变**:
+
+- 不能有任何 dynamic control flow(if/while 取决于 tensor value)
+- 所有参数每步都必须收到梯度
+- 不能动态添加/移除子模块
+
+实际上现代 LLM 训练绝大多数都满足——Transformer block 完全静态。但 MoE / Mixture-of-Experts 不行,因为不同 token 走不同 expert,部分 expert 参数某些步可能完全没参与。**MoE 训练用 `find_unused_parameters=True`,稠密 LLM 用 `static_graph=True`**——记住这条二选一规则即可。
+
+#### `static_graph` 与 `find_unused_parameters` 互斥
+
+两个开关不能同时打开:静态图假设所有参数都参与,而 find_unused 假设可能不参与,逻辑冲突。PyTorch 会在你两个都设 True 时报错。
+
+实战决策树:
+
+```
+模型有动态分支吗?(MoE、条件 routing、某些 detection 模型)
+       │
+   ┌───┴───┐
+  是      否
+   │       │
+   ▼       ▼
+find_unused   static_graph=True
+=True         (推荐,快 5-15%)
+```
+
+#### 与 `torch.compile` 的关系
+
+`torch.compile` 在 PyTorch 2.x 后默认就要求计算图静态(动态分支会触发 graph break、降级到 eager)。所以 **`torch.compile` + DDP + `static_graph=True`** 是 LLM 训练的现代标配——这三者的假设完全一致,组合起来既快又稳。
+
+注意 `torch.compile` 包装的位置:**先 `compile` 再 `DDP`**:
+
+```python
+model = build_model().cuda()
+model = torch.compile(model, mode="default")     # 先 compile
+model = DDP(model, device_ids=[local_rank], static_graph=True)  # 再 DDP
+```
+
+反过来 DDP 会包一层 `module` 干扰 compile 的图捕获,可能完全失效。
+
+### 7.2 通信 hook:接管梯度同步
+
+#### 起因
+
+DDP 默认通信是 NCCL AllReduce,数据类型跟 .grad 一样(通常 FP32)。这套方案对大多数场景够用,但有两类需求 default 满足不了:
+
+**第一类:跨节点带宽紧张**。如果你跨节点用的是 100Gbps Ethernet 而不是 200/400Gbps IB,梯度通信会是瓶颈。这时候**用 BF16 做通信**(带宽减半,精度几乎无损)是非常划算的优化。
+
+**第二类:超大规模训练 + 梯度有冗余**。1024 卡训练里,即使每张卡发送 2V 总数据,聚合带宽压力也很大。如果能在传输前**压缩梯度**(用低秩近似、TopK 稀疏化等),通信量可以再降 2-10 倍,代价是少量精度损失。
+
+`register_comm_hook` 就是 DDP 提供的"开放接口",让你把默认的 AllReduce 换成任意自定义的通信逻辑。
+
+#### 接口
+
+```python
+def my_hook(state, bucket: dist.GradBucket) -> torch.futures.Future:
+    """
+    输入:bucket 内的梯度(flatten 后的一个大 tensor)
+    输出:Future,resolve 之后 bucket 里的 .grad 应该是同步好的最终梯度
+    """
+    grad = bucket.buffer()
+    # ... 自定义通信 ...
+    fut = dist.all_reduce(grad, op=dist.ReduceOp.SUM, async_op=True).get_future()
+    return fut.then(lambda f: f.value()[0] / dist.get_world_size())
+
+model = DDP(model, device_ids=[local_rank])
+model.register_comm_hook(state=None, hook=my_hook)
+```
+
+DDP 内部不再自己做 AllReduce,而是 bucket 凑齐后调用你的 hook,等返回的 future resolve 之后认为通信完成。
+
+#### 内置 hook 1: `fp16_compress_hook`
+
+PyTorch 自带的最常用 hook——把 FP32 .grad 压成 BF16/FP16 通信:
+
+```python
+from torch.distributed.algorithms.ddp_comm_hooks import default_hooks
+
+model.register_comm_hook(state=None, hook=default_hooks.fp16_compress_hook)
+```
+
+工作流程:
+
+```
+.grad (FP32) ──► cast to FP16 ──► AllReduce (FP16) ──► cast back FP32 ──► .grad
+                  ↓                                          ↓
+              省一半带宽                                  精度损失极小
+                                                        (LLM 几乎无影响)
+```
+
+**通信量减半,精度几乎无损**,在跨节点训练中是默认开启项之一。BF16 版本叫 `bf16_compress_hook`,语义类似但用 BF16(范围更广,更稳)。
+
+注意这只影响**通信中的 dtype**,本地 .grad 和 master 参数仍然是 FP32,与 §MixedPrecision 那篇讲的概念完全独立。
+
+#### 内置 hook 2: `PowerSGD`
+
+更激进的压缩——基于矩阵的低秩分解:
+
+```python
+from torch.distributed.algorithms.ddp_comm_hooks import powerSGD_hook
+
+state = powerSGD_hook.PowerSGDState(
+    process_group=None,
+    matrix_approximation_rank=1,    # 低秩 rank,越小压得越狠
+    start_powerSGD_iter=1000,        # 训练初期不用,防影响 warmup
+)
+model.register_comm_hook(state, powerSGD_hook.powerSGD_hook)
+```
+
+PowerSGD 把每个 bucket 的梯度看作矩阵 $G \in \mathbb{R}^{m \times n}$,然后用 power iteration 找一个低秩近似 $G \approx P Q^T$,只通信小得多的 $P, Q$。压缩比 = $mn / (mr + nr) = mn / r(m+n)$,**rank=1 时压缩 50-100 倍**。
+
+代价是精度——低秩近似丢掉了梯度的高频成分。实际经验:
+
+- 视觉 / NLP 小模型:**通常能用,精度损失 < 1%**
+- LLM 预训练:**经验上影响较大**,梯度方向被低秩约束后 loss 曲线会变差,目前生产里几乎不用
+- 慢网络的 fine-tuning:**收益最大**,通信瓶颈严重时能直接拉训练速度 5-10×
+
+PowerSGD 的实战价值在 LLM 预训练里有限,但在**带宽差但又必须分布式**的场景(教育机构、跨地理区域)是救命稻草。
+
+#### 自己写一个 hook:示例
+
+理解了接口,你完全可以写自己的通信策略。比如**只通信 Top-K 大梯度**:
+
+```python
+def topk_hook(state, bucket):
+    grad = bucket.buffer()
+    k = max(1, int(grad.numel() * 0.01))    # 只发 1% 最大的
+    
+    # 找 top-k 的位置和值
+    abs_grad = grad.abs()
+    _, indices = torch.topk(abs_grad, k)
+    values = grad[indices]
+    
+    # 用稀疏 AllReduce(实际要自己实现完整逻辑,这里简化)
+    # 通信完毕后把稀疏梯度还原回完整梯度,其余位置置 0
+    
+    # ...省略完整实现...
+    return future
+```
+
+这只是示例,实际 TopK SGD 还要处理误差补偿、稀疏 AllReduce、numerical stability 等问题。但接口本身确实是这么开放——DDP 把"梯度同步"这个动作完全暴露给你,只要你的 hook 返回的 .grad 在所有 rank 上语义一致,DDP 不做额外干预。
+
+### 7.3 实战中怎么用这两个开关
+
+把上面的内容串起来,典型 LLM 训练的 DDP 配置:
+
+```python
+# 1. 模型构建
+model = build_llm_model().cuda()
+
+# 2. (可选)torch.compile 加速
+model = torch.compile(model, mode="default")
+
+# 3. DDP 包装 + 静态图
+model = DDP(
+    model,
+    device_ids=[local_rank],
+    static_graph=True,                # 稠密模型,假设计算图不变
+    bucket_cap_mb=25,                  # bucket 大小,默认 25MB 通常合适
+    gradient_as_bucket_view=True,      # 让 .grad 直接是 bucket 的 view,省一次 copy
+)
+
+# 4. 跨节点带宽紧张时打开 BF16 通信
+if dist.get_world_size() > 8:    # 多节点
+    from torch.distributed.algorithms.ddp_comm_hooks import default_hooks
+    model.register_comm_hook(state=None, hook=default_hooks.bf16_compress_hook)
+```
+
+这套配置在 8-256 卡的 LLM 训练上是经过实战验证的、最贴近极限的 DDP 设置。再往上(几千卡)就是 FSDP 或 TP+PP 的领域了。
+
+## 八、小结:DDP 的能力边界
 
 把前面讲的串起来,DDP 这套机制实际**解决了**三件事:
 

@@ -1,5 +1,5 @@
 ---
-title: 2.Pipeline Parallel
+title: 1. 训练显存预算与激活优化
 categories: 学习笔记- AI Infra
 date: 2026-05-08 20:00:00
 mathjax: true
@@ -9,7 +9,9 @@ tags:
 ---
 
 
-训练大模型时,显存几乎永远是瓶颈。显存压力可以被拆成两个正交方向:**激活值的"宽度"**(同时塞进来的样本数)和**激活值的"深度"**(单个样本经过的层数)。Micro-batch 解决前者,Re-materialization (Activation Checkpointing) 解决后者,两者既可以独立使用,也常常叠加。本文先把训练显存账算清楚,再分别讲透这两个技术,最后做对比与组合。
+训练大模型时,显存几乎永远是瓶颈。这一篇是整个 AI Infra 系列后续章节(DDP / ZeRO / Pipeline Parallel / Tensor Parallel)共同的**问题陈述**——先把"训练时显存到底被什么吃掉"算清楚,再讲两个最常用的工程降显存手段:**Micro-batch / 梯度累积** 和 **Activation Checkpointing**,最后顺手把"梯度裁剪"这个训练护栏一起讲掉(它和显存无关,但每个训练循环都要写)。
+
+显存压力可以被拆成两个正交方向:**激活值的"宽度"**(同时塞进来的样本数)和**激活值的"深度"**(单个样本经过的层数)。Micro-batch 解决前者,Re-materialization (Activation Checkpointing) 解决后者,两者既可以独立使用,也常常叠加。
 
 ## 一、训练显存的构成
 
