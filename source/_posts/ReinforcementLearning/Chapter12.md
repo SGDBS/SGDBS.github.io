@@ -156,7 +156,7 @@ $$\max_r \mathbb{E}_{\tau \sim \mathcal{D}^E}[\log P(\tau \mid r)]$$
 
 | 方法 | 距离 | 工具 |
 | :--- | :--- | :--- |
-| **BC** | $D_{KL}(\pi^E(\cdot \mid s) \| \pi_\theta(\cdot \mid s))$ | 监督学习 |
+| **BC** | $D_{KL}(\pi^E(\cdot \mid s) \Vert \pi_\theta(\cdot \mid s))$ | 监督学习 |
 | **DAgger** | KL on $\pi_\theta$ 访问的状态 | online 修正 |
 | **GAIL** | JS divergence on (s, a) 分布 | GAN |
 | **AIRL** | KL via reward + soft Bellman | GAN + IRL |
@@ -391,10 +391,10 @@ gail_agent = train_gail(expert_data, env, n_steps=int(1e6))
 
 | # | 公式 | 含义 |
 | :---: | :--- | :--- |
-| 1 | $\mathcal{L}_{\text{BC}} = -\mathbb{E}_{\mathcal{D}^E}[\log \pi_\theta(a\|s)]$ | BC = SFT 损失 |
+| 1 | $\mathcal{L}_{\text{BC}} = -\mathbb{E}_{\mathcal{D}^E}[\log \pi_\theta(a \mid s)]$ | BC = SFT 损失 |
 | 2 | $\mathbb{E}[\text{errors}] = O(T^2 \epsilon)$ | BC 分布偏移 |
 | 3 | $\min_\theta \max_\phi \mathbb{E}_{\pi^E}[\log D] + \mathbb{E}_{\pi_\theta}[\log(1-D)]$ | GAIL 目标 |
-| 4 | $P(\tau\|r) \propto \exp(\sum r)$ | MaxEnt IRL |
+| 4 | $P(\tau \mid r) \propto \exp(\sum r)$ | MaxEnt IRL |
 
 ## D.3 常见面试题
 
@@ -409,7 +409,7 @@ gail_agent = train_gail(expert_data, env, n_steps=int(1e6))
 - 单步误差仍是 $\epsilon$，但累积不再爆炸
 
 **Q3：GAIL 与 BC 的本质区别？**
-- BC：匹配 $\pi_\theta(a\|s) \approx \pi^E(a\|s)$（条件分布）
+- BC：匹配 $\pi_\theta(a \mid s) \approx \pi^E(a \mid s)$（条件分布）
 - GAIL：匹配 $d^{\pi_\theta}(s, a) \approx d^{\pi^E}(s, a)$（联合分布）
 - GAIL 更鲁棒（看分布而非单点）
 

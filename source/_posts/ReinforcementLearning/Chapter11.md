@@ -369,9 +369,9 @@ LLM 的对齐过程**几乎全是 offline RL**：
 | # | 公式 | 含义 |
 | :---: | :--- | :--- |
 | 1 | $L^\tau(u) = \tau u^2 \cdot \mathbb{1}[u > 0] + (1-\tau) u^2 \cdot \mathbb{1}[u \leq 0]$ | Expectile loss |
-| 2 | $\pi^*(a\|s) \propto \pi_\beta(a\|s) \exp(r/\beta)$ | KL-RL 闭式解 |
-| 3 | $\mathcal{L}_{\text{AWR}} = -\mathbb{E}[\exp(A/\beta) \log \pi(a\|s)]$ | Advantage-weighted BC |
-| 4 | $r(x, y) = \beta \log(\pi(y\|x)/\pi_{\text{ref}}(y\|x)) + \beta \log Z$ | DPO 反解 reward |
+| 2 | $\pi^*(a \mid s) \propto \pi_\beta(a \mid s) \exp(r/\beta)$ | KL-RL 闭式解 |
+| 3 | $\mathcal{L}_{\text{AWR}} = -\mathbb{E}[\exp(A/\beta) \log \pi(a \mid s)]$ | Advantage-weighted BC |
+| 4 | $r(x, y) = \beta \log(\pi(y \mid x)/\pi_{\text{ref}}(y \mid x)) + \beta \log Z$ | DPO 反解 reward |
 
 ## D.3 常见面试题
 

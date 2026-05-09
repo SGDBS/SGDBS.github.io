@@ -414,8 +414,8 @@ $$\mathcal{L} = -\sum_t \log \pi_\theta(a_t \mid s_t) A_t - \beta \cdot H(\pi_\t
 | :---: | :--- | :--- |
 | 1 | $J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$ | 目标函数 |
 | 2 | $\nabla_\theta \log p_\theta(\tau) = \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)$ | log-derivative 化简 |
-| 3 | $\nabla_\theta J = \mathbb{E}[\sum_t \nabla \log \pi_\theta(a_t\|s_t) \cdot G_t]$ | PG 定理 |
-| 4 | $\mathbb{E}_a[\nabla \log \pi(a\|s) b(s)] = 0$ | baseline 减方差 |
+| 3 | $\nabla_\theta J = \mathbb{E}[\sum_t \nabla \log \pi_\theta(a_t \mid s_t) \cdot G_t]$ | PG 定理 |
+| 4 | $\mathbb{E}_a[\nabla \log \pi(a \mid s) b(s)] = 0$ | baseline 减方差 |
 | 5 | $A^\pi = Q^\pi - V^\pi$ | 优势函数（Ch6 起核心） |
 
 ## D.2 常见面试题
@@ -426,11 +426,11 @@ $$\mathcal{L} = -\sum_t \log \pi_\theta(a_t \mid s_t) A_t - \beta \cdot H(\pi_\t
 - 关键好处：$\log p_\theta(\tau)$ 中环境项 $P, p(s_0)$ 自动消失，**不需要 model**
 
 **Q2：为什么减 baseline 能降方差但不改变期望？**
-- $\mathbb{E}_a[\nabla \log \pi(a|s) b(s)] = 0$（积分中 $b(s)$ 是常数）
+- $\mathbb{E}_a[\nabla \log \pi(a \mid s) b(s)] = 0$（积分中 $b(s)$ 是常数）
 - baseline 与 reward 越相关（如 $V^\pi$），方差降得越多
 
 **Q3：REINFORCE 与 supervised learning 的关系？**
-- 形式上几乎一样：$\sum_t \log \pi_\theta(a_t|s_t)$ 就是 NLL
+- 形式上几乎一样：$\sum_t \log \pi_\theta(a_t \mid s_t)$ 就是 NLL
 - 区别：监督学习每个样本权重为 1，REINFORCE 权重为 $G_t$（reward 加权 NLL）
 - 这是为什么 RLHF/DPO 看起来"像监督学习"——本质是带权重的 MLE
 

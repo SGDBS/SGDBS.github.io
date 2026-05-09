@@ -408,7 +408,7 @@ def inference(model, obs):
 
 | # | 公式 | 含义 |
 | :---: | :--- | :--- |
-| 1 | $r_t(\theta) = \pi_\theta(a_t\|s_t) / \pi_{\theta_{\text{old}}}(a_t\|s_t)$ | importance ratio |
+| 1 | $r_t(\theta) = \pi_\theta(a_t \mid s_t) / \pi_{\theta_{\text{old}}}(a_t \mid s_t)$ | importance ratio |
 | 2 | $\mathcal{L}^{\text{CLIP}} = \min(r_t \hat{A}_t, \text{clip}(r_t, 1\pm\epsilon)\hat{A}_t)$ | PPO 目标 |
 | 3 | $J(\pi') - J(\pi) \approx \mathbb{E}_{s, a \sim \pi}[r(s,a) A^\pi(s,a)]$ | 单调改进引理 |
 | 4 | $J(\pi') \geq \tilde{J}(\pi') - C \cdot D_{KL}^{\max}$ | TRPO 下界 |
