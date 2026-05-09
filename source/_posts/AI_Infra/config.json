@@ -1,10 +1,6 @@
 {
     "name": "AI Infra 从入门到入土",
     "order": [
-        "DDP",
-        "PipelineParallel",
-        "AsyncCompute",
-        "ZeRO",
-        "FlashAttention"
+        "1.DataParallel"
     ]
 }
