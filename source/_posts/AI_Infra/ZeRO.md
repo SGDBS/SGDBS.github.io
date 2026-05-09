@@ -1,5 +1,5 @@
 ---
-title: ZeRO (Zero Redundancy Optimizer)从入门到入土
+title: 4.ZeRO (Zero Redundancy Optimizer)
 categories: 学习笔记- AI Infra
 date: 2026-04-28 22:48:00
 mathjax: true

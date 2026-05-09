@@ -1,5 +1,5 @@
 ---
-title: Pipeline Parallel之Gpipe
+title: 2.Pipeline Parallel
 categories: 学习笔记- AI Infra
 date: 2026-05-08 20:00:00
 mathjax: true

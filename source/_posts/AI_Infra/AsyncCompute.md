@@ -1,5 +1,5 @@
 ---
-title: GPU 训练里的异步计算
+title: 3.异步计算
 categories: 学习笔记- AI Infra
 date: 2026-05-08 22:30:00
 mathjax: true

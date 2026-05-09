@@ -1,5 +1,5 @@
 ---
-title: DataParalle之DDP(Distributed Data Parallel)
+title: 1. Distributed Data Parallel
 categories: 学习笔记- AI Infra
 date: 2026-04-28 22:48:00
 mathjax: true
