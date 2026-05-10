@@ -290,44 +290,112 @@ NCCL 流   :                                    [AR L1][AR L2]...[AR LN]
 
 ### 4.2 DDP 实际怎么做(异步重叠)
 
-DDP 用了我们前面讲的所有招数:
+DDP 想做的事一句话:**反向一边算梯度,一边把已经算好的梯度发出去同步,不要等所有梯度算完才动手**。要做到这点需要回答五个问题——一个梯度算好了怎么知道?发太碎了怎么办?通信和反向都用 GPU 怎么不抢资源?怎么让通信尽量提前发射?最后怎么收尾?
 
-1. **Hook 触发**:每个参数 `register_hook`,grad 一就绪就通知 DDP
-2. **Bucket 凑齐就发**:`dist.all_reduce(..., async_op=True)`——任务进 NCCL 的 stream,host **立即返回**继续反向
-3. **NCCL 走自己的 stream**:NCCL 通信 kernel 跑在专门的 NCCL stream,不抢默认 stream 的 SM
-4. **Bucket 反向逆序**:最后一层在第一个 bucket,反向才刚开始就能发出第一波 AllReduce
+下面挨个拆。
 
-时序图变成:
+#### 1) Hook:梯度就绪的"通知机制"
 
-```
-时间 →
-默认 stream (反向) :  [L_N ][L_{N-1} ][L_{N-2}]...[L_2][L_1]
-NCCL stream (通信) :       [AR_bucket_0]   [AR_bucket_1]...[AR_bucket_K]
-                                                                     ↑ 尾部还有少量等待
-host 在做啥        :  [bk_N: launch L_N + check bucket][bk_{N-1}: launch + check]...[wait_all]
+`backward()` 从 loss 出发沿计算图回溯,算完哪一层的 `dL/dW_i`,autograd 引擎就立刻往那个 `W_i.grad` 写值。**写完那一刻**就是 bucket 该被触发的时机。
 
-总时间    ≈  max(T_backward, T_allreduce) + 很短的 tail
-```
-
-**通信几乎完全被反向计算掩盖**。如果反向比通信慢,通信就是"白送"的;如果通信比反向慢(模型小、跨节点带宽差),通信会从尾部露出来,这时候才是 DDP 的瓶颈。
-
-### 4.3 一行关键代码
-
-DDP 内部的核心异步逻辑就这两行(简化):
+DDP 在每个参数的 grad accumulator 上挂了个 hook,语义如下(简化):
 
 ```python
-# bucket 凑齐 → 异步发射,不阻塞反向
-bucket.handle = dist.all_reduce(bucket.flat_grad,
-                                op=ReduceOp.SUM,
-                                async_op=True)
-
-# backward 末尾,一次性等所有 bucket 收尾
-for bucket in buckets:
-    bucket.handle.wait()
-    bucket.flat_grad.div_(world_size)
+for p in model.parameters():
+    if not p.requires_grad: continue
+    grad_acc = p.expand_as(p).grad_fn.next_functions[0][0]
+    grad_acc.register_hook(lambda *_: ddp.mark_param_ready(p))
+# 真实 DDP 用的是 C++ 的 Reducer,语义完全一致
 ```
 
-整个 backward 过程中只有最后那几个 wait() 是真正的同步点,前面全是异步堆积。
+只要 autograd 写完 `p.grad`,`mark_param_ready(p)` 就会被同步调用——**不需要等 backward 整体结束**。这是后面所有异步动作的触发信号。
+
+#### 2) Bucket:把小梯度凑成大包再发
+
+模型有几百万参数,如果一个梯度就发一次 AllReduce,会被 NCCL 的 launch overhead 和带宽爬坡淹没(小消息根本打不满 NVLink)。DDP 把参数预先分成若干个 **bucket**,默认 25MB 一个,每个 bucket 是一段**连续显存** + 一个待办计数器:
+
+```
+参数到 bucket 的映射:
+  bucket 0 (25MB):  W_N, W_{N-1}, W_{N-2}, ... pending=3
+  bucket 1 (25MB):  W_{N-3}, W_{N-4}, ...     pending=2
+  bucket 2 (25MB):  ...                       pending=...
+```
+
+`mark_param_ready` 干两件事:把 `p.grad` 拷进 bucket 的 flat buffer,pending 减 1。**减到 0 的那一瞬间整个 bucket 立刻整体发出去**:
+
+```python
+def mark_param_ready(self, p):
+    bk = self.param_to_bucket[p]
+    bk.flat_grad[bk.offset[p] : bk.offset[p]+p.numel()].copy_(p.grad.flatten())
+    bk.pending -= 1
+    if bk.pending == 0:
+        bk.handle = dist.all_reduce(           # 异步发射
+            bk.flat_grad,
+            op=ReduceOp.SUM,
+            async_op=True,
+        )
+```
+
+`async_op=True` 的语义:把 NCCL 任务排进 NCCL stream 的队列,**host 立刻返回**继续 backward。返回的 `handle` 不是数据,是一张"将来再来收"的票。
+
+#### 3) NCCL stream:通信走专属车道
+
+NCCL 在每张卡上有自己的 CUDA stream。AllReduce 任务排进去之后:
+
+- **NCCL stream** 上,GPU 用 NVLink / IB 引擎搬数据、跑 ring/tree reduce,**几乎不占 SM**
+- **默认 stream** 上,backward 的 matmul / conv 继续在 SM 上跑
+
+两条 stream 各用各的硬件资源(SM vs 通信引擎),硬件层面真的并发。"NCCL stream 读 bucket buffer 时默认 stream 不能正在改它"这种依赖,CUDA 通过 event 自动建——使用者不用手写。
+
+#### 4) 反向"逆序" + bucket 反编号:让通信尽早开跑
+
+backward 从最后一层往前算:`L_N → L_{N-1} → ... → L_1`。
+
+DDP 给 bucket 编号时**故意反过来**:bucket 0 装最后几层(`W_N` 附近)的参数,bucket K 装第一层(`W_1` 附近)的参数。这样反向才刚开始没多久,bucket 0 就能凑齐发出第一波 AllReduce——后面**所有** bucket 的通信都和正在进行的反向重叠。
+
+如果不反过来,反向跑了 95% 才凑齐第一个 bucket,根本没多少时间留给重叠。
+
+#### 5) 把五件事拼起来的时序图
+
+设 4 层模型、3 个 bucket,反向耗时 4 个时间单元、单个 bucket 通信耗时 1.5 个:
+
+```
+时间 →                  0       1       2       3       4       5
+默认 stream (反向)   :  [bk_L4 ][bk_L3 ][bk_L2 ][bk_L1 ]
+                              ↓ L4,L3 凑齐 bk0    ↓ L2 凑齐 bk1   ↓ L1 凑齐 bk2
+NCCL stream (通信)   :         [AR bk0   ]      [AR bk1   ]     [AR bk2   ]
+                                                                          ↑ tail,反向已结束
+host 在做啥          :  [launch L4 + hook fires, fire AR bk0]
+                                [launch L3 + hook]
+                                       [launch L2 + hook,fire AR bk1]
+                                              [launch L1 + hook,fire AR bk2]
+                                                     [wait_all][step]
+                          ↑ host 一路向前提交,完全不阻塞       ↑ 唯一的真同步点
+```
+
+读出来三件事:
+
+- **AR bk0 在反向只跑了 25% 时就已经在 NCCL stream 上跑了**——通信被尽早提前
+- **反向计算和 NCCL 通信用不同硬件**——同时跑、互不干扰
+- **整个 backward 过程只有 wait_all 是真同步**——前面所有 hook、launch、async_op 都不阻塞 host
+
+总耗时从 `T_backward + T_allreduce` 变成 `max(T_backward, T_allreduce) + T_tail`。`T_tail` 是最后一个 bucket 没法被反向覆盖掉的那一小段——它的长度等于"最后一个 bucket 的通信耗时"。如果反向比通信慢,tail 几乎为零(通信"白送");如果通信比反向慢(模型小、跨节点带宽差、bucket 太大导致最后一个还在传),tail 就是 DDP 的真实瓶颈。
+
+#### 6) 收尾:wait 和除以 world_size
+
+backward 末尾(autograd 的 final hook 里),DDP 把所有 bucket 同步掉、求平均、拆回各参数的 `.grad`:
+
+```python
+for bk in self.buckets:
+    bk.handle.wait()                  # 这里 host 阻塞等 NCCL 完成
+    bk.flat_grad.div_(self.world_size)
+    for p in bk.params:
+        p.grad.copy_(bk.flat_grad[bk.offset[p] : bk.offset[p]+p.numel()].view_as(p))
+
+# optimizer.step() 看到的就是平均后的梯度
+```
+
+`bk.handle.wait()` 是整个 backward 唯一的真同步点。前面 hook、launch、async_op 一路狂奔,通信和计算在 GPU 里疯狂重叠;到这里要做参数更新前,host 必须确认通信真的结束了——这是异步重叠的边界,也是 wall-clock 上 DDP 反向"剩下的那一小段时间"的来源。
 
 ## 五、典型场景二:ZeRO-3 / FSDP 的参数预取
 
