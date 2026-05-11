@@ -2,6 +2,7 @@
     "name": "2. Pipeline Parallel",
     "order": [
         "GPipe",
-        "OneF1B"
+        "OneF1B",
+        "Interleaved1F1B"
     ]
 }
