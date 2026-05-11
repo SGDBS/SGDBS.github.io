@@ -1,7 +1,7 @@
 ---
 title: RL Chapter3 Monte Carlo 与 TD：从样本估计价值
 categories: 学习笔记-强化学习
-date: 2026-05-11 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

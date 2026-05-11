@@ -288,25 +288,9 @@ for i, micro_batch in enumerate(dataloader):
 
 #### 流水线并行中的 micro-batch
 
-这是 micro-batch **另一个完全不同的用途**。在 GPipe/1F1B 这类流水线并行里,模型按层切到多卡上,单卡一次只能处理一个样本流(否则后面的卡在等)。如果不切 micro-batch,流水线会有大量"气泡"(bubble,空闲时间):
+micro-batch 在流水线并行(GPipe、1F1B 等)里有**另一个完全不同的用途**——不是为了省显存,而是为了**填充流水线、减少 stage 之间的空闲气泡 (bubble)**。单 micro-batch 的 naive pipeline 会让大部分 stage 在大部分时间空等;切成多个 micro-batch 后,它们像水流一样在不同 stage 上同时跑,把 bubble 压到 $(P-1)/(M+P-1)$——其中 $P$ 是 stage 数,$M$ 是 micro-batch 数。
 
-```
-Stage 0:  [F0]——————————— [B0]
-Stage 1:       [F0]————— [B0]
-Stage 2:            [F0][B0]
-                ↑ 大量空闲
-```
-
-切成 micro-batch 后,多个 micro-batch 像水流一样同时在不同 stage 上跑:
-
-```
-Stage 0:  [F0][F1][F2][F3]                   [B3][B2][B1][B0]
-Stage 1:       [F0][F1][F2][F3]         [B3][B2][B1][B0]
-Stage 2:            [F0][F1][F2][F3] [B3][B2][B1][B0]
-                                     ↑ 气泡明显减少
-```
-
-这里 micro-batch 的目的是**填充流水线、减少气泡**,不是为了省显存。Megatron-LM、DeepSpeed Pipeline 都是这套逻辑。
+调度算法的演进、bubble 公式的完整推导、以及 1F1B / Interleaved / Zero Bubble 等具体方案,详见 **Ch2 Pipeline Parallel**。这里只需要记住:**梯度累积 + micro-batch 是流水线并行能跑起来的前提**,Megatron-LM、DeepSpeed Pipeline 都是这套逻辑。
 
 ## 三、Re-materialization:压缩激活的"深度"
 

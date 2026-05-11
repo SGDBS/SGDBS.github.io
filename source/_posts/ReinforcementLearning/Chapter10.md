@@ -1,7 +1,7 @@
 ---
 title: RL Chapter10 探索：从 ε-greedy 到 Curiosity
 categories: 学习笔记-强化学习
-date: 2026-05-18 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

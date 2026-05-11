@@ -1,7 +1,7 @@
 ---
 title: RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化
 categories: 学习笔记-强化学习
-date: 2026-05-14 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

@@ -1,7 +1,7 @@
 ---
 title: RL Chapter4 Q-Learning 与 SARSA：从评估到控制
 categories: 学习笔记-强化学习
-date: 2026-05-12 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

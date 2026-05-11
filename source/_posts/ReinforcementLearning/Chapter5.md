@@ -1,7 +1,7 @@
 ---
 title: RL Chapter5 Policy Gradient：直接对策略求梯度
 categories: 学习笔记-强化学习
-date: 2026-05-13 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

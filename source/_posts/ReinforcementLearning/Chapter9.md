@@ -1,7 +1,7 @@
 ---
 title: RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑
 categories: 学习笔记-强化学习
-date: 2026-05-17 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

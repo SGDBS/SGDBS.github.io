@@ -1,7 +1,7 @@
 ---
 title: RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源
 categories: 学习笔记-强化学习
-date: 2026-05-19 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

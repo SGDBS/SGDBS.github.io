@@ -1,7 +1,7 @@
 ---
 title: RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化
 categories: 学习笔记-强化学习
-date: 2026-05-16 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI

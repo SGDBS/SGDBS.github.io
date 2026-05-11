@@ -1,7 +1,7 @@
 ---
 title: RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角
 categories: 学习笔记-强化学习
-date: 2026-05-21 10:00:00
+date: 2026-05-10 10:00:00
 mathjax: true
 tags:
     - AI
