@@ -101,7 +101,142 @@ $$
 计算量没变,但 HBM 访问量在 $d \ll M$ 的常见情况下大幅降低（$d$ 一般是 64 或 128,$M$ 在 A100 上约 100KB 级别）,这是加速的根本来源。
 
 
-## 2.Online Softmax
+## 2. 推理场景：Prefill / Decode 与 KV Cache
+
+第 1 节我们用训练前向作为切入点，分析了 attention 的 memory-bound 本质。但 FlashAttention 在生产环境最大的价值其实在**推理服务**——LLM 部署后每秒成千上万次的请求都在跑这个 kernel。
+
+推理和训练的计算模式不完全相同。GPT 类自回归模型的推理分**两个阶段**，瓶颈完全不同，对 attention kernel 的要求也不一样。理解这两个阶段之后，才能完整地看到 FlashAttention 在工程上的意义，也能理解为什么后续会演化出 FlashAttention-2、FlashDecoding 等变体。
+
+### 一、GPT 的两阶段推理
+
+给定一个 prompt（比如 "今天天气真好"），模型要生成后续 token。这个过程分为：
+
+- **Prefill（预填充）**：一次性处理整个 prompt。输入是 N 个 token，模型并行算出它们的 Q, K, V，然后做一次完整的（带因果 mask 的）attention。这一步只发生一次。
+- **Decode（解码）**：从生成第一个新 token 开始，每次只输入 1 个 token（上一步刚生成的），计算它的 Q, K, V，与**前面所有 token 的 K, V** 做 attention，得到 logits 后采样下一个 token。这一步循环执行，直到 EOS 或达到最大长度。
+
+数据流如下（省略 batch 维度，单层视角）：
+
+```
+Step 0: Prefill (prompt 长度 N=6)
+
+  Q[1..6], K[1..6], V[1..6]  ∈ R^{6×d}
+              │
+              ▼
+  ┌──────────────────────────────────────────┐
+  │  S = Q·Kᵀ ∈ R^{6×6}  (causal mask)       │
+  │  P = softmax(S)                          │
+  │  O = P·V    ∈ R^{6×d}                    │  ← 完整 N×N attention
+  └──────────────┬───────────────────────────┘
+                 │
+                 ▼ 同时把 K, V 存进 cache
+  ┌──────────────────────────────────────────┐
+  │  KV Cache (HBM):  K[1..6],  V[1..6]      │
+  └──────────────────────────────────────────┘
+
+
+Step 1: Decode 生成第 7 个 token
+
+  Q[7], K[7], V[7]  ∈ R^{1×d}   ← 只算 1 行!
+       │
+  ┌────┴────────────────────────────────────┐
+  │  读 KV Cache: K[1..6], V[1..6]          │
+  └────┬────────────────────────────────────┘
+       ▼
+  ┌─────────────────────────────────────────┐
+  │  S = Q[7] · K[1..7]ᵀ ∈ R^{1×7}          │
+  │  P = softmax(S)                         │
+  │  O = P · V[1..7]    ∈ R^{1×d}           │
+  └─────────────┬───────────────────────────┘
+                │
+                ▼ 追加 K[7], V[7]
+  ┌──────────────────────────────────────────┐
+  │  KV Cache (HBM):  K[1..7],  V[1..7]      │
+  └──────────────────────────────────────────┘
+
+
+Step 2 ~ T-1: 重复 Decode，每一步 cache 增长 1 行
+```
+
+注意几个关键点：
+
+1. **Prefill 的计算模式和训练前向几乎一样**——都是 N×d 的 Q, K, V，都要算完整的 N×N attention 矩阵。所以**第 1 节里讲的所有 memory-bound 分析、FlashAttention 的所有优化，直接就适用于 prefill**。
+2. **Decode 的 Q 只有 1 行**，根本不存在所谓的 "N×N 注意力矩阵"——这一步要算的是 1×(N+t) 的 attention，瓶颈完全是另一回事。
+3. **每一步 decode 都依赖前面所有步的 K, V**——这就是 KV Cache 存在的根本原因。
+
+### 二、为什么需要 KV Cache
+
+不存 cache 行不行？假设不存，每生成第 t 个 token 时，要重新计算前 t-1 个 token 的 K, V。整个序列生成完，每个 token 的 K, V 平均会被重算 T/2 次——**生成 T 个 token 总共做了 O(T²) 量级的 K/V 重复投影**。
+
+存了 cache 之后：
+
+- 每一步 decode 只算**当前这 1 个 token** 的 Q, K, V，是 O(d²) 的开销
+- 之前所有 token 的 K, V 直接从 cache 里读出来，不再重算
+- 然后做 1×(N+t) 的 attention
+
+总计算量从 O(T²) 量级降到 O(T) 量级——**计算量的问题被解决了**。
+
+但代价是什么？**每一步 decode 都要把整个 KV cache 从 HBM 完整读出来一次**。一个典型的 7B 模型，prefill 之后 KV cache 大小为：
+
+$$
+\text{KV cache size} = 2 \times L \times N \times d_{\text{model}} \times \text{bytes}
+$$
+
+（2 是 K 和 V 两个张量,$L$ 是层数,$d_{\text{model}}$ 是隐藏维度。）以 LLaMA-7B、$N=2048$、fp16 为例,KV cache ≈ $2 \times 32 \times 2048 \times 4096 \times 2$ ≈ **1 GB**。每生成一个 token 都要把这 1 GB 从 HBM 完整搬一次到 SRAM。
+
+**所以 KV cache 把"算力问题"转换成了"带宽问题"**——这恰好是 FlashAttention 最擅长解决的那一类问题。
+
+### 三、Decode 的算术强度有多低
+
+把训练前向（或 prefill）和 decode 放在一起对比：
+
+| 阶段 | Q 形状 | KV 形状 | 主要算力 | 主要 HBM 流量 | 算术强度 |
+|------|--------|---------|---------|--------------|---------|
+| 训练 / Prefill | N×d | N×d | $O(N^2 d)$ | $O(N^2)$ 中间矩阵 + $O(Nd)$ 输入 | $\sim N$ (随序列长增长) |
+| Decode 单步 | 1×d | (N+t)×d | $O((N+t) \cdot d)$ | $O((N+t) \cdot d)$ KV cache | **$\sim 1$ (常数!)** |
+
+Decode 单步要做的算力大约是 $O(N \cdot d)$（Q 和 N 行 K 各做一次内积，再用 P 与 N 行 V 加权求和），读取的 KV cache 字节量也是 $O(N \cdot d)$ 量级——**算术强度只有 ~1 FLOP/byte**。
+
+对照第 1 节给的 A100 数字：算力/带宽比 200 FLOPs/byte。这意味着 decode 时 GPU 的 312 TFLOPS 算力**几乎完全闲置**，时间全部花在等 KV cache 从 HBM 加载。如果一个 decode kernel 跑 100 μs，可能 99 μs 在搬数据，1 μs 在算。
+
+这就是 **memory-bound 的极端版本**。第 1 节里我们用训练为例已经论证了 attention 是 memory-bound，但 decode 把这个矛盾推到了顶峰：
+
+- 训练 / prefill：算术强度 $\sim N$（数百到数千），低于临界值,已经 memory-bound
+- Decode：算术强度 $\sim 1$（常数级），低于临界值**两个数量级以上**，重度 memory-bound
+
+### 四、FlashAttention 在推理里的角色
+
+理解了这两个阶段，再看 FlashAttention 在推理中扮演什么角色：
+
+**(1) Prefill：FlashAttention v1 直接适用。** Prefill 就是一次大的 attention 前向，FlashAttention 的 tiling + online softmax 完整适用。在长 prompt 场景（RAG、长文档总结、代码补全），prefill 阶段就是延迟瓶颈，FlashAttention 直接把它的延迟和显存都降下来。
+
+**(2) Decode：v1 不够好，需要 FlashDecoding。** v1 的算法结构是"外层循环遍历 Q 块，内层循环遍历 K, V 块"。这套并行划分基于一个假设：**Q 有很多行可以分给不同的 SM 并行处理**。但在 decode 时 Q 只有 1 行，外层循环只有 1 步——**整个 GPU 的几十个 SM 里只有 1 个在干活，其余全部闲置**。
+
+FlashDecoding 的做法是反过来：**把长长的 K, V 维度切分到多个 SM 上并行处理**，每个 SM 负责一段 K, V，独立算出局部的 attention 输出和 softmax 统计量 $(m, \ell)$，最后用 online softmax 的合并公式把所有局部结果归一成最终输出。
+
+注意这里 online softmax 的"分块合并律"再次起到了关键作用——它使得 attention 这个看起来必须看全行才能归一的操作，可以被任意方式切分并行后再合并。在训练时它解决了"按 K, V 块**串行扫描**"的问题，在 decode 时它解决了"按 K, V 块**并行 reduce**"的问题，**同一个数学结构在两种场景里被反向利用**。
+
+### 五、小结
+
+把推理这条线补上之后，FlashAttention 的故事就完整了：
+
+| 场景 | 计算模式 | 瓶颈 | FlashAttention 的角色 |
+|------|---------|------|---------------------|
+| 训练前向 | N×N attention | $N^2$ 中间矩阵的 HBM 读写 | v1 的 tiling + online softmax |
+| 训练反向 | N×N attention + 梯度 | $N^2$ 矩阵保存 + HBM 读写 | v1 的 recomputation |
+| 推理 Prefill | 同训练前向 | 同上 | v1 直接适用 |
+| 推理 Decode | 1×N attention，每步读 cache | KV cache 的 HBM 读取 | FlashDecoding（K/V 维度并行） |
+
+从工程哲学上看，可以总结出一个对偶：
+
+- **KV Cache**：用 HBM 存储换计算（不重算 K, V）
+- **FlashAttention Recomputation**：用计算换 HBM 存储（不存 $N \times N$ 矩阵）
+
+两者都是在"算力 vs 带宽"这把剪刀差下做的工程取舍，方向相反但目的一致——**让宝贵的 HBM 带宽花在刀刃上**。
+
+理解了这一点，再回去看后面的 Online Softmax 和 Recomputation，会发现它们不只是训练里的优化技巧，而是支撑整个现代 LLM 推理服务能跑起来的数学基础。
+
+
+## 3.Online Softmax
 
 
 Online Softmax 是 FlashAttention 能成立的数学基石。它由 NVIDIA 的 Milakov & Gimelshein 在 2018 年的论文 *"Online normalizer calculation for softmax"* 中提出,核心思想是:**在只看过部分数据的情况下,增量地计算数值稳定的 softmax,并在新数据到来时做修正**。
@@ -332,7 +467,7 @@ Online softmax 看似只是一个小技巧,实际上解锁了一整类算法:
 
 
 
-## 3.Recomputation(重计算)详解
+## 4.Recomputation(重计算)详解
 
 Recomputation 是 FlashAttention 反向传播的核心技巧。它的本质是一个**用计算换显存**的权衡——前向时故意不保存中间结果,反向时重新算一遍。这个思想本身不是 FlashAttention 发明的(在深度学习中叫 gradient checkpointing,2016 年就有了),但 FlashAttention 把它用到了极致,并且在这里**不但不慢,反而更快**。
 
@@ -561,7 +696,7 @@ Recomputation 在 FlashAttention 中解决的核心问题是:**反向传播怎�
 
 更高层的启示是:在现代 GPU 上,**"少存一点、多算一点" 经常是更好的选择**。算力在持续增长,带宽却增长缓慢,这个剪刀差会让 recomputation 这种技术越来越普遍。
 
-## 4. 附录A
+## 5. 附录A
 
 {% details 结论一：若 $Y = AB$，则  $dA = dY \cdot B^T, \quad dB = A^T \cdot dY $ %}
 
