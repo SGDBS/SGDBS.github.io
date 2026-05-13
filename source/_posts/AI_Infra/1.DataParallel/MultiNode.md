@@ -260,6 +260,70 @@ NCCL 在初始化时探测 GPU 之间的物理拓扑,决定每对 GPU 之间走�
 
 判断你的集群有没有走 RDMA,看 NCCL_DEBUG=INFO 输出里是 `NET/IB` 还是 `NET/Socket`。**Socket 模式是性能毒药**,确认无 RDMA 就别上规模训练。
 
+### 3.6 跨节点带宽紧张时:用 BF16 做梯度通信
+
+§3.3-3.5 讲的都是**硬件层**的优化——走对网卡、走对 RDMA、走对 NVLink。但应用层还有一类常用优化:当跨节点带宽真的紧张(100Gbps Ethernet 而不是 200/400Gbps IB),即使硬件都对齐了,梯度 AllReduce 仍然可能盖不住反向计算,DDP §3.2 那张时间轴里"反向计算"和"NCCL stream"的两条线就会拉开差距。这时候**用半精度做梯度通信**(带宽减半,精度几乎无损)是最划算的解法。
+
+DDP 提供了 `register_comm_hook` 接口让你接管梯度通信策略,PyTorch 自带几个常用 hook 可以直接用。
+
+#### 最常用:`bf16_compress_hook`
+
+```python
+from torch.distributed.algorithms.ddp_comm_hooks import default_hooks
+
+model = DDP(model, device_ids=[local_rank], static_graph=True)
+# BF16 做通信(范围广,LLM 推荐)
+model.register_comm_hook(state=None, hook=default_hooks.bf16_compress_hook)
+# 或者 FP16(范围窄,需要小心数值范围)
+# model.register_comm_hook(state=None, hook=default_hooks.fp16_compress_hook)
+```
+
+工作流程:
+
+```
+.grad (FP32) ──► cast to BF16 ──► AllReduce (BF16) ──► cast back FP32 ──► .grad
+                    ↓                                       ↓
+                通信量减半                              精度损失极小(LLM 几乎无影响)
+```
+
+注意这只影响**通信中的 dtype**,本地 `.grad` 和 master 参数仍然是 FP32——和《4. 混合精度训练》里讲的"训练用什么精度"是完全独立的设置。
+
+#### `register_comm_hook` 的通用接口
+
+如果想自定义通信逻辑(自己实现压缩、quantization、跨节点协议替换),`register_comm_hook` 接受一个返回 `Future` 的回调:
+
+```python
+def my_hook(state, bucket: dist.GradBucket) -> torch.futures.Future:
+    """
+    输入:bucket 内的梯度(flatten 成一个大 tensor)
+    输出:Future,resolve 后 .grad 应该是同步好的最终梯度
+    """
+    grad = bucket.buffer()
+    # ...自定义通信逻辑...
+    fut = dist.all_reduce(grad, op=dist.ReduceOp.SUM, async_op=True).get_future()
+    return fut.then(lambda f: f.value()[0] / dist.get_world_size())
+
+model.register_comm_hook(state=None, hook=my_hook)
+```
+
+DDP 内部不再自己做 AllReduce,而是 bucket 凑齐后调用 hook,等返回的 Future resolve 之后认为通信完成。只要 hook 返回的 `.grad` 在所有 rank 上语义一致,DDP 不做额外干预。
+
+#### PowerSGD:更激进但 LLM 不用
+
+PyTorch 还内置一个基于低秩近似的更激进压缩,叫 **PowerSGD**——把每个 bucket 的梯度看成矩阵 $G \in \mathbb{R}^{m \times n}$,用 power iteration 找 $G \approx PQ^T$,只通信小得多的 $P, Q$,压缩比能到 50-100×。代价是精度——低秩近似会丢掉梯度的高频成分。
+
+实战经验:视觉、NLP 小模型上能用,精度损失 < 1%;**LLM 预训练上影响较大,生产里基本不用**;但在**带宽极差又必须分布式**的场景(教育机构、跨地理区域 fine-tuning)能直接拉训练速度 5-10×,是救命稻草。本文不展开,有需要查 `torch.distributed.algorithms.ddp_comm_hooks.powerSGD_hook`。
+
+#### 什么时候开 BF16 压缩
+
+简单决策:
+
+- **单节点(≤ 8 卡 NVLink/NVSwitch)**:节点内 ~900 GB/s,带宽极充足,**不需要压缩**
+- **多节点 + IB 200Gbps 或更好**:大多数 LLM 训练通信能被反向计算盖住,先 profile 再决定
+- **多节点 + 100Gbps Ethernet 或更差**:几乎必开 `bf16_compress_hook`
+
+判断带宽是否成为瓶颈最简单的办法是用 Nsight Systems / PyTorch Profiler 看一次 step 里 NCCL kernel 占的时间——如果 NCCL 时间 > 反向计算时间,DDP 的 bucket 异步重叠就盖不住通信,这时压缩通信就有意义了。
+
 ## 四、网络拓扑感知:HYBRID_SHARD 与 3D 并行
 
 ### 4.1 拓扑层级

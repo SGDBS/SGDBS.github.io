@@ -267,24 +267,7 @@ for step, batch in enumerate(dataloader):
 
 #### DDP 的同步开销
 
-DDP 默认每次 `backward()` 后会**自动 all-reduce 所有梯度**(跨卡同步)。如果 micro-batch 累积 32 次,就会 all-reduce 32 次,通信浪费严重。解决:在前 31 次累积时关闭同步,最后一次再同步。
-
-```python
-for i, micro_batch in enumerate(dataloader):
-    is_last_micro = (i + 1) % accumulation_steps == 0
-
-    # 用 no_sync 上下文管理器跳过 all-reduce
-    context = model.no_sync() if not is_last_micro else nullcontext()
-    with context:
-        loss = model(micro_batch) / accumulation_steps
-        loss.backward()
-
-    if is_last_micro:
-        optimizer.step()
-        optimizer.zero_grad()
-```
-
-`model.no_sync()` 会让 backward 只把梯度累加到本地 `.grad`,不触发跨卡同步。最后一次正常 backward 时会一次性 all-reduce 累加好的总梯度。这能省掉 (k-1)/k 的通信开销。
+naive 写法每个 micro-batch 都触发跨卡 AllReduce,通信浪费严重。DDP 提供 `model.no_sync()` 上下文管理器,前 k−1 次累积时跳过同步、最后一次正常 backward 触发一次 AllReduce 即可——通信量减少 (k−1)/k。具体代码、为什么 loss 要除以 accum_steps、梯度裁剪放在哪一步等细节,见《Distributed Data Parallel》§五.2。
 
 #### 流水线并行中的 micro-batch
 
