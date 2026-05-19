@@ -1,6 +1,6 @@
 ---
 title: 0. 从C++到CUDA
-categories: LeetGPU 
+categories: Cuda算子
 date: 2026-05-09 22:30:00
 mathjax: true
 tags:
@@ -283,7 +283,7 @@ else      { B; }
 
 ---
 
-## 第六部分：内置变量——CUDA 最重要的疑问
+## 第六部分：CUDA内置变量
 
 ### 6.1 kernel 调用的两组信息
 
