@@ -1,5 +1,5 @@
 ---
-title: Chapter6 经典 RLHF：奖励模型 RM + PPO（精修版）
+title: Chapter6 经典 RLHF：奖励模型 RM + PPO（完整版）
 categories: 学习笔记-大模型
 date: 2026-05-22 10:00:00
 mathjax: true
@@ -9,10 +9,9 @@ tags:
 ---
 
 > **本章定位**：经典 RLHF 的"完整故事"。RM 把人类排序压缩成标量奖励，PPO 用它在 KL 约束下优化 Policy。RM + PPO 是不可分割的组合——PPO 的 reward 来自 RM。
->
-> **本版改动**：v1 的 PPO 部分只讲了"是什么"，本版补全"为什么这样设计"的完整推导链（PG → IS → TRPO → PPO），以及工程视角的 Infra 细节和失败模式诊断。
 
-> **承上**：Ch5 SFT 提供 Policy / Reference / RM 的初始化；Ch1 §6 的 KL 散度提供 PPO 的"防漂移"约束；Ch3 FlashAttention / KV Cache 等 inference 知识在 §C Infra 部分会复用。
+> **承上**：Ch5 SFT 提供 Policy / Reference / RM 的初始化；Ch1 §6 的 KL 散度提供 PPO 的"防漂移"约束；Ch3 的 FlashAttention / KV Cache 等 inference 知识在 §C Infra 部分会复用；Ch4 的 Stop-grad + EMA 思想直接对应 Reference Policy 的设计。
+>
 > **启下**：Ch7 用闭式解砍掉 RM 和 Critic（DPO）。
 
 ---
@@ -31,18 +30,26 @@ tags:
 
 $$P(y_w \succ y_l \mid x) = \frac{\exp(r(x, y_w))}{\exp(r(x, y_w)) + \exp(r(x, y_l))} = \sigma(r(x, y_w) - r(x, y_l))$$
 
+这是 logistic 模型的经典形式。
+
 ### 1.3 Pairwise Ranking Loss
 
-$$\mathcal{L}_{\text{RM}}(\phi) = -\mathbb{E}_{(x, y_w, y_l) \sim D}\left[\log \sigma(r_\phi(x, y_w) - r_\phi(x, y_l))\right]$$
+对 BT 模型做极大似然估计，得到 RM 的损失：
 
-> **关键观察**：BT 模型也是 Ch7 DPO 推导的起点。
+$$\boxed{\mathcal{L}_{\text{RM}}(\phi) = -\mathbb{E}_{(x, y_w, y_l) \sim D}\left[\log \sigma(r_\phi(x, y_w) - r_\phi(x, y_l))\right]}$$
 
-## 2. ORM vs PRM
+**直觉**：拉大 $y_w$ 与 $y_l$ 的分差，分差越大 → $\sigma(\cdot)$ 越接近 1 → loss 越小。
+
+> **关键观察**：BT 模型也是 Ch7 DPO 推导的起点，那里我们会看到这个 loss 怎么变成"无需 RM 的"DPO loss。
+
+## 2. ORM vs PRM：推理模型时代的关键分化
 
 | 类型 | 打分粒度 | 用途 | 代表 |
 | :--- | :--- | :--- | :--- |
-| **ORM** | 整条 response 一个分 | 对话、写作、传统 RLHF | InstructGPT RM |
-| **PRM** | 推理过程每一步打分 | 数学/代码推理 (CoT) | OpenAI Let's Verify Step by Step |
+| **ORM (Outcome Reward Model)** | 整条 response 一个分 | 对话、写作、传统 RLHF | InstructGPT RM |
+| **PRM (Process Reward Model)** | 推理过程**每一步**打分 | 数学/代码推理 (CoT) | OpenAI Let's Verify Step by Step |
+
+PRM 给推理链条上的每个中间步骤都打分——这对长链推理（math、code）非常关键，因为最终答案对的不一定每一步都对，反之亦然。
 
 ---
 
@@ -56,19 +63,23 @@ $$\underbrace{\text{PG 是 on-policy}}_{\text{样本浪费}} \xrightarrow{\text{
 
 ### 3.1 Policy Gradient 的出生：log-derivative trick
 
-强化学习目标：$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$。
+强化学习目标：
+
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int \pi_\theta(\tau) R(\tau)\, d\tau$$
 
 求梯度：
 
 $$\nabla_\theta J(\theta) = \int \nabla_\theta \pi_\theta(\tau) \cdot R(\tau)\, d\tau \quad (\star)$$
 
-🛑 **问题**：$(\star)$ 式在数学上成立，**但不能用采样估计**。采样估计要求被积函数能写成 $\mathbb{E}_{x \sim p(x)}[f(x)]$ 的形式，其中 $p(x)$ 是真正的概率分布。$\nabla \pi_\theta$ 不是概率分布（可以负，加起来不等于 1），所以 $(\star)$ 写不成期望。
+🛑 **问题**：$(\star)$ 式在数学上成立，**但不能用采样估计**。
+
+**为什么不能采样估计**：Monte Carlo 估计要求被积函数能写成 $\mathbb{E}_{x \sim p(x)}[f(x)]$ 的形式，其中 $p(x)$ 是真正的概率分布（非负、积分为 1）。$\nabla \pi_\theta$ 不是概率分布（可以为负、加起来不等于 1），所以 $(\star)$ 写不成期望。
 
 **log-derivative trick** 解决这个问题：
 
 $$\nabla_\theta \log \pi_\theta(\tau) = \frac{\nabla_\theta \pi_\theta(\tau)}{\pi_\theta(\tau)} \Rightarrow \nabla_\theta \pi_\theta(\tau) = \pi_\theta(\tau) \cdot \nabla_\theta \log \pi_\theta(\tau)$$
 
-本质上就是 $\frac{d \log x}{dx} = \frac{1}{x}$，但它把 $\pi_\theta(\tau)$ "挪"到了乘子位置，让积分变回期望。代入：
+本质上就是 $\frac{d \log x}{dx} = \frac{1}{x}$，但它把 $\pi_\theta(\tau)$ "挪"到了乘子位置——让积分变回期望。代入：
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\left[ \nabla_\theta \log \pi_\theta(\tau) \cdot R(\tau) \right]$$
 
@@ -90,7 +101,7 @@ $$\boxed{\nabla_\theta J(\theta) = \mathbb{E}_{(s,a) \sim \pi_\theta}\left[ \nab
 
 IS 恒等式：
 
-$$\mathbb{E}_{x \sim p}[f(x)] = \mathbb{E}_{x \sim q}\left[ \frac{p(x)}{q(x)} f(x) \right]$$
+$$\mathbb{E}_{x \sim p}[f(x)] = \int p(x) f(x)\, dx = \int q(x) \cdot \frac{p(x)}{q(x)} f(x)\, dx = \mathbb{E}_{x \sim q}\left[ \frac{p(x)}{q(x)} f(x) \right]$$
 
 **前提**：$q(x) = 0 \Rightarrow p(x) = 0$（不然密度比无定义）。
 
@@ -100,7 +111,7 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{\pi_{\theta_{\text{old}}}}\left[ \frac{\
 
 利用 $\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}} \cdot \nabla \log \pi_\theta = \frac{\nabla \pi_\theta}{\pi_{\theta_{\text{old}}}} = \nabla \left(\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}}\right)$，可以写成"某个目标函数的梯度"：
 
-$$L^{\text{IS}}(\theta) = \mathbb{E}_{(s,a) \sim \pi_{\theta_{\text{old}}}}\left[ r(\theta) \cdot A(s,a) \right]$$
+$$\boxed{L^{\text{IS}}(\theta) = \mathbb{E}_{(s,a) \sim \pi_{\theta_{\text{old}}}}\left[ r(\theta) \cdot A(s,a) \right]}$$
 
 其中：
 
@@ -116,10 +127,10 @@ $$r(\theta) := \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$$
 
 🛑 **关键判断**：PPO 想约束的是**分布空间**距离（$\pi_\theta$ 和 $\pi_{\theta_{\text{old}}}$ 输出概率接近），**不是**参数空间距离（$\|\theta - \theta_{\text{old}}\|$ 小）。原因：
 
-- 一个模型在临界区参数动一点能让分布剧变（场景 A，危险）
-- 一个模型参数走很远但所有关心的 $(s,a)$ 上 $\pi$ 几乎不变（场景 B，安全）
+- **场景 A（危险）**：模型在临界区，参数动一点就让分布剧变
+- **场景 B（安全）**：参数走很远但所有关心的 $(s,a)$ 上 $\pi$ 几乎不变
 
-IS 的失效条件是密度比偏离 1，**和参数欧氏距离没关系**。深度网络的参数空间和分布空间严重不等距。
+IS 的失效条件是**密度比偏离 1**，**和参数欧氏距离没关系**。深度网络的参数空间和分布空间严重不等距——这是 RL 里几乎所有 trust region 方法用 KL 散度（分布距离）而不是参数距离的根本原因。
 
 ### 3.5 TRPO：硬 KL 约束
 
@@ -137,6 +148,8 @@ $$\boxed{L^{\text{CLIP}}(\theta) = \mathbb{E}\left[ \min\left( r(\theta) A, \ \t
 
 ### 3.7 clip + min 的几何（精髓）
 
+PPO clip 的行为是**非对称**的，A>0 和 A<0 的"刹车方向"不一样：
+
 | 区域 | 行为 | 直觉 |
 | :--- | :--- | :--- |
 | **A>0, r<1−ε** | 有梯度 | 好动作概率太低，继续推 |
@@ -147,11 +160,12 @@ $$\boxed{L^{\text{CLIP}}(\theta) = \mathbb{E}\left[ \min\left( r(\theta) A, \ \t
 | **A<0, r>1+ε** | 有梯度 | 策略走反了，**必须**保留梯度救回来 |
 
 > **核心原则**：clip 只在"按 A 的方向走且走过头"时刹车；"走反方向"时绝不刹车——min 保证修正梯度不被截断。
->
-> **为什么是 min（不是单独的 clip）**：考虑 A<0, r=5（策略严重走反）。
-> - 有 min：$L = \min(5A, 1.2A) = 5A$（A 负，5A 更负），梯度强烈拉回。
-> - 无 min（错误设计）：$L = 1.2A$ 是常数，梯度=0。模型已经犯了大错，loss 却毫不在意。
->
+
+**为什么是 min（不是单独的 clip）**：考虑 A<0, r=5（策略严重走反）。
+
+- 有 min：$L = \min(5A, 1.2A) = 5A$（A 负，5A 更负），梯度强烈拉回
+- 无 min（错误设计）：$L = 1.2A$ 是常数，梯度=0。模型已经犯了大错，loss 却毫不在意
+
 > min 是 PPO 设计里**唯一让"修正错误"和"防止过更新"并存**的机制。
 
 ### 3.8 一句话总结 PPO 设计
@@ -184,7 +198,7 @@ $$\hat{A}^{\text{TD}}_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t) =: \delta_t
 
 > **类比**：MC 是"亲自走一遍测时间"（无偏但抖），TD 是"信 Google Maps 的预测"（稳但可能错）。
 >
-> **PPO 里 critic 永远追着移动目标**——actor 一变，$V^\pi$ 就变。所以 critic 的"准确性"是个动态概念，从不真正收敛。
+> **PPO 里 critic 永远追着移动目标**——actor 一变，$V^\pi$ 就变。所以 critic 的"准确性"是个动态概念，从不真正收敛。这是 RL 和 SFT 的根本区别——监督学习的目标是固定分布，RL 的目标是被自己改变的分布。
 
 ### 4.2 GAE：用 λ 在两极间插值
 
@@ -229,7 +243,7 @@ next_v = values[:, t + 1] if t + 1 < T else 0
 这隐含假设：**$V(s_T) = 0$**（序列结束后没有更多 reward）。
 
 - 自然 EOS：合理，RM 已经在 EOS 打过分了
-- max_tokens 截断：**有偏**——序列其实没结束，未来本来可能有 reward。TRL 等实现会区分这两种情况，对截断的用 $V_\phi(s_T)$ 而不是 0 来 bootstrap。
+- max_tokens 截断：**有偏**——序列其实没结束，未来本来可能有 reward。TRL 等实现会区分这两种情况，对截断的用 $V_\phi(s_T)$ 而不是 0 来 bootstrap
 
 ---
 
@@ -261,7 +275,9 @@ $$L^{VF}_t = \max\left( (V_\phi(s_t) - R_t)^2,\ (\text{clip}(V_\phi(s_t), V_{\ph
 
 $$\tilde{r}_t = \begin{cases} -\beta \log \frac{\pi_\theta(a_t|s_t)}{\pi_{\text{ref}}(a_t|s_t)} & t < T \\ r_\phi(x, y) -\beta \log \frac{\pi_\theta(a_T|s_T)}{\pi_{\text{ref}}(a_T|s_T)} & t = T \end{cases}$$
 
-> **β 是固定的吗？不是。** OpenAI 原版 PPO 论文用 **adaptive KL controller**：每 step 后检查实际 KL，若 > target × 1.5 则 β×=2，若 < target / 1.5 则 β /= 2。LLaMA-2 论文显式提到用 target_kl=0.01。这是面试加分细节。
+这个 per-token KL 实际上是把 GAE 中每个 $\delta_t$ 的 $r_t$ 项替换成 $\tilde{r}_t$ —— 让 KL 惩罚通过 advantage 反向传播到策略梯度上。
+
+> **β 是固定的吗？不是**。OpenAI 原版 PPO 论文用 **adaptive KL controller**：每 step 后检查实际 KL，若 > target × 1.5 则 β×=2，若 < target / 1.5 则 β /= 2。LLaMA-2 论文显式提到用 target_kl=0.01。这是面试加分细节。
 
 ---
 
@@ -282,11 +298,47 @@ $$\tilde{r}_t = \begin{cases} -\beta \log \frac{\pi_\theta(a_t|s_t)}{\pi_{\text{
 
 ## B.1 RM Scalar Head
 
-（沿用原版，略——见 v1 笔记）
+由 SFT 模型改造：去掉 LM Head（输出 $V$ 维概率），换成 Scalar Head（输出 1 维分数）。
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class GPTRewardModel(nn.Module):
+    def __init__(self, base_model):
+        super().__init__()
+        self.config = base_model.config
+        self.backbone = base_model
+        # ⭐ Scalar Head：随机初始化的线性层
+        self.v_head = nn.Linear(self.config.hidden_size, 1, bias=False)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.backbone(input_ids, attention_mask=attention_mask,
+                                output_hidden_states=True)
+        hidden_states = outputs.hidden_states[-1]                # [B, L, D]
+
+        # ⭐ 取最后一个非 padding token 的隐状态
+        last_idx = attention_mask.sum(dim=1) - 1
+        batch = input_ids.size(0)
+        last_hidden = hidden_states[torch.arange(batch), last_idx]  # [B, D]
+
+        return self.v_head(last_hidden)                           # [B, 1]
+```
 
 ## B.2 RM 的 Pairwise Ranking Loss
 
-（沿用原版，略——见 v1 笔记）
+```python
+def compute_rm_loss(chosen_rewards, rejected_rewards):
+    """
+    chosen_rewards:   [B, 1] 胜出回答的分数
+    rejected_rewards: [B, 1] 落败回答的分数
+    """
+    # ⭐ Bradley-Terry MLE：-log σ(r_w - r_l)
+    return -F.logsigmoid(chosen_rewards - rejected_rewards).mean()
+```
+
+> **数值稳定性**：用 `F.logsigmoid` 而非 `torch.log(torch.sigmoid(x))`，前者底层用 `log(1 + exp(-x))` 更稳。
 
 ## B.3 PPO 完整训练循环（精修版）
 
@@ -408,7 +460,7 @@ def ppo_step(actor, critic, ref, rm, prompts, optimizer, cfg):
 
 > **为什么 critic LR 比 actor 高**：critic 在做"追逐移动目标"——actor 一变 $V^\pi$ 就变，critic 必须更新得快才跟得上。actor 在做"对策略本身的微调"，慢一点更稳。
 
-### 一个 PPO 内层循环的核心哲学
+### PPO 内层循环的核心哲学
 
 PPO epoch 内**所有 rollout 时刻的快照量都冻结**：
 
@@ -421,7 +473,7 @@ PPO epoch 内**所有 rollout 时刻的快照量都冻结**：
 > **为什么 advantage 不重新算**（即使 critic 已变好）？
 >
 > 1. **理论上**：advantage 必须配 $\pi_{\theta_{\text{old}}}$，重算就破坏了 IS 的数学结构
-> 2. **工程上**：advantage 必须是常量，否则 actor 的梯度被 critic 污染
+> 2. **工程上**：advantage 必须是常量（detach），否则 actor 的梯度被 critic 污染
 > 3. **稳定性**：所有"约束量"建立在 rollout 时刻快照上，重算就丢掉了 trust region 参考点
 > 4. **代价**：advantage 过时是已经被 ppo_epochs 上限控制住的，不应该用"重算 advantage"来解决
 
@@ -454,12 +506,12 @@ OpenRLHF 默认用方法 2。
 
 四个模型地位完全不同：
 
-| 模型 | 训练？ | 需要梯度？ | 需要 Adam 状态？ |
-| :--- | :--- | :--- | :--- |
-| **Actor**（Policy） | ✅ | ✅ | ✅ |
-| **Critic**（Value） | ✅ | ✅ | ✅ |
-| **Reference** | ❌（冻结） | ❌ | ❌ |
-| **RM** | ❌（冻结） | ❌ | ❌ |
+| 模型 | 训练？ | 需要梯度？ | 需要 Adam 状态？ | 用在哪个阶段 |
+| :--- | :--- | :--- | :--- | :--- |
+| **Actor**（Policy） | ✅ | ✅ | ✅ | Rollout (generate) + Train |
+| **Critic**（Value） | ✅ | ✅ | ✅ | Rollout (forward) + Train |
+| **Reference**（SFT 冻结） | ❌ | ❌ | ❌ | Rollout (forward) |
+| **Reward Model** | ❌ | ❌ | ❌ | Rollout (forward) |
 
 🛑 **关键观察**：只有 Actor 需要 generate——Critic/Ref/RM 都只 forward。这个不对称是所有 Infra 优化的起点。
 
@@ -534,7 +586,7 @@ LLaMA-7B (L=32, n_h=32, d_h=128), bs=8, seq=1024：约 **4.3 GB**
 
 **14 GB vs 0.5 GB——参数读取是 KV Cache 的 28 倍**。decode 的带宽**主要被参数吃掉**，不是 KV Cache。
 
-> 所以 **decode 阶段的 attention matrix 是 1×t 的向量**（不是 t×t 矩阵），FlashAttention 优化的"$N^2$ 中间矩阵"问题在 decode 阶段**不存在**。
+> decode 阶段的 attention matrix 是 1×t 的向量（不是 t×t 矩阵），FlashAttention 优化的"$N^2$ 中间矩阵"问题在 decode 阶段**不存在**。
 >
 > 真正的 decode 优化要直接攻击参数读取：
 > - **量化**：直接缩小要读的数据量（INT8/INT4）
@@ -670,6 +722,20 @@ PPO rollout 用 vLLM (bf16)，train 用 DeepSpeed (可能 fp32)，**即使权重
 - 中期：resource borrowing（train 阶段借 rollout 卡做 forward）
 - 长期：上 70B 后切 Megatron + veRL
 
+## C.9 推理视角：PPO 后的模型与 SFT 模型有何不同？
+
+PPO 训完后的 Actor **结构上与 SFT 完全相同**——都是自回归 LM。但**输出分布发生显著变化**：
+
+| 维度 | SFT 模型 | PPO 后模型 |
+| :--- | :--- | :--- |
+| **输出分布尖锐度** | 中等 | **更尖锐**（向 RM 偏好聚集） |
+| **创造性** | 高 | 略下降（mode collapse 风险） |
+| **遵循指令** | 中 | **更强** |
+| **拒答倾向** | 中 | **更强**（向 harmless 偏好对齐） |
+| **温度 0 输出质量** | 一般 | **显著更好** |
+
+> **常见现象**：PPO 后的模型在 `temperature=0`（greedy）下表现最好，因为分布已经"足够尖锐"；继续加温度反而引入垃圾。这与 SFT 模型常用 temperature=0.7 形成鲜明对比。
+
 ---
 
 # §D 失败模式与调参
@@ -721,10 +787,14 @@ actor 偏离 ref
 
 ### 经典案例
 
-- **过度礼貌**："Great question!"开头
-- **过度长**：reward 和长度正相关 → 疯狂啰嗦
-- **拒绝症**：发现"我不能回答"得分高，对任何模糊问题拒答
-- **格式黑客**：发现 RM 偏好 markdown → 所有回答嵌套列表
+| 类型 | 表现 | 缓解方法 |
+| :--- | :--- | :--- |
+| **长度偏差** | RM 偏爱长回答 → Policy 学会冗长 | RM 训练时加 length penalty |
+| **Sycophancy（谄媚）** | Policy 迎合用户已有观点 | 偏好数据中加入"反 sycophancy"案例 |
+| **Format gaming** | 滥用 markdown / emoji / 列表 | RM 训练数据多样化 |
+| **特定 token 利用** | 重复 RM "见过的好回答里的标志短语" | online RM refresh |
+| **拒答漂移** | 过度安全化，"我无法回答..." | RM 训练时平衡 helpful/harmless |
+| **过度礼貌** | "Great question!" 开头泛滥 | length / format penalty |
 
 ### 根本原因（Goodhart's Law）
 
@@ -743,8 +813,13 @@ RM 不是真实 reward，是真实 reward 的代理。actor 探索到 RM 训练�
 1. Length penalty: $r' = r - \alpha \cdot \text{len}$
 2. RM ensemble (3-5 个 RM 取均值或最小值)
 3. 加 KL penalty（把 actor 拉回 RM 训练分布）
-4. 重训 RM（用 actor 当前输出作为新偏好数据）
+4. 重训 RM（用 actor 当前输出作为新偏好数据 — online RM refresh）
 5. Iterative DPO / online DPO
+
+**核心防线总结**：
+1. **per-token KL penalty** 是第一道防线（不让 Policy 跑离 SFT 太远）
+2. **RM 训练数据多样化** 是治本之道
+3. **online RM refresh**（每轮 PPO 后用新 Policy 生成的 response 重训 RM）
 
 ## D.4 Value Loss Collapse
 
@@ -754,6 +829,14 @@ RM 不是真实 reward，是真实 reward 的代理。actor 探索到 RM 训练�
 - critic LR 太大
 - 没有 value clipping
 
+### 诊断指标
+
+| 指标 | 健康 | 警报 |
+| :--- | :--- | :--- |
+| `value_loss` | 平稳下降 | 突增 5× 以上 |
+| `value.std` | 稳定 | 飙升 |
+| `explained_variance` | > 0.5 | < 0 → critic 没学到东西 |
+
 ### 处方
 
 1. **加 value clipping**（前面 §A.5.2 的公式）
@@ -761,7 +844,28 @@ RM 不是真实 reward，是真实 reward 的代理。actor 探索到 RM 训练�
 3. **Reward clipping/normalization**：限制 $r \in [-5, 5]$ 或 z-score
 4. **Critic pretraining**：PPO 前用 SFT 数据预训 critic 几步（OpenRLHF `--critic-pretrain-steps`）
 
-## D.5 失败模式的因果链
+## D.5 Ratio 失控
+
+### 症状与原因
+
+`ratio.mean` 远离 1，`ratio.max` 飙到 100+，`clip_fraction` 超过 80%。
+
+**根本原因**：PPO 一次 rollout 后做 N 个 epoch 训练。N 越大，最后几个 epoch 的 $\theta$ 离 $\theta_{\text{old}}$ 越远，ratio 越偏离 1。**这就是 ppo_epochs 不能设太大的根本原因——不是过拟合，是 IS 失效**。
+
+### Clip Fraction 诊断
+
+- < 5%：模型几乎没在更新（LR 太低？没 advantage 信号？）
+- 5-20%：健康
+- 20-50%：偏高但能跑
+- > 50%：**严重 off-policy**
+
+### 处方
+
+1. **减少 ppo_epochs**（4 → 2 → 1）
+2. **加大 mini-batch size**：减少每个 epoch 的 grad step 数
+3. **Early stopping by KL**：每个 epoch 算 KL，超阈值就提前停
+
+## D.6 失败模式的因果链
 
 🛑 **关键认知**：这些失败往往**连环触发**：
 
@@ -781,7 +885,7 @@ LR 太大 / reward outlier
 3. step 30+: `value_loss` 抖 → 怀疑 critic LR
 4. step 50+: reward 涨但 eval 跌 → reward hacking
 
-## D.6 PPO 上线前 checklist
+## D.7 PPO 上线前 checklist
 
 | 项 | 建议 | 重要性 |
 | :--- | :--- | :--- |
@@ -790,58 +894,56 @@ LR 太大 / reward outlier
 | Value clipping | $\epsilon_v = 0.2$ | ★★★ |
 | Early stopping by KL | per-epoch 检查 | ★★★ |
 | 监控 held-out eval | 每 N step 跑 | ★★★ |
+| **重算 old_logprobs**（精度） | train 端重算 | ★★★ |
 | Critic pretraining | PPO 前预热几步 | ★★ |
 | Reward clipping/normalization | $r \in [-5, 5]$ | ★★ |
 | Gradient clipping | grad_norm ≤ 1.0 | ★★ |
 | Length penalty | $\alpha \cdot \text{len}$ | ★★ |
 | Save checkpoint frequently | 每 50 step | ★★ |
-| **重算 old_logprobs**（精度） | train 端重算 | ★★★ |
 
 ---
 
-# §E 章末速查
+# §E 章末速查：常见问题
 
-### Q1: PPO 的 ratio 为什么长那样？凭空定义的吗？
+### 数学推导类
 
-**不是**。ratio 是重要性采样密度比 $p/q$ 在 PG 语境下的具体化——为了让旧策略采的数据能估当前策略的梯度，必须乘上 $\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}}$ 修正。它的形式是数学上的必然，不是设计选择。
+**Q1: PPO 的 ratio 为什么长那样？凭空定义的吗？**
+不是。ratio 是重要性采样密度比 $p/q$ 在 PG 语境下的具体化——为了让旧策略采的数据能估当前策略的梯度，必须乘上 $\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}}$ 修正。它的形式是数学上的必然，不是设计选择。
 
-### Q2: PPO 的 clip 为什么要配 min？只用 clip 不行吗？
-
+**Q2: PPO 的 clip 为什么要配 min？只用 clip 不行吗？**
 不行。考虑 A<0, r=5（策略严重走反）：
-- 只 clip：$L = 1.2A$ 是常数，梯度=0，**模型犯了大错却没法修正**
+- 只 clip：$L = 1.2A$ 是常数，梯度=0，模型犯了大错却没法修正
 - min(r·A, clip·A) = 5A，保留强烈修正梯度
 
 min 让"做对方向但走过头"启动刹车，"做错方向"绝不刹车。
 
-### Q3: GAE 的 λ 调到多少？怎么解释？
+**Q3: log-derivative trick 解决什么核心问题？**
+让 $\nabla J$ 能写成期望的形式，从而能用采样估计。$\nabla \pi_\theta$ 不是概率分布，所以 $\int \nabla \pi \cdot R\, d\tau$ 不是期望，不能采样。通过 $\nabla \pi = \pi \cdot \nabla \log \pi$，重新引入 $\pi$ 作乘子，让积分变回期望。
 
-实践中 0.95。本质是在 1-step TD（λ=0，高偏低方差）和 MC（λ=1，无偏高方差）之间插值。critic 在 PPO 里永远训不准（追移动靶），所以不能完全信它（不能 λ=0）；但完全 MC 又方差太大。0.95 让前几步真实 reward 主导，后面 critic 接力。
+**Q4: GAE 的 λ 调到多少？怎么解释？**
+实践中 0.95。本质是在 1-step TD（λ=0，高偏低方差）和 MC（λ=1，无偏高方差）之间几何加权平均。critic 在 PPO 里永远训不准（追移动靶），所以不能完全信它；但完全 MC 又方差太大。0.95 让前几步真实 reward 主导，后面 critic 接力。
 
-### Q4: γ 在 LM RLHF 里为什么是 1？
-
+**Q5: γ 在 LM RLHF 里为什么是 1？**
 经典 RL 用 γ<1 因为：序列可能无限长 / 表达时间偏好。LM RLHF 都不成立：序列有 max_tokens 上限、RM 只在 EOS 给一次 reward、每个 token 对最终答案等权。γ=1 的语义就是"每个位置贡献等权"。
 
-### Q5: PPO 训练的真实显存是 4 倍 SFT 吗？
+### Infra 类
 
-**不是**——严重低估。4 个 7B 模型静态需求 ~252 GB（Actor/Critic 各 112 GB，Ref/RM 各 14 GB），还要加激活（50+ GB）和 KV Cache（4-34 GB）。Train 阶段需求 ~270 GB，rollout 阶段 ~60 GB——两者不对称是 hybrid engine 设计的动机。
+**Q6: PPO 训练的真实显存是 4 倍 SFT 吗？**
+不是——严重低估。4 个 7B 模型静态需求 ~252 GB（Actor/Critic 各 112 GB，Ref/RM 各 14 GB），还要加激活（50+ GB）和 KV Cache（4-34 GB）。Train 阶段需求 ~270 GB，rollout 阶段 ~60 GB——两者不对称是 hybrid engine 设计的动机。
 
-### Q6: 为什么 rollout 是 PPO 的时间瓶颈？
-
+**Q7: 为什么 rollout 是 PPO 的时间瓶颈？**
 decode 是 memory-bound（HBM 带宽瓶颈），每生成 1 token 要读 14 GB 参数。串行 256 步，朴素实现 5-7 秒/step，占总时间 70%+。GPU 利用率 <5%。
 
-### Q7: FlashAttention 对 PPO 的 decode 有帮助吗？
+**Q8: FlashAttention 对 PPO 的 decode 有帮助吗？**
+有限。FlashAttention 优化的是 $N^2$ 中间矩阵的 HBM I/O，但 decode 时 attention matrix 只是 1×t 向量（不是 t×t 矩阵），这个问题不存在。decode 真正的瓶颈是**参数读取**，要靠 continuous batching 或量化解决。
 
-**有限**。FlashAttention 优化的是 $N^2$ 中间矩阵的 HBM I/O，但 decode 时 attention matrix 只是 1×t 向量（不是 t×t 矩阵），这个问题不存在。decode 真正的瓶颈是**参数读取**，要靠 continuous batching 或量化解决。
+**Q9: vLLM 为什么能加速 5-10×？真正的加速来源是哪个？**
+Continuous batching——把参数读取摊销到更多序列上。bs 从 8 升到 64 → 每 token 摊销的参数读取从 1.75 GB 降到 0.22 GB，有效带宽 8×。PagedAttention 是间接帮助（让 bs 能开更大），Fused Kernels 是中等贡献。
 
-### Q8: vLLM 为什么能加速 5-10×？真正的加速来源是哪个？
+**Q10: PPO 里要不要用 speculative decoding？**
+通常不用。PPO bs 已经够大（64-128），continuous batching 已喂饱 GPU；spec decoding 还可能引入 logprobs 计算复杂性和分布偏移风险，违反 on-policy 假设。
 
-**Continuous batching**——把参数读取摊销到更多序列上。bs 从 8 升到 64 → 每 token 摊销的参数读取从 1.75 GB 降到 0.22 GB，有效带宽 8×。PagedAttention 是间接帮助（让 bs 能开更大），Fused Kernels 是中等贡献。
-
-### Q9: PPO 里要不要用 speculative decoding？
-
-通常**不用**。PPO bs 已经够大（64-128），continuous batching 已喂饱 GPU；spec decoding 还可能引入 logprobs 计算复杂性和分布偏移风险，违反 on-policy 假设。
-
-### Q10: Hybrid Engine vs Disaggregated 怎么选？
+**Q11: Hybrid Engine vs Disaggregated 怎么选？**
 
 | 场景 | 选择 |
 | :--- | :--- |
@@ -850,8 +952,7 @@ decode 是 memory-bound（HBM 带宽瓶颈），每生成 1 token 要读 14 GB �
 
 业界趋势：disaggregated 在 2024-2025 成为主流，因为 vLLM 优势太显著。
 
-### Q11: Disaggregated 架构里参数怎么同步？
-
+**Q12: Disaggregated 架构里参数怎么同步？**
 NCCL broadcast：
 1. Train ranks 和 Rollout ranks 建立公共 NCCL group
 2. 按 layer 顺序：train 端 all-gather → rank 0 broadcast → rollout 端按 TP 切分
@@ -859,27 +960,47 @@ NCCL broadcast：
 
 14 GB 参数在 NVLink 下 23ms 理论值，实际 1-3s。
 
-### Q12: PPO 训练里有什么精度坑？
-
-**rollout 和 train 精度不一致** → old_logprobs 不准 → ratio 漂移。即使 $\theta = \theta_{\text{old}}$，ratio 也不精确等于 1。
+**Q13: PPO 训练里有什么精度坑？**
+rollout 和 train 精度不一致 → old_logprobs 不准 → ratio 漂移。即使 $\theta = \theta_{\text{old}}$，ratio 也不精确等于 1。
 
 **解决**：rollout 完用 train 端精度**重算** old_logprobs（OpenRLHF 默认）。这是面试加分项。
 
-### Q13: ppo_epochs 为什么不能设太大？
+### 工程与调参类
 
+**Q14: ppo_epochs 为什么不能设太大？**
 两个原因：
 1. **IS 失效**：$\theta$ 离 $\theta_{\text{old}}$ 越远，ratio 越离谱
 2. **Advantage 过时**：critic 改进了但 actor 用的还是旧 advantage
 
 经验上 4 是平衡点（OpenAI 原版），实践中常用 early stop by KL 让平均 epoch 更小。
 
-### Q14: 调试 PPO 的第一原则是什么？
+**Q15: 调试 PPO 的第一原则是什么？**
+看最早出问题的指标——它是真正的病因，后面都是症状。失败模式连环触发：ratio 异常 → KL 爆炸 → value collapse → mode collapse。
 
-**看最早出问题的指标**——它是真正的病因，后面都是症状。失败模式连环触发：ratio 异常 → KL 爆炸 → value collapse → mode collapse。
+**Q16: Reward Hacking 怎么发现？**
+光看 RM reward 涨毫无意义——必须有独立 eval（人工或更强 LLM judge）。监控 `mean_response_length` 飙升、n-gram 重复率上升、held-out RM-vs-人工评分相关性下降。
 
-### Q15: Reward Hacking 怎么发现？
+### 综合类
 
-光看 RM reward 涨**毫无意义**——必须有独立 eval（人工或更强 LLM judge）。监控 `mean_response_length` 飙升、n-gram 重复率上升、held-out RM-vs-人工评分相关性下降。
+**Q17: RM 模型和 Policy 一定要一样大吗？**
+- 早期（InstructGPT 时代）RM 较小（如 175B Policy + 6B RM）
+- 现代趋势是 **RM ≥ Policy**（如 Llama 3.3 70B + 70B），因为 RM 质量直接决定 RL 上限，小 RM 容易被 Policy 钻空子
+
+**Q18: 为什么必须加 KL 惩罚？**
+- 防止 Reward Hacking
+- 没有 KL 时，Policy 会学到"骗 RM 高分"的捷径
+- KL 把 Policy 锚定在 SFT 模型附近——这就是 Ch4 §D 的"Stop-grad + EMA Target"思想
+
+**Q19: Critic 和 RM 是同一个模型吗？**
+形状相同（都输出标量），但**任务不同**：
+- RM：判断 (x, y) 这一对的好坏（固定打分）
+- Critic：给定状态 $s_t$，预估"未来累计 reward"（追逐移动目标）
+
+实践中 Critic 通常**用 RM 初始化**，但训练目标不同。
+
+**Q20: PPO 训完后能再做 DPO 吗？**
+- 可以，常见做法是 PPO 后接 DPO 做"安全性微调"
+- 但很少反过来（DPO → PPO），因为 DPO 已经把模型推到"边界"，PPO 容易让它崩
 
 ---
 
@@ -889,7 +1010,13 @@ PPO 的复杂度——**4 模型、3 阶段、2 套 loss、1 堆 trick**——�
 
 > **PPO 用 IS + clip 维护 trust region；DPO 用 BT 模型 + ref 闭式解直接绕过整个 RL 框架。**
 
+关键问题：**PPO 优化的 KL 约束 RL 目标，是否有闭式解？**
+
+答案是：**有！** 而且这个闭式解一旦写出来，整个 RM + PPO 流程都可以坍缩成一个简单的 loss。
+
 但 DPO 也有自己的失败模式（preference 数据集上的过拟合、模式集中等），不是"PPO 的完美替代品"。两者在 2024-2025 是**并存关系**：高复杂场景（长链推理 RLHF）仍用 PPO，简单偏好对齐用 DPO 或其变种（SimPO, IPO, KTO）。
+
+下一章揭晓。
 
 ---
 
