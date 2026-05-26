@@ -1,5 +1,5 @@
 ---
-title: Chapter6 经典 RLHF：奖励模型 RM + PPO（完整版）
+title: Chapter6 经典 RLHF：奖励模型 RM + PPO
 categories: 学习笔记-大模型
 date: 2026-05-22 10:00:00
 mathjax: true
@@ -109,7 +109,13 @@ $$\mathbb{E}_{x \sim p}[f(x)] = \int p(x) f(x)\, dx = \int q(x) \cdot \frac{p(x)
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\pi_{\theta_{\text{old}}}}\left[ \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} \cdot \nabla_\theta \log \pi_\theta(a|s) \cdot A(s,a) \right]$$
 
-利用 $\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}} \cdot \nabla \log \pi_\theta = \frac{\nabla \pi_\theta}{\pi_{\theta_{\text{old}}}} = \nabla \left(\frac{\pi_\theta}{\pi_{\theta_{\text{old}}}}\right)$，可以写成"某个目标函数的梯度"：
+利用
+$$\frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} \cdot \nabla_\theta \log \pi_\theta(a|s) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} \cdot \frac{\nabla_\theta \pi_\theta(a|s)}{\pi_\theta(a|s)} = \frac{\nabla_\theta \pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$$
+
+而由于 $\pi_{\theta_{\text{old}}}$ 是常数（不依赖 $\theta$），所以：
+
+$$\frac{\nabla_\theta \pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} = \nabla_\theta \left[ \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} \right]$$
+可以写成"某个目标函数的梯度"：
 
 $$\boxed{L^{\text{IS}}(\theta) = \mathbb{E}_{(s,a) \sim \pi_{\theta_{\text{old}}}}\left[ r(\theta) \cdot A(s,a) \right]}$$
 
