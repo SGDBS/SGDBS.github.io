@@ -3,6 +3,11 @@
 # Terminate the script if any command fails
 set -e
 
+LOCAL_NODE_DIR="$PWD/.fnm/node-versions/v24.16.0/installation"
+if [ -d "$LOCAL_NODE_DIR" ]; then
+  export PATH="$LOCAL_NODE_DIR:$PWD/node_modules/.bin:$PATH"
+fi
+
 echo "========== 1. Cleaning and Generating Static Files =========="
 hexo clean
 hexo g
