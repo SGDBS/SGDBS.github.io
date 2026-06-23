@@ -323,10 +323,10 @@ details table {
     gap: 6px;
     padding: 6px 16px;
     margin-top: 6px;
-    font-weight: 700;
+    font-weight: 600;
     color: #5b8dee;
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
+    font-size: 0.78rem;
+    letter-spacing: 0;
     text-transform: uppercase;
     cursor: pointer;
     user-select: none;
@@ -402,4 +402,1328 @@ details table {
 
 @media (max-width: 1200px) {
     .category-sidebar { display: none; }
+}
+
+/* Feishu-style document reading layout */
+.feishu-doc-body {
+    background: #fff !important;
+    color: #1f2329;
+}
+
+.feishu-doc-body header.navbar-fixed,
+.feishu-doc-body .bg-cover,
+.feishu-doc-body footer.page-footer,
+.feishu-doc-body #backTop,
+.feishu-doc-body .top-scroll,
+.feishu-doc-body #floating-toc-btn {
+    display: none !important;
+}
+
+.feishu-doc-page {
+    min-height: 100vh;
+    background: #fff;
+}
+
+.feishu-doc-body .feishu-doc-topbar {
+    position: fixed;
+    top: 0;
+    left: 300px;
+    right: 0;
+    height: 64px;
+    z-index: 980;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 28px;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid #e5e7eb;
+    backdrop-filter: blur(8px);
+}
+
+.feishu-doc-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: #646a73;
+    font-size: 14px;
+    line-height: 20px;
+    white-space: nowrap;
+}
+
+.feishu-doc-breadcrumb a,
+.feishu-doc-breadcrumb span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.feishu-doc-breadcrumb a {
+    color: #3370ff;
+    text-decoration: none;
+}
+
+.feishu-doc-updated {
+    color: #8f959e;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.feishu-doc-body .category-sidebar {
+    top: 0;
+    width: 300px;
+    height: 100vh;
+    padding: 18px 8px 14px;
+    background: #f7f8fa;
+    border-right: 1px solid #e5e7eb;
+    border-radius: 0;
+    box-shadow: none;
+    z-index: 990;
+}
+
+.feishu-doc-body .sidebar-title {
+    margin: 0 10px 12px;
+    padding: 4px 2px 14px;
+    color: #1f2329;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 15px;
+    letter-spacing: 0;
+}
+
+.feishu-doc-body .sidebar-group-title,
+.feishu-doc-body .sidebar-subgroup-title,
+.feishu-doc-body .sidebar-item {
+    border-radius: 6px;
+    box-sizing: border-box;
+    height: 30px;
+    min-height: 30px;
+    margin: 1px 0;
+    line-height: 30px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.feishu-doc-body .sidebar-group-title {
+    padding: 0 10px;
+    color: #4e5969;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.feishu-doc-body .sidebar-subgroup-title {
+    padding: 0 10px 0 24px;
+    color: #4e5969;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.feishu-doc-body .sidebar-item {
+    display: flex;
+    align-items: center;
+    margin: 1px 0;
+    padding: 0 10px 0 28px;
+    color: #4e5969;
+    border-left: 0;
+    font-size: 13px;
+    line-height: 30px;
+}
+
+.feishu-doc-body .sidebar-item--l2 {
+    padding-left: 44px;
+}
+
+.feishu-doc-body .sidebar-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.feishu-doc-body .sidebar-group-title .sidebar-label,
+.feishu-doc-body .sidebar-subgroup-title .sidebar-label,
+.feishu-doc-body .sidebar-item .sidebar-label {
+    flex: 1 1 auto;
+}
+
+.feishu-doc-body .sidebar-count {
+    margin-left: auto;
+    color: #8f959e;
+    font-weight: 400;
+    opacity: 0.75;
+    flex: 0 0 auto;
+}
+
+.feishu-doc-body .sidebar-item:hover {
+    background: #eef3ff;
+    color: #1f2329;
+}
+
+.feishu-doc-body .sidebar-item--active {
+    background: #dbe8ff;
+    color: #245bdb;
+    font-weight: 600;
+}
+
+.feishu-doc-body .sidebar-arrow {
+    width: 12px;
+    font-size: 0 !important;
+    text-align: center;
+}
+
+.feishu-doc-body .sidebar-arrow::before {
+    content: "▾";
+    color: #8f959e;
+    font-size: 11px;
+}
+
+.feishu-doc-body .collapsed > .sidebar-group-title .sidebar-arrow::before,
+.feishu-doc-body .collapsed > .sidebar-subgroup-title .sidebar-arrow::before {
+    content: "▸";
+}
+
+.feishu-doc-body .sidebar-divider {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.feishu-doc-main {
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 0 0 300px !important;
+    padding: 92px 40px 64px !important;
+}
+
+.feishu-doc-main .row {
+    margin: 0;
+}
+
+.feishu-doc-main #main-content {
+    float: none;
+    width: calc(100% - 340px);
+    max-width: 880px;
+    margin-left: clamp(260px, 19vw, 340px);
+    padding: 0;
+}
+
+.feishu-doc-main #toc-aside {
+    position: fixed;
+    top: 88px;
+    left: 320px;
+    right: auto;
+    width: 220px !important;
+    padding: 0;
+}
+
+.feishu-doc-main .toc-widget {
+    width: 220px;
+    padding: 0;
+}
+
+.feishu-doc-main .toc-widget.card {
+    box-shadow: none !important;
+    border-radius: 0;
+}
+
+.feishu-doc-main .toc-widget .toc-title {
+    padding: 0 0 10px;
+    color: #646a73;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+}
+
+.feishu-doc-main #toc-content {
+    max-height: calc(100vh - 150px);
+    padding-bottom: 0;
+    font-size: 13px;
+}
+
+.feishu-doc-main #toc-content .toc-link {
+    color: #646a73;
+    text-decoration: none;
+}
+
+.feishu-doc-main #toc-content .toc-link:hover,
+.feishu-doc-main #toc-content .is-active-link {
+    color: #245bdb;
+    font-weight: 600;
+}
+
+.feishu-doc-main #artDetail {
+    margin-top: 0;
+    padding: 0;
+}
+
+.feishu-doc-main #artDetail .card {
+    margin: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none !important;
+    overflow: visible;
+}
+
+.doc-title-block {
+    padding: 0 0 14px;
+}
+
+.doc-post-title {
+    margin: 0;
+    color: #1f2329;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: 0;
+}
+
+.feishu-doc-main #artDetail .article-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 0 22px;
+    margin: 0;
+    color: #8f959e;
+    border-bottom: 1px solid #eef0f3;
+}
+
+.feishu-doc-main #artDetail .tag-cate {
+    margin: 0;
+    padding: 0;
+}
+
+.feishu-doc-main #artDetail .article-info .row,
+.feishu-doc-main #artDetail .article-info .col {
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.feishu-doc-main #artDetail .post-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    color: #8f959e;
+    font-size: 13px;
+}
+
+.feishu-doc-main #artDetail .article-tag .chip {
+    height: 24px;
+    padding: 0 9px;
+    border-radius: 4px;
+    background: #f2f3f5 !important;
+    color: #4e5969;
+    font-size: 12px;
+    line-height: 24px;
+}
+
+.feishu-doc-main #artDetail .post-cate,
+.feishu-doc-main #artDetail .post-cate a {
+    color: #646a73;
+    font-size: 13px;
+}
+
+.feishu-doc-main #artDetail .article-card-content {
+    padding: 30px 0 0;
+}
+
+.feishu-doc-main #articleContent {
+    color: #1f2329;
+    font-size: 16px;
+    line-height: 1.85;
+}
+
+.feishu-doc-main #articleContent h1,
+.feishu-doc-main #articleContent h2,
+.feishu-doc-main #articleContent h3,
+.feishu-doc-main #articleContent h4 {
+    color: #1f2329;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.feishu-doc-main #articleContent h1 { font-size: 28px; }
+.feishu-doc-main #articleContent h2 { font-size: 24px; margin-top: 42px; }
+.feishu-doc-main #articleContent h3 { font-size: 20px; margin-top: 32px; }
+.feishu-doc-main #articleContent h4 { font-size: 17px; margin-top: 24px; }
+
+.feishu-doc-main #articleContent p {
+    margin: 12px 0;
+}
+
+.feishu-doc-main #articleContent blockquote {
+    margin: 16px 0;
+    padding: 8px 0 8px 16px;
+    border-left: 2px solid #b7beca;
+    background: transparent;
+    color: #4e5969;
+}
+
+.feishu-doc-main #articleContent a {
+    color: #1456f0;
+    text-decoration: none;
+}
+
+.feishu-doc-main #articleContent a:hover {
+    text-decoration: underline;
+}
+
+.feishu-doc-main #articleContent table {
+    border: 1px solid #dee0e3;
+    border-collapse: collapse;
+}
+
+.feishu-doc-main #articleContent th,
+.feishu-doc-main #articleContent td {
+    border: 1px solid #dee0e3;
+    padding: 8px 10px;
+}
+
+.feishu-doc-main #articleContent th {
+    background: #f7f8fa;
+    font-weight: 600;
+}
+
+.feishu-doc-main #artDetail hr.clearfix {
+    display: none;
+}
+
+.feishu-doc-main #artDetail .reprint,
+.feishu-doc-main #artDetail .tag_share,
+.feishu-doc-main #artDetail + .gitalk,
+.feishu-doc-main #prenext-posts {
+    box-shadow: none !important;
+}
+
+@media (max-width: 1200px) {
+    .feishu-doc-body .feishu-doc-topbar {
+        left: 0;
+    }
+
+    .feishu-doc-main {
+        margin-left: 0 !important;
+        padding: 92px 22px 48px !important;
+    }
+
+    .feishu-doc-main #main-content {
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .feishu-doc-main #toc-aside {
+        display: none !important;
+    }
+
+    .feishu-category-main {
+        padding-right: 22px !important;
+    }
+
+    .feishu-category-main .category-doc-content {
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .feishu-doc-body .pagination {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .feishu-doc-body .feishu-doc-topbar {
+        height: 58px;
+        padding: 0 16px;
+    }
+
+    .feishu-doc-main {
+        padding: 78px 16px 40px !important;
+    }
+
+    .doc-post-title {
+        font-size: 24px;
+    }
+}
+
+/* Refined code blocks for document pages */
+.feishu-doc-main figure.highlight {
+    margin: 18px 0;
+    border: 0;
+    border-radius: 8px;
+    background: #f7f8fa !important;
+    box-shadow: inset 0 0 0 1px #e8eaed;
+}
+
+.feishu-doc-main figure.highlight::before {
+    display: none;
+}
+
+.feishu-doc-main figure.highlight table,
+.feishu-doc-main figure.highlight tbody,
+.feishu-doc-main figure.highlight tr,
+.feishu-doc-main figure.highlight td {
+    border: 0;
+    background: transparent !important;
+}
+
+.feishu-doc-main figure.highlight td.gutter {
+    background: #f7f8fa !important;
+    border-right: 1px solid #eceff3;
+}
+
+.feishu-doc-main figure.highlight td.gutter pre {
+    background: transparent !important;
+    color: #b4bac4 !important;
+    padding: 14px 10px 14px 14px !important;
+}
+
+.feishu-doc-main figure.highlight td.code pre {
+    background: #f7f8fa !important;
+    color: #24292f;
+    padding: 14px 16px !important;
+}
+
+.feishu-doc-main figure.highlight pre {
+    max-height: none;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.72;
+}
+
+.feishu-doc-main figure.highlight .code-area {
+    margin: 0;
+}
+
+.feishu-doc-main .code_lang {
+    top: 7px;
+    right: 42px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    background: #eef0f3;
+    color: #646a73;
+    font-size: 11px;
+    line-height: 18px;
+}
+
+.feishu-doc-main .code_copy,
+.feishu-doc-main .code-expand {
+    filter: none !important;
+    opacity: 0.45;
+}
+
+.feishu-doc-main .code_copy:hover,
+.feishu-doc-main .code-expand:hover {
+    opacity: 0.85;
+}
+
+/* Better document tree rhythm */
+.feishu-doc-body .sidebar-group,
+.feishu-doc-body .sidebar-subgroup {
+    position: relative;
+}
+
+.feishu-doc-body .sidebar-group-title::before,
+.feishu-doc-body .sidebar-subgroup-title::before,
+.feishu-doc-body .sidebar-item::before {
+    color: #8f959e;
+    font-family: "Font Awesome 5 Free";
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.feishu-doc-body .sidebar-group-title::before,
+.feishu-doc-body .sidebar-subgroup-title::before {
+    content: "\f07b";
+}
+
+.feishu-doc-body .sidebar-item::before {
+    content: "\f15c";
+    margin-right: 7px;
+}
+
+.feishu-doc-body .sidebar-item--active::before {
+    color: #245bdb;
+    font-weight: 900;
+}
+
+.feishu-doc-body .sidebar-group-title:hover,
+.feishu-doc-body .sidebar-subgroup-title:hover {
+    background: #eef3ff;
+}
+
+.feishu-doc-body .sidebar-subitems {
+    margin: 2px 0 4px;
+}
+
+/* Latest article flow homepage */
+.latest-home,
+.knowledge-home {
+    min-height: 100vh;
+    padding: 0;
+    background: #fff;
+}
+
+.latest-shell,
+.knowledge-shell {
+    width: min(1040px, calc(100vw - 40px));
+    margin: 0 auto;
+    padding: 56px 0 72px;
+}
+
+.latest-header,
+.knowledge-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 26px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.latest-eyebrow,
+.knowledge-eyebrow {
+    margin: 0 0 8px;
+    color: #245bdb;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.latest-header h1,
+.knowledge-header h1 {
+    margin: 0;
+    color: #1f2329;
+    font-size: 34px;
+    line-height: 1.25;
+    letter-spacing: 0;
+}
+
+.latest-subtitle,
+.knowledge-header p:last-child {
+    margin: 10px 0 0;
+    color: #646a73;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.latest-kb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid #c9d8ff;
+    border-radius: 6px;
+    background: #f5f8ff;
+    color: #245bdb;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.latest-feed {
+    margin-top: 8px;
+}
+
+.latest-item {
+    padding: 26px 0;
+    border-bottom: 1px solid #eef0f3;
+}
+
+.latest-title {
+    color: #1f2329;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.latest-title:hover {
+    color: #245bdb;
+}
+
+.latest-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 9px;
+    color: #8f959e;
+    font-size: 13px;
+}
+
+.latest-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.latest-meta a {
+    color: #646a73;
+}
+
+.latest-summary {
+    max-width: 780px;
+    margin: 12px 0 0;
+    color: #4e5969;
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+.latest-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.latest-tags a {
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #f2f3f5;
+    color: #646a73;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+/* Knowledge base category landing */
+.knowledge-header {
+    display: block;
+}
+
+.knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 26px;
+}
+
+.knowledge-card {
+    min-height: 190px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.knowledge-card:hover {
+    border-color: #bdd0ff;
+    box-shadow: 0 10px 24px rgba(31, 35, 41, 0.06);
+    transform: translateY(-1px);
+}
+
+.knowledge-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1f2329;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.knowledge-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: #eef3ff;
+    color: #245bdb;
+    flex: 0 0 auto;
+}
+
+.knowledge-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    color: #8f959e;
+    font-size: 13px;
+}
+
+.knowledge-child-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.knowledge-child-list span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #f7f8fa;
+    color: #4e5969;
+    font-size: 12px;
+}
+
+.knowledge-child-list em {
+    color: #a0a7b0;
+    font-style: normal;
+}
+
+.knowledge-latest {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin-top: 18px;
+    color: #646a73;
+    font-size: 13px;
+    line-height: 1.45;
+    text-decoration: none;
+}
+
+.knowledge-latest i {
+    color: #8f959e;
+    flex: 0 0 auto;
+}
+
+.knowledge-latest:hover {
+    color: #245bdb;
+}
+
+.feishu-category-main {
+    padding-right: 64px !important;
+}
+
+.feishu-category-main .category-doc-content {
+    width: min(860px, calc(100vw - 460px));
+    margin: 0 auto;
+    padding: 34px 48px 56px;
+    border: 1px solid var(--kb-border-soft);
+    border-radius: 8px;
+    background: var(--kb-surface);
+    box-shadow: var(--kb-shadow);
+}
+
+.category-doc-header {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--kb-border-soft);
+}
+
+.category-doc-eyebrow {
+    margin: 0 0 8px;
+    color: var(--kb-blue);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.category-doc-header h1 {
+    margin: 0;
+    color: var(--kb-text);
+    font-size: 30px;
+    line-height: 1.3;
+}
+
+.category-doc-header p {
+    margin: 10px 0 0;
+    color: var(--kb-muted);
+    font-size: 14px;
+}
+
+.category-doc-list {
+    padding-top: 10px;
+}
+
+.category-doc-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--kb-border-soft);
+    color: var(--kb-text);
+    text-decoration: none;
+}
+
+.category-doc-item:hover {
+    background: var(--kb-surface-soft);
+    color: var(--kb-blue);
+}
+
+.category-doc-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-top: 1px;
+    color: var(--kb-muted);
+    flex: 0 0 auto;
+}
+
+.category-doc-mainline {
+    min-width: 0;
+}
+
+.category-doc-title {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.category-doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+    color: var(--kb-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.category-doc-meta em {
+    color: var(--kb-subtle);
+    font-style: normal;
+}
+
+.feishu-doc-body .pagination {
+    margin-left: 300px;
+}
+
+@media (max-width: 760px) {
+    .latest-shell,
+    .knowledge-shell {
+        width: calc(100vw - 32px);
+        padding: 36px 0 56px;
+    }
+
+    .latest-header {
+        display: block;
+    }
+
+    .latest-kb-link {
+        margin-top: 18px;
+    }
+
+    .latest-header h1,
+    .knowledge-header h1 {
+        font-size: 28px;
+    }
+
+    .knowledge-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Plain top navigation for document-style landing pages */
+body:not(.feishu-doc-body) .navbar-fixed {
+    height: 64px;
+}
+
+body:not(.feishu-doc-body) .navbar-fixed nav {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: none !important;
+    backdrop-filter: blur(8px);
+}
+
+body:not(.feishu-doc-body) .navbar-fixed nav .brand-logo,
+body:not(.feishu-doc-body) .navbar-fixed nav ul a,
+body:not(.feishu-doc-body) .navbar-fixed nav .sidenav-trigger,
+body:not(.feishu-doc-body) .navbar-fixed nav i {
+    color: #4e5969 !important;
+}
+
+body:not(.feishu-doc-body) .navbar-fixed nav .brand-logo {
+    color: #1f2329 !important;
+    font-weight: 700;
+}
+
+body:not(.feishu-doc-body) .navbar-fixed nav .brand-logo .logo-img,
+body:not(.feishu-doc-body) .navbar-fixed nav .brand-logo img {
+    display: none !important;
+}
+
+body:not(.feishu-doc-body) .navbar-fixed nav ul a:hover {
+    color: #245bdb !important;
+    background: #f5f8ff;
+}
+
+body:not(.feishu-doc-body) .latest-home,
+body:not(.feishu-doc-body) .knowledge-home {
+    padding-top: 64px;
+}
+
+.latest-dream-card {
+    margin: -58px 0 0;
+    position: relative;
+    z-index: 3;
+}
+
+.latest-dream-card .card {
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(31, 35, 41, 0.12) !important;
+}
+
+.latest-dream-card + .latest-home {
+    padding-top: 24px !important;
+}
+
+.latest-dream-card .dream {
+    margin: 0;
+}
+
+/* Knowledge blue-gray theme + VS Code Dark Soft code blocks */
+:root {
+    --kb-page: #f3f6fb;
+    --kb-sidebar: #eef3f8;
+    --kb-surface: #ffffff;
+    --kb-surface-soft: #f8fafd;
+    --kb-border: #dce5f0;
+    --kb-border-soft: #e6edf5;
+    --kb-text: #24292f;
+    --kb-muted: #667085;
+    --kb-subtle: #98a2b3;
+    --kb-blue: #2563eb;
+    --kb-blue-soft: #e8f0ff;
+    --kb-shadow: 0 14px 34px rgba(33, 56, 96, 0.08);
+
+    --code-bg: #1e2430;
+    --code-bg-gutter: #181d27;
+    --code-border: #2d3748;
+    --code-text: #d6deeb;
+    --code-muted: #64748b;
+    --code-blue: #82aaff;
+    --code-cyan: #89ddff;
+    --code-green: #c3e88d;
+    --code-purple: #c792ea;
+    --code-yellow: #ffcb6b;
+    --code-red: #f07178;
+}
+
+body {
+    background: var(--kb-page);
+}
+
+.feishu-doc-body,
+.feishu-doc-page {
+    background: var(--kb-page) !important;
+    color: var(--kb-text);
+}
+
+.feishu-doc-body .feishu-doc-topbar,
+body:not(.feishu-doc-body) .navbar-fixed nav {
+    background: rgba(248, 250, 253, 0.94) !important;
+    border-bottom-color: var(--kb-border);
+}
+
+.feishu-doc-body .category-sidebar {
+    background: var(--kb-sidebar);
+    border-right-color: var(--kb-border);
+}
+
+.feishu-doc-body .sidebar-title {
+    color: var(--kb-text);
+    border-bottom-color: var(--kb-border);
+}
+
+.feishu-doc-breadcrumb,
+.feishu-doc-main .toc-widget .toc-title,
+.feishu-doc-main #toc-content .toc-link,
+.feishu-doc-main #artDetail .post-cate,
+.feishu-doc-main #artDetail .post-cate a,
+.latest-subtitle,
+.knowledge-header p:last-child,
+.latest-summary,
+.knowledge-latest {
+    color: var(--kb-muted);
+}
+
+.feishu-doc-breadcrumb a,
+.feishu-doc-main #articleContent a,
+.latest-eyebrow,
+.knowledge-eyebrow,
+.latest-title:hover,
+.knowledge-latest:hover,
+.feishu-doc-main #toc-content .toc-link:hover,
+.feishu-doc-main #toc-content .is-active-link {
+    color: var(--kb-blue);
+}
+
+.feishu-doc-main #main-content {
+    padding: 34px 48px 56px;
+    border: 1px solid var(--kb-border-soft);
+    border-radius: 8px;
+    background: var(--kb-surface);
+    box-shadow: var(--kb-shadow);
+}
+
+.feishu-doc-main .toc-widget.card {
+    padding: 12px 0;
+    background: transparent;
+}
+
+.feishu-doc-main #artDetail .article-info {
+    border-bottom-color: var(--kb-border-soft);
+}
+
+.feishu-doc-main #articleContent blockquote {
+    border-left-color: #9db7e8;
+    color: var(--kb-muted);
+}
+
+.feishu-doc-main #articleContent table,
+.feishu-doc-main #articleContent th,
+.feishu-doc-main #articleContent td {
+    border-color: var(--kb-border);
+}
+
+.feishu-doc-main #articleContent th {
+    background: var(--kb-surface-soft);
+}
+
+.feishu-doc-main #artDetail .article-tag .chip,
+.latest-tags a,
+.knowledge-child-list span {
+    background: var(--kb-surface-soft) !important;
+    color: var(--kb-muted);
+}
+
+.feishu-doc-body .sidebar-item:hover,
+.feishu-doc-body .sidebar-group-title:hover,
+.feishu-doc-body .sidebar-subgroup-title:hover,
+body:not(.feishu-doc-body) .navbar-fixed nav ul a:hover {
+    background: var(--kb-blue-soft);
+}
+
+.feishu-doc-body .sidebar-item--active {
+    background: #dbe8ff;
+    color: var(--kb-blue);
+}
+
+.latest-home,
+.knowledge-home {
+    background: var(--kb-page);
+}
+
+.latest-header,
+.knowledge-header {
+    border-bottom-color: var(--kb-border);
+}
+
+.latest-item {
+    border-bottom-color: var(--kb-border-soft);
+}
+
+.latest-item,
+.knowledge-card,
+.latest-dream-card .card {
+    background: var(--kb-surface);
+}
+
+.knowledge-card {
+    border-color: var(--kb-border);
+    box-shadow: 0 10px 26px rgba(33, 56, 96, 0.04);
+}
+
+.knowledge-card:hover {
+    border-color: #b9ccf2;
+    box-shadow: var(--kb-shadow);
+}
+
+.latest-kb-link,
+.knowledge-card-icon {
+    background: var(--kb-blue-soft);
+    color: var(--kb-blue);
+}
+
+.latest-kb-link {
+    border-color: #c7d7f8;
+}
+
+.latest-home .latest-shell {
+    width: min(1040px, calc(100vw - 72px));
+    padding-right: 48px;
+    padding-left: 48px;
+    box-sizing: border-box;
+}
+
+.latest-home .latest-item {
+    padding-right: 28px;
+    padding-left: 28px;
+}
+
+.feishu-doc-main figure.highlight {
+    display: block;
+    max-width: 100%;
+    border: 1px solid var(--code-border);
+    border-radius: 8px;
+    background: var(--code-bg) !important;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+    overflow-x: auto;
+}
+
+.feishu-doc-main figure.highlight table,
+.feishu-doc-main figure.highlight tbody,
+.feishu-doc-main figure.highlight tr,
+.feishu-doc-main figure.highlight td {
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    border: 0 !important;
+    background: transparent !important;
+}
+
+.feishu-doc-main figure.highlight table {
+    display: table !important;
+    margin: 0;
+    overflow: visible;
+    table-layout: auto;
+    white-space: pre;
+}
+
+.feishu-doc-main figure.highlight tbody,
+.feishu-doc-main figure.highlight tr {
+    display: table-row-group;
+}
+
+.feishu-doc-main figure.highlight tr {
+    display: table-row;
+}
+
+.feishu-doc-main figure.highlight td.gutter {
+    width: 1%;
+    background: var(--code-bg-gutter) !important;
+    border-right: 1px solid var(--code-border);
+    white-space: nowrap;
+}
+
+.feishu-doc-main figure.highlight td.gutter pre {
+    background: transparent !important;
+    color: var(--code-muted) !important;
+}
+
+.feishu-doc-main figure.highlight td.code pre {
+    background: var(--code-bg) !important;
+    color: var(--code-text);
+}
+
+.feishu-doc-main figure.highlight .code-area {
+    position: static !important;
+    margin: 0;
+}
+
+.feishu-doc-main figure.highlight .code-area::after,
+.feishu-doc-main figure.highlight td.gutter .code_copy,
+.feishu-doc-main figure.highlight td.gutter .codecopy_notice,
+.feishu-doc-main figure.highlight td.gutter .code-expand,
+.feishu-doc-main figure.highlight .codecopy_notice,
+.feishu-doc-main figure.highlight .code-expand {
+    display: none !important;
+}
+
+.feishu-doc-main figure.highlight td.code .code-area {
+    position: relative !important;
+}
+
+.feishu-doc-main figure.highlight td.code .code_copy {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    top: 10px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+    filter: none !important;
+    opacity: 0.72;
+}
+
+.feishu-doc-main figure.highlight td.code .code_copy:hover {
+    background: rgba(148, 163, 184, 0.2);
+    opacity: 1;
+}
+
+.feishu-doc-main figure.highlight .line,
+.feishu-doc-main figure.highlight .params {
+    color: var(--code-text);
+}
+
+.feishu-doc-main figure.highlight .comment,
+.feishu-doc-main figure.highlight .quote {
+    color: var(--code-muted);
+}
+
+.feishu-doc-main figure.highlight .keyword,
+.feishu-doc-main figure.highlight .selector-tag {
+    color: var(--code-purple);
+}
+
+.feishu-doc-main figure.highlight .title,
+.feishu-doc-main figure.highlight .title.function_ {
+    color: var(--code-blue);
+}
+
+.feishu-doc-main figure.highlight .type,
+.feishu-doc-main figure.highlight .title.class_ {
+    color: var(--code-yellow);
+}
+
+.feishu-doc-main figure.highlight .string,
+.feishu-doc-main figure.highlight .attr,
+.feishu-doc-main figure.highlight .addition,
+.feishu-doc-main figure.highlight .meta .string {
+    color: var(--code-green);
+}
+
+.feishu-doc-main figure.highlight .number,
+.feishu-doc-main figure.highlight .literal {
+    color: var(--code-yellow);
+}
+
+.feishu-doc-main figure.highlight .built_in,
+.feishu-doc-main figure.highlight .operator {
+    color: var(--code-cyan);
+}
+
+.feishu-doc-main figure.highlight .meta,
+.feishu-doc-main figure.highlight .variable.language_,
+.feishu-doc-main figure.highlight .decorator,
+.feishu-doc-main figure.highlight .meta.decorator {
+    color: var(--code-red);
+}
+
+.feishu-doc-main .code_lang {
+    background: rgba(130, 170, 255, 0.14);
+    color: #93c5fd;
+}
+
+.feishu-doc-main .code-expand {
+    display: none !important;
+}
+
+@media (max-width: 1200px) {
+    .feishu-doc-main #main-content {
+        padding: 28px 30px 44px;
+    }
+}
+
+@media (max-width: 640px) {
+    .latest-home .latest-shell {
+        width: calc(100vw - 28px);
+        padding-right: 22px;
+        padding-left: 22px;
+    }
+
+    .latest-home .latest-item {
+        padding-right: 18px;
+        padding-left: 18px;
+    }
+
+    .feishu-doc-main #main-content {
+        padding: 24px 18px 36px;
+        border-radius: 0;
+        box-shadow: none;
+    }
 }

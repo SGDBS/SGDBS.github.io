@@ -6,6 +6,8 @@
  */
 var _catName      = (typeof catName      !== 'undefined' ? catName      : '') || '';
 var _activeSource = ((typeof activeSource !== 'undefined' ? activeSource : '') || '').replace(/\\/g, '/');
+var _expandSource = ((typeof expandSource !== 'undefined' ? expandSource : _activeSource) || '').replace(/\\/g, '/');
+var _expandFirst  = !!(typeof expandFirst !== 'undefined' ? expandFirst : false);
 
 if (_catName) {
     var catObj   = site.categories.findOne({name: _catName});
@@ -88,27 +90,55 @@ if (_catName) {
     };
     treeOrder = applyFolderOrderConfig(treeOrder, folderConfigs[catFolder], l1FallbackCmp);
 
+    function naturalCmp(a, b) {
+        return String(a).localeCompare(String(b), 'zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+    }
+
+    function postSortKey(p) {
+        var src = (p.source || '').replace(/\\/g, '/');
+        return src.split('/').pop().replace(/\.md$/i, '');
+    }
+
+    function postOrderKeys(p) {
+        var src = (p.source || '').replace(/\\/g, '/');
+        var file = src.split('/').pop();
+        var base = file.replace(/\.md$/i, '');
+        return [
+            base,
+            file,
+            p.slug,
+            p.title
+        ].filter(function(v) { return v !== undefined && v !== null && String(v).length > 0; })
+         .map(function(v) { return String(v); });
+    }
+
     /* ── apply per-folder `order` from config.json ──
-       cfg.order is an array of post filenames (without .md, .md tolerated).
-       Listed posts come first in that order; unlisted posts follow in date-desc.
+       cfg.order may list post filename, basename, slug, or title.
+       Listed posts come first in that order; unlisted posts follow by source filename.
     */
     function applyOrderConfig(posts, cfg) {
-        if (!cfg || !cfg.order || !Array.isArray(cfg.order) || cfg.order.length === 0) {
-            return posts;
-        }
         var orderMap = {};
-        cfg.order.forEach(function(name, idx) {
-            orderMap[String(name).replace(/\.md$/i, '')] = idx;
-        });
-        function basenameKey(p) {
-            var src = (p.source || '').replace(/\\/g, '/');
-            return src.split('/').pop().replace(/\.md$/i, '');
+        var hasOrder = cfg && Array.isArray(cfg.order) && cfg.order.length > 0;
+        if (hasOrder) {
+            cfg.order.forEach(function(name, idx) {
+                var raw = String(name);
+                orderMap[raw] = idx;
+                orderMap[raw.replace(/\.md$/i, '')] = idx;
+            });
+        }
+        function orderIndex(p) {
+            if (!hasOrder) return Infinity;
+            var keys = postOrderKeys(p);
+            for (var i = 0; i < keys.length; i++) {
+                if (orderMap.hasOwnProperty(keys[i])) return orderMap[keys[i]];
+            }
+            return Infinity;
         }
         return posts.slice().sort(function(a, b) {
-            var ia = orderMap.hasOwnProperty(basenameKey(a)) ? orderMap[basenameKey(a)] : Infinity;
-            var ib = orderMap.hasOwnProperty(basenameKey(b)) ? orderMap[basenameKey(b)] : Infinity;
+            var ia = orderIndex(a);
+            var ib = orderIndex(b);
             if (ia !== ib) return ia - ib;
-            return new Date(b.date) - new Date(a.date);
+            return naturalCmp(postSortKey(a), postSortKey(b));
         });
     }
 
@@ -128,20 +158,27 @@ if (_catName) {
         var subgroups = node.sgOrder.map(function(L2key) {
             var sg      = node.subgroups[L2key];
             var L2cfg   = folderConfigs[sg.relPath] || {};
-            var sgActive = _activeSource
-                ? sg.posts.some(function(p){ return (p.source||'').replace(/\\/g,'/')===_activeSource; })
+            var sgActive = _expandSource
+                ? sg.posts.some(function(p){ return (p.source||'').replace(/\\/g,'/')===_expandSource; })
                 : false;
             if (sgActive) isL1Active = true;
             return { label: L2cfg.name || L2key, posts: applyOrderConfig(sg.posts, L2cfg), isActive: sgActive };
         });
 
-        if (!isL1Active && _activeSource) {
-            isL1Active = node.posts.some(function(p){ return (p.source||'').replace(/\\/g,'/')===_activeSource; });
+        if (!isL1Active && _expandSource) {
+            isL1Active = node.posts.some(function(p){ return (p.source||'').replace(/\\/g,'/')===_expandSource; });
         }
 
         var total = node.posts.length + node.sgOrder.reduce(function(s,k){ return s + node.subgroups[k].posts.length; }, 0);
         return { label: L1label, posts: applyOrderConfig(node.posts, L1cfg), subgroups: subgroups, total: total, isActive: isL1Active };
     });
+
+    if (!_expandSource && _expandFirst && sidebarTree.length > 0) {
+        sidebarTree[0].isActive = true;
+        if (sidebarTree[0].subgroups.length > 0) {
+            sidebarTree[0].subgroups[0].isActive = true;
+        }
+    }
 
     /* ── sidebar top title: CatFolder's config.json name or folder name ── */
     var catFolderLabel = (folderConfigs[catFolder] && folderConfigs[catFolder].name)
@@ -155,23 +192,23 @@ if (_catName) {
     <div class="sidebar-group <%= L1.isActive ? '' : 'collapsed' %>" id="sg-<%= i %>">
         <div class="sidebar-group-title" onclick="toggleGroup('sg-<%= i %>')">
             <span class="sidebar-arrow">▼</span>
-            <%= L1.label %>
-            <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= L1.total %></span>
+            <span class="sidebar-label" title="<%= L1.label %>"><%= L1.label %></span>
+            <span class="sidebar-count"><%= L1.total %></span>
         </div>
         <div class="sidebar-items">
             <% L1.subgroups.forEach(function(sg, j) { %>
             <div class="sidebar-subgroup <%= sg.isActive ? '' : 'collapsed' %>" id="sg-<%= i %>-<%= j %>">
                 <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-<%= i %>-<%= j %>')">
                     <span class="sidebar-arrow">▼</span>
-                    <%= sg.label %>
-                    <span style="margin-left:auto;opacity:0.5;font-weight:400"><%= sg.posts.length %></span>
+                    <span class="sidebar-label" title="<%= sg.label %>"><%= sg.label %></span>
+                    <span class="sidebar-count"><%= sg.posts.length %></span>
                 </div>
                 <div class="sidebar-subitems">
                     <% sg.posts.forEach(function(p) { %>
                     <% var isActive = _activeSource && (p.source||'').replace(/\\/g,'/')===_activeSource; %>
                     <a class="sidebar-item sidebar-item--l2<%= isActive ? ' sidebar-item--active' : '' %>"
                        href="<%- url_for(p.path) %>" title="<%= p.title %>">
-                        <%= p.title %>
+                        <span class="sidebar-label"><%= p.title %></span>
                     </a>
                     <% }); %>
                 </div>
@@ -181,7 +218,7 @@ if (_catName) {
             <% var isActive = _activeSource && (p.source||'').replace(/\\/g,'/')===_activeSource; %>
             <a class="sidebar-item<%= isActive ? ' sidebar-item--active' : '' %>"
                href="<%- url_for(p.path) %>" title="<%= p.title %>">
-                <%= p.title %>
+                <span class="sidebar-label"><%= p.title %></span>
             </a>
             <% }); %>
         </div>

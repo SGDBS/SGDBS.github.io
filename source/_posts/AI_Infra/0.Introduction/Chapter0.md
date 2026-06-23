@@ -1,5 +1,5 @@
 ---
-title: 0. 总览:2026 年的 AI Infra 知识框架
+title: 0.  AI Infra 知识框架
 categories: 学习笔记- AI Infra
 date: 2026-05-26 10:00:00
 mathjax: true

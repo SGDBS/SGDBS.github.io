@@ -6,7 +6,7 @@
    <%- partial('_partial/background') %>
 <% } %>
 
-<body>
+<body class="<%= (page.layout === 'post' || (page.category && page.posts)) ? 'feishu-doc-body' : '' %>">
     <%- partial('_partial/header') %>
     <%- body %>
 

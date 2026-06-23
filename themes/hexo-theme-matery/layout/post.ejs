@@ -13,17 +13,32 @@
 </script>
 <% } %>
 
-<%- partial('_partial/post-cover') %>
-
 <%
     var isTocEnable = theme.toc.enable && String(page.toc) !== 'false';
-    var containerClass = isTocEnable ? 'post-container' : 'container';
+    var containerClass = isTocEnable ? 'feishu-doc-main post-container' : 'feishu-doc-main container';
     var _postCatName = (page.categories && page.categories.length > 0)
         ? page.categories.toArray()[0].name
         : '';
+    var _postCategoryPath = (page.categories && page.categories.length > 0)
+        ? page.categories.toArray()[0].path
+        : '';
 %>
 
+<div class="feishu-doc-page">
 <%- partial('_partial/category-sidebar', {catName: _postCatName, activeSource: page.source}) %>
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="<%- url_for('/') %>">YANG's Blog</a>
+        <% if (_postCatName) { %>
+        <span>/</span>
+        <a href="<%- url_for(_postCategoryPath) %>"><%- _postCatName %></a>
+        <% } %>
+        <span>/</span>
+        <span><%- page.title %></span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：<%- date(page.updated || page.date, 'YYYY-MM-DD HH:mm') %></div>
+</header>
 
 <main class="<%- containerClass %> content">
 
@@ -34,6 +49,7 @@
     <% } %>
 
 </main>
+</div>
 
 <% if (theme.mathjax.enable && page.mathjax) { %>
 <script type="text/x-mathjax-config">

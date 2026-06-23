@@ -1,78 +1,116 @@
-<%- partial('_partial/bg-cover') %>
-
 <%
-var hashCode = function (str) {
-    if (!str && str.length === 0) { return 0; }
-    var hash = 0;
-    for (var i = 0, len = str.length; i < len; i++) {
-        hash = ((hash << 5) - hash) + str.charCodeAt(i);
-        hash |= 0;
+var folderConfigs = site.sidebarFolderConfigs || {};
+var posts = page.posts ? page.posts.toArray() : [];
+var catFolder = '';
+if (posts.length > 0) {
+    var firstParts = (posts[0].source || '').replace(/\\/g, '/').split('/');
+    catFolder = firstParts.length >= 2 ? firstParts[1] : page.category;
+}
+var catCfg = folderConfigs[catFolder] || {};
+var catTitle = catCfg.name || page.category;
+
+function naturalCmp(a, b) {
+    return String(a).localeCompare(String(b), 'zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+}
+
+function postSortKey(p) {
+    var src = (p.source || '').replace(/\\/g, '/');
+    return src.split('/').pop().replace(/\.md$/i, '');
+}
+
+function postOrderKeys(p) {
+    var src = (p.source || '').replace(/\\/g, '/');
+    var file = src.split('/').pop();
+    var base = file.replace(/\.md$/i, '');
+    return [base, file, p.slug, p.title]
+        .filter(function(v) { return v !== undefined && v !== null && String(v).length > 0; })
+        .map(function(v) { return String(v); });
+}
+
+function applyOrderConfig(items, cfg) {
+    var hasOrder = cfg && Array.isArray(cfg.order) && cfg.order.length > 0;
+    var orderMap = {};
+    if (hasOrder) {
+        cfg.order.forEach(function(name, idx) {
+            var raw = String(name);
+            orderMap[raw] = idx;
+            orderMap[raw.replace(/\.md$/i, '')] = idx;
+        });
     }
-    return hash;
-};
+    function orderIndex(p) {
+        if (!hasOrder) return Infinity;
+        var keys = postOrderKeys(p);
+        for (var i = 0; i < keys.length; i++) {
+            if (orderMap.hasOwnProperty(keys[i])) return orderMap[keys[i]];
+        }
+        return Infinity;
+    }
+    return items.slice().sort(function(a, b) {
+        var ia = orderIndex(a);
+        var ib = orderIndex(b);
+        if (ia !== ib) return ia - ib;
+        return naturalCmp(postSortKey(a), postSortKey(b));
+    });
+}
+
+function folderLabel(src) {
+    var parts = (src || '').replace(/\\/g, '/').split('/');
+    var dirParts = parts.slice(0, -1);
+    if (dirParts.length < 3) return catTitle;
+    var labels = [];
+    var l1Rel = dirParts.slice(1, 3).join('/');
+    var l1Cfg = folderConfigs[l1Rel] || {};
+    labels.push(l1Cfg.name || dirParts[2]);
+    if (dirParts.length >= 4) {
+        var l2Rel = dirParts.slice(1, 4).join('/');
+        var l2Cfg = folderConfigs[l2Rel] || {};
+        labels.push(l2Cfg.name || dirParts[3]);
+    }
+    return labels.join(' / ');
+}
+
+var sortedPosts = applyOrderConfig(posts, catCfg);
 %>
 
-<%- partial('_partial/category-sidebar', {catName: page.category, activeSource: ''}) %>
+<div class="feishu-doc-page">
+<%- partial('_partial/category-sidebar', {catName: page.category, activeSource: '', expandFirst: true}) %>
 
-<main class="content">
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="<%- url_for('/') %>">YANG's Blog</a>
+        <span>/</span>
+        <a href="<%- url_for('/categories/') %>">Knowledge Base</a>
+        <span>/</span>
+        <span><%- catTitle %></span>
+    </div>
+    <div class="feishu-doc-updated"><%= sortedPosts.length %> 篇文章</div>
+</header>
 
-    <%- partial('_widget/category-cloud') %>
+<main class="feishu-doc-main feishu-category-main content">
+    <section class="category-doc-content">
+        <header class="category-doc-header">
+            <p class="category-doc-eyebrow">Category</p>
+            <h1><%- catTitle %></h1>
+            <p>按目录顺序浏览这个知识库下的文章。</p>
+        </header>
 
-    <article id="articles" class="container articles">
-        <div class="row tags-posts">
-            <% page.posts.sort('date').reverse().forEach(post => { %>
-            <div class="article tag-post col s12 m6 l4" data-aos="zoom-in">
-                <div class="card">
-                    <a href="<%- url_for(post.path) %>">
-                        <div class="card-image tag-image">
-                            <% if (post.img) { %>
-                            <img src="<%- url_for(post.img) %>" class="responsive-img" alt="<%= post.title %>">
-                            <% } else { %>
-                            <%
-                                var featureimg = theme.featureImages[Math.abs(hashCode(post.title) % theme.featureImages.length)];
-                            %>
-                            <img src="<%- theme.jsDelivr.url %><%- url_for(featureimg) %>" class="responsive-img" alt="<%= post.title %>">
-                            <% } %>
-                            <span class="card-title"><%= post.title %></span>
-                        </div>
-                    </a>
-                    <div class="card-content article-content">
-                        <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i><%= date(post.date, config.date_format) %>
-                            </span>
-                            <span class="publish-author">
-                                <% if (post.categories && post.categories.length > 0) { %>
-                                <i class="fas fa-bookmark fa-fw icon-category"></i>
-                                <% post.categories.forEach(category => { %>
-                                <a href="<%- url_for(category.path) %>" class="post-category">
-                                    <%- category.name %>
-                                </a>
-                                <% }); %>
-                                <% } else { %>
-                                <i class="fas fa-user fa-fw"></i>
-                                <%- config.author %>
-                                <% } %>
-                            </span>
-                        </div>
-                    </div>
-
-                    <% if (post.tags && post.tags.length) { %>
-                    <div class="card-action article-tags">
-                        <% post.tags.forEach(tag => { %>
-                        <a href="<%- url_for(tag.path) %>">
-                            <span class="chip bg-color"><%= tag.name %></span>
-                        </a>
-                        <% }); %>
-                    </div>
-                    <% } %>
-                </div>
-            </div>
+        <div class="category-doc-list">
+            <% sortedPosts.forEach(function(post) { %>
+            <a class="category-doc-item" href="<%- url_for(post.path) %>">
+                <span class="category-doc-icon"><i class="far fa-file-alt"></i></span>
+                <span class="category-doc-mainline">
+                    <span class="category-doc-title"><%= post.title %></span>
+                    <span class="category-doc-meta">
+                        <%= folderLabel(post.source) %>
+                        <em><%= date(post.date, config.date_format) %></em>
+                    </span>
+                </span>
+            </a>
             <% }); %>
         </div>
-    </article>
-
+    </section>
 </main>
+</div>
 
 <% if (page.total > 1) { %>
 <%- partial('_partial/paging') %>

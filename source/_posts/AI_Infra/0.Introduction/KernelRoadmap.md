@@ -1,5 +1,5 @@
 ---
-title: 0.5 GPU Kernel 学习路线图:CUDA 与 Triton 从入门到生产
+title: 0.5 GPU Kernel 学习路线图
 categories: 学习笔记- AI Infra
 date: 2026-05-09 14:00:00
 mathjax: true

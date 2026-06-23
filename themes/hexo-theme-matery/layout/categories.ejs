@@ -1,11 +1,80 @@
-<%- partial('_partial/bg-cover') %>
+<main class="content knowledge-home">
+    <section class="knowledge-shell">
+        <header class="knowledge-header">
+            <p class="knowledge-eyebrow">Knowledge Base</p>
+            <h1>知识库</h1>
+            <p>按主题组织博客内容，从学习路线进入文章，比时间线更适合系统复盘。</p>
+        </header>
 
-<main class="content">
+        <%
+        var folderConfigs = site.sidebarFolderConfigs || {};
+        var categoryCards = [];
+        if (site.categories && site.categories.length > 0) {
+            site.categories.sort('name').forEach(function(cat) {
+                var posts = cat.posts ? cat.posts.sort('date').reverse().toArray() : [];
+                var folder = '';
+                if (posts.length > 0) {
+                    var parts = (posts[0].source || '').replace(/\\/g, '/').split('/');
+                    folder = parts.length >= 2 ? parts[1] : cat.name;
+                }
+                var cfg = folderConfigs[folder] || {};
+                var childMap = {};
+                var childLabels = {};
+                posts.forEach(function(post) {
+                    var src = (post.source || '').replace(/\\/g, '/');
+                    var parts = src.split('/');
+                    if (parts.length < 4) return;
+                    var key = parts[2];
+                    var rel = folder ? folder + '/' + key : key;
+                    childLabels[key] = (folderConfigs[rel] && folderConfigs[rel].name) ? folderConfigs[rel].name : key;
+                    childMap[key] = (childMap[key] || 0) + 1;
+                });
+                var children = Object.keys(childMap).sort(function(a, b) {
+                    return childMap[b] - childMap[a];
+                }).slice(0, 6);
+                categoryCards.push({
+                    name: cfg.name || cat.name,
+                    rawName: cat.name,
+                    path: cat.path,
+                    count: posts.length,
+                    latest: posts[0],
+                    children: children,
+                    childMap: childMap,
+                    childLabels: childLabels
+                });
+            });
+        }
+        categoryCards.sort(function(a, b) { return b.count - a.count; });
+        %>
 
-    <%- partial('_widget/category-cloud') %>
-
-    <% if (site.categories && site.categories.length > 0) { %>
-    <%- partial('_widget/category-radar') %>
-    <% } %>
-
+        <div class="knowledge-grid">
+            <% categoryCards.forEach(function(cat) { %>
+            <article class="knowledge-card">
+                <a class="knowledge-card-title" href="<%- url_for(cat.path) %>">
+                    <span class="knowledge-card-icon"><i class="far fa-folder-open"></i></span>
+                    <span><%= cat.name %></span>
+                </a>
+                <div class="knowledge-card-meta">
+                    <span><%= cat.count %> 篇文章</span>
+                    <% if (cat.latest) { %>
+                    <span>最近：<%= date(cat.latest.date, config.date_format) %></span>
+                    <% } %>
+                </div>
+                <% if (cat.children.length > 0) { %>
+                <div class="knowledge-child-list">
+                    <% cat.children.forEach(function(child) { %>
+                    <span><%= cat.childLabels[child] || child %><em><%= cat.childMap[child] %></em></span>
+                    <% }); %>
+                </div>
+                <% } %>
+                <% if (cat.latest) { %>
+                <a class="knowledge-latest" href="<%- url_for(cat.latest.path) %>">
+                    <i class="far fa-file-alt"></i>
+                    <%= cat.latest.title %>
+                </a>
+                <% } %>
+            </article>
+            <% }); %>
+        </div>
+    </section>
 </main>
