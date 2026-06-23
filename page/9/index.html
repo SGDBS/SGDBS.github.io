@@ -1,0 +1,934 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+<main class="content latest-home">
+    <section class="latest-shell">
+        <header class="latest-header">
+            <div>
+                <p class="latest-eyebrow">Latest Notes</p>
+                <h1>YANG's Blog</h1>
+                <p class="latest-subtitle">按时间整理的技术笔记、学习记录和工程实践。</p>
+            </div>
+            <a class="latest-kb-link" href="/categories/">
+                <i class="fas fa-layer-group"></i>
+                知识库
+            </a>
+        </header>
+
+        <div class="latest-feed">
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/Recommendation/Paper_Reading/2022-07-17-125837937/">推荐算法: SVD++ 协同过滤 代码实现</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-07-17</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    原理论文笔记 github链接，源码以数据集 代码12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/Recommendation/Paper_Reading/2022-07-14-125785527/">推荐算法: SVD协同过滤 代码实现</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-07-14</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    SVD协同过滤代码实现原理部分github链接(有数据集) 预测方程及随机梯度下降推导\hat{r}_{ui} = \mu + b_i + b_u + q_i^T p_u参数可由求解以下最优化问题得到： \min_{p_* q_* b_*} \sum_{(u,i)\in K}(r_{ui}-\mu-
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/Recommendation/Paper_Reading/2022-07-13-125756489/">Factorization Meets the Neighborhood 阅读笔记</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-07-13</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    0. 奇异值分解 Singular Value DecompositionSVD是将一个 $m \times n$ 的矩阵分解成三个矩阵的乘积，即 $A = U\Sigma V^T$。 其中 $U, V$ 分别为 $m \times m$，$n \times n$ 的矩阵，$\Sigma$ 是一个 
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/Python/2022-06-03-tkinter/">Python tkinter库</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-06-03</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/Python/">Python</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    Python tkinter库简介Tkinter模块是Python系统自带的标准GUI库，具有一套常用的图形组件 基本组件 Button 按钮 Canvas 画布，用于绘制直线、椭圆、多边形等各种图形 Checkbutton 复选框形式的按钮 Entry 单行文本框 Frame 框架，可作为其他组件
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/Python/">Python</a>
+                    
+                    <a href="/tags/tkinter/">tkinter</a>
+                    
+                    <a href="/tags/GUI/">GUI</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ACM-ICPC/Competition_Records/2022-05-19-124866348/">【Codeforces】1671E Preorder 题解</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-05-19</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/ACM-ICPC/">ACM-ICPC</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    题目大意$n\ (1 \le n \le 18)$，定义一个树的字符编号为：该节点的字符编号 + 左子树的字符编号 + 右子树的编号（叶子节点的字符编号就是它本身的编号）。 而你可以随意交换任意个节点的左右子树。 给定一个树的初始字符编号，求一共可以产生不同的字符编号的数量（对 $998244353
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/ACM-OI/">ACM/OI</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95%E7%AB%9E%E8%B5%9B/">算法竞赛</a>
+                    
+                    <a href="/tags/C/">C++</a>
+                    
+                    <a href="/tags/Codeforces/">Codeforces</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ACM-ICPC/Competition_Records/2022-05-14-124769790/">【Codeforces】1661D Progressions Covering 题解</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-05-14</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/ACM-ICPC/">ACM-ICPC</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    题目大意给定包含 $n$ 个数的数组 $a, b$，其中 $a$ 初始均为 $0$。我们每次操作可以在 $a$ 中选择一段连续的数，使其每个数分别加上 $1, 2, 3, 4, 5, \ldots, k$。 给定 $a, b, k\ (1 \le k \le n \le 3 \cdot 10^5,\
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/ACM-OI/">ACM/OI</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95%E7%AB%9E%E8%B5%9B/">算法竞赛</a>
+                    
+                    <a href="/tags/C/">C++</a>
+                    
+                    <a href="/tags/Codeforces/">Codeforces</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ACM-ICPC/Dynamic_Programming/2022-05-14-124764391/">【Codeforces】1668D Optimal Partition题解</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-05-14</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/ACM-ICPC/">ACM-ICPC</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    题目大意给定一个长度为 $n$ 的数组 $a\ (-10^9 \le a_i \le 10^9)$，我们可以把它分割成任意个连续的子序列 $s_k = a_l \ldots a_r$，每段子序列的权值为： $\sum_{j=l}^{r} a_j &gt; 0$ 时，权值为 $r - l + 1$ $
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/ACM-OI/">ACM/OI</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+                    
+                    <a href="/tags/Codeforces/">Codeforces</a>
+                    
+                    <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">动态规划</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ACM-ICPC/Competition_Records/2022-05-13-124757890/">【Codeforces】1659D Reverse Sort Sum 题解</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-05-13</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/ACM-ICPC/">ACM-ICPC</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    题目大意给定一个长度为 $n$ 由 $0, 1$ 组成的序列。然后进行 $n$ 次操作，第 $i$ 次操作会把前 $i$ 个数升序排序。 比如 $0,1,0,1$，4次操作形成的序列分别是 $[0,1,0,1],[0,1,0,1],[0,0,1,1],[0,0,1,1]$，然后每一位分别相加为 $[
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/ACM-OI/">ACM/OI</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+                    
+                    <a href="/tags/Codeforces/">Codeforces</a>
+                    
+                    <a href="/tags/ICPC/">ICPC</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ACM-ICPC/Competition_Records/2022-05-13-124750782/">【Codeforces】1659C Line Empire 题解</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-05-13</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/ACM-ICPC/">ACM-ICPC</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    题目大意在一条坐标轴上有 $n$ 个点需要占领，每个节点在 $x_i$，初始节点在 $0$ 处，且基地也在 $0$ 处。每次行动时，设当前基地在 $p$ 处，那么可以做以下行动： 把基地移动到一个已经占领的点 $x_i$，耗费 $a \cdot |x_i - p|$ 占领一个没有被占领的节点，消耗 
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/ACM-OI/">ACM/OI</a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+                    
+                    <a href="/tags/C/">C++</a>
+                    
+                    <a href="/tags/Codeforces/">Codeforces</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/Python/2022-05-09-124667443/">Python 文件与文件夹操作</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2022-05-09</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/Python/">Python</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    os模块 chdir(path) 把path设为当前工作目录 curdir 返回当前文件夹 environ 包含系统环境变量和值的字典 extsep 当前操作系统所使用的文件扩展名分隔符 get_exec_path() 返回可执行文件的搜索路径 getcwd() 返回当前工作目录 listdir(p
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/Python/">Python</a>
+                    
+                </div>
+                
+            </article>
+            
+        </div>
+    </section>
+</main>
+
+
+<div class="container paging">
+    <div class="row">
+        <div class="col s6 m4 l4">
+            
+            <a href="/page/8/"
+               class="left btn-floating btn-large waves-effect waves-light bg-color">
+                <i class="fas fa-angle-left"></i>
+            </a>
+            
+        </div>
+        <div class="page-info col m4 l4 hide-on-small-only">
+            <div class="center-align b-text-gray">9 / 22</div>
+        </div>
+        <div class="col s6 m4 l4">
+            
+            <a href="/page/10/"
+               class="right btn-floating btn-large waves-effect waves-light bg-color">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

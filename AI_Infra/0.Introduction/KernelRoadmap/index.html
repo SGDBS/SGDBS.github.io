@@ -1,0 +1,1945 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="0.5 GPU Kernel 学习路线图, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>0.5 GPU Kernel 学习路线图 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>0.5 GPU Kernel 学习路线图</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-10 13:05</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">0.5 GPU Kernel 学习路线图</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                            <a href="/tags/CUDA/">
+                                <span class="chip bg-color">CUDA</span>
+                            </a>
+                        
+                            <a href="/tags/Triton/">
+                                <span class="chip bg-color">Triton</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-09
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>这是一份<strong>与 AI Infra 主线并行</strong>的 GPU 算子学习路线。前面 Chapter0 讲的是”模型怎么散到几百张卡上”,这一份讲的是”每张卡上的 kernel 怎么贴近硬件极限”。两条线互相催化——只学 Infra 容易变成”调包侠”,只学 Kernel 容易变成”单机仙人”,<strong>配合学才能在 2026 年的大模型工程里站得住</strong>。</p>
+<p>文档本身是一张地图:把整个学习过程切成 9 章,每章给出<strong>必须掌握的知识点</strong>和<strong>对应的动手任务</strong>。读者(包括我自己)按这张图走,一边学一边写笔记,每完成一章就在对应的章节文件夹里产出一篇 markdown。</p>
+<h2 id="一、为什么需要这条线"><a href="#一、为什么需要这条线" class="headerlink" title="一、为什么需要这条线"></a>一、为什么需要这条线</h2><h3 id="1-1-Infra-上限被算子抬"><a href="#1-1-Infra-上限被算子抬" class="headerlink" title="1.1 Infra 上限被算子抬"></a>1.1 Infra 上限被算子抬</h3><p>前面 AI Infra Ch1 写完之后,你会发现一个反直觉的事实:<strong>几乎所有 Infra 优化的天花板,最终都被某个具体 kernel 的速度决定</strong>。</p>
+<ul>
+<li>DDP 的反向重叠能藏多少通信?——藏不下的部分恰好是反向 kernel 太快、AllReduce 来不及发完的那一段</li>
+<li>ZeRO-3 的 prefetch 能不能完全掩盖 AllGather?——取决于这一层 forward kernel 跑多久</li>
+<li>FlashAttention 让长序列训练变得可能,<strong>直接重新定义了 Pipeline / TP 的切分阈值</strong></li>
+</ul>
+<p>不懂 kernel,你就只能在”调 batch_size、调 bucket_cap、改 ZeRO stage”这些 framework 旋钮上打转;懂了之后,你能写出真正改变性能曲线的优化。</p>
+<h3 id="1-2-算子工程师的-Infra-盲区"><a href="#1-2-算子工程师的-Infra-盲区" class="headerlink" title="1.2 算子工程师的 Infra 盲区"></a>1.2 算子工程师的 Infra 盲区</h3><p>反过来也成立。只会写单 kernel 的人,经常做出在单卡 benchmark 里很漂亮、但放进真实训练里没用的优化——因为他不知道这个 kernel 在整个训练 step 中只占 3%,或者它的输出张量会被立刻送进通信通道、根本不需要那么”完美”。</p>
+<p><strong>Kernel 设计必须服务于 Infra 的全局调度</strong>,不然就是孤岛。</p>
+<h3 id="1-3-这条路线想让你长成什么样"><a href="#1-3-这条路线想让你长成什么样" class="headerlink" title="1.3 这条路线想让你长成什么样"></a>1.3 这条路线想让你长成什么样</h3><p>走完这 9 章,你应该:</p>
+<ul>
+<li>能用 Triton 独立写出一个 attention kernel,达到 PyTorch SDPA 60-80% 性能</li>
+<li>能读懂 FlashAttention / Liger Kernel / ThunderKittens 等主流仓库的 Triton 代码</li>
+<li>能用 ncu / nsys profile 出任何 kernel 的瓶颈,<strong>判断是 compute-bound 还是 memory-bound</strong></li>
+<li>能把自己写的 kernel 注册成 PyTorch custom op,无缝接进 DDP/FSDP 训练流程</li>
+<li>看到一篇新论文(Mamba、Linear Attention、新的 MoE)的 kernel,能在一周内自己复现一个 80% 性能版本</li>
+</ul>
+<p>不要求亲手写满血 CUDA(那是另一个领域,需要再花半年)——但<strong>要能读懂 CUDA</strong>,因为大量 production 代码、cuBLAS / cuDNN / NCCL 的实现都还是 CUDA。</p>
+<h2 id="二、战略选择-为什么主修-Triton"><a href="#二、战略选择-为什么主修-Triton" class="headerlink" title="二、战略选择:为什么主修 Triton"></a>二、战略选择:为什么主修 Triton</h2><p>2026 年的现实:<strong>新写的 GPU kernel,80% 是 Triton</strong>。FA2/FA3、Mamba、MoE expert kernel、各种 fused norm/RoPE——主流仓库的”性能关键代码”几乎清一色 Triton 文件。原因:</p>
+<ul>
+<li><strong>生产力差 5-10 倍</strong>:同一个 kernel,Triton 100 行,CUDA 800 行</li>
+<li><strong>性能损失 &lt; 15%</strong>:对绝大多数 kernel,Triton 编译出来的代码已经接近手写 CUDA 极限</li>
+<li><strong>可读性远好</strong>:三年后回头看自己的 Triton 代码还能改;三年后看自己的 CUDA 代码就跟看天书差不多</li>
+</ul>
+<p>但 <strong>CUDA 心智模型必学</strong>——不是亲手写,而是知道 SM、warp、shared memory、HBM 这些底层名词在指什么。Triton 只是把 CUDA 的 thread-level 编程换成 block-level,但<strong>底下还是同一套硬件</strong>,完全不懂 CUDA 的人写出来的 Triton 也是瞎调。</p>
+<p>所以路线图安排:<strong>Ch1-2 先把硬件 + CUDA 基础打住,Ch3 起切到 Triton 主战场</strong>,Ch9 再回头看 CUDA 的高级特性(到那时你已经有需求了,学得快)。</p>
+<h2 id="三、前置知识"><a href="#三、前置知识" class="headerlink" title="三、前置知识"></a>三、前置知识</h2><p>和 AI Infra 几乎完全一样,所以你边学 Infra 边学 Kernel 没有额外门槛:</p>
+<ul>
+<li><strong>PyTorch 熟练</strong>:能写完整 train loop</li>
+<li><strong>Transformer 数学</strong>:attention / layernorm / softmax 的<strong>前向 + 反向</strong>公式都能推。FA 反向写不出来 90% 是因为 softmax/matmul 反向没推熟</li>
+<li><strong>C 基础语法</strong>:if / for / 指针,不需要会 OOP / 模板</li>
+<li><strong>基本 Linux</strong>:能用 nvidia-smi、能跑 bash</li>
+</ul>
+<p>不要求会的(路线里会顺便补):</p>
+<ul>
+<li>GPU 硬件细节:Ch1 系统讲</li>
+<li>CUDA 语法:Ch2 速通</li>
+<li>性能分析工具(ncu / nsys):Ch8 专门讲</li>
+</ul>
+<h2 id="四、九章结构总览"><a href="#四、九章结构总览" class="headerlink" title="四、九章结构总览"></a>四、九章结构总览</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Ch1.  GPU 硬件心智模型              ← 没硬件直觉,后面全是死记硬背</span><br><span class="line">Ch2.  CUDA 编程基础                ← 能读 CUDA 代码,会写最简单 kernel</span><br><span class="line">Ch3.  Triton 入门                  ← 主力工具登场</span><br><span class="line">Ch4.  矩阵乘:GPU 编程的基石         ← 占整个领域 50% 心智份额</span><br><span class="line">Ch5.  Reduction 与归一化           ← softmax / layernorm 的工程化</span><br><span class="line">Ch6.  Fused Kernel 设计            ← 现代 LLM 的吞吐源泉</span><br><span class="line">Ch7.  FlashAttention 实战          ← 集大成,写出来就出师</span><br><span class="line">Ch8.  Profile, Roofline 与生产集成  ← 让 kernel 进入真实训练流程</span><br><span class="line">Ch9.  CUDA 深入(可选)            ← Triton 撞墙时的工具</span><br></pre></td></tr></table></figure>
+<p>预估时长:<strong>全职学 8-12 周,业余学 4-6 个月</strong>。Ch4 和 Ch7 是两个明显的难度跳跃,各预留 2 周。</p>
+<h2 id="五、各章详细学习目标"><a href="#五、各章详细学习目标" class="headerlink" title="五、各章详细学习目标"></a>五、各章详细学习目标</h2><h3 id="Ch1-GPU-硬件心智模型"><a href="#Ch1-GPU-硬件心智模型" class="headerlink" title="Ch1. GPU 硬件心智模型"></a>Ch1. GPU 硬件心智模型</h3><p><strong>核心问题</strong>:GPU 和 CPU 在硬件设计上为什么完全不同?为什么写得对的 GPU 代码能比 CPU 快 100 倍,写错了又能慢 10 倍?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>GPU vs CPU 的设计哲学:<strong>高吞吐 vs 低延迟</strong>,核心数 vs 单核能力</li>
+<li><strong>SM (Streaming Multiprocessor)</strong> 是什么,一张 H100 / A100 / 4090 各有几个</li>
+<li>线程层级:<strong>Thread → Warp(32 个 thread)→ Thread Block → Grid</strong></li>
+<li>内存层级与带宽数字感:<ul>
+<li>Register / SRAM(shared memory)/ L1 / L2 / HBM</li>
+<li>HBM ~1-3 TB/s,SRAM ~19 TB/s,<strong>两个数差 10 倍是所有 kernel 优化的起点</strong></li>
+</ul>
+</li>
+<li><strong>Tensor Core vs CUDA Core</strong>:为什么 BF16 比 FP32 快 8 倍</li>
+<li>Warp scheduler 与 occupancy 概念</li>
+<li><strong>Compute-bound vs memory-bound</strong>:用 arithmetic intensity 判断</li>
+<li>Roofline model 直觉版</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] 读 PMPP(<em>Programming Massively Parallel Processors</em>)4th edition Ch 1-3</li>
+<li>[ ] 看 GPU Mode 社区前 3 节录播(Mark Saroufim 等组织,YouTube 上有完整录像)</li>
+<li>[ ] 跑 <code>nvidia-smi -q</code>,<strong>画一张自己 GPU 的硬件图</strong>(SM 数、SRAM/Register 容量、HBM 带宽)</li>
+<li>[ ] 用 nvidia-smi 数字,算出自己 GPU 的 BF16 算力 / HBM 带宽比(即 arithmetic intensity 阈值,memory-bound 与 compute-bound 的分界线)</li>
+<li>[ ] 写一篇笔记 <code>Ch1.HardwareMentalModel.md</code>,把这套层级讲清楚</li>
+</ul>
+<h3 id="Ch2-CUDA-编程基础"><a href="#Ch2-CUDA-编程基础" class="headerlink" title="Ch2. CUDA 编程基础"></a>Ch2. CUDA 编程基础</h3><p><strong>核心问题</strong>:在 CUDA 里写一个最简单的 kernel,需要哪些零件?为什么读 CUDA 代码不用想着”从头实现”——只需要做到能看懂。</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>nvcc 编译流程:<code>.cu</code> → PTX → SASS</li>
+<li><strong>Kernel function 语法</strong>:<code>__global__</code>、<code>__device__</code>、<code>__host__</code> 的区别</li>
+<li>索引体系:<code>threadIdx / blockIdx / blockDim / gridDim</code></li>
+<li>Kernel launch 语法:<code>kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(args)</code></li>
+<li>内存管理:<code>cudaMalloc / cudaMemcpy / cudaFree</code></li>
+<li>同步:<code>__syncthreads()</code>(block 内)、<code>cudaDeviceSynchronize()</code>(host)</li>
+<li>Shared memory:<code>__shared__</code> 修饰符</li>
+<li>常见错误处理:<code>cudaGetLastError()</code>,asynchronous error 的延迟暴露</li>
+<li><strong>简单了解</strong>:Tensor Core 的 PTX 指令(<code>mma.sync</code>)、warp shuffle(<code>__shfl_*</code>)</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] 装好 CUDA toolkit,nvcc 跑通 <code>hello_world.cu</code></li>
+<li>[ ] <strong>CUDA 写 vector_add</strong>:理解 grid/block 怎么分</li>
+<li>[ ] <strong>CUDA 写 transpose</strong>:naive 版本 + shared memory 版本,profile 对比(应该能看到 shared memory 版本快 5-10 倍)</li>
+<li>[ ] 读 PMPP Ch 4-5</li>
+<li>[ ] 找一段 cuBLAS sgemm 的反汇编(<code>cuobjdump --dump-sass</code>),<strong>不要求看懂全部,但能认得出 fmla / lds / sts 这些 SASS 指令</strong></li>
+<li>[ ] 写笔记 <code>Ch2.CUDABasics.md</code></li>
+</ul>
+<h3 id="Ch3-Triton-入门"><a href="#Ch3-Triton-入门" class="headerlink" title="Ch3. Triton 入门"></a>Ch3. Triton 入门</h3><p><strong>核心问题</strong>:Triton 比 CUDA 高效在哪?它是怎么把”thread 级编程”换成”block 级编程”的?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>Triton 与 CUDA 的关系:Triton 编译器把 Triton IR 翻译成 PTX</li>
+<li>安装与环境:<code>pip install triton</code>,确认 GPU 兼容</li>
+<li>核心装饰器:<code>@triton.jit</code>、<code>@triton.autotune</code></li>
+<li><strong>Block-level programming</strong>:你只写”一个 block 在做什么”,thread 级调度由编译器处理</li>
+<li>API 入门:<code>tl.program_id</code>、<code>tl.arange</code>、<code>tl.load</code>、<code>tl.store</code>、<code>tl.dot</code></li>
+<li>Pointer arithmetic:Triton 用裸指针,要自己算 offset</li>
+<li><strong>Mask 处理边界</strong>:这是 Triton 最常见的 bug 来源</li>
+<li>三个调优旋钮:<code>BLOCK_SIZE</code>、<code>num_warps</code>、<code>num_stages</code></li>
+<li>Triton 与 CUDA 写法的对照表</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] 跑通 Triton 官方 tutorial 01-02(vector_add、softmax)</li>
+<li>[ ] 把 Ch2 的 vector_add 改写成 Triton,profile 对比 CUDA 版,<strong>期望性能基本一致</strong></li>
+<li>[ ] 跑通 Sasha Rush <em>GPU Puzzles</em> 前 5 题(github 上的 srush/GPU-Puzzles)</li>
+<li>[ ] <strong>完成 Triton-Puzzles 前 10 题</strong>(srush 的姊妹项目)</li>
+<li>[ ] 自己写一个简单的 dropout kernel(Triton)</li>
+<li>[ ] 写笔记 <code>Ch3.TritonIntro.md</code>,<strong>做一张 CUDA ↔ Triton 对照表</strong></li>
+</ul>
+<h3 id="Ch4-矩阵乘-GPU-编程的基石"><a href="#Ch4-矩阵乘-GPU-编程的基石" class="headerlink" title="Ch4. 矩阵乘:GPU 编程的基石"></a>Ch4. 矩阵乘:GPU 编程的基石</h3><p><strong>核心问题</strong>:为什么 matmul 是 GPU 编程的”通用衡量尺”?同样一个矩阵乘,怎么从 cuBLAS 5% 性能爬到 80%?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>Block matrix multiplication 数学回顾</li>
+<li><strong>Tiling 思想</strong>:为什么要分块,M、N、K 各自怎么切</li>
+<li>Shared memory blocking:把 tile 加载进 SRAM 后多次复用</li>
+<li><strong>Bank conflict</strong>:shared memory 的访问模式陷阱</li>
+<li>Tensor Core 触发条件(Triton 自动判定,但要知道何时不触发)</li>
+<li>Persistent kernel pattern</li>
+<li>K-loop 展开 / Software pipelining</li>
+<li><strong>Split-K</strong>:小矩阵的瘦长 K 怎么处理</li>
+<li>Roofline 应用:matmul 在哪些 size 下是 memory-bound</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] <strong>Naive matmul (Triton)</strong>:每次访存乘加,profile 看是 compute-bound 还是 memory-bound(基本是 memory-bound)</li>
+<li>[ ] <strong>Tiled matmul (Triton)</strong>:用 <code>BLOCK_M</code>、<code>BLOCK_N</code>、<code>BLOCK_K</code> 分块,<strong>目标:打到 cuBLAS 50% 性能</strong></li>
+<li>[ ] 调优 BLOCK 大小,观察 ncu profile 变化(occupancy、SRAM 利用率)</li>
+<li>[ ] 加 <code>num_stages</code> 看流水线效果,<strong>目标:cuBLAS 70-80% 性能</strong></li>
+<li>[ ] (可选)用 CUDA 写一个 simple version,与 Triton 性能对比</li>
+<li>[ ] (可选)实现 split-K 优化,处理小矩阵</li>
+<li>[ ] 写笔记 <code>Ch4.Matmul.md</code>,<strong>附性能对比表 + ncu profile 截图</strong></li>
+</ul>
+<p><strong>这一章是最大的难度跳跃,预留 2 周。完成后你已经站到 GPU 编程的入门线之上。</strong></p>
+<h3 id="Ch5-Reduction-与归一化"><a href="#Ch5-Reduction-与归一化" class="headerlink" title="Ch5. Reduction 与归一化"></a>Ch5. Reduction 与归一化</h3><p><strong>核心问题</strong>:softmax / layernorm 这些”看起来很简单”的算子,在 GPU 上怎么写才不慢?Reduction 这个模式的并行套路是什么?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>Reduction 的并行模式:<strong>tree reduction</strong>(对数复杂度)</li>
+<li>Warp-level reduction(warp shuffle,<code>__shfl_xor</code> / <code>__shfl_down</code>)</li>
+<li>Block-level reduction(shared memory + sync)</li>
+<li>Multi-block reduction 的两种方式:<strong>atomic add</strong> vs <strong>二次 reduce</strong></li>
+<li><strong>Numerical stability</strong>:softmax 的 <code>-max</code> trick,为什么必须</li>
+<li>Online algorithms:<strong>Welford algorithm</strong> 一遍算出 mean + var</li>
+<li>One-pass vs two-pass softmax</li>
+<li>LayerNorm vs RMSNorm:为什么 LLM 偏爱后者</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] <strong>Sum reduction (Triton)</strong>:atomic add 版本和 two-pass 版本各写一遍,profile 对比</li>
+<li>[ ] <strong>Softmax (Triton)</strong>:带 numerical stability,处理变长 mask</li>
+<li>[ ] <strong>LayerNorm forward (Triton)</strong>:用 Welford 一遍算 mean + var</li>
+<li>[ ] <strong>LayerNorm backward (Triton)</strong>:<strong>梯度公式自己推一遍</strong>(对 γ、β、x 各求一次)</li>
+<li>[ ] <strong>RMSNorm 前向 + 反向</strong>(LayerNorm 的简化,LLM 必备)</li>
+<li>[ ] Profile 看 SRAM 利用率,与 cuBLAS / PyTorch 比较吞吐</li>
+<li>[ ] 写笔记 <code>Ch5.ReductionAndNorm.md</code></li>
+</ul>
+<h3 id="Ch6-Fused-Kernel-设计"><a href="#Ch6-Fused-Kernel-设计" class="headerlink" title="Ch6. Fused Kernel 设计"></a>Ch6. Fused Kernel 设计</h3><p><strong>核心问题</strong>:什么样的 op 该 fuse,什么时候不该?为什么 fused kernel 是现代 LLM 训练的吞吐源泉?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li><strong>为什么 fuse</strong>:省 kernel launch + 省 HBM round-trip</li>
+<li>算密度阈值:何时 fuse 收益最大(memory-bound 时)</li>
+<li>经典 fusion 模式:<ul>
+<li>Elementwise chain(GeLU + dropout + bias_add)</li>
+<li>GEMM + epilogue(matmul 后接 activation)</li>
+<li>内层 fusion(attention 内部)</li>
+</ul>
+</li>
+<li><strong>RoPE</strong>:在哪个层级 fuse,与 Q/K projection 的关系</li>
+<li><strong>SwiGLU/GeGLU</strong>:gate 计算 + 主计算的 fusion</li>
+<li>Auto-fusion(<code>torch.compile</code>)vs hand-fusion 的边界</li>
+<li>常见的 fused kernel 库:Liger Kernel、ThunderKittens、Apex</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] 写 <strong>fused dropout + GeLU + bias_add (Triton)</strong>:对比”三个独立 kernel”和”一个 fused kernel”的吞吐,<strong>期望提速 1.5-3 倍</strong></li>
+<li>[ ] 写 <strong>RoPE (Triton)</strong>:前向 + 反向</li>
+<li>[ ] 写 <strong>fused RMSNorm + 一段 elementwise</strong>(模拟 LLM 中常见的 norm + add residual 模式)</li>
+<li>[ ] 读 <strong>Liger Kernel</strong> 或 <strong>ThunderKittens</strong> 仓库的 README 和一两个核心 kernel,学他们的 fusion 风格</li>
+<li>[ ] (可选)用 <code>torch.compile</code> 跑同一段 op,对比手写 Triton 和编译器自动 fusion</li>
+<li>[ ] 写笔记 <code>Ch6.FusedKernel.md</code></li>
+</ul>
+<h3 id="Ch7-FlashAttention-实战"><a href="#Ch7-FlashAttention-实战" class="headerlink" title="Ch7. FlashAttention 实战"></a>Ch7. FlashAttention 实战</h3><p><strong>核心问题</strong>:为什么 standard attention 慢的根源是 HBM I/O?Online softmax 怎么把 attention 矩阵彻底从内存里移除?Flash 反向为什么是”recomputation 友好”?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>Standard attention 的内存访问模式:为什么 attention 是 memory-bound 而不是 compute-bound</li>
+<li><strong>Tiling for attention</strong>:Q 行、K/V 列怎么分块</li>
+<li><strong>Online softmax 的代数推导</strong>(这是最关键的数学,先吃透再写代码)</li>
+<li><strong>Recomputation in backward</strong>:为什么不存中间 softmax 矩阵,反向时按 tile 重算反而更快</li>
+<li>工程处理:causal mask、KV cache、varlen(变长序列)、ALiBi、softcap</li>
+<li>FA1 / FA2 / FA3 的演进:<ul>
+<li>FA1:首版,确立 tiling + online softmax + recomputation</li>
+<li>FA2:换轴(Q 当外层),提升 Tensor Core 利用率</li>
+<li>FA3:Hopper 上的 TMA 和 wgmma 充分利用</li>
+</ul>
+</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] <strong>Pre-FA</strong>:实现 standard attention(Triton),profile 观察 attention matrix 占多少 HBM 写</li>
+<li>[ ] <strong>FA1 forward (Triton)</strong>:tiling + online softmax,对照 Tri Dao 的论文</li>
+<li>[ ] <strong>FA1 backward (Triton)</strong>:<strong>真正的硬骨头</strong>,自己推 dQ / dK / dV 公式,然后写出来</li>
+<li>[ ] 与 PyTorch SDPA 性能对比,<strong>目标 SDPA 60-80% 性能</strong></li>
+<li>[ ] 加 causal mask 支持</li>
+<li>[ ] (高阶)读 FA2 paper,理解为什么换轴</li>
+<li>[ ] (高阶)读 <code>flash-attn</code> 仓库的 Triton 实现,看 production 代码处理多少 corner case</li>
+<li>[ ] 写笔记 <code>Ch7.FlashAttention.md</code>,<strong>这一篇可以写得很长,把数学推导也放进来</strong></li>
+</ul>
+<p><strong>这一章是路线图的 capstone。完成后你已经是行业里”能写算子的人”。预留 2-3 周。</strong></p>
+<h3 id="Ch8-Profile-Roofline-与生产集成"><a href="#Ch8-Profile-Roofline-与生产集成" class="headerlink" title="Ch8. Profile, Roofline 与生产集成"></a>Ch8. Profile, Roofline 与生产集成</h3><p><strong>核心问题</strong>:你写的 kernel 怎么进入真实 LLM 训练?怎么科学诊断瓶颈而不是盲调?</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li><strong>三件套</strong>:<ul>
+<li><code>nsys</code> (Nsight Systems):看 timeline、kernel launch、stream 占用</li>
+<li><code>ncu</code> (Nsight Compute):看单 kernel 的 occupancy、SRAM、寄存器</li>
+<li><code>torch.profiler</code>:看 PyTorch 层 wall-time</li>
+</ul>
+</li>
+<li><strong>Roofline model</strong>:画 arithmetic intensity vs FLOPS 图,判断瓶颈</li>
+<li>常见瓶颈模式:<ul>
+<li>Occupancy 低 → register pressure 太大</li>
+<li>SRAM 利用率低 → tile 太小</li>
+<li>HBM 带宽打满 → memory-bound,fuse 上游</li>
+</ul>
+</li>
+<li><strong>PyTorch 集成 API</strong>:<ul>
+<li><code>torch.library.custom_op</code> 注册自定义 op</li>
+<li><code>torch.autograd.Function</code> 注册反向</li>
+<li>与 <code>torch.compile</code> 的协作:<code>@torch.library.custom_op(&quot;ns::name&quot;, mutates_args=())</code></li>
+</ul>
+</li>
+<li><strong>与分布式训练的连接</strong>:<ul>
+<li>把 Triton kernel 用进 DDP 的 comm hook</li>
+<li>与 FSDP 的 mixed precision 协作</li>
+<li>与 CUDA Graph 的协作</li>
+</ul>
+</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] 用 <strong>ncu profile</strong> Ch4 写的 matmul,识别 occupancy / SRAM 利用率瓶颈,迭代一版优化</li>
+<li>[ ] 用 <strong>nsys</strong> profile 一个真实训练 step 的 timeline,数 kernel launch 个数</li>
+<li>[ ] 把 Ch7 的 FA kernel <strong>注册成 PyTorch custom op</strong>,通过 <code>torch.library</code> 替换掉默认 SDPA</li>
+<li>[ ] 跑通完整 LLM 训练循环(forward + backward + optimizer),loss 曲线和 PyTorch SDPA 一致</li>
+<li>[ ] <strong>对接 AI Infra Ch1</strong>:写一个 Triton-based 的 BF16 AllReduce comm hook,在 DDP 下跑通(参考 Ch1 DDP §7.2)</li>
+<li>[ ] 写笔记 <code>Ch8.ProfileAndIntegration.md</code>,<strong>附完整 nsys / ncu 截图与解读</strong></li>
+</ul>
+<h3 id="Ch9-CUDA-深入-可选"><a href="#Ch9-CUDA-深入-可选" class="headerlink" title="Ch9. CUDA 深入(可选)"></a>Ch9. CUDA 深入(可选)</h3><p><strong>核心问题</strong>:Triton 撞墙时怎么办?那些”非要 CUDA 不可”的场景长什么样?</p>
+<p>只有在前 8 章都做完、<strong>确实碰到 Triton 性能差距的场景</strong>时再来这一章。绝大多数人第一年用不到。</p>
+<p><strong>知识点</strong>:</p>
+<ul>
+<li>Warp-level primitives:<code>__shfl_*</code>、<code>__ballot_*</code>、<code>__any/all_*</code></li>
+<li>Cooperative groups:<code>thread_block</code>、<code>thread_block_tile</code></li>
+<li><strong>Async copy</strong>:<code>cp.async</code>(Ampere+)、<code>cp.async.bulk</code>(Hopper)</li>
+<li><strong>TMA (Tensor Memory Accelerator)</strong>:Hopper 的硬件级数据搬运</li>
+<li><strong>Distributed shared memory</strong>:Hopper 的 cluster 概念</li>
+<li>Tensor Core MMA at PTX level:<code>mma.sync.aligned.*</code></li>
+<li><strong>Persistent kernel + producer/consumer pattern</strong>(FA3 用的)</li>
+<li>与 cuBLAS / cuDNN 的 interop</li>
+</ul>
+<p><strong>任务</strong>:</p>
+<ul>
+<li>[ ] 用 <strong>warp shuffle</strong> 改写 Ch5 的 reduction,profile 看快了多少</li>
+<li>[ ] 用 <strong>cp.async</strong> 改进 Ch4 的 matmul,看能否让 <code>num_stages</code> 开得更大</li>
+<li>[ ] (高阶)读一段真实的 cuBLAS GEMM 反编译代码,<strong>不要求懂全部,但能识别主要 phases</strong></li>
+<li>[ ] (高阶)阅读 FA3 的 CUDA 实现,理解 TMA 和 wgmma 的用法</li>
+<li>[ ] 写笔记 <code>Ch9.CUDADeepDive.md</code>,<strong>只写你真正用到的</strong>,不堆砌</li>
+</ul>
+<h2 id="六、与-AI-Infra-的交叉学习时间表"><a href="#六、与-AI-Infra-的交叉学习时间表" class="headerlink" title="六、与 AI Infra 的交叉学习时间表"></a>六、与 AI Infra 的交叉学习时间表</h2><p><strong>强烈建议两条线交替推进</strong>——同一周学一段 Infra 配一段 Kernel,概念互相印证,记得快忘得慢。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">                 AI Infra                      GPU Kernel</span><br><span class="line">─────────────────────────────────────────────────────────────────────</span><br><span class="line">Week 1   Ch1 MemoryBudget                Ch1 GPU 硬件心智模型</span><br><span class="line">Week 2   Ch1 DDP (主体)                  Ch1 完成 + GPU Puzzles 1-10</span><br><span class="line">Week 3   Ch1 DDP (深入) + AsyncCompute   Ch2 CUDA 基础 + vector_add</span><br><span class="line">Week 4   Ch1 MixedPrecision              Ch3 Triton 入门</span><br><span class="line">Week 5   Ch1 ZeRO                        Ch4 matmul (开干)</span><br><span class="line">Week 6   Ch1 MultiNode                   Ch4 matmul (打到 cuBLAS 70%)</span><br><span class="line">Week 7   Ch1 Checkpoint                  Ch5 reduction + softmax</span><br><span class="line">Week 8   Ch1 复习 / 过 PR                 Ch5 layernorm 前后向</span><br><span class="line">Week 9   Ch2 PipelineParallel (开始)     Ch6 fused kernel</span><br><span class="line">Week 10  Ch2 PipelineParallel            Ch7 FA1 forward (开始)</span><br><span class="line">Week 11  Ch2 PipelineParallel            Ch7 FA1 forward (调优)</span><br><span class="line">Week 12  Ch3 TensorParallel (开始)       Ch7 FA1 backward (硬骨头)</span><br><span class="line">Week 13  Ch3 TensorParallel              Ch7 FA1 backward + 与 SDPA 对比</span><br><span class="line">Week 14  Ch3 TensorParallel              Ch8 profile + custom op</span><br><span class="line">Week 15  Ch4 GPUKernel (Infra 视角)      Ch8 完成 + 集成进 LLM</span><br><span class="line">之后      Ch5 Inference                   Ch9 CUDA 深入(按需)</span><br></pre></td></tr></table></figure>
+<p><strong>横向连接的几个高光时刻</strong>:</p>
+<ul>
+<li>Week 5:Infra 的 ZeRO AllGather + Kernel 的 matmul tile,<strong>两者本质都是”把数据拉进局部 buffer 然后多次复用”</strong>——一个发生在 GPU 之间,一个发生在 SRAM 内部</li>
+<li>Week 7:Infra 的 RingAllReduce 的 tree reduction + Kernel 的 warp reduction,<strong>同一种算法在不同尺度上的体现</strong></li>
+<li>Week 12-13:写完 FA backward 之后再回头看 Infra Ch1 的 activation checkpointing,你会发现”重算换显存”这个思想已经贯通从 kernel 内部到训练循环外部</li>
+<li>Week 15:把自己写的 FA 注册成 custom op 接进训练,<strong>那一刻 Infra 和 Kernel 在你脑子里彻底打通</strong></li>
+</ul>
+<h2 id="七、资源清单-按-Tier-分级"><a href="#七、资源清单-按-Tier-分级" class="headerlink" title="七、资源清单(按 Tier 分级)"></a>七、资源清单(按 Tier 分级)</h2><h3 id="Tier-1-必备"><a href="#Tier-1-必备" class="headerlink" title="Tier 1 必备"></a>Tier 1 必备</h3><ul>
+<li><strong>PMPP</strong>(<em>Programming Massively Parallel Processors</em> 4th edition):Wen-mei Hwu / David Kirk 经典,Ch 1-7 反复读</li>
+<li><strong>Triton 官方 tutorials</strong>:github 上 <code>triton-lang/triton</code> 仓库的 <code>python/tutorials/</code>,从 01 走到 09</li>
+<li><strong>Sasha Rush 的 GPU Puzzles</strong>:github 上 <code>srush/GPU-Puzzles</code>,互动式</li>
+<li><strong>Sasha Rush 的 Triton-Puzzles</strong>:同上但专门 Triton</li>
+<li><strong>GPU Mode</strong>(原 CUDA Mode)社区:Discord + YouTube 录播,2024 年起最活跃的现代 GPU 学习社区</li>
+</ul>
+<h3 id="Tier-2-高度推荐"><a href="#Tier-2-高度推荐" class="headerlink" title="Tier 2 高度推荐"></a>Tier 2 高度推荐</h3><ul>
+<li><strong>Horace He</strong> <em>Making Deep Learning Go Brrrr From First Principles</em>:讲性能直觉,<strong>Ch1-4 完成后再读</strong>,会有大量”原来如此”的瞬间</li>
+<li><strong>Lei Mao 博客</strong>(leimao.github.io):CUDA 与 Triton 短文集,需要某个具体概念时搜</li>
+<li><strong>Tri Dao</strong> 的 FlashAttention 系列论文(v1 / v2 / v3):每读一遍多懂一层</li>
+<li><strong>Liger Kernel</strong> / <strong>ThunderKittens</strong> 源码:看 production fused kernel 怎么写的</li>
+<li><strong>NVIDIA CUDA C Programming Guide</strong>:<strong>当字典用,不要从头读</strong></li>
+</ul>
+<h3 id="Tier-3-进阶-按需"><a href="#Tier-3-进阶-按需" class="headerlink" title="Tier 3 进阶 / 按需"></a>Tier 3 进阶 / 按需</h3><ul>
+<li><strong>CUTLASS</strong> 仓库:NVIDIA 的高性能 GEMM template 库,看顶级 CUDA 是什么样</li>
+<li><strong>PTX ISA 文档</strong>:写 Triton 调优时偶尔需要看生成的 PTX</li>
+<li><strong>SASS / NVDisasm</strong>:看反汇编,Ch9 才用到</li>
+<li><strong>Pearl Cao</strong>、<strong>Aleksa Gordić</strong>、<strong>Mark Saroufim</strong> 等人的个人博客 / Twitter:跟近期 trends</li>
+</ul>
+<h2 id="八、几条避坑准则"><a href="#八、几条避坑准则" class="headerlink" title="八、几条避坑准则"></a>八、几条避坑准则</h2><p>把前面 Infra 学习的经验也搬过来:</p>
+<p><strong>第一,不要从读 cuBLAS / cuDNN 源码开始</strong>。它们是工业产品,一万个分支处理 corner case,初学者读完只会 demoralized。从干净的教学代码开始(Triton tutorials、PMPP 例子、GPU Puzzles)。</p>
+<p><strong>第二,不要追求一上来就 SOTA</strong>。第一版 matmul 跑到 cuBLAS 30% 性能就很好了,<strong>理解为什么剩下 70% 在哪里损失</strong>,比硬调参重要。Tri Dao 写出 FA1 之前自己也写过几十版垃圾版本。</p>
+<p><strong>第三,Profile 工具早用早受益</strong>。<code>ncu</code> 第一次看像天书,但坚持用一周就好。<strong>它会直接告诉你”这个 kernel 的瓶颈是 memory bandwidth 不是 compute”</strong>——这个信息光看代码看不出来。从 Ch4 开始每个任务都要 profile。</p>
+<p><strong>第四,数学先推清楚再写 kernel</strong>。FlashAttention 反向写不出来 90% 是因为 softmax 反向公式没推熟。<strong>反向公式抄一遍、自己手算一个 3×3 例子,再去写 kernel</strong>。</p>
+<p><strong>第五,加入社区</strong>。GPU Mode Discord 是 2024 年以来这个领域最活跃的地方,FA、Mamba 等论文作者都在那写 paper reading。<strong>跟着读三个月你的视野会大变</strong>。</p>
+<h2 id="九、附录-ICPC-强-C-背景的修订路径"><a href="#九、附录-ICPC-强-C-背景的修订路径" class="headerlink" title="九、附录:ICPC / 强 C++ 背景的修订路径"></a>九、附录:ICPC / 强 C++ 背景的修订路径</h2><p>前面 §二 默认推荐”Triton 主修,CUDA 学心智模型”——这个建议是为<strong>PyTorch 出身、几乎不写 C++</strong> 的读者准备的。如果你来自 ICPC、OI、或者其他重度 C++ 竞赛/工程背景,这个默认路径反而是浪费——你的优势是 Triton 完全用不上的。</p>
+<p>这一节单独写一个<strong>修订版路径</strong>,只针对这类读者。</p>
+<h3 id="9-1-为什么默认计划不适合你"><a href="#9-1-为什么默认计划不适合你" class="headerlink" title="9.1 为什么默认计划不适合你"></a>9.1 为什么默认计划不适合你</h3><p>CUDA 比 Triton 多出来的”门槛”,对一般 PyTorch 用户是巨大障碍,对你几乎不存在:</p>
+<ul>
+<li><strong>C++ 语法</strong>:对你为 0。别人需要一周适应的指针、模板、内存管理,你睡着都会写</li>
+<li><strong>手动管理寄存器 / shared memory</strong>:这正是你 ICPC 里手写线段树、莫队、cache-aware 排序时一直在做的事</li>
+<li><strong>constant factor 优化思维</strong>:CUDA 编程 80% 是 constant factor,你的”卡常”经验直接迁移</li>
+<li><strong>读别人的代码</strong>:CUTLASS 模板、cuBLAS 反汇编、Tri Dao 的 FA 实现——别人觉得”看不懂”,你会觉得”和读 ICPC 神仙代码差不多”</li>
+</ul>
+<p>反过来,Triton 对你的吸引力反而小了一些——它的 block-level 抽象<strong>屏蔽了 thread 级控制</strong>。对 PyTorch 用户这是恩赐,对你是信息损失:<strong>你想看清楚每个 thread 在哪里、在干什么</strong>。</p>
+<p>但 Triton 仍然要学,理由有二:</p>
+<ul>
+<li><strong>生产代码</strong>:2026 年的新论文 80% 用 Triton,不会读会落后</li>
+<li><strong>快速实验</strong>:写一个性能 80% 的版本验证想法时,Triton 比 CUDA 快 5 倍</li>
+</ul>
+<p>所以<strong>修订版策略:CUDA 主修,Triton 当快速原型工具,两者并行</strong>。</p>
+<h3 id="9-2-ICPC-↔-GPU-概念映射"><a href="#9-2-ICPC-↔-GPU-概念映射" class="headerlink" title="9.2 ICPC ↔ GPU 概念映射"></a>9.2 ICPC ↔ GPU 概念映射</h3><p>ICPC 训练让你已经掌握了一堆 GPU 编程里的核心思想,只是名字不同:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>ICPC 你已经会的</th>
+<th>GPU 上对应什么</th>
+<th>在哪一章用上</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>线段树 / 分治 reduction</td>
+<td>Warp shuffle → Block → Grid 三层 reduction</td>
+<td>Ch5</td>
+</tr>
+<tr>
+<td>莫队块大小调参</td>
+<td><code>BLOCK_M/N/K</code> tile size 调优</td>
+<td>Ch4-5</td>
+</tr>
+<tr>
+<td>Cache-friendly 数据布局</td>
+<td>SRAM-friendly tiling</td>
+<td>Ch4 全章</td>
+</tr>
+<tr>
+<td>位运算 + bitset</td>
+<td>Warp ballot / vote / mask</td>
+<td>Ch5、Ch7</td>
+</tr>
+<tr>
+<td>双指针滑动窗口</td>
+<td>Persistent kernel + producer/consumer</td>
+<td>Ch7、Ch9</td>
+</tr>
+<tr>
+<td>预处理 + ST 表</td>
+<td>反向用——FA 反向是”放弃预处理换 SRAM”</td>
+<td>Ch7</td>
+</tr>
+<tr>
+<td>树状数组 prefix sum</td>
+<td>GPU scan(Hillis-Steele / Blelloch)</td>
+<td>Ch5</td>
+</tr>
+<tr>
+<td>离线算法处理依赖</td>
+<td>CUDA Stream + Event 建依赖图</td>
+<td>Ch8</td>
+</tr>
+<tr>
+<td>启发式 + 暴力剪枝</td>
+<td>Autotune 搜 BLOCK / num_warps 配置</td>
+<td>Ch4</td>
+</tr>
+<tr>
+<td>树状/堆基数据结构选择</td>
+<td>选 atomic 还是 two-pass reduction</td>
+<td>Ch5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>带着这张映射读 PMPP</strong>,你会发现作者讲三页的并行模式对你就是”这不就是某某算法的 GPU 版”。学习速度通常比默认读者快 2-3 倍。</p>
+<h3 id="9-3-修订版章节配置"><a href="#9-3-修订版章节配置" class="headerlink" title="9.3 修订版章节配置"></a>9.3 修订版章节配置</h3><p>每章的<strong>任务清单替换为 CUDA + Triton 双实现</strong>,profile 对比。具体调整:</p>
+<h4 id="Ch1-GPU-硬件心智模型-1"><a href="#Ch1-GPU-硬件心智模型-1" class="headerlink" title="Ch1 GPU 硬件心智模型"></a>Ch1 GPU 硬件心智模型</h4><p>不变,但你应该 3-5 天搞定。<strong>额外任务</strong>:用 <code>cuobjdump --dump-sass</code> 看一段 cuBLAS sgemm 的 SASS,<strong>ICPC 选手应该能直接读懂大部分指令</strong>(fmla/lds/sts/bra),这是 Tier 3 资源里我提前推给你的部分。</p>
+<h4 id="Ch2-Ch3-合并为一周"><a href="#Ch2-Ch3-合并为一周" class="headerlink" title="Ch2 + Ch3 合并为一周"></a>Ch2 + Ch3 合并为一周</h4><p>不再有”先 CUDA 再 Triton”的分阶段,直接合并:</p>
+<ul>
+<li>第 1 天:<strong>CUDA syntax cheatsheet</strong>(找一份 1 页的速查,不需要看 PMPP Ch4-5 完整章节)</li>
+<li>第 2 天:Triton 官方 tutorial 01-02</li>
+<li>第 3-5 天:<strong>vector_add 写两版,transpose 写两版</strong>(CUDA naive / CUDA shared mem / Triton),profile 对比</li>
+</ul>
+<p><strong>关键习惯</strong>:从这一周开始,<strong>每个 kernel 都写两版</strong>,看 Triton 编译器在哪些地方比手写 CUDA 差(通常差在 register allocation 和 shared memory layout 的细节)。</p>
+<h4 id="Ch4-矩阵乘-2-周-你的主战场"><a href="#Ch4-矩阵乘-2-周-你的主战场" class="headerlink" title="Ch4 矩阵乘(2 周,你的主战场)"></a>Ch4 矩阵乘(2 周,你的主战场)</h4><p>这是你和默认读者差距最大的一章。任务升级:</p>
+<ul>
+<li>[ ] CUDA naive matmul(1 小时,主要是熟语法)</li>
+<li>[ ] <strong>CUDA shared memory tiled matmul</strong>(自己推 tile 怎么放,目标 cuBLAS 30%)</li>
+<li>[ ] <strong>CUDA + Tensor Core MMA</strong>(用 <code>wmma</code> API 或者直接 PTX <code>mma.sync</code>,目标 cuBLAS 60%)</li>
+<li>[ ] <strong>CUDA + cp.async (Ampere+) + double buffering</strong>(目标 cuBLAS 75%)</li>
+<li>[ ] Triton tiled matmul(看 <code>tl.dot</code> 自动调用 Tensor Core,对比性能)</li>
+<li>[ ] <strong>读 CUTLASS 的 device-level GEMM 实现</strong>——这一步默认读者放在 Tier 3,你在这周就该看</li>
+<li>[ ] 写笔记 <code>Ch4.Matmul.md</code>,<strong>带性能阶梯表 + 各版本的 ncu profile</strong></li>
+</ul>
+<p>完成这一章你应该能直接做 GEMM 性能工程的工作。</p>
+<h4 id="Ch5-Reduction-1-5-周"><a href="#Ch5-Reduction-1-5-周" class="headerlink" title="Ch5 Reduction(1.5 周)"></a>Ch5 Reduction(1.5 周)</h4><p>你的强项。任务从 warp shuffle 直接起步:</p>
+<ul>
+<li>[ ] <strong>CUDA warp-shuffle reduction</strong>(<code>__shfl_xor</code>),立刻就用 warp-level 原语</li>
+<li>[ ] <strong>CUDA block-level reduction</strong>(warp shuffle + shared memory 两层)</li>
+<li>[ ] CUDA grid-level reduction(atomic vs two-pass 对比)</li>
+<li>[ ] Triton 对照版本</li>
+<li>[ ] Softmax / LayerNorm / RMSNorm 各双版本</li>
+<li>[ ] <strong>额外:写一个 prefix sum (scan)</strong>,<strong>这对应你 ICPC 里的树状数组</strong>——Hillis-Steele 算法本质就是分治,你应该 30 分钟搞定</li>
+</ul>
+<p>注意:默认计划把 warp shuffle 放到 Ch9 高级章节,<strong>你完全不需要等到那时</strong>。</p>
+<h4 id="Ch6-Fused-Kernel-1-周"><a href="#Ch6-Fused-Kernel-1-周" class="headerlink" title="Ch6 Fused Kernel(1 周)"></a>Ch6 Fused Kernel(1 周)</h4><p>不变,但加一个任务:</p>
+<ul>
+<li>[ ] <strong>读 Liger Kernel 或 ThunderKittens 的核心 kernel</strong>(主要看 fusion 设计,不是 syntax)</li>
+<li>[ ] CUDA + Triton 各写一个 fused dropout+gelu+bias</li>
+</ul>
+<h4 id="Ch7-FlashAttention-2-3-周"><a href="#Ch7-FlashAttention-2-3-周" class="headerlink" title="Ch7 FlashAttention(2-3 周)"></a>Ch7 FlashAttention(2-3 周)</h4><p>最大的硬骨头,任务也最丰富:</p>
+<ul>
+<li>[ ] Standard attention CUDA 版(1 天,看清楚 attention matrix 怎么爆显存)</li>
+<li>[ ] <strong>FA1 forward CUDA 版</strong>(用 shared memory tiling)</li>
+<li>[ ] FA1 forward Triton 版(对比哪种写法编译器更友好)</li>
+<li>[ ] <strong>FA1 backward CUDA 版</strong>——硬骨头中的硬骨头,自己推 dQ/dK/dV</li>
+<li>[ ] FA1 backward Triton 版</li>
+<li>[ ] <strong>读 FA2 paper + Tri Dao 的 CUDA 实现</strong>(默认计划这一步是”高阶可选”,你必做)</li>
+<li>[ ] (Hopper GPU 才需要)读 FA3 的 TMA + wgmma 实现</li>
+</ul>
+<p>完成后你站到了”能复现顶级 paper kernel”的位置。</p>
+<h4 id="Ch8-Ch9-合并"><a href="#Ch8-Ch9-合并" class="headerlink" title="Ch8 + Ch9 合并"></a>Ch8 + Ch9 合并</h4><p>默认计划把 CUDA 高级特性(warp shuffle、cp.async、TMA、Tensor Core MMA)单独放 Ch9,<strong>对你完全没必要分章</strong>——这些你在 Ch4-7 已经全部用上了。</p>
+<p>修订版的 Ch8 直接合并 Ch9 内容:</p>
+<ul>
+<li>Profile 工具(ncu / nsys)</li>
+<li>Roofline 分析</li>
+<li>Cooperative groups、warp-level primitives 系统化整理</li>
+<li>Cp.async / TMA 的工程模式</li>
+<li>PyTorch custom op 集成</li>
+<li>DDP comm hook 集成</li>
+</ul>
+<p>这章应该 2 周左右,完成后就<strong>结业</strong>——你应该能独立做大模型 kernel 的优化工作。</p>
+<h3 id="9-4-资源-Tier-调整"><a href="#9-4-资源-Tier-调整" class="headerlink" title="9.4 资源 Tier 调整"></a>9.4 资源 Tier 调整</h3><p>ICPC 背景下,默认 Tier 表整体往前提一档:</p>
+<p><strong>Tier 1 必备(你)</strong>:</p>
+<ul>
+<li>PMPP Ch 1-7(默认读者也是)</li>
+<li><strong>CUTLASS 仓库的 device-level GEMM</strong>(默认读者 Tier 3)</li>
+<li><strong>Tri Dao FA1/FA2/FA3 论文 + 代码</strong>(默认读者 Tier 2)</li>
+<li><strong>Lei Mao 的 CUDA 深度文章</strong>(默认读者 Tier 2)</li>
+<li>Triton 官方 tutorials</li>
+<li>GPU Mode YouTube</li>
+</ul>
+<p><strong>Tier 2 你应该看(默认读者用不上)</strong>:</p>
+<ul>
+<li><strong>NVIDIA CUDA C Programming Guide</strong> 当字典(默认读者只用 Tier 2 末位)</li>
+<li><strong>PTX ISA 文档</strong>(默认读者 Tier 3)</li>
+<li><strong>Maxas / Volta-tuning blog 系列</strong>——给会读 SASS 的人看的 SGEMM 极限优化</li>
+<li>CUTLASS template metaprogramming 部分(C++ 模板对你不是障碍)</li>
+</ul>
+<p><strong>跳过的(对你没价值)</strong>:</p>
+<ul>
+<li>大量”GPU 入门”博客——它们花 50% 篇幅讲 C++ 基础</li>
+</ul>
+<h3 id="9-5-调整后的时间表"><a href="#9-5-调整后的时间表" class="headerlink" title="9.5 调整后的时间表"></a>9.5 调整后的时间表</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Week 1:    Ch1 硬件(3-5 天) + 自学 CUDA syntax(2 天)</span><br><span class="line">Week 2:    Ch2+3 合并(vector_add / transpose 双版本)+ GPU Puzzles</span><br><span class="line">Week 3-4:  Ch4 matmul:CUDA 四档 + Triton + CUTLASS 阅读</span><br><span class="line">Week 5:    Ch5 reduction + softmax(双版本)</span><br><span class="line">Week 6:    LayerNorm/RMSNorm 双版本 + Ch6 fused kernel</span><br><span class="line">Week 7-9:  Ch7 FlashAttention(forward + backward 双版本 + FA2/3 阅读)</span><br><span class="line">Week 10:   Ch8 profile + 集成(包含原 Ch9 内容)</span><br><span class="line">Week 11+:  Open-ended:复现新论文 kernel,接进 AI Infra Ch1 的 DDP comm hook</span><br></pre></td></tr></table></figure>
+<p>整体周期从默认的 12-15 周压缩到 <strong>10-11 周</strong>,主要是 Ch1-3 大幅压缩 + Ch9 不需要单独章。</p>
+<h3 id="9-6-几条针对你的额外建议"><a href="#9-6-几条针对你的额外建议" class="headerlink" title="9.6 几条针对你的额外建议"></a>9.6 几条针对你的额外建议</h3><p><strong>第一,kernel 评估指标不止”和 cuBLAS 比性能”</strong>。ICPC 里你已经有”分析自己代码瓶颈”的肌肉,迁移过来:每个 kernel 都用 ncu 看 occupancy / SRAM utilization / register pressure,<strong>就当成”卡常时看 cache miss”</strong>。</p>
+<p><strong>第二,SASS 比你想的好读</strong>。第一次看像天书,但 ICPC 选手通常 1-2 天就能识别主要 phases(矩阵乘里的 fmla、shared memory 加载的 lds.shared、寄存器搬运的 mov)。<strong>FA、CUTLASS 的优化文章经常贴 SASS 截图</strong>,能读懂 SASS 等于解锁第二条信息源。</p>
+<p><strong>第三,competitive programming 的”放弃完美解、追求 80% 解”哲学反而要忘掉一部分</strong>。GPU 编程里最后那 20% 性能(从 cuBLAS 60% 到 80%)往往是工业价值最大的——因为公司花几百万 GPU,每 1% 就是几万美元。所以优化要做透,不要在 70% 就收手。</p>
+<p><strong>第四,做笔记时把 ICPC 的类比写下来</strong>。这是你独有的视角,后续回头看自己受益,公开发出来对其他 ICPC 转 AI 的人也有价值——这条路径目前在中文社区几乎没有系统材料。</p>
+<h2 id="十、一句话总结"><a href="#十、一句话总结" class="headerlink" title="十、一句话总结"></a>十、一句话总结</h2><p><strong>先建 GPU 硬件心智模型(Ch1-2,2 周),主修 Triton 写 10 个由易到难的 kernel(Ch3-7,2-3 个月),最后接回 Infra 做 profile 与生产集成(Ch8,持续)</strong>。CUDA 当成”读懂别人代码”的语言,Ch9 按需深入。整个过程和 AI Infra 主线交替推进,两边互相催化。</p>
+<p>完成 9 章之后,你已经能在大模型工程的两条主线——分布式系统 + GPU 算子——之间自由切换。这是 2026 年 AI 工程师的稀缺能力。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/0.Introduction/KernelRoadmap/">https://SGDBS.github.io/AI_Infra/0.Introduction/KernelRoadmap/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                                <a href="/tags/CUDA/">
+                                    <span class="chip bg-color">CUDA</span>
+                                </a>
+                            
+                                <a href="/tags/Triton/">
+                                    <span class="chip bg-color">Triton</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/LeetGPU/Chapter1/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/18.jpg" class="responsive-img" alt="1. Vector Addition">
+                        
+                        <span class="card-title">1. Vector Addition</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Cuda%E7%AE%97%E5%AD%90/" class="post-category">
+                                    Cuda算子
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/Checkpoint/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="7. Checkpoint 与训练恢复">
+                        
+                        <span class="card-title">7. Checkpoint 与训练恢复</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

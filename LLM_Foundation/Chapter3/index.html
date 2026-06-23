@@ -1,0 +1,1563 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">大语言模型</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="大语言模型">大语言模型</span>
+            <span class="sidebar-count">10</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter0/" title="Chapter0 全景导读：LLM 训练全链路学习路径">
+                <span class="sidebar-label">Chapter0 全景导读：LLM 训练全链路学习路径</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter1/" title="Chapter1 数学工具箱：相似度、散度与 LLM 损失基础">
+                <span class="sidebar-label">Chapter1 数学工具箱：相似度、散度与 LLM 损失基础</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter2/" title="Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo">
+                <span class="sidebar-label">Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/LLM_Foundation/Chapter3/" title="Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器">
+                <span class="sidebar-label">Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter4/" title="Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角">
+                <span class="sidebar-label">Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter5/" title="Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA">
+                <span class="sidebar-label">Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter6/" title="Chapter6 经典 RLHF：奖励模型 RM + PPO">
+                <span class="sidebar-label">Chapter6 经典 RLHF：奖励模型 RM + PPO</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter7/" title="Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）">
+                <span class="sidebar-label">Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter8/" title="Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI">
+                <span class="sidebar-label">Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/KnowledgeFramework/" title="工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版">
+                <span class="sidebar-label">工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/">学习笔记-大模型</a>
+        
+        <span>/</span>
+        <span>Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                学习笔记-大模型
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-03-28
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：把 Ch2 的 InfoNCE 推广到 (1) 跨模态——CLIP 用图文对训练，成为多模态 LLM 的视觉骨干；(2) 文本——SimCSE 把 InfoNCE 引入 NLP，BGE/E5 训出现代 RAG 检索器。</p>
+<p><strong>承上</strong>：Ch2 §A 的 InfoNCE 损失、§B 的 In-batch 负样本机制。<br><strong>启下</strong>：Ch4 转向无负样本路线（BYOL/SimSiam/DINO）。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-CLIP-的对称-InfoNCE"><a href="#1-CLIP-的对称-InfoNCE" class="headerlink" title="1. CLIP 的对称 InfoNCE"></a>1. CLIP 的对称 InfoNCE</h2><p>CLIP（OpenAI 2021）的核心是<strong>双塔对比</strong>：图像塔与文本塔分别将各自模态映射到同一个表示空间。</p>
+<p>设一个 batch 含 $N$ 个图文对 ${(I<em>i, T_i)}</em>{i=1}^N$：</p>
+<ul>
+<li>Image Encoder（ViT 或 ResNet）$\to v_i \in \mathbb{R}^d$</li>
+<li>Text Encoder（Transformer）$\to t_i \in \mathbb{R}^d$</li>
+<li>二者 L2 归一化到单位球面</li>
+</ul>
+<p><strong>对称损失</strong>：构造 $N \times N$ 相似度矩阵 $S_{ij} = v_i^T t_j / \tau$。对角线为正样本，其余 $N-1$ 为负样本。两个方向的交叉熵相加：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{CLIP}} = \frac{1}{2}\left( \mathcal{L}_{\text{img→txt}} + \mathcal{L}_{\text{txt→img}} \right)</script><script type="math/tex; mode=display">\mathcal{L}_{\text{img→txt}} = -\frac{1}{N}\sum_{i=1}^N \log \frac{\exp(S_{ii})}{\sum_j \exp(S_{ij})}, \quad \mathcal{L}_{\text{txt→img}} \text{ 同理}</script><p><strong>关键工程细节</strong>：</p>
+<ul>
+<li><strong>温度 $\tau$ 是可学习参数</strong>：CLIP 让 $\log(1/\tau)$ 直接参与训练，初始化为 $\log(1/0.07)$。这样模型自己决定相似度尺度。</li>
+<li><strong>训练规模</strong>：4 亿图文对（WIT 数据集），batch size 32768——巨大的 batch 等价于巨大的负样本池</li>
+</ul>
+<h2 id="2-SimCSE：NLP-对比学习的”SimCLR-时刻”"><a href="#2-SimCSE：NLP-对比学习的”SimCLR-时刻”" class="headerlink" title="2. SimCSE：NLP 对比学习的”SimCLR 时刻”"></a>2. SimCSE：NLP 对比学习的”SimCLR 时刻”</h2><p>文本是离散 token，无法做 Crop/Color Jitter。SimCSE（EMNLP 2021）发现一个<strong>简单到震惊</strong>的方案：<strong>两次不同的 Dropout 当作正样本对</strong>。</p>
+<h3 id="2-1-Unsupervised-SimCSE"><a href="#2-1-Unsupervised-SimCSE" class="headerlink" title="2.1 Unsupervised SimCSE"></a>2.1 Unsupervised SimCSE</h3><p>同一句话 $x$ 两次过同一个 BERT，由于 Dropout mask 不同，得到 $h_1, h_2$，作为正样本对。Batch 内其他句子作负样本。损失就是标准 InfoNCE：</p>
+<script type="math/tex; mode=display">\mathcal{L}_i = -\log \frac{\exp(\text{sim}(h_i^{(1)}, h_i^{(2)}) / \tau)}{\sum_{j=1}^N \exp(\text{sim}(h_i^{(1)}, h_j^{(2)}) / \tau)}</script><h3 id="2-2-Supervised-SimCSE"><a href="#2-2-Supervised-SimCSE" class="headerlink" title="2.2 Supervised SimCSE"></a>2.2 Supervised SimCSE</h3><p>用 NLI（自然语言推理）数据：</p>
+<ul>
+<li>正样本：(premise, entailment)（蕴含）</li>
+<li><strong>Hard Negative</strong>：(premise, contradiction)（矛盾）</li>
+<li>加 hard negative 后效果显著提升</li>
+</ul>
+<h3 id="2-3-为什么-Dropout-这么简单的方案有效？"><a href="#2-3-为什么-Dropout-这么简单的方案有效？" class="headerlink" title="2.3 为什么 Dropout 这么简单的方案有效？"></a>2.3 为什么 Dropout 这么简单的方案有效？</h3><p>Dropout 在表示空间施加了<strong>最小但语义保持</strong>的扰动：</p>
+<ul>
+<li>保留 anchor 的语义（输入文本完全不变）</li>
+<li>制造足够的随机性让模型学到鲁棒特征</li>
+<li>复杂的文本增强（同义词替换、删词）反而可能改变语义，引入噪声标签</li>
+</ul>
+<blockquote>
+<p><strong>核心洞察</strong>：对比学习的成功核心是”<strong>语义保持的扰动 + 互斥的负样本池</strong>“。增强的强度只要够引入随机性即可，不必复杂。</p>
+</blockquote>
+<h2 id="3-In-batch-Negatives-的数学"><a href="#3-In-batch-Negatives-的数学" class="headerlink" title="3. In-batch Negatives 的数学"></a>3. In-batch Negatives 的数学</h2><p>对 retrieval 任务，batch 内 $N$ 个 (query, positive) 对，构造 $N \times N$ 相似度矩阵：</p>
+<ul>
+<li>对角线 $S_{ii}$ = (query_i, positive_i) 得分</li>
+<li><strong>非对角线 $S_{ij}, j \neq i$</strong> = (query_i, positive_j) 得分 → <strong>当作 query_i 的负样本</strong></li>
+</ul>
+<p>一次前向就拿到了 $N-1$ 个免费负样本。损失：</p>
+<script type="math/tex; mode=display">\mathcal{L} = -\frac{1}{N}\sum_{i=1}^N \log \frac{\exp(S_{ii} / \tau)}{\sum_j \exp(S_{ij} / \tau)}</script><p>这是 DPR、BGE、E5 等所有 retriever 的标配做法。<strong>Batch size 越大，负样本越多，效果越好</strong>——这与 SimCLR 的逻辑一致。</p>
+<hr>
+<h1 id="§B-模型结构（PyTorch-实现）"><a href="#§B-模型结构（PyTorch-实现）" class="headerlink" title="§B 模型结构（PyTorch 实现）"></a>§B 模型结构（PyTorch 实现）</h1><h2 id="B-1-CLIP-完整-forward-loss"><a href="#B-1-CLIP-完整-forward-loss" class="headerlink" title="B.1 CLIP 完整 forward + loss"></a>B.1 CLIP 完整 forward + loss</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CLIP</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, image_encoder, text_encoder, embed_dim=<span class="number">512</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.image_encoder = image_encoder</span><br><span class="line">        <span class="variable language_">self</span>.text_encoder = text_encoder</span><br><span class="line">        <span class="comment"># ⭐ 可学习温度（log scale 训练更稳）</span></span><br><span class="line">        <span class="variable language_">self</span>.logit_scale = nn.Parameter(torch.tensor(<span class="number">2.6593</span>))  <span class="comment"># = log(1/0.07)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, images, text_tokens</span>):</span><br><span class="line">        <span class="comment"># 1. 各塔提取特征 + 归一化</span></span><br><span class="line">        v = F.normalize(<span class="variable language_">self</span>.image_encoder(images), dim=-<span class="number">1</span>)         <span class="comment"># [N, D]</span></span><br><span class="line">        t = F.normalize(<span class="variable language_">self</span>.text_encoder(text_tokens), dim=-<span class="number">1</span>)     <span class="comment"># [N, D]</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2. 相似度矩阵 + 温度缩放</span></span><br><span class="line">        logit_scale = <span class="variable language_">self</span>.logit_scale.exp().clamp(<span class="built_in">max</span>=<span class="number">100</span>)         <span class="comment"># 上限防爆</span></span><br><span class="line">        logits_per_image = logit_scale * v @ t.T                    <span class="comment"># [N, N]</span></span><br><span class="line">        logits_per_text = logits_per_image.T</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3. 对称 InfoNCE：对角线是正样本</span></span><br><span class="line">        labels = torch.arange(v.size(<span class="number">0</span>), device=v.device)</span><br><span class="line">        loss_i = F.cross_entropy(logits_per_image, labels)</span><br><span class="line">        loss_t = F.cross_entropy(logits_per_text, labels)</span><br><span class="line">        <span class="keyword">return</span> (loss_i + loss_t) / <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p><strong>为什么用 <code>logit_scale.exp()</code> 而非直接学 $\tau$？</strong></p>
+<ul>
+<li>$\tau &gt; 0$ 是硬约束，直接学 $\tau$ 会导致优化时跑出可行域</li>
+<li>学 $\log(1/\tau)$ 然后取 exp 自动满足正性约束（参数化技巧，类似 reparameterization）</li>
+</ul>
+<h2 id="B-2-SimCSE-Dropout-增强-损失"><a href="#B-2-SimCSE-Dropout-增强-损失" class="headerlink" title="B.2 SimCSE Dropout 增强 + 损失"></a>B.2 SimCSE Dropout 增强 + 损失</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SimCSE</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Unsupervised SimCSE：同一文本两次 forward，Dropout 制造正样本&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, bert, temperature=<span class="number">0.05</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.bert = bert                                            <span class="comment"># 默认 dropout=0.1</span></span><br><span class="line">        <span class="variable language_">self</span>.temperature = temperature</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">encode</span>(<span class="params">self, input_ids, attention_mask</span>):</span><br><span class="line">        out = <span class="variable language_">self</span>.bert(input_ids, attention_mask=attention_mask)</span><br><span class="line">        <span class="keyword">return</span> out.pooler_output                                    <span class="comment"># [N, D]</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, input_ids, attention_mask</span>):</span><br><span class="line">        <span class="comment"># ⭐ 两次 forward，Dropout mask 不同，得到不同表示</span></span><br><span class="line">        z1 = <span class="variable language_">self</span>.encode(input_ids, attention_mask)</span><br><span class="line">        z2 = <span class="variable language_">self</span>.encode(input_ids, attention_mask)</span><br><span class="line"></span><br><span class="line">        z1 = F.normalize(z1, dim=-<span class="number">1</span>)</span><br><span class="line">        z2 = F.normalize(z2, dim=-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># In-batch negatives：z1[i] 的正样本是 z2[i]，其余 z2[j] 都是负样本</span></span><br><span class="line">        sim = z1 @ z2.T / <span class="variable language_">self</span>.temperature                          <span class="comment"># [N, N]</span></span><br><span class="line">        labels = torch.arange(sim.size(<span class="number">0</span>), device=sim.device)</span><br><span class="line">        <span class="keyword">return</span> F.cross_entropy(sim, labels)</span><br></pre></td></tr></table></figure>
+<p><strong>两个易错点</strong>：</p>
+<ol>
+<li><strong>必须开启 model.train()</strong>：否则 dropout 不生效，两次 forward 完全一样，loss 永远为 0</li>
+<li><strong>In-batch 负样本依赖 batch size</strong>：常见 64–256，太小效果差</li>
+</ol>
+<h2 id="B-3-BGE-E5-Retrieval-模型-Hard-Negative"><a href="#B-3-BGE-E5-Retrieval-模型-Hard-Negative" class="headerlink" title="B.3 BGE/E5 Retrieval 模型 + Hard Negative"></a>B.3 BGE/E5 Retrieval 模型 + Hard Negative</h2><p>实际 RAG 检索器训练时，每个 (query, pos) 还要配 $K$ 个 hard negatives：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">RetrievalModel</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, q_ids, pos_ids, neg_ids, q_mask, pos_mask, neg_mask</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        q_ids:   [B, L_q]      pos_ids: [B, L_p]</span></span><br><span class="line"><span class="string">        neg_ids: [B, K, L_n]  K = hard negatives per query</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        B, K, L_n = neg_ids.shape</span><br><span class="line">        q_emb = <span class="variable language_">self</span>.encode(q_ids, q_mask)                           <span class="comment"># [B, D]</span></span><br><span class="line">        pos_emb = <span class="variable language_">self</span>.encode(pos_ids, pos_mask)                     <span class="comment"># [B, D]</span></span><br><span class="line">        neg_emb = <span class="variable language_">self</span>.encode(</span><br><span class="line">            neg_ids.view(B*K, L_n), neg_mask.view(B*K, L_n)</span><br><span class="line">        ).view(B, K, -<span class="number">1</span>)                                             <span class="comment"># [B, K, D]</span></span><br><span class="line"></span><br><span class="line">        q_emb = F.normalize(q_emb, dim=-<span class="number">1</span>)</span><br><span class="line">        pos_emb = F.normalize(pos_emb, dim=-<span class="number">1</span>)</span><br><span class="line">        neg_emb = F.normalize(neg_emb, dim=-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 1. 当前 query 与自己的 positive</span></span><br><span class="line">        l_pos = (q_emb * pos_emb).<span class="built_in">sum</span>(dim=-<span class="number">1</span>, keepdim=<span class="literal">True</span>)          <span class="comment"># [B, 1]</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2. 与自己的 K 个 hard negatives</span></span><br><span class="line">        l_hard_neg = (q_emb.unsqueeze(<span class="number">1</span>) * neg_emb).<span class="built_in">sum</span>(dim=-<span class="number">1</span>)      <span class="comment"># [B, K]</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3. ⭐ In-batch negatives：与其他 query 的 positive</span></span><br><span class="line">        l_in_batch = q_emb @ pos_emb.T                                <span class="comment"># [B, B]</span></span><br><span class="line">        l_in_batch.fill_diagonal_(<span class="built_in">float</span>(<span class="string">&#x27;-inf&#x27;</span>))                      <span class="comment"># 排除自己</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 拼起来：[正样本, K 个 hard neg, B-1 个 in-batch neg]</span></span><br><span class="line">        logits = torch.cat([l_pos, l_hard_neg, l_in_batch], dim=-<span class="number">1</span>) / <span class="variable language_">self</span>.temperature</span><br><span class="line">        labels = torch.zeros(B, dtype=torch.long, device=q_emb.device)</span><br><span class="line">        <span class="keyword">return</span> F.cross_entropy(logits, labels)                       <span class="comment"># 正样本永远在第 0 位</span></span><br></pre></td></tr></table></figure>
+<p><strong>这是 BGE / E5 训练的”压舱石”代码</strong>——理解这段代码就理解了现代 RAG 检索器的训练。</p>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-训练视角：BGE-E5-GTE-的三阶段训练"><a href="#C-1-训练视角：BGE-E5-GTE-的三阶段训练" class="headerlink" title="C.1 训练视角：BGE / E5 / GTE 的三阶段训练"></a>C.1 训练视角：BGE / E5 / GTE 的三阶段训练</h2><p>当前主流开源 Embedding 模型几乎都遵循：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">阶段</th>
+<th style="text-align:left">数据</th>
+<th style="text-align:left">损失</th>
+<th style="text-align:left">数据规模</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>1. 弱监督对比预训练</strong></td>
+<td style="text-align:left">爬虫”标题-正文”、”问题-答案”等天然配对</td>
+<td style="text-align:left">In-batch InfoNCE</td>
+<td style="text-align:left"><strong>百亿级</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2. 监督对比微调</strong></td>
+<td style="text-align:left">MS MARCO、NLI 等高质量标注</td>
+<td style="text-align:left">InfoNCE</td>
+<td style="text-align:left">千万级</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>3. Hard Negative 蒸馏</strong></td>
+<td style="text-align:left">用 cross-encoder 教师挖难负例</td>
+<td style="text-align:left">InfoNCE + KL 蒸馏</td>
+<td style="text-align:left">百万级</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Hard Negative Mining 的四种方法</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">思路</th>
+<th style="text-align:left">代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>BM25 Hard Negatives</strong></td>
+<td style="text-align:left">用 BM25 召回 top-k，去掉真 positive</td>
+<td style="text-align:left">便宜，但负样本质量一般</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>ANCE</strong> (Microsoft)</td>
+<td style="text-align:left">用上一版本模型自挖负例，定期刷新</td>
+<td style="text-align:left">中等，需多轮训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>RocketQA</strong></td>
+<td style="text-align:left">Cross-encoder 二次过滤”伪负样本”</td>
+<td style="text-align:left">贵，但效果最好</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MoCHi</strong> (NeurIPS 2020)</td>
+<td style="text-align:left">在特征空间 mixup 合成 hard negatives</td>
+<td style="text-align:left">中等</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="C-2-推理视角一：FAISS-索引构建-召回"><a href="#C-2-推理视角一：FAISS-索引构建-召回" class="headerlink" title="C.2 推理视角一：FAISS 索引构建 + 召回"></a>C.2 推理视角一：FAISS 索引构建 + 召回</h2><p>训练完 embedding 模型后，<strong>RAG 系统的推理流程</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> faiss</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># ============ Index 构建（离线一次）============</span></span><br><span class="line"><span class="comment"># 1. 全量文档向量化</span></span><br><span class="line">doc_embeddings = []</span><br><span class="line"><span class="keyword">for</span> batch <span class="keyword">in</span> doc_loader:</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        emb = retriever.encode(batch).cpu().numpy()</span><br><span class="line">    doc_embeddings.append(emb)</span><br><span class="line">doc_embeddings = np.concatenate(doc_embeddings).astype(np.float32)</span><br><span class="line">faiss.normalize_L2(doc_embeddings)                           <span class="comment"># ⭐ 归一化</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 构建 IVF + PQ 索引（亿级文档常用）</span></span><br><span class="line">d = doc_embeddings.shape[<span class="number">1</span>]</span><br><span class="line">quantizer = faiss.IndexFlatIP(d)</span><br><span class="line">index = faiss.IndexIVFPQ(quantizer, d, nlist=<span class="number">4096</span>, m=<span class="number">8</span>, nbits=<span class="number">8</span>)</span><br><span class="line">index.train(doc_embeddings)</span><br><span class="line">index.add(doc_embeddings)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ============ Query 召回（每次请求）============</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">retrieve</span>(<span class="params">query, k=<span class="number">10</span></span>):</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        q_emb = retriever.encode([query]).cpu().numpy().astype(np.float32)</span><br><span class="line">    faiss.normalize_L2(q_emb)</span><br><span class="line">    distances, indices = index.search(q_emb, k)              <span class="comment"># 内积索引</span></span><br><span class="line">    <span class="keyword">return</span> indices[<span class="number">0</span>]                                         <span class="comment"># top-k 文档编号</span></span><br></pre></td></tr></table></figure>
+<p><strong>关键工程细节</strong>：</p>
+<ul>
+<li><strong>必须 L2 归一化</strong>：embedding 模型训练时归一化的，索引也必须归一化</li>
+<li><strong>用 IndexFlatIP 而非 IndexFlatL2</strong>：内积比余弦快 30%（呼应 Ch1 §C.2）</li>
+<li><strong>大规模用 IVF + PQ</strong>：暴力 IndexFlatIP 在亿级数据上太慢，IVF + PQ 牺牲少量精度换速度</li>
+</ul>
+<h2 id="C-3-推理视角二：完整-RAG-流程"><a href="#C-3-推理视角二：完整-RAG-流程" class="headerlink" title="C.3 推理视角二：完整 RAG 流程"></a>C.3 推理视角二：完整 RAG 流程</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">用户 Query</span><br><span class="line">   ↓</span><br><span class="line">[Embedding 模型] 编码 query → q_emb</span><br><span class="line">   ↓</span><br><span class="line">[FAISS 索引] 召回 top-100 文档（粗排）</span><br><span class="line">   ↓</span><br><span class="line">[Cross-Encoder Reranker] 重排 → top-5（精排，更准但更慢）</span><br><span class="line">   ↓</span><br><span class="line">[LLM] 把 top-5 文档塞进 prompt 生成答案</span><br></pre></td></tr></table></figure>
+<p><strong>为什么要两阶段（召回 + 重排）？</strong></p>
+<ul>
+<li>召回阶段：双塔模型，离线编码所有文档，向量检索极快但只看”语义相似”</li>
+<li>重排阶段：cross-encoder（query 和 doc 拼起来过一次模型），考虑细粒度交互，但只能处理少量候选</li>
+</ul>
+<h2 id="C-4-推理视角三：CLIP-在多模态-LLM-中扮演什么角色"><a href="#C-4-推理视角三：CLIP-在多模态-LLM-中扮演什么角色" class="headerlink" title="C.4 推理视角三：CLIP 在多模态 LLM 中扮演什么角色"></a>C.4 推理视角三：CLIP 在多模态 LLM 中扮演什么角色</h2><p>多模态 LLM（LLaVA、GPT-4V、Qwen-VL）的标准做法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">图像 ──→ [CLIP Vision Encoder] ──→ 视觉 token ──┐</span><br><span class="line">                       (冻结)                     ├──→ [LLM] ──→ 答案</span><br><span class="line">文字 ──→ [Tokenizer] ──→ 文本 token ──────────────┘</span><br></pre></td></tr></table></figure>
+<p><strong>关键工程点</strong>：</p>
+<ol>
+<li><strong>冻结 CLIP</strong>：训练时 vision encoder 通常不动，只训练投影层 + LLM 微调</li>
+<li><strong>投影层（Projection）</strong>：一个轻量 MLP，把 CLIP 的视觉 token 维度对齐到 LLM 的词嵌入空间</li>
+<li><strong>训练成本</strong>：相比从零训练 vision encoder，CLIP 已经把”看图”能力打包好了</li>
+</ol>
+<p><strong>为什么 CLIP 这么”通用”？</strong></p>
+<ul>
+<li>4 亿图文对训练 → 几乎覆盖了人类所有视觉概念的语言描述</li>
+<li>对比学习 → 视觉特征天然与”语言描述”对齐，LLM 理解起来天然顺畅</li>
+</ul>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-三种-InfoNCE-变体对比"><a href="#D-1-三种-InfoNCE-变体对比" class="headerlink" title="D.1 三种 InfoNCE 变体对比"></a>D.1 三种 InfoNCE 变体对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">正样本来源</th>
+<th style="text-align:left">负样本来源</th>
+<th style="text-align:left">温度</th>
+<th style="text-align:center">典型 batch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>SimCLR</strong>（Ch2）</td>
+<td style="text-align:left">同图像两次增强</td>
+<td style="text-align:left">Batch 内其他图像</td>
+<td style="text-align:left">固定 0.5</td>
+<td style="text-align:center">4096+</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CLIP</strong></td>
+<td style="text-align:left">配对的图文</td>
+<td style="text-align:left">Batch 内其他图文对</td>
+<td style="text-align:left"><strong>可学习</strong></td>
+<td style="text-align:center">32768</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SimCSE</strong></td>
+<td style="text-align:left">同句子两次 Dropout</td>
+<td style="text-align:left">Batch 内其他句子</td>
+<td style="text-align:left">固定 0.05</td>
+<td style="text-align:center">64–256</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>BGE / E5</strong></td>
+<td style="text-align:left">配对的 (q, pos)</td>
+<td style="text-align:left">In-batch + Hard Neg</td>
+<td style="text-align:left">固定 0.02</td>
+<td style="text-align:center">数百到上千</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-2-关键工程要点回顾"><a href="#D-2-关键工程要点回顾" class="headerlink" title="D.2 关键工程要点回顾"></a>D.2 关键工程要点回顾</h2><ul>
+<li>✅ <strong>L2 归一化</strong> + <strong>内积索引</strong> = 余弦相似度的工程化（Ch1 §C.2）</li>
+<li>✅ <strong>可学习温度</strong>：CLIP 的关键技巧，让模型自决定相似度尺度</li>
+<li>✅ <strong>Dropout = 最小增强</strong>：SimCSE 的洞察，复杂增强反而引入噪声</li>
+<li>✅ <strong>In-batch + Hard Negative</strong>：BGE/E5 训练范式</li>
+<li>✅ <strong>召回 + 重排</strong>：RAG 标准两阶段架构</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>本章和 Ch2 一起，把对比学习的”有负样本路线”讲完了：</p>
+<ul>
+<li>Ch2：视觉、SimCLR/MoCo</li>
+<li>Ch3：跨模态/文本、CLIP/SimCSE/BGE</li>
+</ul>
+<p>下一章 <strong>Ch4</strong> 进入完全不同的路线：<strong>没有负样本如何训表征模型？</strong> BYOL/SimSiam/DINO 给出了惊人的答案——只要打破对称性（Stop-gradient + Predictor），模型就不会塌缩。这套机制后来直接被 RLHF 借鉴（Reference Policy ≈ Target Network）。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/LLM_Foundation/Chapter3/">https://SGDBS.github.io/LLM_Foundation/Chapter3/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/LLM_Foundation/Chapter4/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角">
+                        
+                        <span class="card-title">Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-29
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                    学习笔记-大模型
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/LLM_Foundation/Chapter2/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo">
+                        
+                        <span class="card-title">Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-27
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                    学习笔记-大模型
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

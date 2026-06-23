@@ -1,0 +1,1940 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="1. 训练显存预算与激活优化, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>1. 训练显存预算与激活优化 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>1. 训练显存预算与激活优化</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">1. 训练显存预算与激活优化</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-08
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>训练大模型时,显存几乎永远是瓶颈。这一篇是整个 AI Infra 系列后续章节(DDP / ZeRO / Pipeline Parallel / Tensor Parallel)共同的<strong>问题陈述</strong>——先把”训练时显存到底被什么吃掉”算清楚,再讲两个最常用的工程降显存手段:<strong>Micro-batch / 梯度累积</strong> 和 <strong>Activation Checkpointing</strong>,最后顺手把”梯度裁剪”这个训练护栏一起讲掉(它和显存无关,但每个训练循环都要写)。</p>
+<p>显存压力可以被拆成两个正交方向:<strong>激活值的”宽度”</strong>(同时塞进来的样本数)和<strong>激活值的”深度”</strong>(单个样本经过的层数)。Micro-batch 解决前者,Re-materialization (Activation Checkpointing) 解决后者,两者既可以独立使用,也常常叠加。</p>
+<h2 id="一、训练显存的构成"><a href="#一、训练显存的构成" class="headerlink" title="一、训练显存的构成"></a>一、训练显存的构成</h2><h3 id="1-1-精度和字节数"><a href="#1-1-精度和字节数" class="headerlink" title="1.1 精度和字节数"></a>1.1 精度和字节数</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>每个数占用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP32(单精度)</td>
+<td>4 字节</td>
+</tr>
+<tr>
+<td>FP16 / BF16(半精度)</td>
+<td>2 字节</td>
+</tr>
+<tr>
+<td>FP8</td>
+<td>1 字节</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>1 字节</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>记住:<strong>显存 = 张量元素个数 × 每个元素的字节数</strong>。所有计算都是这个公式,复杂的只是”元素个数怎么数”。</p>
+<p>训练时显存主要被四块吃掉:模型参数、梯度、优化器状态、激活值。前三块跟 batch size 和序列长度无关,<strong>真正爆炸的是激活值</strong>——它正比于 <code>batch × seq_len × hidden × layer_num</code>。</p>
+<h3 id="1-2-模型参数-Parameters"><a href="#1-2-模型参数-Parameters" class="headerlink" title="1.2 模型参数 (Parameters)"></a>1.2 模型参数 (Parameters)</h3><p><strong>是什么</strong>:模型里所有可学习的权重,比如 <code>nn.Linear</code> 的 <code>weight</code> 和 <code>bias</code>、Embedding 表、LayerNorm 的 γ 和 β 等。前向要用它算输出,反向要用它算梯度,整个训练过程都得在显存里。</p>
+<p><strong>怎么数元素个数</strong>:以一个标准 Transformer 层为例(hidden size = h,FFN 中间维度通常 = 4h):</p>
+<p>Attention 部分:</p>
+<ul>
+<li>Q、K、V 投影矩阵:3 × (h × h) = 3h²</li>
+<li>Output 投影:h × h = h²</li>
+<li>小计:4h²</li>
+</ul>
+<p>FFN 部分:</p>
+<ul>
+<li>第一个线性层:h × 4h = 4h²</li>
+<li>第二个线性层:4h × h = 4h²</li>
+<li>小计:8h²</li>
+</ul>
+<p>LayerNorm:2 × 2h = 4h(很小,常忽略)</p>
+<p><strong>单层合计 ≈ 12h²</strong>,整个模型(L 层)参数量 ≈ <strong>12 × L × h²</strong>(再加上 embedding 和 lm_head,约 2 × V × h,V 是词表大小)。</p>
+<p><strong>LLaMA-7B 实例</strong>:L = 32,h = 4096,12 × 32 × 4096² ≈ 6.4B,加 embedding 等 ≈ 7B。</p>
+<ul>
+<li>FP32 训练:7B × 4B = <strong>28 GB</strong></li>
+<li>混合精度(参数存 BF16):7B × 2B = <strong>14 GB</strong></li>
+</ul>
+<h3 id="1-3-梯度-Gradients"><a href="#1-3-梯度-Gradients" class="headerlink" title="1.3 梯度 (Gradients)"></a>1.3 梯度 (Gradients)</h3><p>反向传播算出来的 $\partial L / \partial \theta$,<strong>每个参数对应一个梯度</strong>,所以张量形状和参数完全一样。反向算完后优化器要用梯度去更新参数,在更新之前必须留着。</p>
+<p><strong>大小</strong>:和参数一样大。混合精度下梯度通常也是 BF16,7B 模型 ≈ <strong>14 GB</strong>。</p>
+<h3 id="1-4-优化器状态-Optimizer-States"><a href="#1-4-优化器状态-Optimizer-States" class="headerlink" title="1.4 优化器状态 (Optimizer States)"></a>1.4 优化器状态 (Optimizer States)</h3><p>优化器自己维护的辅助变量。Adam 系列要存两个:</p>
+<ul>
+<li><strong>一阶动量 m</strong>(梯度的指数滑动平均)</li>
+<li><strong>二阶动量 v</strong>(梯度平方的指数滑动平均)</li>
+</ul>
+<p>每个都和参数一样大。</p>
+<p><strong>关键陷阱:精度</strong>。即使用混合精度训练,<strong>优化器状态几乎总是用 FP32</strong>(不然数值会爆炸/下溢);而且通常还会<strong>额外保留一份 FP32 的参数副本</strong>(叫 master weights),更新时在 FP32 上做。</p>
+<p>混合精度 Adam 的完整账单(7B 模型):</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>精度</th>
+<th>大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参数(计算用)</td>
+<td>BF16</td>
+<td>14 GB</td>
+</tr>
+<tr>
+<td>梯度</td>
+<td>BF16</td>
+<td>14 GB</td>
+</tr>
+<tr>
+<td>参数副本(master)</td>
+<td>FP32</td>
+<td>28 GB</td>
+</tr>
+<tr>
+<td>Adam m</td>
+<td>FP32</td>
+<td>28 GB</td>
+</tr>
+<tr>
+<td>Adam v</td>
+<td>FP32</td>
+<td>28 GB</td>
+</tr>
+<tr>
+<td><strong>小计</strong></td>
+<td></td>
+<td><strong>112 GB</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这就是”<strong>模型参数量 × 16~20 字节</strong>“经验公式的来源——7B 模型光这部分就要 100+ GB,<strong>单张 80GB 的 A100/H100 都装不下</strong>,必须 ZeRO/FSDP 切分。</p>
+<h3 id="1-5-激活值-Activations-——真正的”浮动”部分"><a href="#1-5-激活值-Activations-——真正的”浮动”部分" class="headerlink" title="1.5 激活值 (Activations)——真正的”浮动”部分"></a>1.5 激活值 (Activations)——真正的”浮动”部分</h3><p><strong>是什么</strong>:前向传播每一层的<strong>输出张量</strong>和<strong>中间张量</strong>,例如 Linear 层的输入、Attention 的 softmax 矩阵、GeLU 的输入等。</p>
+<p><strong>为什么需要存</strong>:反向算梯度时要用到。例如对于 $y = W \cdot x$,反向算 $\partial L / \partial W = (\partial L / \partial y) \cdot x^T$,<strong>必须知道 x</strong>;对于 $y = \text{ReLU}(x)$,反向需要知道 x 的符号。每一层都有这种”反向需要的中间值”,前向时不存就没法反向。</p>
+<p><strong>怎么数:和 batch、序列长度强相关</strong>。这是激活和前三项最大的区别——<strong>激活正比于 batch_size × seq_len</strong>。</p>
+<p>以一个 Transformer 层、batch = b、seq_len = s、hidden = h 为例(BF16):</p>
+<p>Attention 内部:</p>
+<ul>
+<li>输入 x:b·s·h</li>
+<li>Q、K、V:3 × b·s·h</li>
+<li>Attention score 矩阵 QKᵀ:b · num_heads · s · s ← <strong>这个是 O(s²),长序列下会爆</strong></li>
+<li>Softmax 输出:b · num_heads · s · s</li>
+<li>Attention 输出:b·s·h</li>
+</ul>
+<p>FFN 内部:</p>
+<ul>
+<li>输入:b·s·h</li>
+<li>中间激活(4h 维度):b·s·4h</li>
+<li>GeLU 输出:b·s·4h</li>
+</ul>
+<p>LayerNorm 等:还有几个 b·s·h。</p>
+<p>粗略估算,<strong>单层激活 ≈ (10~20) × b·s·h + 2 × b·num_heads·s²</strong>,每个数 2 字节。</p>
+<p><strong>LLaMA-7B 实例</strong>,b = 1,s = 8192,h = 4096,num_heads = 32:</p>
+<ul>
+<li>b·s·h = 1 × 8192 × 4096 = 33.5 M 个数 → 67 MB(BF16)</li>
+<li>单层 Transformer “线性部分”激活 ≈ 15 × 67 MB ≈ <strong>1 GB</strong></li>
+<li>Attention 矩阵 b·num_heads·s² = 1 × 32 × 8192² = 2.1 B 个数 → <strong>4.3 GB</strong>(!!)</li>
+<li>单层合计 ≈ 5+ GB</li>
+<li><strong>32 层 ≈ 160+ GB</strong></li>
+</ul>
+<p>这就是为什么长序列训练<strong>激活值才是头号显存杀手</strong>,也是为什么 FlashAttention(不存那个 s² 矩阵)和 activation checkpointing 这么重要。</p>
+<h3 id="1-6-总账-7B-模型"><a href="#1-6-总账-7B-模型" class="headerlink" title="1.6 总账:7B 模型"></a>1.6 总账:7B 模型</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>占用</th>
+<th>是否随 batch/seq 变化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参数(BF16)</td>
+<td>14 GB</td>
+<td>否</td>
+</tr>
+<tr>
+<td>梯度(BF16)</td>
+<td>14 GB</td>
+<td>否</td>
+</tr>
+<tr>
+<td>Master 参数 + Adam m + Adam v(FP32)</td>
+<td>84 GB</td>
+<td>否</td>
+</tr>
+<tr>
+<td>激活值</td>
+<td>~160 GB</td>
+<td><strong>是,正比于 b·s</strong></td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>~270 GB</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>单张 H100 80GB 显然装不下。所以实际训练必须组合用:</p>
+<ul>
+<li><strong>ZeRO/FSDP</strong>:把参数 + 梯度 + 优化器状态切分到多卡(解决前三项)</li>
+<li><strong>Activation Checkpointing</strong>:丢掉中间激活反向时重算,把 160 GB 砍到 ~30 GB</li>
+<li><strong>FlashAttention</strong>:消掉那个 s² 的 attention 矩阵</li>
+<li><strong>Tensor/Pipeline 并行</strong>:进一步切分</li>
+</ul>
+<p><strong>速记公式</strong>:</p>
+<ul>
+<li>纯推理(前向):参数 + 一份激活 ≈ 参数量 × 2B + 少量激活</li>
+<li>训练(混合精度 + Adam):静态部分(不随 batch 变)≈ 参数量 × <strong>16~20 字节</strong>;动态部分(激活)≈ b · s · h · L · (10~20) × 2B + b · h · s² · 2B</li>
+<li><strong>判断瓶颈</strong>:模型大但 batch 和 seq 小 → 静态部分占主导,用 ZeRO/FSDP;模型一般但 seq 很长 → 激活占主导,用 checkpointing + FlashAttention</li>
+</ul>
+<h2 id="二、Micro-batch-压缩激活的”宽度”"><a href="#二、Micro-batch-压缩激活的”宽度”" class="headerlink" title="二、Micro-batch:压缩激活的”宽度”"></a>二、Micro-batch:压缩激活的”宽度”</h2><h3 id="2-1-先理清三个-batch-概念"><a href="#2-1-先理清三个-batch-概念" class="headerlink" title="2.1 先理清三个 batch 概念"></a>2.1 先理清三个 batch 概念</h3><p>这是初学者最容易混的地方,先把术语钉死:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Global batch size</strong></td>
+<td>一次参数更新真正”看到”的样本总数。决定优化轨迹(学习率、收敛性)。</td>
+</tr>
+<tr>
+<td><strong>Mini-batch / per-GPU batch</strong></td>
+<td>单卡单次前向处理的样本数。受显存限制。</td>
+</tr>
+<tr>
+<td><strong>Micro-batch</strong></td>
+<td>在梯度累积或流水线并行中,把 mini-batch 进一步切分后的更小单位。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>关系:<strong>Global batch = micro-batch × 累积步数 × 数据并行卡数</strong></p>
+<h3 id="2-2-核心问题-想要的-batch-太大塞不下"><a href="#2-2-核心问题-想要的-batch-太大塞不下" class="headerlink" title="2.2 核心问题:想要的 batch 太大塞不下"></a>2.2 核心问题:想要的 batch 太大塞不下</h3><p>假设你在训练一个模型,理论上 global batch = 256 才能稳定收敛(学习率是按这个调的),但单卡显存只能塞 batch = 8。三种思路:</p>
+<ol>
+<li><strong>直接缩小 batch</strong>:batch = 8 训练。问题:梯度噪声大,可能不收敛或要重调学习率。</li>
+<li><strong>加机器</strong>:32 张卡数据并行,每卡 batch = 8。问题:没那么多卡。</li>
+<li><strong>梯度累积(micro-batch)</strong>:单卡跑 32 次 batch = 8,把梯度累加起来再更新。<strong>等价于</strong> batch = 256,只用 1 张卡。</li>
+</ol>
+<p>micro-batch 就是第三种思路的具体实现。</p>
+<h3 id="2-3-标准训练循环-vs-梯度累积"><a href="#2-3-标准训练循环-vs-梯度累积" class="headerlink" title="2.3 标准训练循环 vs 梯度累积"></a>2.3 标准训练循环 vs 梯度累积</h3><p>标准训练循环(无累积):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> batch <span class="keyword">in</span> dataloader:</span><br><span class="line">    optimizer.zero_grad()        <span class="comment"># 清空梯度</span></span><br><span class="line">    loss = model(batch)          <span class="comment"># 前向</span></span><br><span class="line">    loss.backward()              <span class="comment"># 反向,梯度写入 .grad</span></span><br><span class="line">    optimizer.step()             <span class="comment"># 用 .grad 更新参数</span></span><br></pre></td></tr></table></figure>
+<p>梯度累积版本(4 个 micro-batch 累加成 1 个 global batch):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">accumulation_steps = <span class="number">4</span></span><br><span class="line">optimizer.zero_grad()</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i, micro_batch <span class="keyword">in</span> <span class="built_in">enumerate</span>(dataloader):</span><br><span class="line">    loss = model(micro_batch) / accumulation_steps   <span class="comment"># 注意除法!</span></span><br><span class="line">    loss.backward()              <span class="comment"># 梯度累加到 .grad(PyTorch 默认行为)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (i + <span class="number">1</span>) % accumulation_steps == <span class="number">0</span>:</span><br><span class="line">        optimizer.step()         <span class="comment"># 累计够了再更新</span></span><br><span class="line">        optimizer.zero_grad()    <span class="comment"># 然后清空</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-4-为什么要除以-accumulation-steps"><a href="#2-4-为什么要除以-accumulation-steps" class="headerlink" title="2.4 为什么要除以 accumulation_steps"></a>2.4 为什么要除以 accumulation_steps</h3><p>PyTorch 的 <code>loss.backward()</code> <strong>默认是把新梯度加到 <code>.grad</code> 上</strong>(不是覆盖)。所以连续 4 次 backward 后,<code>.grad</code> 是 4 个 micro-batch 梯度之和。</p>
+<p>但损失函数(比如 CrossEntropy)通常在 batch 维度上是<strong>取平均</strong>的,不是求和。如果直接累加 4 次的梯度,得到的是”4 倍的平均梯度”,等价于学习率被偷偷放大了 4 倍。所以要么把 loss 除以累积步数(常用),要么把累加的梯度除以累积步数。</p>
+<p><strong>数学等价性</strong>:设 micro-batch 损失 $L<em>i = \frac{1}{m}\sum</em>{j} \ell_j$(m 是 micro-batch size)</p>
+<p>累加 k 步后梯度 $= \sum<em>{i=1}^{k} \nabla L_i = \frac{1}{m} \sum</em>{i,j} \nabla \ell_j$</p>
+<p>而真正大 batch 的梯度 $= \frac{1}{km} \sum_{i,j} \nabla \ell_j$</p>
+<p><strong>前者是后者的 k 倍</strong>,所以要除以 k 才严格等价。</p>
+<h3 id="2-5-一个完整的可跑例子"><a href="#2-5-一个完整的可跑例子" class="headerlink" title="2.5 一个完整的可跑例子"></a>2.5 一个完整的可跑例子</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line">model = MyModel().cuda()</span><br><span class="line">optimizer = torch.optim.AdamW(model.parameters(), lr=<span class="number">1e-4</span>)</span><br><span class="line"></span><br><span class="line">micro_batch_size = <span class="number">8</span></span><br><span class="line">global_batch_size = <span class="number">256</span></span><br><span class="line">accumulation_steps = global_batch_size // micro_batch_size  <span class="comment"># = 32</span></span><br><span class="line"></span><br><span class="line">model.train()</span><br><span class="line">optimizer.zero_grad()</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> step, batch <span class="keyword">in</span> <span class="built_in">enumerate</span>(dataloader):</span><br><span class="line">    inputs, targets = batch</span><br><span class="line">    outputs = model(inputs)</span><br><span class="line">    loss = criterion(outputs, targets) / accumulation_steps</span><br><span class="line">    loss.backward()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 每 32 个 micro-batch 才真正更新一次</span></span><br><span class="line">    <span class="keyword">if</span> (step + <span class="number">1</span>) % accumulation_steps == <span class="number">0</span>:</span><br><span class="line">        <span class="comment"># 可选:梯度裁剪要在 step 之前、累积完之后做</span></span><br><span class="line">        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=<span class="number">1.0</span>)</span><br><span class="line"></span><br><span class="line">        optimizer.step()</span><br><span class="line">        optimizer.zero_grad()</span><br></pre></td></tr></table></figure>
+<p>注意点:</p>
+<ul>
+<li><strong>梯度裁剪</strong>必须在累积完之后、<code>step()</code> 之前做,不能每个 micro-batch 都裁</li>
+<li><strong>学习率调度器</strong> <code>scheduler.step()</code> 也应该跟着 <code>optimizer.step()</code> 走,而不是每个 micro-batch 都调</li>
+<li><strong>DataLoader 的 batch_size</strong> 设成 micro_batch_size,而不是 global</li>
+</ul>
+<h3 id="2-6-显存到底省了多少"><a href="#2-6-显存到底省了多少" class="headerlink" title="2.6 显存到底省了多少"></a>2.6 显存到底省了多少</h3><p>回到第一节的显存四块:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>是否被 micro-batch 影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参数</td>
+<td>❌ 不变</td>
+</tr>
+<tr>
+<td>梯度</td>
+<td>❌ 不变(还是参数同大小,累加在同一份 buffer 里)</td>
+</tr>
+<tr>
+<td>优化器状态</td>
+<td>❌ 不变</td>
+</tr>
+<tr>
+<td><strong>激活值</strong></td>
+<td>✅ <strong>正比于 micro-batch size,按比例下降</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>所以 micro-batch <strong>只省激活值这一块</strong>。如果你的瓶颈是参数 + 优化器(小模型大 batch),micro-batch 帮不上忙——那是 ZeRO/FSDP 的领域。</p>
+<p>例子:7B 模型 + s = 8192,激活值 ~160 GB(b = 1)。如果你想跑 b = 8,激活会变 1280 GB——必须靠 micro-batch 把单步 batch 控制在 1。</p>
+<h3 id="2-7-代价-吞吐-vs-显存"><a href="#2-7-代价-吞吐-vs-显存" class="headerlink" title="2.7 代价:吞吐 vs 显存"></a>2.7 代价:吞吐 vs 显存</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>数学等价性</strong></td>
+<td>几乎完全等价于大 batch 训练</td>
+</tr>
+<tr>
+<td><strong>计算量</strong></td>
+<td>一样(总样本数没变)</td>
+</tr>
+<tr>
+<td><strong>wall-clock 时间</strong></td>
+<td>略增。原因:每次 micro-batch 都有 kernel launch 开销、optimizer step 的间隔变长(次要)</td>
+</tr>
+<tr>
+<td><strong>BatchNorm</strong></td>
+<td>⚠️ <strong>不等价</strong>!BN 在每个 micro-batch 内单独算均值方差,统计量不准。所以现代大模型基本不用 BN,用 LayerNorm/RMSNorm(这些不依赖 batch 维度,完全等价)</td>
+</tr>
+<tr>
+<td><strong>DataLoader</strong></td>
+<td>不变,只是消费速度变成原来的 1/k</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="2-8-在分布式训练里的微妙之处"><a href="#2-8-在分布式训练里的微妙之处" class="headerlink" title="2.8 在分布式训练里的微妙之处"></a>2.8 在分布式训练里的微妙之处</h3><h4 id="DDP-的同步开销"><a href="#DDP-的同步开销" class="headerlink" title="DDP 的同步开销"></a>DDP 的同步开销</h4><p>naive 写法每个 micro-batch 都触发跨卡 AllReduce,通信浪费严重。DDP 提供 <code>model.no_sync()</code> 上下文管理器,前 k−1 次累积时跳过同步、最后一次正常 backward 触发一次 AllReduce 即可——通信量减少 (k−1)/k。具体代码、为什么 loss 要除以 accum_steps、梯度裁剪放在哪一步等细节,见《Distributed Data Parallel》§五.2。</p>
+<h4 id="流水线并行中的-micro-batch"><a href="#流水线并行中的-micro-batch" class="headerlink" title="流水线并行中的 micro-batch"></a>流水线并行中的 micro-batch</h4><p>micro-batch 在流水线并行(GPipe、1F1B 等)里有<strong>另一个完全不同的用途</strong>——不是为了省显存,而是为了<strong>填充流水线、减少 stage 之间的空闲气泡 (bubble)</strong>。单 micro-batch 的 naive pipeline 会让大部分 stage 在大部分时间空等;切成多个 micro-batch 后,它们像水流一样在不同 stage 上同时跑,把 bubble 压到 $(P-1)/(M+P-1)$——其中 $P$ 是 stage 数,$M$ 是 micro-batch 数。</p>
+<p>调度算法的演进、bubble 公式的完整推导、以及 1F1B / Interleaved / Zero Bubble 等具体方案,详见 <strong>Ch2 Pipeline Parallel</strong>。这里只需要记住:<strong>梯度累积 + micro-batch 是流水线并行能跑起来的前提</strong>,Megatron-LM、DeepSpeed Pipeline 都是这套逻辑。</p>
+<h2 id="三、Re-materialization-压缩激活的”深度”"><a href="#三、Re-materialization-压缩激活的”深度”" class="headerlink" title="三、Re-materialization:压缩激活的”深度”"></a>三、Re-materialization:压缩激活的”深度”</h2><h3 id="3-1-核心思想-用计算换显存"><a href="#3-1-核心思想-用计算换显存" class="headerlink" title="3.1 核心思想:用计算换显存"></a>3.1 核心思想:用计算换显存</h3><p>普通反向传播需要每一层的前向激活(因为链式法则要用到 $\partial L / \partial x$ 和前向时存的中间值)。</p>
+<p><strong>Re-materialization 的策略</strong>:前向时<strong>故意丢掉</strong>中间激活,只在少数”检查点”位置保留;反向需要某层激活时,<strong>从最近的检查点重新前向算一次</strong>得到。</p>
+<p>这是一笔交易:</p>
+<ul>
+<li><strong>省</strong>:丢掉的那些层的激活显存</li>
+<li><strong>付</strong>:反向时多做一次前向计算(约多 1/3 的总计算量)</li>
+</ul>
+<h3 id="3-2-具体操作流程"><a href="#3-2-具体操作流程" class="headerlink" title="3.2 具体操作流程"></a>3.2 具体操作流程</h3><h4 id="不用-checkpoint-的标准流程"><a href="#不用-checkpoint-的标准流程" class="headerlink" title="不用 checkpoint 的标准流程"></a>不用 checkpoint 的标准流程</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">前向:x0 → [Layer1] → a1 → [Layer2] → a2 → [Layer3] → a3 → [Layer4] → a4 → loss</span><br><span class="line">       存:    a1,         a2,         a3,         a4 (全部保留)</span><br><span class="line"></span><br><span class="line">反向:从 loss 开始,依次用 a4, a3, a2, a1 计算梯度</span><br></pre></td></tr></table></figure>
+<p>显存占用 = 4 层激活全在。</p>
+<h4 id="用-checkpoint-的流程"><a href="#用-checkpoint-的流程" class="headerlink" title="用 checkpoint 的流程"></a>用 checkpoint 的流程</h4><p>假设把 4 层分成 2 个 segment,每个 segment 只在<strong>入口</strong>存激活:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">前向:x0 → [Layer1 → Layer2] → a2 → [Layer3 → Layer4] → a4 → loss</span><br><span class="line">       存 x0           丢 a1   存 a2          丢 a3   存 a4</span><br><span class="line"></span><br><span class="line">反向(处理 segment 2,需要 a3):</span><br><span class="line">  - 从 a2 重新前向算 Layer3 → 得到 a3(重算!)</span><br><span class="line">  - 用 a3 反向 Layer4 和 Layer3</span><br><span class="line">反向(处理 segment 1,需要 a1):</span><br><span class="line">  - 从 x0 重新前向算 Layer1 → 得到 a1(重算!)</span><br><span class="line">  - 用 a1 反向 Layer2 和 Layer1</span><br></pre></td></tr></table></figure>
+<p>显存峰值 = 检查点的激活 + 当前正在重算的那个 segment 的激活,远小于全存。</p>
+<h3 id="3-3-怎么选检查点位置-segment-大小"><a href="#3-3-怎么选检查点位置-segment-大小" class="headerlink" title="3.3 怎么选检查点位置(segment 大小)"></a>3.3 怎么选检查点位置(segment 大小)</h3><p>这是经典的<strong>时间-空间权衡</strong>。设总层数 L,每隔 k 层放一个检查点:</p>
+<ul>
+<li>检查点数量:L/k</li>
+<li>每个 segment 重算时的激活峰值:k 层</li>
+<li>总激活显存 ∝ L/k + k</li>
+</ul>
+<p>求导得最优 <strong>k = √L</strong>,激活显存从 O(L) 降到 <strong>O(√L)</strong>,重算开销约一次额外前向。这是 Chen et al. 2016 那篇 <em>Training Deep Nets with Sublinear Memory Cost</em> 的核心结论。</p>
+<p>实践中,Transformer 通常<strong>每个 Transformer block 整体作为一个 checkpoint 单元</strong>(因为 block 内部的 attention 中间矩阵最占显存,整体重算最划算),不一定严格按 √L。</p>
+<h3 id="3-4-PyTorch-里怎么用"><a href="#3-4-PyTorch-里怎么用" class="headerlink" title="3.4 PyTorch 里怎么用"></a>3.4 PyTorch 里怎么用</h3><h4 id="方式一-torch-utils-checkpoint-checkpoint"><a href="#方式一-torch-utils-checkpoint-checkpoint" class="headerlink" title="方式一:torch.utils.checkpoint.checkpoint"></a>方式一:<code>torch.utils.checkpoint.checkpoint</code></h4><p>包裹一个函数或子模块即可:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.utils.checkpoint <span class="keyword">import</span> checkpoint</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TransformerBlock</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        x = <span class="variable language_">self</span>.attn(x)</span><br><span class="line">        x = <span class="variable language_">self</span>.ffn(x)</span><br><span class="line">        <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在外层 forward 里用 checkpoint 包装</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">    <span class="keyword">for</span> block <span class="keyword">in</span> <span class="variable language_">self</span>.blocks:</span><br><span class="line">        x = checkpoint(block, x, use_reentrant=<span class="literal">False</span>)</span><br><span class="line">    <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+<p>PyTorch 会自动:前向时不存这个 block 内部的激活,反向时重新调用 <code>block(x)</code> 拿到所需中间值。</p>
+<h4 id="方式二-checkpoint-sequential-针对-nn-Sequential"><a href="#方式二-checkpoint-sequential-针对-nn-Sequential" class="headerlink" title="方式二:checkpoint_sequential(针对 nn.Sequential)"></a>方式二:<code>checkpoint_sequential</code>(针对 nn.Sequential)</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.utils.checkpoint <span class="keyword">import</span> checkpoint_sequential</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把 24 层切成 4 个 segment,每 6 层一段</span></span><br><span class="line">x = checkpoint_sequential(<span class="variable language_">self</span>.blocks, segments=<span class="number">4</span>, <span class="built_in">input</span>=x, use_reentrant=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4><ul>
+<li><strong><code>use_reentrant=False</code></strong> 是新 API,更稳定,建议总是设这个。</li>
+<li><strong>RNG 状态</strong>:checkpoint 默认会保存随机数生成器状态(dropout 等),保证两次前向结果一致,否则梯度会错。</li>
+<li><strong>不能在 checkpoint 内部修改全局状态</strong>(比如往 list 里 append 东西,第二次前向会重复)。</li>
+<li><strong>和 <code>torch.no_grad()</code> 不兼容的地方要小心</strong>:被 checkpoint 包的函数内部不能整体处于 no_grad,否则没法反向。</li>
+</ul>
+<h3 id="3-5-进阶变体"><a href="#3-5-进阶变体" class="headerlink" title="3.5 进阶变体"></a>3.5 进阶变体</h3><p><strong>Selective checkpointing(选择性重算)</strong>:不是所有激活都同样昂贵——attention 的 softmax 矩阵是 O(s²) 但计算便宜(重算划算),FFN 的 GeLU 输出是 O(s·h) 计算贵(不如直接存)。新的做法(如 Megatron-LM 的 selective recompute)只对”显存占比高、重算便宜”的部分重算,最优化时间-空间比。</p>
+<p><strong>FlashAttention</strong>:本质上也是 attention 的 re-materialization——softmax 中间矩阵不存,反向时按 tile 重算,但因为是 fused kernel,重算几乎不增加 wall-clock 时间。这是目前长序列训练的事实标准。</p>
+<p><strong>CPU offload + checkpoint</strong>:把检查点激活临时挪到 CPU 内存,进一步省 GPU 显存,代价是 PCIe 传输时间。DeepSpeed 和 FSDP 都支持。</p>
+<h3 id="3-6-什么时候不该用"><a href="#3-6-什么时候不该用" class="headerlink" title="3.6 什么时候不该用"></a>3.6 什么时候不该用</h3><ul>
+<li>模型本来就小,激活不是瓶颈:纯亏算力。</li>
+<li>推理(inference):没有反向传播,不需要存激活,无意义。</li>
+<li>已经用了 FlashAttention 且瓶颈在 FFN:先看 selective 方案。</li>
+</ul>
+<h2 id="四、两者的对比与组合"><a href="#四、两者的对比与组合" class="headerlink" title="四、两者的对比与组合"></a>四、两者的对比与组合</h2><h3 id="4-1-核心区别"><a href="#4-1-核心区别" class="headerlink" title="4.1 核心区别"></a>4.1 核心区别</h3><p><strong>Micro-batch(梯度累积)</strong>:把一个大 batch 切成若干个小 batch 顺序前向 + 反向,梯度累加后再更新参数。降低的是<strong>激活值的”宽度”</strong>——同一时刻只需要存一个 micro-batch 的激活。</p>
+<p><strong>Re-materialization / Activation Checkpointing</strong>:前向时只保存少数几个”检查点”层的激活,丢弃中间激活;反向传播需要时<strong>重新前向计算</strong>一次得到丢失的激活。降低的是激活值的”深度”——同一个 micro-batch 内只保存部分层的激活。</p>
+<h3 id="4-2-详细对比"><a href="#4-2-详细对比" class="headerlink" title="4.2 详细对比"></a>4.2 详细对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Micro-batch</th>
+<th>Re-materialization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>省显存原理</strong></td>
+<td>减小 batch 维度,激活张量变小</td>
+<td>丢弃中间层激活,反向时重算</td>
+</tr>
+<tr>
+<td><strong>省的是哪部分</strong></td>
+<td>激活显存 ∝ batch_size</td>
+<td>激活显存 ∝ 层数(只存检查点)</td>
+</tr>
+<tr>
+<td><strong>额外计算开销</strong></td>
+<td>几乎没有(只是把大 batch 拆成多次)</td>
+<td>多一次前向传播,约 +33% 计算量</td>
+</tr>
+<tr>
+<td><strong>对收敛的影响</strong></td>
+<td>数学上等价于大 batch(BN 除外)</td>
+<td>完全等价,不改变数值</td>
+</tr>
+<tr>
+<td><strong>对吞吐的影响</strong></td>
+<td>通信/启动开销略增,但常用于流水线并行重叠</td>
+<td>计算变多,单步变慢</td>
+</tr>
+<tr>
+<td><strong>能否突破单样本显存</strong></td>
+<td>不能。batch = 1 仍 OOM 时无效</td>
+<td>能。即使 batch = 1 也能让超深模型跑起来</td>
+</tr>
+<tr>
+<td><strong>典型组合</strong></td>
+<td>流水线并行的基本单元</td>
+<td>长序列、大模型、Transformer 深层堆叠</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="4-3-什么时候用哪个"><a href="#4-3-什么时候用哪个" class="headerlink" title="4.3 什么时候用哪个"></a>4.3 什么时候用哪个</h3><ul>
+<li><strong>batch 太大塞不下</strong> → 用 micro-batch 最划算,几乎免费。</li>
+<li><strong>模型太深 / 序列太长</strong>,单个样本的激活就已经爆了 → micro-batch 没用,必须 re-materialization。</li>
+<li><strong>流水线并行(如 GPipe、1F1B)</strong> → 两者通常一起上:micro-batch 让流水线有东西流动并减少 bubble,re-materialization 进一步压缩每个 stage 的激活峰值。</li>
+</ul>
+<h3 id="4-4-一个直观的数量级感受"><a href="#4-4-一个直观的数量级感受" class="headerlink" title="4.4 一个直观的数量级感受"></a>4.4 一个直观的数量级感受</h3><p>假设 Transformer 层数 L = 48,micro-batch = 1,序列长度 s = 8192:</p>
+<ul>
+<li>不省:激活显存 ∝ L × s(48 份)</li>
+<li>只用 micro-batch(已经是 1 了):没法再降</li>
+<li>加 re-materialization(每 √L 设一个检查点):激活显存 ∝ √L × s(≈ 7 份),代价是反向时多算一次前向</li>
+</ul>
+<p>记忆口诀:<strong>micro-batch 解决”一次塞太多样本”,re-materialization 解决”一个样本本身就太大”</strong>,两者正交,按瓶颈选用或叠加。</p>
+<h3 id="4-5-显存吃紧时的调参顺序"><a href="#4-5-显存吃紧时的调参顺序" class="headerlink" title="4.5 显存吃紧时的调参顺序"></a>4.5 显存吃紧时的调参顺序</h3><ol>
+<li>先开混合精度(BF16/FP16)—— 几乎免费</li>
+<li>开 activation checkpointing —— 用 33% 算力换 √L 的激活显存</li>
+<li>开 FlashAttention —— 直接消掉 attention 那个 O(s²) 大头</li>
+<li>micro-batch 梯度累积 —— 控制激活宽度</li>
+<li>不够再上 ZeRO-2/3 或 FSDP —— 切分参数/优化器</li>
+<li>还不够上张量并行、流水线并行</li>
+</ol>
+<h2 id="五、梯度裁剪-Gradient-Clipping-训练的安全护栏"><a href="#五、梯度裁剪-Gradient-Clipping-训练的安全护栏" class="headerlink" title="五、梯度裁剪 (Gradient Clipping):训练的安全护栏"></a>五、梯度裁剪 (Gradient Clipping):训练的安全护栏</h2><p>前面三节都在讨论”显存怎么省”,这一节谈”训练怎么不崩”。梯度裁剪和显存优化是正交的工程手段,但几乎所有大模型训练脚本都会带它,所以放在这里一起讲清楚。</p>
+<h3 id="5-1-解决什么问题"><a href="#5-1-解决什么问题" class="headerlink" title="5.1 解决什么问题"></a>5.1 解决什么问题</h3><p>反向传播算出的梯度,有时会因为某一步特别陡峭(比如 RNN 的长程依赖、Transformer 早期的 attention 不稳定、loss spike 等)突然变得非常大。这时候参数更新</p>
+<script type="math/tex; mode=display">\theta \leftarrow \theta - \eta \cdot g</script><p>就会一次跨出去太远,直接把模型推进 loss 曲面的一个糟糕区域,表现为 <strong>loss 突然飙到 NaN 或者训练曲线崩盘</strong>。裁剪就是给 g 的范数设个天花板,超过就缩回来——是大模型训练里防止 loss spike 的标准护栏。</p>
+<h3 id="5-2-两种常见做法"><a href="#5-2-两种常见做法" class="headerlink" title="5.2 两种常见做法"></a>5.2 两种常见做法</h3><h4 id="按范数裁剪-clip-by-global-norm-——最常用"><a href="#按范数裁剪-clip-by-global-norm-——最常用" class="headerlink" title="按范数裁剪 (clip by global norm)——最常用"></a>按范数裁剪 (clip by global norm)——最常用</h4><script type="math/tex; mode=display">g \leftarrow g \cdot \min\left(1, \frac{\text{max\_norm}}{\|g\|_2}\right)</script><p>把所有参数的梯度拼起来当一个大向量,算 L2 范数;超过阈值就整体等比例缩小。<strong>方向不变,只是步长变小</strong>——这是关键,保证优化方向仍然是真实梯度方向,只是被压扁了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=<span class="number">1.0</span>)</span><br></pre></td></tr></table></figure>
+<p>返回值是裁剪前的梯度范数,通常会顺手 log 出来监控训练健康度。</p>
+<h4 id="按值裁剪-clip-by-value"><a href="#按值裁剪-clip-by-value" class="headerlink" title="按值裁剪 (clip by value)"></a>按值裁剪 (clip by value)</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="number">0.5</span>)</span><br></pre></td></tr></table></figure>
+<p>把每个梯度元素 clamp 到 <code>[-c, c]</code>。简单粗暴但<strong>会改变方向</strong>(因为不同维度被独立 clip),现代 LLM 训练几乎不用,这里只作了解。</p>
+<h3 id="5-3-在训练循环里的位置"><a href="#5-3-在训练循环里的位置" class="headerlink" title="5.3 在训练循环里的位置"></a>5.3 在训练循环里的位置</h3><p>必须在 <code>backward()</code> 之后、<code>optimizer.step()</code> 之前,这样裁剪的是已经累计好的、即将被用来更新的那份梯度:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">loss.backward()</span><br><span class="line">torch.nn.utils.clip_grad_norm_(model.parameters(), <span class="number">1.0</span>)</span><br><span class="line">optimizer.step()</span><br></pre></td></tr></table></figure>
+<p><strong>梯度累积场景下要在累积完之后裁</strong>(就像第 2.5 节里写的那样),不是每个 micro-batch 都裁——否则裁的是局部梯度,语义不对,且会让真实的 global 梯度方向失真。</p>
+<h3 id="5-4-阈值怎么选"><a href="#5-4-阈值怎么选" class="headerlink" title="5.4 阈值怎么选"></a>5.4 阈值怎么选</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>典型阈值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM 预训练 (GPT、LLaMA、PaLM)</td>
+<td><strong>1.0</strong>(事实标准)</td>
+</tr>
+<tr>
+<td>LLM 微调</td>
+<td>0.5 ~ 1.0</td>
+</tr>
+<tr>
+<td>RNN/LSTM</td>
+<td>5.0 ~ 10.0(梯度本身就大)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>可以一开始训练时把 <code>grad_norm</code> 打印出来看,正常稳定后通常在 0.1 ~ 几之间;如果经常超 100、1000 就说明训练有问题(学习率太大、初始化炸、数据有脏样本),光靠裁剪压不住,要从根上排查。</p>
+<h3 id="5-5-混合精度下的坑"><a href="#5-5-混合精度下的坑" class="headerlink" title="5.5 混合精度下的坑"></a>5.5 混合精度下的坑</h3><p>用 <code>GradScaler</code> 做 FP16 训练时,梯度被 scale 放大过(防止 underflow),<strong>必须先 unscale 再裁剪</strong>,否则裁的是放大后的梯度,阈值就失效了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scaler.scale(loss).backward()</span><br><span class="line">scaler.unscale_(optimizer)        <span class="comment"># 先还原回真实梯度尺度</span></span><br><span class="line">torch.nn.utils.clip_grad_norm_(model.parameters(), <span class="number">1.0</span>)</span><br><span class="line">scaler.step(optimizer)</span><br><span class="line">scaler.update()</span><br></pre></td></tr></table></figure>
+<p>BF16 没有 loss scaling,直接裁就行,这也是 LLM 训练偏爱 BF16 的小理由之一。</p>
+<h3 id="5-6-在分布式训练里的微妙之处"><a href="#5-6-在分布式训练里的微妙之处" class="headerlink" title="5.6 在分布式训练里的微妙之处"></a>5.6 在分布式训练里的微妙之处</h3><p><strong>DDP</strong>:<code>clip_grad_norm_</code> 算的是单卡本地的范数,但 DDP 在 backward 中已经做了 AllReduce 让各卡梯度一致,所以各卡裁出来的结果也一致,语义正确。</p>
+<p><strong>FSDP/ZeRO-3</strong>:每张卡只持有 1/N 的梯度分片,<code>clip_grad_norm_</code> 直接调用会得到错误的范数。FSDP 提供了专门的 <code>model.clip_grad_norm_(max_norm)</code> 方法,内部会做跨卡归一化,<strong>必须用这个</strong>而不是 <code>torch.nn.utils.clip_grad_norm_</code>。</p>
+<p><strong>流水线并行</strong>:每个 stage 只持有一部分参数,需要在所有 stage 间 AllReduce 范数后再统一缩放,Megatron-LM、DeepSpeed Pipeline 内部已经处理好了。</p>
+<h3 id="5-7-一句话总结"><a href="#5-7-一句话总结" class="headerlink" title="5.7 一句话总结"></a>5.7 一句话总结</h3><p>梯度裁剪就是<strong>梯度的限速器</strong>——不改变更新方向,只在某次梯度异常大时把步长拉回安全区间,几乎所有 LLM 训练脚本都会带上 <code>clip_grad_norm_(..., 1.0)</code> 这一行,组合上 BF16、warmup、合理初始化,基本就能把”loss 突然 NaN”挡在门外。</p>
+<h2 id="六、面试高频追问"><a href="#六、面试高频追问" class="headerlink" title="六、面试高频追问"></a>六、面试高频追问</h2><p><strong>Q1: 训练时显存到底被什么吃掉了?</strong></p>
+<p>四块:参数、梯度、优化器状态、激活。前三块跟 batch 和序列长度无关,大小 ≈ 参数量 × 16~20 字节(混合精度 + Adam);第四块正比于 b · s · h · L,长序列下是绝对的大头。前者用 ZeRO/FSDP 切分,后者用 checkpointing + FlashAttention 解决。</p>
+<p><strong>Q2: 为什么混合精度训练里优化器状态还要 FP32?</strong></p>
+<p>数值稳定性。Adam 的二阶动量 v 是梯度平方的滑动平均,BF16/FP16 容易下溢到 0,导致更新方向错误;参数 master 也要 FP32,否则小学习率下 <code>param += lr * grad</code> 在半精度里直接被舍掉。这就是为什么”参数 × 16 字节”——2 (BF16 param) + 2 (BF16 grad) + 4 (FP32 master) + 4 (m) + 4 (v)。</p>
+<p><strong>Q3: Micro-batch 和 ZeRO/FSDP 的省显存有什么本质区别?</strong></p>
+<p>Micro-batch 只省<strong>激活值</strong>(动态部分),不动参数/梯度/优化器状态。ZeRO/FSDP 只切<strong>参数 + 梯度 + 优化器状态</strong>(静态部分),不动激活。两者完全正交,常一起用。</p>
+<p><strong>Q4: 为什么梯度累积时 loss 要除以 accumulation_steps?</strong></p>
+<p>PyTorch 的 backward 默认是把新梯度<strong>累加</strong>到 <code>.grad</code>(不是覆盖)。CrossEntropy 等 loss 通常在 batch 维度取平均,如果直接 backward 累积 k 次,得到的是”k 倍的平均梯度”,等价于学习率被偷偷放大 k 倍。除以 k 才能严格等价于”在 k·m 个样本上算一次大梯度”。</p>
+<p><strong>Q5: Re-materialization 为什么是 +33% 算力?</strong></p>
+<p>完整训练一步 = 1 次前向 + 1 次反向。反向里链式法则的计算量大约是前向的 2 倍(要算 $\partial L/\partial x$ 和 $\partial L/\partial W$ 两个东西)。所以 forward : backward ≈ 1 : 2,总共 3 份算力。Re-materialization 多做 1 次前向,变成 4 份算力,<strong>+33%</strong>。</p>
+<p><strong>Q6: DDP + 梯度累积怎么避免每次 micro-batch 都 all-reduce?</strong></p>
+<p>用 <code>model.no_sync()</code> 上下文管理器,在累积阶段(前 k-1 次)关闭 DDP 的梯度同步,只让最后一次 backward 触发一次 all-reduce 同步累加好的总梯度。能省 (k-1)/k 的通信开销。</p>
+<p><strong>Q7: BatchNorm 在梯度累积下为什么不等价?</strong></p>
+<p>BN 的均值方差是在 batch 维度内统计的,每个 micro-batch 单独算 BN 等价于 batch size = m 而不是 k·m,统计量不准会影响收敛。LayerNorm/RMSNorm 在样本内部归一化,与 batch 无关,完全等价——这也是现代 LLM 用 LayerNorm 的另一个工程理由。</p>
+<p><strong>Q8: Transformer 训练里检查点要切多细?</strong></p>
+<p>实践中<strong>每个 Transformer block 整体作为一个 checkpoint 单元</strong>最常见,因为 block 内部的 attention 矩阵和 FFN 中间激活最占显存,整体重算划算。理论上 √L 是最优,但工程上简单粗暴按 block 切就够用,且更易和 FlashAttention、selective recompute 等配合。</p>
+<p><strong>Q9: FlashAttention 和 activation checkpointing 是同一个东西吗?</strong></p>
+<p>思想一脉相承——都是”前向不存中间结果,反向需要时重算”——但层次不同。Checkpoint 是层级别的(整层重算),FlashAttention 是 kernel 内部的 tile 级别(softmax 矩阵根本不写回 HBM,反向按 tile 重算)。FlashAttention 在 kernel fusion 加持下,重算几乎不增加 wall-clock 时间,所以是无脑开;checkpoint 是按需开,因为有明确的算力代价。</p>
+<p><strong>Q10: 7B 模型 + 32k 序列要怎么训练?</strong></p>
+<p>按瓶颈拆:参数+梯度+OS = 112 GB,激活在 32k 下能上千 GB。组合:<strong>bf16 + FlashAttention(消 s²)+ activation checkpointing(消 L)+ FSDP/ZeRO-3(切静态部分)</strong>,如果还紧再加 micro-batch=1 + 梯度累积、CPU offload。这就是现代长序列大模型训练的标准菜单。</p>
+<p><strong>Q11: 梯度裁剪用 clip by norm 还是 clip by value?</strong></p>
+<p>LLM 训练几乎只用 <strong>clip by global norm</strong>(<code>clip_grad_norm_</code>)。原因:它把所有参数的梯度看成一个大向量做整体缩放,<strong>保留方向只压步长</strong>;而 clip by value 是逐元素 clamp,会让不同维度被独立 clip 掉,改变梯度方向,优化轨迹会偏离真实梯度。GPT、LLaMA、PaLM 都是 <code>max_norm=1.0</code> 这套。</p>
+<p><strong>Q12: FSDP/ZeRO-3 下为什么不能直接用 <code>torch.nn.utils.clip_grad_norm_</code>?</strong></p>
+<p>因为每张卡只持有 1/N 的梯度分片,本地算出来的范数是 $|g<em>{\text{local}}|$,而不是真正的全局 $|g|$。直接用会导致各卡按错的尺度缩放,梯度被裁得过狠或过松。FSDP 提供了 `model.clip_grad_norm</em>(max_norm)`,内部先 AllReduce 各分片的平方和、开方得到全局范数,再做缩放——必须用这个 API。Megatron-LM、DeepSpeed Pipeline 同理,框架内部都做了跨 rank 的范数归一化。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/1.DataParallel/MemoryBudget/">https://SGDBS.github.io/AI_Infra/1.DataParallel/MemoryBudget/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/AsyncCompute/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="3. GPU 异步计算">
+                        
+                        <span class="card-title">3. GPU 异步计算</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-08
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter0/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1">
+                        
+                        <span class="card-title">RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-08
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

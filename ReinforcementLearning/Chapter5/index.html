@@ -1,0 +1,1593 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="RL Chapter5 Policy Gradient：直接对策略求梯度, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>RL Chapter5 Policy Gradient：直接对策略求梯度 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">学习笔记-强化学习</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="学习笔记-强化学习">学习笔记-强化学习</span>
+            <span class="sidebar-count">14</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter0/" title="RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1">
+                <span class="sidebar-label">RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter1/" title="RL Chapter1 MDP 与 Bellman 方程">
+                <span class="sidebar-label">RL Chapter1 MDP 与 Bellman 方程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter2/" title="RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代">
+                <span class="sidebar-label">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter3/" title="RL Chapter3 Monte Carlo 与 TD：从样本估计价值">
+                <span class="sidebar-label">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter4/" title="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                <span class="sidebar-label">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/ReinforcementLearning/Chapter5/" title="RL Chapter5 Policy Gradient：直接对策略求梯度">
+                <span class="sidebar-label">RL Chapter5 Policy Gradient：直接对策略求梯度</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter6/" title="RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化">
+                <span class="sidebar-label">RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter7/" title="RL Chapter7 DQN 家族：深度学习接入 Q-Learning">
+                <span class="sidebar-label">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter8/" title="RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化">
+                <span class="sidebar-label">RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter9/" title="RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑">
+                <span class="sidebar-label">RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter10/" title="RL Chapter10 探索：从 ε-greedy 到 Curiosity">
+                <span class="sidebar-label">RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter11/" title="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源">
+                <span class="sidebar-label">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter12/" title="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                <span class="sidebar-label">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter13/" title="RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角">
+                <span class="sidebar-label">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+        
+        <span>/</span>
+        <span>RL Chapter5 Policy Gradient：直接对策略求梯度</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">RL Chapter5 Policy Gradient：直接对策略求梯度</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">强化学习</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                学习笔记-强化学习
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-10
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：RL 的另一条主线——<strong>直接参数化策略并求梯度上升</strong>。Policy Gradient 是 PPO（Ch8）、DPO（Ch11/Ch13）、GRPO 的共同根基。本章包含整套 RL 中<strong>最重要的一个证明</strong>：策略梯度定理。</p>
+<p><strong>承上</strong>：Ch1 价值函数 + Ch3 期望估计。<br><strong>启下</strong>：Ch6 把 PG + 价值函数 = Actor-Critic；Ch8 把 AC 加上 trust region = PPO。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-为什么需要-Policy-Gradient？"><a href="#1-为什么需要-Policy-Gradient？" class="headerlink" title="1. 为什么需要 Policy Gradient？"></a>1. 为什么需要 Policy Gradient？</h2><p>Q-Learning（Ch4）有三个无法逾越的限制：</p>
+<ol>
+<li><strong>离散动作空间</strong>：$\arg\max_a Q$ 在连续动作下是优化问题（机器人关节角度怎么 max？）</li>
+<li><strong>确定性策略</strong>：纯 greedy 没有随机性，部分可观测环境下不够</li>
+<li><strong>策略改进的间接性</strong>：先估 $Q$ 再贪心，两步走</li>
+</ol>
+<p><strong>Policy Gradient 的解决方案</strong>：</p>
+<ul>
+<li>直接参数化策略 $\pi_\theta(a \mid s)$（神经网络输出动作分布）</li>
+<li>对参数 $\theta$ 做梯度上升</li>
+<li><strong>目标</strong>：$\max<em>\theta J(\theta) = \mathbb{E}</em>{\tau \sim \pi_\theta}[R(\tau)]$</li>
+</ul>
+<h2 id="2-策略参数化"><a href="#2-策略参数化" class="headerlink" title="2. 策略参数化"></a>2. 策略参数化</h2><h3 id="2-1-离散动作：Categorical-分布"><a href="#2-1-离散动作：Categorical-分布" class="headerlink" title="2.1 离散动作：Categorical 分布"></a>2.1 离散动作：Categorical 分布</h3><p>神经网络输出 $|\mathcal{A}|$ 维 logits，softmax 后得到概率：</p>
+<script type="math/tex; mode=display">\pi_\theta(a \mid s) = \frac{\exp(f_\theta(s)_a)}{\sum_{a'} \exp(f_\theta(s)_{a'})}</script><h3 id="2-2-连续动作：Gaussian-分布"><a href="#2-2-连续动作：Gaussian-分布" class="headerlink" title="2.2 连续动作：Gaussian 分布"></a>2.2 连续动作：Gaussian 分布</h3><p>神经网络输出均值 $\mu<em>\theta(s)$ 和（可选的）方差 $\sigma</em>\theta(s)$：</p>
+<script type="math/tex; mode=display">\pi_\theta(a \mid s) = \mathcal{N}(a; \mu_\theta(s), \sigma_\theta(s)^2)</script><p>实践中 $\log\sigma$ 通常作为独立可训练参数（与 state 无关）。</p>
+<h2 id="3-Policy-Gradient-定理（最重要的证明）"><a href="#3-Policy-Gradient-定理（最重要的证明）" class="headerlink" title="3. Policy Gradient 定理（最重要的证明）"></a>3. Policy Gradient 定理（<strong>最重要的证明</strong>）</h2><h3 id="3-1-目标函数"><a href="#3-1-目标函数" class="headerlink" title="3.1 目标函数"></a>3.1 目标函数</h3><script type="math/tex; mode=display">J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)], \quad R(\tau) = \sum_{t=0}^T \gamma^t r_t</script><p>我们要算 $\nabla_\theta J(\theta)$。</p>
+<h3 id="3-2-朴素尝试遇到的困难"><a href="#3-2-朴素尝试遇到的困难" class="headerlink" title="3.2 朴素尝试遇到的困难"></a>3.2 朴素尝试遇到的困难</h3><script type="math/tex; mode=display">\nabla_\theta J(\theta) = \nabla_\theta \int p_\theta(\tau) R(\tau) d\tau</script><p>直接求导有问题：$R(\tau)$ 不依赖 $\theta$，但 $p_\theta(\tau)$ 是关于 $\theta$ 的复杂函数，<strong>无法直接微分一个分布</strong>。</p>
+<h3 id="3-3-Score-Function-Trick（log-derivative-trick）"><a href="#3-3-Score-Function-Trick（log-derivative-trick）" class="headerlink" title="3.3 Score Function Trick（log-derivative trick）"></a>3.3 Score Function Trick（log-derivative trick）</h3><p>利用恒等式：</p>
+<script type="math/tex; mode=display">\nabla_\theta p_\theta(\tau) = p_\theta(\tau) \nabla_\theta \log p_\theta(\tau)</script><p>代回：</p>
+<script type="math/tex; mode=display">\nabla_\theta J(\theta) = \int p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) d\tau = \mathbb{E}_{\tau \sim \pi_\theta}[\nabla_\theta \log p_\theta(\tau) R(\tau)]</script><p><strong>这一步把”对分布求导”变成”对 log-概率求导”</strong>——后者就是 supervised learning 中常见的对 NLL 求导！</p>
+<h3 id="3-4-展开-log-p-theta-tau"><a href="#3-4-展开-log-p-theta-tau" class="headerlink" title="3.4 展开 $\log p_\theta(\tau)$"></a>3.4 展开 $\log p_\theta(\tau)$</h3><p>轨迹概率：</p>
+<script type="math/tex; mode=display">p_\theta(\tau) = p(s_0) \prod_{t=0}^T \pi_\theta(a_t \mid s_t) P(s_{t+1} \mid s_t, a_t)</script><p>取 log：</p>
+<script type="math/tex; mode=display">\log p_\theta(\tau) = \log p(s_0) + \sum_t \log \pi_\theta(a_t \mid s_t) + \sum_t \log P(s_{t+1} \mid s_t, a_t)</script><p>求 $\nabla_\theta$ 时，<strong>$p(s_0)$ 和 $P$ 都不依赖 $\theta$</strong>，全部消去！</p>
+<script type="math/tex; mode=display">\nabla_\theta \log p_\theta(\tau) = \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)</script><h3 id="3-5-最终公式：Policy-Gradient-定理"><a href="#3-5-最终公式：Policy-Gradient-定理" class="headerlink" title="3.5 最终公式：Policy Gradient 定理"></a>3.5 最终公式：Policy Gradient 定理</h3><script type="math/tex; mode=display">\boxed{\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R(\tau) \right]}</script><blockquote>
+<p><strong>三个值得反复琢磨的特性</strong>：</p>
+<ol>
+<li><strong>不需要环境模型 $P$</strong>——它在 log-derivative 后自动消失</li>
+<li><strong>样本估计</strong>：用 $N$ 条轨迹的均值替代期望</li>
+<li><strong>形式直观</strong>：把 supervised learning 的 cross-entropy 损失乘以一个 reward 系数</li>
+</ol>
+</blockquote>
+<h2 id="4-REINFORCE-算法"><a href="#4-REINFORCE-算法" class="headerlink" title="4. REINFORCE 算法"></a>4. REINFORCE 算法</h2><p>把策略梯度定理写成实用算法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">for episode = 1, 2, ...:</span><br><span class="line">    用 π_θ 采样轨迹 τ = (s_0, a_0, r_0, ..., s_T)</span><br><span class="line">    计算累积回报 G_0, G_1, ..., G_T</span><br><span class="line"></span><br><span class="line">    for t = 0, ..., T:</span><br><span class="line">        梯度 g = ∇_θ log π_θ(a_t | s_t) · G_t</span><br><span class="line">        θ ← θ + α g</span><br></pre></td></tr></table></figure>
+<p>REINFORCE（Williams 1992）是 PG 第一个实用算法。注意公式里的 $R(\tau)$ 应该是从 $t$ 开始的累积回报 $G_t$（”未来 reward 影响当前 action 的好坏”），不应包括 $t$ 之前的 reward——这叫 <strong>causality</strong> trick。</p>
+<h2 id="5-Baseline-减方差"><a href="#5-Baseline-减方差" class="headerlink" title="5. Baseline 减方差"></a>5. Baseline 减方差</h2><h3 id="5-1-问题"><a href="#5-1-问题" class="headerlink" title="5.1 问题"></a>5.1 问题</h3><p>REINFORCE 的方差极大：每条轨迹 $G_t$ 在数百到数千的范围波动，梯度估计噪声严重。</p>
+<h3 id="5-2-关键观察：减一个-baseline-不影响期望"><a href="#5-2-关键观察：减一个-baseline-不影响期望" class="headerlink" title="5.2 关键观察：减一个 baseline 不影响期望"></a>5.2 关键观察：减一个 baseline 不影响期望</h3><p><strong>定理</strong>：对任意只依赖 $s$（不依赖 $a$）的函数 $b(s)$，</p>
+<script type="math/tex; mode=display">\mathbb{E}_{a \sim \pi_\theta}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = 0</script><p><strong>证明</strong>：</p>
+<script type="math/tex; mode=display">\mathbb{E}_{a}[\nabla_\theta \log \pi_\theta(a \mid s) b(s)] = b(s) \int \pi_\theta(a \mid s) \nabla_\theta \log \pi_\theta(a \mid s) da</script><script type="math/tex; mode=display">= b(s) \int \nabla_\theta \pi_\theta(a \mid s) da = b(s) \nabla_\theta \int \pi_\theta(a \mid s) da = b(s) \nabla_\theta 1 = 0 \quad \square</script><h3 id="5-3-用法"><a href="#5-3-用法" class="headerlink" title="5.3 用法"></a>5.3 用法</h3><p>把 $G_t$ 替换为 $G_t - b(s_t)$，期望不变但方差通常更小：</p>
+<script type="math/tex; mode=display">\nabla_\theta J(\theta) = \mathbb{E}\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) (G_t - b(s_t))\right]</script><p><strong>最佳 baseline</strong>：$b(s_t) = V^\pi(s_t)$（状态价值函数）。这时</p>
+<script type="math/tex; mode=display">G_t - V^\pi(s_t) \approx Q^\pi(s_t, a_t) - V^\pi(s_t) = A^\pi(s_t, a_t)</script><p>即<strong>优势函数</strong>（Advantage）。这就是下一章 Actor-Critic 的起点。</p>
+<h3 id="5-4-直觉"><a href="#5-4-直觉" class="headerlink" title="5.4 直觉"></a>5.4 直觉</h3><p>REINFORCE 用 $G_t$ 衡量”action 的绝对好坏”——但即使 $G_t &gt; 0$ 也未必意味着 action 好（可能整条轨迹都好）。</p>
+<p>减去 baseline 后，衡量的是”<strong>这个 action 比平均水平好/差多少</strong>“，更精准。</p>
+<h2 id="6-方差分析（深入）"><a href="#6-方差分析（深入）" class="headerlink" title="6. 方差分析（深入）"></a>6. 方差分析（深入）</h2><p>REINFORCE 的方差为什么这么大？关键在于 $G_t$ 是”长期累积”。</p>
+<p>设每步 reward 方差为 $\sigma^2$，$G_t$ 的方差大致是 $T \sigma^2$（独立时）。乘以梯度后，方差进一步放大。</p>
+<p>减 baseline 后，方差降到 $\text{Var}(A_t) \cdot |\nabla \log \pi|^2$，通常小一两个数量级。</p>
+<blockquote>
+<p><strong>核心思想</strong>：PG 有正确的 expectation，但实战中关键是控制 variance。所有后续算法（Actor-Critic、TRPO、PPO）都在做”如何在保持低 bias 的前提下降 variance”。</p>
+</blockquote>
+<h2 id="7-重要性采样：On-policy-→-Off-policy-的桥梁"><a href="#7-重要性采样：On-policy-→-Off-policy-的桥梁" class="headerlink" title="7. 重要性采样：On-policy → Off-policy 的桥梁"></a>7. 重要性采样：On-policy → Off-policy 的桥梁</h2><p>PG 是 on-policy（每次更新需要新采样），数据效率低。<strong>重要性采样</strong> 把 off-policy 数据”修正”成 on-policy：</p>
+<script type="math/tex; mode=display">\mathbb{E}_{\tau \sim \pi_\theta}[f(\tau)] = \mathbb{E}_{\tau \sim \pi_{\theta_{\text{old}}}}\left[\frac{p_\theta(\tau)}{p_{\theta_{\text{old}}}(\tau)} f(\tau)\right]</script><p>这就是后续 PPO 和 TRPO 中 <strong>importance ratio</strong> $r<em>t(\theta) = \pi</em>\theta / \pi<em>{\theta</em>{\text{old}}}$ 的来源。</p>
+<hr>
+<h1 id="§B-模型架构"><a href="#§B-模型架构" class="headerlink" title="§B 模型架构"></a>§B 模型架构</h1><h2 id="B-1-Categorical-Policy-的-PyTorch-实现"><a href="#B-1-Categorical-Policy-的-PyTorch-实现" class="headerlink" title="B.1 Categorical Policy 的 PyTorch 实现"></a>B.1 Categorical Policy 的 PyTorch 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CategoricalPolicy</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;离散动作策略（如 CartPole）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obs_dim, n_actions, hidden=<span class="number">64</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.net = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, hidden), nn.Tanh(),</span><br><span class="line">            nn.Linear(hidden, hidden), nn.Tanh(),</span><br><span class="line">            nn.Linear(hidden, n_actions),                <span class="comment"># 输出 logits</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, obs</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        obs: [B, obs_dim]</span></span><br><span class="line"><span class="string">        返回: Categorical 分布对象</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        logits = <span class="variable language_">self</span>.net(obs)                            <span class="comment"># [B, n_actions]</span></span><br><span class="line">        <span class="keyword">return</span> torch.distributions.Categorical(logits=logits)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">sample</span>(<span class="params">self, obs</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;采样 + 返回 log_prob&quot;&quot;&quot;</span></span><br><span class="line">        dist = <span class="variable language_">self</span>.forward(obs)</span><br><span class="line">        a = dist.sample()                                 <span class="comment"># [B]</span></span><br><span class="line">        log_prob = dist.log_prob(a)                       <span class="comment"># [B]</span></span><br><span class="line">        <span class="keyword">return</span> a, log_prob</span><br></pre></td></tr></table></figure>
+<h2 id="B-2-Gaussian-Policy（连续动作）"><a href="#B-2-Gaussian-Policy（连续动作）" class="headerlink" title="B.2 Gaussian Policy（连续动作）"></a>B.2 Gaussian Policy（连续动作）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">GaussianPolicy</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;连续动作策略（如 MuJoCo）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obs_dim, act_dim, hidden=<span class="number">64</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.shared = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, hidden), nn.Tanh(),</span><br><span class="line">            nn.Linear(hidden, hidden), nn.Tanh(),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.mu_head = nn.Linear(hidden, act_dim)        <span class="comment"># 均值头</span></span><br><span class="line">        <span class="variable language_">self</span>.log_std = nn.Parameter(torch.zeros(act_dim))<span class="comment"># log(σ)，独立参数</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, obs</span>):</span><br><span class="line">        h = <span class="variable language_">self</span>.shared(obs)</span><br><span class="line">        mu = <span class="variable language_">self</span>.mu_head(h)</span><br><span class="line">        std = <span class="variable language_">self</span>.log_std.exp().expand_as(mu)</span><br><span class="line">        <span class="keyword">return</span> torch.distributions.Normal(mu, std)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">sample</span>(<span class="params">self, obs</span>):</span><br><span class="line">        dist = <span class="variable language_">self</span>.forward(obs)</span><br><span class="line">        a = dist.sample()                                 <span class="comment"># [B, act_dim]</span></span><br><span class="line">        log_prob = dist.log_prob(a).<span class="built_in">sum</span>(dim=-<span class="number">1</span>)           <span class="comment"># 多维独立 → 求和</span></span><br><span class="line">        <span class="keyword">return</span> a, log_prob</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>为什么 log_std 不依赖 state？</strong> 实验经验：让 std 随 state 变化反而更难训。固定 log_std 是 OpenAI baselines 的默认做法。</p>
+</blockquote>
+<h2 id="B-3-完整-REINFORCE-实现"><a href="#B-3-完整-REINFORCE-实现" class="headerlink" title="B.3 完整 REINFORCE 实现"></a>B.3 完整 REINFORCE 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gymnasium <span class="keyword">as</span> gym</span><br><span class="line"><span class="keyword">from</span> torch.optim <span class="keyword">import</span> Adam</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reinforce</span>(<span class="params">env_name=<span class="string">&quot;CartPole-v1&quot;</span>, n_episodes=<span class="number">1000</span>, gamma=<span class="number">0.99</span>, lr=<span class="number">1e-3</span>,</span></span><br><span class="line"><span class="params">              use_baseline=<span class="literal">False</span></span>):</span><br><span class="line">    env = gym.make(env_name)</span><br><span class="line">    obs_dim = env.observation_space.shape[<span class="number">0</span>]</span><br><span class="line">    n_actions = env.action_space.n</span><br><span class="line"></span><br><span class="line">    policy = CategoricalPolicy(obs_dim, n_actions)</span><br><span class="line">    optim = Adam(policy.parameters(), lr=lr)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> use_baseline:</span><br><span class="line">        <span class="comment"># 用一个简单的 V 网络作为 baseline</span></span><br><span class="line">        value_net = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, <span class="number">64</span>), nn.Tanh(),</span><br><span class="line">            nn.Linear(<span class="number">64</span>, <span class="number">1</span>),</span><br><span class="line">        )</span><br><span class="line">        v_optim = Adam(value_net.parameters(), lr=lr)</span><br><span class="line"></span><br><span class="line">    rewards_history = []</span><br><span class="line">    <span class="keyword">for</span> ep <span class="keyword">in</span> <span class="built_in">range</span>(n_episodes):</span><br><span class="line">        <span class="comment"># ============ 采样 episode ============</span></span><br><span class="line">        obs, _ = env.reset()</span><br><span class="line">        log_probs, rewards, states = [], [], []</span><br><span class="line"></span><br><span class="line">        done = <span class="literal">False</span></span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">not</span> done:</span><br><span class="line">            obs_t = torch.tensor(obs, dtype=torch.float32)</span><br><span class="line">            a, log_prob = policy.sample(obs_t.unsqueeze(<span class="number">0</span>))</span><br><span class="line">            obs_new, r, terminated, truncated, _ = env.step(a.item())</span><br><span class="line">            done = terminated <span class="keyword">or</span> truncated</span><br><span class="line"></span><br><span class="line">            log_probs.append(log_prob)</span><br><span class="line">            rewards.append(r)</span><br><span class="line">            states.append(obs_t)</span><br><span class="line">            obs = obs_new</span><br><span class="line"></span><br><span class="line">        rewards_history.append(<span class="built_in">sum</span>(rewards))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ 计算累积回报 G_t ============</span></span><br><span class="line">        returns = []</span><br><span class="line">        G = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> r <span class="keyword">in</span> <span class="built_in">reversed</span>(rewards):</span><br><span class="line">            G = r + gamma * G</span><br><span class="line">            returns.insert(<span class="number">0</span>, G)</span><br><span class="line">        returns = torch.tensor(returns, dtype=torch.float32)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ⭐ 减 baseline（如果启用）</span></span><br><span class="line">        <span class="keyword">if</span> use_baseline:</span><br><span class="line">            states_tensor = torch.stack(states)</span><br><span class="line">            values = value_net(states_tensor).squeeze(-<span class="number">1</span>)</span><br><span class="line">            advantages = returns - values.detach()</span><br><span class="line">            <span class="comment"># 同时训练 V 网络</span></span><br><span class="line">            v_loss = ((values - returns) ** <span class="number">2</span>).mean()</span><br><span class="line">            v_optim.zero_grad(); v_loss.backward(); v_optim.step()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            advantages = returns</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 标准化（trick：进一步降方差）</span></span><br><span class="line">        advantages = (advantages - advantages.mean()) / (advantages.std() + <span class="number">1e-8</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ Policy Gradient Loss ============</span></span><br><span class="line">        log_probs = torch.stack(log_probs).squeeze()</span><br><span class="line">        loss = -(log_probs * advantages).<span class="built_in">sum</span>()           <span class="comment"># ⭐ 注意是负号</span></span><br><span class="line"></span><br><span class="line">        optim.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optim.step()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (ep + <span class="number">1</span>) % <span class="number">50</span> == <span class="number">0</span>:</span><br><span class="line">            avg = <span class="built_in">sum</span>(rewards_history[-<span class="number">50</span>:]) / <span class="number">50</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;Episode <span class="subst">&#123;ep+<span class="number">1</span>&#125;</span>: avg reward = <span class="subst">&#123;avg:<span class="number">.1</span>f&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> policy, rewards_history</span><br></pre></td></tr></table></figure>
+<p><strong>代码关键点</strong>：</p>
+<ol>
+<li><code>log_prob = dist.log_prob(a)</code>：score function trick 的核心</li>
+<li><code>loss = -(log_probs * advantages).sum()</code>：最大化 J = 最小化 -J</li>
+<li><code>advantages.detach()</code>：baseline 网络的输出不能反向传到 policy</li>
+<li><code>(adv - mean) / std</code>：标准化是 PG 调参的”金标准 trick”</li>
+</ol>
+<h2 id="B-4-数据流总览"><a href="#B-4-数据流总览" class="headerlink" title="B.4 数据流总览"></a>B.4 数据流总览</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Obs (s_t)</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  Policy Network  │ → logits (or μ, σ)</span><br><span class="line">└──────────────────┘</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│ Categorical /    │ → 采样 a_t, 计算 log π(a_t|s_t)</span><br><span class="line">│ Normal Dist      │</span><br><span class="line">└──────────────────┘</span><br><span class="line">   │           │</span><br><span class="line">   ▼           ▼</span><br><span class="line">执行 a_t   存储 log_prob</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">观察 r_t, s_&#123;t+1&#125;</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">[episode 结束后]</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">计算 G_t (从后往前累加)</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">loss = -Σ log π(a_t|s_t) · (G_t - b(s_t))</span><br><span class="line">   │</span><br><span class="line">   ▼</span><br><span class="line">loss.backward() → 更新 θ</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-在-CartPole-上的训练曲线"><a href="#C-1-在-CartPole-上的训练曲线" class="headerlink" title="C.1 在 CartPole 上的训练曲线"></a>C.1 在 CartPole 上的训练曲线</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">policy, rewards = reinforce(<span class="string">&quot;CartPole-v1&quot;</span>, n_episodes=<span class="number">1000</span>, use_baseline=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<p><strong>典型结果</strong>：</p>
+<ul>
+<li>不带 baseline：~500 episode 收敛到 reward=200（CartPole-v1 上限是 500，难收敛）</li>
+<li>带 baseline：~200 episode 收敛到 reward=500</li>
+<li>带 baseline + advantage normalization：~150 episode 收敛</li>
+</ul>
+<h2 id="C-2-推理：评估学到的策略"><a href="#C-2-推理：评估学到的策略" class="headerlink" title="C.2 推理：评估学到的策略"></a>C.2 推理：评估学到的策略</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">evaluate</span>(<span class="params">policy, env_name=<span class="string">&quot;CartPole-v1&quot;</span>, n_eval=<span class="number">10</span></span>):</span><br><span class="line">    env = gym.make(env_name)</span><br><span class="line">    rewards = []</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(n_eval):</span><br><span class="line">        obs, _ = env.reset()</span><br><span class="line">        total_r = <span class="number">0</span></span><br><span class="line">        done = <span class="literal">False</span></span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">not</span> done:</span><br><span class="line">            obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">                dist = policy(obs_t)</span><br><span class="line">                a = dist.probs.argmax(dim=-<span class="number">1</span>).item()    <span class="comment"># ⭐ greedy 推理</span></span><br><span class="line">            obs, r, terminated, truncated, _ = env.step(a)</span><br><span class="line">            total_r += r</span><br><span class="line">            done = terminated <span class="keyword">or</span> truncated</span><br><span class="line">        rewards.append(total_r)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">sum</span>(rewards) / n_eval</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Eval reward: <span class="subst">&#123;evaluate(policy):<span class="number">.1</span>f&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong>：</p>
+<ul>
+<li>训练时：<code>dist.sample()</code> 探索</li>
+<li>推理时：<code>dist.probs.argmax()</code> 利用（greedy）</li>
+<li>也可以保留随机性（ensemble 风格）：<code>dist.sample()</code></li>
+</ul>
+<h2 id="C-3-工程经验"><a href="#C-3-工程经验" class="headerlink" title="C.3 工程经验"></a>C.3 工程经验</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">问题</th>
+<th style="text-align:left">解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">收敛慢 / 奖励震荡</td>
+<td style="text-align:left">加 advantage normalization</td>
+</tr>
+<tr>
+<td style="text-align:left">梯度爆炸</td>
+<td style="text-align:left">梯度裁剪 <code>nn.utils.clip_grad_norm_(policy.parameters(), 0.5)</code></td>
+</tr>
+<tr>
+<td style="text-align:left">收敛到次优</td>
+<td style="text-align:left">加熵正则 <code>loss -= 0.01 * dist.entropy()</code></td>
+</tr>
+<tr>
+<td style="text-align:left">大方差</td>
+<td style="text-align:left">用 baseline / Actor-Critic（Ch6）</td>
+</tr>
+<tr>
+<td style="text-align:left">数据效率低</td>
+<td style="text-align:left">用 PPO / DDPG 等 off-policy 方法（Ch8/Ch9）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="C-4-熵正则（Entropy-Regularization）"><a href="#C-4-熵正则（Entropy-Regularization）" class="headerlink" title="C.4 熵正则（Entropy Regularization）"></a>C.4 熵正则（Entropy Regularization）</h2><p>为防止策略过早确定（mode collapse），常加一个熵奖励项：</p>
+<script type="math/tex; mode=display">\mathcal{L} = -\sum_t \log \pi_\theta(a_t \mid s_t) A_t - \beta \cdot H(\pi_\theta(\cdot \mid s_t))</script><p>其中 $H(\pi) = -\sum_a \pi(a) \log \pi(a)$ 是熵。$\beta$ 通常取 0.001-0.01。</p>
+<p><strong>直觉</strong>：策略越随机熵越大，鼓励熵 = 鼓励探索。</p>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-关键公式速记"><a href="#D-1-关键公式速记" class="headerlink" title="D.1 关键公式速记"></a>D.1 关键公式速记</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">#</th>
+<th style="text-align:left">公式</th>
+<th style="text-align:left">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">$J(\theta) = \mathbb{E}<em>{\tau \sim \pi</em>\theta}[R(\tau)]$</td>
+<td style="text-align:left">目标函数</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">$\nabla<em>\theta \log p</em>\theta(\tau) = \sum<em>t \nabla</em>\theta \log \pi_\theta(a_t \mid s_t)$</td>
+<td style="text-align:left">log-derivative 化简</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">$\nabla<em>\theta J = \mathbb{E}[\sum_t \nabla \log \pi</em>\theta(a_t \mid s_t) \cdot G_t]$</td>
+<td style="text-align:left">PG 定理</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">$\mathbb{E}_a[\nabla \log \pi(a \mid s) b(s)] = 0$</td>
+<td style="text-align:left">baseline 减方差</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">$A^\pi = Q^\pi - V^\pi$</td>
+<td style="text-align:left">优势函数（Ch6 起核心）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-2-常见面试题"><a href="#D-2-常见面试题" class="headerlink" title="D.2 常见面试题"></a>D.2 常见面试题</h2><p><strong>Q1：策略梯度定理的核心 trick 是什么？</strong></p>
+<ul>
+<li>log-derivative trick（score function trick）</li>
+<li>$\nabla p = p \nabla \log p$，把”对分布求导”变成”对 log-概率求导”</li>
+<li>关键好处：$\log p_\theta(\tau)$ 中环境项 $P, p(s_0)$ 自动消失，<strong>不需要 model</strong></li>
+</ul>
+<p><strong>Q2：为什么减 baseline 能降方差但不改变期望？</strong></p>
+<ul>
+<li>$\mathbb{E}_a[\nabla \log \pi(a \mid s) b(s)] = 0$（积分中 $b(s)$ 是常数）</li>
+<li>baseline 与 reward 越相关（如 $V^\pi$），方差降得越多</li>
+</ul>
+<p><strong>Q3：REINFORCE 与 supervised learning 的关系？</strong></p>
+<ul>
+<li>形式上几乎一样：$\sum<em>t \log \pi</em>\theta(a_t \mid s_t)$ 就是 NLL</li>
+<li>区别：监督学习每个样本权重为 1，REINFORCE 权重为 $G_t$（reward 加权 NLL）</li>
+<li>这是为什么 RLHF/DPO 看起来”像监督学习”——本质是带权重的 MLE</li>
+</ul>
+<p><strong>Q4：什么时候 PG 比 Q-Learning 好？</strong></p>
+<ul>
+<li>连续动作空间（PG 直接输出动作）</li>
+<li>需要随机策略（部分可观测、博弈论场景）</li>
+<li>大动作空间（不需要遍历所有 a）</li>
+</ul>
+<p><strong>Q5：PG 与监督学习的关键差异？</strong></p>
+<ul>
+<li>数据分布依赖于 θ（policy 一变，数据分布就变）</li>
+<li>这导致 PG 是 <strong>non-stationary optimization</strong>——优化目标本身随训练变化</li>
+<li>这也是 PG 难训的根本原因</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>REINFORCE 给出了”对策略求梯度”的范式，但实战缺陷明显：</p>
+<ul>
+<li>必须等 episode 结束（与 Ch3 MC 的痛点完全相同）</li>
+<li>即使有 baseline，方差仍较大</li>
+</ul>
+<p>下一章 <strong>Ch6 Actor-Critic</strong> 解决这两个问题：</p>
+<ul>
+<li>用 Critic（V 网络）作为可学习的 baseline</li>
+<li>用 TD-style bootstrap 替代 MC-style $G_t$</li>
+<li>把 reward 信号”局部化”到每一步</li>
+</ul>
+<p>这套思想最终发展成 <strong>GAE</strong>（Generalized Advantage Estimation），是 PPO 的核心组件。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/ReinforcementLearning/Chapter5/">https://SGDBS.github.io/ReinforcementLearning/Chapter5/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">强化学习</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter2/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代">
+                        
+                        <span class="card-title">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter4/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                        
+                        <span class="card-title">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

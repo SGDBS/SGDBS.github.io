@@ -1,0 +1,1652 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="RL Chapter3 Monte Carlo 与 TD：从样本估计价值, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>RL Chapter3 Monte Carlo 与 TD：从样本估计价值 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">学习笔记-强化学习</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="学习笔记-强化学习">学习笔记-强化学习</span>
+            <span class="sidebar-count">14</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter0/" title="RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1">
+                <span class="sidebar-label">RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter1/" title="RL Chapter1 MDP 与 Bellman 方程">
+                <span class="sidebar-label">RL Chapter1 MDP 与 Bellman 方程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter2/" title="RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代">
+                <span class="sidebar-label">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/ReinforcementLearning/Chapter3/" title="RL Chapter3 Monte Carlo 与 TD：从样本估计价值">
+                <span class="sidebar-label">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter4/" title="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                <span class="sidebar-label">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter5/" title="RL Chapter5 Policy Gradient：直接对策略求梯度">
+                <span class="sidebar-label">RL Chapter5 Policy Gradient：直接对策略求梯度</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter6/" title="RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化">
+                <span class="sidebar-label">RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter7/" title="RL Chapter7 DQN 家族：深度学习接入 Q-Learning">
+                <span class="sidebar-label">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter8/" title="RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化">
+                <span class="sidebar-label">RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter9/" title="RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑">
+                <span class="sidebar-label">RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter10/" title="RL Chapter10 探索：从 ε-greedy 到 Curiosity">
+                <span class="sidebar-label">RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter11/" title="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源">
+                <span class="sidebar-label">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter12/" title="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                <span class="sidebar-label">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter13/" title="RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角">
+                <span class="sidebar-label">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+        
+        <span>/</span>
+        <span>RL Chapter3 Monte Carlo 与 TD：从样本估计价值</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">强化学习</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                学习笔记-强化学习
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-10
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：DP（Ch2）需要已知 MDP，但现实中 $P, R$ 几乎总是未知。本章引入 RL 的核心思想——<strong>从交互样本估计 Bellman 方程</strong>，奠定后续所有 model-free 算法的基础。</p>
+<p><strong>承上</strong>：Ch1 §A.7 的 $Q^\pi$ 采样形式 + Ch2 §6 的 GPI 框架。<br><strong>启下</strong>：Ch4 把 TD 思想用到 control（Q-Learning/SARSA）。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-Monte-Carlo-估计"><a href="#1-Monte-Carlo-估计" class="headerlink" title="1. Monte Carlo 估计"></a>1. Monte Carlo 估计</h2><h3 id="1-1-核心思想"><a href="#1-1-核心思想" class="headerlink" title="1.1 核心思想"></a>1.1 核心思想</h3><p><strong>用样本平均代替真实期望</strong>：</p>
+<script type="math/tex; mode=display">V^\pi(s) = \mathbb{E}_\pi[G_t \mid s_t = s] \approx \frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i^{(s)}</script><p>其中 $G_i^{(s)}$ 是第 $i$ 次 episode 中从状态 $s$ 出发的实际累积回报。</p>
+<h3 id="1-2-流程"><a href="#1-2-流程" class="headerlink" title="1.2 流程"></a>1.2 流程</h3><ol>
+<li>跑完一整个 episode：$(s_0, a_0, r_0, s_1, a_1, r_1, \dots, s_T)$</li>
+<li>对每个 $t$，计算实际累积回报 $G<em>t = \sum</em>{k=0}^{T-t-1} \gamma^k r_{t+k}$</li>
+<li>把 $G_t$ 加入 $V(s_t)$ 的样本池，更新均值</li>
+</ol>
+<h3 id="1-3-增量式更新"><a href="#1-3-增量式更新" class="headerlink" title="1.3 增量式更新"></a>1.3 增量式更新</h3><p>避免存储所有 $G$，用增量均值公式：</p>
+<script type="math/tex; mode=display">V(s) \leftarrow V(s) + \frac{1}{N(s)} \left[ G - V(s) \right]</script><p>或更一般地用学习率 $\alpha$（<strong>常量学习率 = 指数移动平均</strong>）：</p>
+<script type="math/tex; mode=display">\boxed{V(s) \leftarrow V(s) + \alpha \left[ G - V(s) \right]}</script><h3 id="1-4-First-Visit-vs-Every-Visit-MC"><a href="#1-4-First-Visit-vs-Every-Visit-MC" class="headerlink" title="1.4 First-Visit vs Every-Visit MC"></a>1.4 First-Visit vs Every-Visit MC</h3><p><strong>First-Visit MC</strong>：每个 episode 中状态 $s$ 第一次出现时才更新。<br><strong>Every-Visit MC</strong>：每次出现都更新。</p>
+<ul>
+<li>First-Visit 是无偏估计，理论分析更友好</li>
+<li>Every-Visit 数据利用率更高，实践常用</li>
+<li>两者在 episode 数趋于无穷时都收敛到 $V^\pi$</li>
+</ul>
+<h3 id="1-5-MC-的优缺点"><a href="#1-5-MC-的优缺点" class="headerlink" title="1.5 MC 的优缺点"></a>1.5 MC 的优缺点</h3><p>✅ <strong>优点</strong>：</p>
+<ul>
+<li>无偏（$\mathbb{E}[G] = V^\pi(s)$）</li>
+<li>不需要 $P, R$</li>
+<li>不依赖 Markov 性</li>
+</ul>
+<p>❌ <strong>缺点</strong>：</p>
+<ul>
+<li><strong>必须等 episode 结束才能更新</strong>——无法处理无终止任务</li>
+<li><strong>方差高</strong>：$G$ 是几十上百步 reward 的累加，方差爆炸</li>
+<li>数据效率低</li>
+</ul>
+<h2 id="2-Temporal-Difference-TD-Learning"><a href="#2-Temporal-Difference-TD-Learning" class="headerlink" title="2. Temporal Difference (TD) Learning"></a>2. Temporal Difference (TD) Learning</h2><h3 id="2-1-核心洞察"><a href="#2-1-核心洞察" class="headerlink" title="2.1 核心洞察"></a>2.1 核心洞察</h3><p>回忆 Ch1 §A.7 的采样形式：</p>
+<script type="math/tex; mode=display">Q^\pi(s, a) = \mathbb{E}_{s', a'}[r + \gamma Q^\pi(s', a')]</script><p>如果 $V^\pi$ 已知，则一步交互 $(s<em>t, a_t, r_t, s</em>{t+1})$ 给出<strong>无偏单点估计</strong>：</p>
+<script type="math/tex; mode=display">\hat{V}(s_t) \approx r_t + \gamma V^\pi(s_{t+1})</script><p>但 $V^\pi$ 未知！TD 的天才之处：<strong>用当前 $V$ 的估计去估计 $V^\pi$</strong>——这叫 <strong>bootstrap</strong>。</p>
+<h3 id="2-2-TD-0-更新公式"><a href="#2-2-TD-0-更新公式" class="headerlink" title="2.2 TD(0) 更新公式"></a>2.2 TD(0) 更新公式</h3><script type="math/tex; mode=display">\boxed{V(s_t) \leftarrow V(s_t) + \alpha \underbrace{[r_t + \gamma V(s_{t+1}) - V(s_t)]}_{\delta_t \ \text{TD-error}}}</script><p><strong>关键概念 TD-error</strong>：</p>
+<script type="math/tex; mode=display">\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)</script><p>直观：用”实际看到的一步 reward + bootstrap 的下一步 V”替代 V(s_t) 的现有估计。</p>
+<h3 id="2-3-TD-的优缺点（与-MC-对比）"><a href="#2-3-TD-的优缺点（与-MC-对比）" class="headerlink" title="2.3 TD 的优缺点（与 MC 对比）"></a>2.3 TD 的优缺点（与 MC 对比）</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">MC</th>
+<th style="text-align:left">TD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>更新时机</strong></td>
+<td style="text-align:left">episode 结束</td>
+<td style="text-align:left">每步立即</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>偏差</strong></td>
+<td style="text-align:left">无偏</td>
+<td style="text-align:left"><strong>有偏</strong>（用 V 估计 V）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>方差</strong></td>
+<td style="text-align:left"><strong>高</strong></td>
+<td style="text-align:left">低</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>是否需要 episode 终止</strong></td>
+<td style="text-align:left">必须</td>
+<td style="text-align:left">不需要</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>是否依赖 Markov 性</strong></td>
+<td style="text-align:left">不依赖</td>
+<td style="text-align:left">强烈依赖</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>核心 trade-off</strong>：MC 是<strong>高方差无偏</strong>，TD 是<strong>低方差有偏</strong>。这个 bias-variance trade-off 贯穿整个 RL。</p>
+</blockquote>
+<h3 id="2-4-收敛性"><a href="#2-4-收敛性" class="headerlink" title="2.4 收敛性"></a>2.4 收敛性</h3><p><strong>TD(0) 收敛性定理</strong>：在 tabular 设置下（$V$ 用表格存储），若学习率满足 Robbins-Monro 条件：</p>
+<script type="math/tex; mode=display">\sum_t \alpha_t = \infty, \quad \sum_t \alpha_t^2 < \infty</script><p>（如 $\alpha_t = 1/t$），则 TD(0) <strong>依概率 1 收敛</strong>到 $V^\pi$。</p>
+<p>实践中常用常量 $\alpha \in [0.01, 0.1]$，等价于做指数移动平均。</p>
+<h2 id="3-n-step-TD：连接-MC-与-TD"><a href="#3-n-step-TD：连接-MC-与-TD" class="headerlink" title="3. n-step TD：连接 MC 与 TD"></a>3. n-step TD：连接 MC 与 TD</h2><h3 id="3-1-思想"><a href="#3-1-思想" class="headerlink" title="3.1 思想"></a>3.1 思想</h3><p>TD(0) 只看一步，MC 看到底。中间地带是<strong>看 n 步</strong>：</p>
+<script type="math/tex; mode=display">\hat{G}_t^{(n)} = r_t + \gamma r_{t+1} + \dots + \gamma^{n-1} r_{t+n-1} + \gamma^n V(s_{t+n})</script><p>更新：</p>
+<script type="math/tex; mode=display">V(s_t) \leftarrow V(s_t) + \alpha [\hat{G}_t^{(n)} - V(s_t)]</script><h3 id="3-2-极端情况"><a href="#3-2-极端情况" class="headerlink" title="3.2 极端情况"></a>3.2 极端情况</h3><ul>
+<li>$n = 1$：TD(0)</li>
+<li>$n \to \infty$：MC</li>
+</ul>
+<p><strong>$n$ 大 → 偏差小、方差大；$n$ 小 → 偏差大、方差小</strong>。实践中 $n \in {4, 8, 16}$ 是常见选择。</p>
+<h2 id="4-TD-λ-与资格迹-Eligibility-Traces"><a href="#4-TD-λ-与资格迹-Eligibility-Traces" class="headerlink" title="4. TD(λ) 与资格迹 (Eligibility Traces)"></a>4. TD(λ) 与资格迹 (Eligibility Traces)</h2><h3 id="4-1-λ-return"><a href="#4-1-λ-return" class="headerlink" title="4.1 λ-return"></a>4.1 λ-return</h3><p>n-step return 的指数加权平均：</p>
+<script type="math/tex; mode=display">\hat{G}_t^\lambda = (1 - \lambda) \sum_{n=1}^{\infty} \lambda^{n-1} \hat{G}_t^{(n)}</script><ul>
+<li>$\lambda = 0$：纯 TD(0)</li>
+<li>$\lambda = 1$：纯 MC</li>
+<li>$\lambda \in (0, 1)$：平滑的中间地带</li>
+</ul>
+<h3 id="4-2-前向视角-vs-反向视角"><a href="#4-2-前向视角-vs-反向视角" class="headerlink" title="4.2 前向视角 vs 反向视角"></a>4.2 前向视角 vs 反向视角</h3><p><strong>前向视角</strong>（理论清晰）：等到未来步骤都看到，再算 $\hat{G}_t^\lambda$ 更新 $V(s_t)$。</p>
+<p><strong>反向视角</strong>（实践高效）：每个状态维护一个<strong>资格迹</strong> $e(s)$，表示”这个状态对当前 TD-error 的责任”：</p>
+<script type="math/tex; mode=display">e(s_t) \leftarrow \gamma \lambda e(s_t) + 1, \quad e(s) \leftarrow \gamma \lambda e(s) \text{ for } s \neq s_t</script><p>每步用 $\delta_t$ 更新所有状态：</p>
+<script type="math/tex; mode=display">V(s) \leftarrow V(s) + \alpha \delta_t e(s) \quad \forall s</script><p>直观：<strong>TD-error 沿着访问历史”回流”</strong>，被衰减地分配到每个曾经访问的状态。</p>
+<h3 id="4-3-资格迹的现代命运"><a href="#4-3-资格迹的现代命运" class="headerlink" title="4.3 资格迹的现代命运"></a>4.3 资格迹的现代命运</h3><p>资格迹在表格法时代很重要，但深度 RL 时代被两个东西取代：</p>
+<ul>
+<li><strong>GAE（Generalized Advantage Estimation）</strong>：见 Ch6 / Ch8</li>
+<li><strong>n-step replay buffer</strong>：见 Ch7</li>
+</ul>
+<p>但 GAE 的本质就是 TD(λ) 思想的”梯度版本”——所以理解了 λ-return，理解 GAE 就只是一步之遥。</p>
+<h2 id="5-Bias-Variance-几何理解"><a href="#5-Bias-Variance-几何理解" class="headerlink" title="5. Bias-Variance 几何理解"></a>5. Bias-Variance 几何理解</h2><p>不同 $n$/$\lambda$ 在偏差-方差平面上的位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">方差 ↑</span><br><span class="line">     │</span><br><span class="line">  MC ●                       &lt;- λ=1, n=∞</span><br><span class="line">     │  ●                    &lt;- λ=0.95</span><br><span class="line">     │   ●                   &lt;- λ=0.9</span><br><span class="line">     │    ●                  &lt;- λ=0.5</span><br><span class="line">     │     ●                 &lt;- TD(0), λ=0</span><br><span class="line">     └────────────────────→ 偏差</span><br></pre></td></tr></table></figure>
+<p><strong>实践经验</strong>：</p>
+<ul>
+<li>数据充足、要求收敛速度：选 $\lambda \in [0.9, 0.95]$（GAE 默认值）</li>
+<li>表格小问题：用 TD(0) 即可</li>
+<li>想做对比实验：跑 $\lambda \in {0, 0.5, 0.9, 0.95, 0.99, 1}$</li>
+</ul>
+<hr>
+<h1 id="§B-模型架构（伪代码-实现）"><a href="#§B-模型架构（伪代码-实现）" class="headerlink" title="§B 模型架构（伪代码 + 实现）"></a>§B 模型架构（伪代码 + 实现）</h1><h2 id="B-1-数据流：从样本到价值"><a href="#B-1-数据流：从样本到价值" class="headerlink" title="B.1 数据流：从样本到价值"></a>B.1 数据流：从样本到价值</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">┌────────────────────────────────────────────────────────────┐</span><br><span class="line">│           Environment (P, R 未知)                           │</span><br><span class="line">└──────────┬─────────────────────────────────────────────────┘</span><br><span class="line">           │ s_t, a_t → r_t, s_&#123;t+1&#125;                         </span><br><span class="line">           ▼</span><br><span class="line">┌────────────────────────────────────────────────────────────┐</span><br><span class="line">│         一步交互样本 (s_t, a_t, r_t, s_&#123;t+1&#125;)              │</span><br><span class="line">└──────────┬─────────────────────────────────────────────────┘</span><br><span class="line">           │</span><br><span class="line">   ┌───────┴────────┐</span><br><span class="line">   ▼                ▼</span><br><span class="line">┌──────────┐    ┌──────────────────────────────┐</span><br><span class="line">│ MC: 缓存  │    │ TD: 立即用 δ_t 更新 V(s_t)  │</span><br><span class="line">│ 等 ep 结束│    │  δ_t = r_t + γV(s_&#123;t+1&#125;)    │</span><br><span class="line">│ 用 G 更新  │    │       - V(s_t)              │</span><br><span class="line">└──────────┘    └──────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<h2 id="B-2-MC-算法的-numpy-实现"><a href="#B-2-MC-算法的-numpy-实现" class="headerlink" title="B.2 MC 算法的 numpy 实现"></a>B.2 MC 算法的 numpy 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> chapter1 <span class="keyword">import</span> GridWorld</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">mc_policy_evaluation</span>(<span class="params">env, policy, n_episodes=<span class="number">10000</span>, alpha=<span class="number">0.1</span>, max_steps=<span class="number">100</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Every-Visit MC：估计 V^π</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    V = np.zeros(env.n_states)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ep <span class="keyword">in</span> <span class="built_in">range</span>(n_episodes):</span><br><span class="line">        <span class="comment"># 1. ⭐ 采样一整个 episode</span></span><br><span class="line">        episode = []</span><br><span class="line">        s = np.random.randint(env.n_states)              <span class="comment"># 随机起点</span></span><br><span class="line">        <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(max_steps):</span><br><span class="line">            a = np.random.choice(env.n_actions, p=policy[s])</span><br><span class="line">            s_new, r, done = env.step(s, a)</span><br><span class="line">            episode.append((s, a, r))</span><br><span class="line">            <span class="keyword">if</span> done:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            s = s_new</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2. ⭐ 从后往前算累积回报 G_t</span></span><br><span class="line">        G = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> s_t, _, r_t <span class="keyword">in</span> <span class="built_in">reversed</span>(episode):</span><br><span class="line">            G = r_t + env.gamma * G</span><br><span class="line">            <span class="comment"># 3. ⭐ 增量更新（Every-Visit）</span></span><br><span class="line">            V[s_t] += alpha * (G - V[s_t])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> V</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证：MC 的结果应当接近 Ch2 闭式解</span></span><br><span class="line">env = GridWorld(gamma=<span class="number">0.95</span>)</span><br><span class="line">random_policy = np.ones((env.n_states, env.n_actions)) / env.n_actions</span><br><span class="line">V_mc = mc_policy_evaluation(env, random_policy, n_episodes=<span class="number">5000</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;MC 估计 V:&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(V_mc.reshape(<span class="number">4</span>, <span class="number">4</span>).<span class="built_in">round</span>(<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+<h2 id="B-3-TD-0-的-numpy-实现"><a href="#B-3-TD-0-的-numpy-实现" class="headerlink" title="B.3 TD(0) 的 numpy 实现"></a>B.3 TD(0) 的 numpy 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">td0_policy_evaluation</span>(<span class="params">env, policy, n_episodes=<span class="number">10000</span>, alpha=<span class="number">0.1</span>, max_steps=<span class="number">100</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    TD(0)：每步立即更新 V^π</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    V = np.zeros(env.n_states)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ep <span class="keyword">in</span> <span class="built_in">range</span>(n_episodes):</span><br><span class="line">        s = np.random.randint(env.n_states)</span><br><span class="line">        <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(max_steps):</span><br><span class="line">            a = np.random.choice(env.n_actions, p=policy[s])</span><br><span class="line">            s_new, r, done = env.step(s, a)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># ⭐ TD-error</span></span><br><span class="line">            target = r + env.gamma * V[s_new] * (<span class="keyword">not</span> done)</span><br><span class="line">            delta = target - V[s]</span><br><span class="line"></span><br><span class="line">            <span class="comment"># ⭐ 立即更新 V(s)</span></span><br><span class="line">            V[s] += alpha * delta</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> done:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            s = s_new</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> V</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">V_td = td0_policy_evaluation(env, random_policy, n_episodes=<span class="number">5000</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;TD(0) 估计 V:&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(V_td.reshape(<span class="number">4</span>, <span class="number">4</span>).<span class="built_in">round</span>(<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+<p><strong>对比实验</strong>：跑相同 episode 数，MC 与 TD(0) 哪个估计更接近真值？</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">V_true = solve_v_closed_form(env, random_policy)         <span class="comment"># Ch1 §C.2</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;MC 误差 (RMSE):&quot;</span>, np.sqrt(((V_mc - V_true)**<span class="number">2</span>).mean()))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;TD 误差 (RMSE):&quot;</span>, np.sqrt(((V_td - V_true)**<span class="number">2</span>).mean()))</span><br></pre></td></tr></table></figure>
+<p>通常输出（5000 episodes）：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MC 误差 (RMSE): 0.082</span><br><span class="line">TD 误差 (RMSE): 0.034</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p><strong>观察</strong>：相同样本量下 TD 误差更小——因为 TD 利用了 bootstrap，每一步都在学。MC 的方差大，需要更多 episode 才能收敛。</p>
+</blockquote>
+<h2 id="B-4-n-step-TD-的实现"><a href="#B-4-n-step-TD-的实现" class="headerlink" title="B.4 n-step TD 的实现"></a>B.4 n-step TD 的实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">n_step_td</span>(<span class="params">env, policy, n=<span class="number">4</span>, n_episodes=<span class="number">10000</span>, alpha=<span class="number">0.1</span>, max_steps=<span class="number">100</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    n-step TD：每 n 步更新一次（或在 episode 结束时清空）</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    V = np.zeros(env.n_states)</span><br><span class="line">    gamma = env.gamma</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ep <span class="keyword">in</span> <span class="built_in">range</span>(n_episodes):</span><br><span class="line">        s = np.random.randint(env.n_states)</span><br><span class="line">        states = [s]</span><br><span class="line">        rewards = [<span class="number">0</span>]                                    <span class="comment"># rewards[t+1] 是 r_t</span></span><br><span class="line"></span><br><span class="line">        T = <span class="built_in">float</span>(<span class="string">&#x27;inf&#x27;</span>)</span><br><span class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(max_steps + <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> t &lt; T:</span><br><span class="line">                a = np.random.choice(env.n_actions, p=policy[states[t]])</span><br><span class="line">                s_new, r, done = env.step(states[t], a)</span><br><span class="line">                rewards.append(r)</span><br><span class="line">                <span class="keyword">if</span> done:</span><br><span class="line">                    T = t + <span class="number">1</span></span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    states.append(s_new)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># ⭐ 更新时刻：tau = t - n + 1</span></span><br><span class="line">            tau = t - n + <span class="number">1</span></span><br><span class="line">            <span class="keyword">if</span> tau &gt;= <span class="number">0</span>:</span><br><span class="line">                <span class="comment"># 计算 n-step return</span></span><br><span class="line">                G = <span class="built_in">sum</span>(gamma**(i - tau - <span class="number">1</span>) * rewards[i]</span><br><span class="line">                       <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(tau + <span class="number">1</span>, <span class="built_in">min</span>(tau + n, T) + <span class="number">1</span>))</span><br><span class="line">                <span class="keyword">if</span> tau + n &lt; T:</span><br><span class="line">                    G += gamma**n * V[states[tau + n]]</span><br><span class="line">                <span class="comment"># 更新 V(states[tau])</span></span><br><span class="line">                V[states[tau]] += alpha * (G - V[states[tau]])</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> tau == T - <span class="number">1</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">return</span> V</span><br></pre></td></tr></table></figure>
+<h2 id="B-5-TD-λ-with-Eligibility-Traces-实现"><a href="#B-5-TD-λ-with-Eligibility-Traces-实现" class="headerlink" title="B.5 TD(λ) with Eligibility Traces 实现"></a>B.5 TD(λ) with Eligibility Traces 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">td_lambda</span>(<span class="params">env, policy, lambd=<span class="number">0.9</span>, n_episodes=<span class="number">10000</span>, alpha=<span class="number">0.1</span>, max_steps=<span class="number">100</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    TD(λ) 反向视角：维护资格迹</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    V = np.zeros(env.n_states)</span><br><span class="line">    gamma = env.gamma</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ep <span class="keyword">in</span> <span class="built_in">range</span>(n_episodes):</span><br><span class="line">        e = np.zeros(env.n_states)                       <span class="comment"># ⭐ 资格迹</span></span><br><span class="line">        s = np.random.randint(env.n_states)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(max_steps):</span><br><span class="line">            a = np.random.choice(env.n_actions, p=policy[s])</span><br><span class="line">            s_new, r, done = env.step(s, a)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># TD-error</span></span><br><span class="line">            target = r + gamma * V[s_new] * (<span class="keyword">not</span> done)</span><br><span class="line">            delta = target - V[s]</span><br><span class="line"></span><br><span class="line">            <span class="comment"># ⭐ 累加资格迹</span></span><br><span class="line">            e[s] += <span class="number">1</span>                                    <span class="comment"># accumulating trace</span></span><br><span class="line">            <span class="comment"># 也可以用 replacing trace: e[s] = 1</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># ⭐ 用 δ * e 更新所有状态</span></span><br><span class="line">            V += alpha * delta * e</span><br><span class="line">            e *= gamma * lambd                           <span class="comment"># ⭐ 衰减资格迹</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> done:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            s = s_new</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> V</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-实战：随机游走任务（经典对比-MC-vs-TD）"><a href="#C-1-实战：随机游走任务（经典对比-MC-vs-TD）" class="headerlink" title="C.1 实战：随机游走任务（经典对比 MC vs TD）"></a>C.1 实战：随机游走任务（经典对比 MC vs TD）</h2><p>Sutton &amp; Barto 书中的经典例子：5 状态线性链，从中间出发，左右随机游走，左终点 reward=0，右终点 reward=1。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">RandomWalk</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;5 状态线性链&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.n_states = <span class="number">7</span>                                <span class="comment"># 0=左终, 6=右终</span></span><br><span class="line">        <span class="variable language_">self</span>.gamma = <span class="number">1.0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">step</span>(<span class="params">self, s, a</span>):</span><br><span class="line">        <span class="comment"># a 不重要，左右等概率</span></span><br><span class="line">        s_new = s + np.random.choice([-<span class="number">1</span>, <span class="number">1</span>])</span><br><span class="line">        <span class="keyword">if</span> s_new == <span class="number">0</span>: <span class="keyword">return</span> s_new, <span class="number">0.0</span>, <span class="literal">True</span>           <span class="comment"># 左终点</span></span><br><span class="line">        <span class="keyword">if</span> s_new == <span class="number">6</span>: <span class="keyword">return</span> s_new, <span class="number">1.0</span>, <span class="literal">True</span>           <span class="comment"># 右终点</span></span><br><span class="line">        <span class="keyword">return</span> s_new, <span class="number">0.0</span>, <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+<p>真实价值：$V^*(s) = s/6, s = 1, …, 5$，即 $[1/6, 2/6, 3/6, 4/6, 5/6]$。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 跑 100 个 episode 后 MC 和 TD 各自的误差</span></span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">env = RandomWalk()</span><br><span class="line">V_true = np.array([<span class="number">0</span>, <span class="number">1</span>/<span class="number">6</span>, <span class="number">2</span>/<span class="number">6</span>, <span class="number">3</span>/<span class="number">6</span>, <span class="number">4</span>/<span class="number">6</span>, <span class="number">5</span>/<span class="number">6</span>, <span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">errors_mc, errors_td = [], []</span><br><span class="line"><span class="keyword">for</span> trial <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    V_mc_trial = np.zeros(<span class="number">7</span>)</span><br><span class="line">    V_td_trial = np.zeros(<span class="number">7</span>)</span><br><span class="line">    <span class="keyword">for</span> ep <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">        <span class="comment"># 跑一个 episode 同时给 MC 和 TD</span></span><br><span class="line">        ...                                              <span class="comment"># 类似 B.2/B.3 但记录每个 episode 后的误差</span></span><br><span class="line">    errors_mc.append(...)</span><br><span class="line">    errors_td.append(...)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 画图：横轴 episode 数，纵轴 RMSE</span></span><br></pre></td></tr></table></figure>
+<p><strong>经典结果</strong>：</p>
+<ul>
+<li>TD 在前期收敛快（低方差）</li>
+<li>MC 收敛到的值更”准”但更慢</li>
+<li>TD 对学习率 $\alpha$ 敏感性比 MC 低</li>
+</ul>
+<h2 id="C-2-推理视角：MC-TD-用于”控制”vs”评估”"><a href="#C-2-推理视角：MC-TD-用于”控制”vs”评估”" class="headerlink" title="C.2 推理视角：MC/TD 用于”控制”vs”评估”"></a>C.2 推理视角：MC/TD 用于”控制”vs”评估”</h2><p><strong>评估</strong>（本章重点）：给定 $\pi$，估计 $V^\pi$。<br><strong>控制</strong>（Ch4 重点）：找到最优 $\pi^*$。</p>
+<p>控制一般用 <strong>GPI 框架</strong>（Ch2 §6）：</p>
+<ol>
+<li>用 MC/TD 估计 $V^{\pi}$（或更常见地估计 $Q^\pi$）</li>
+<li>贪心改进 $\pi$</li>
+<li>重复</li>
+</ol>
+<p>下一章 Ch4 我们会看到这套思想如何具体化为 SARSA 和 Q-Learning。</p>
+<h2 id="C-3-工程经验"><a href="#C-3-工程经验" class="headerlink" title="C.3 工程经验"></a>C.3 工程经验</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">场景</th>
+<th style="text-align:left">推荐方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">短 episode、终止明确</td>
+<td style="text-align:left">MC（无偏，简单）</td>
+</tr>
+<tr>
+<td style="text-align:left">长/无限 episode、需 online 更新</td>
+<td style="text-align:left">TD(0)</td>
+</tr>
+<tr>
+<td style="text-align:left">平衡偏差方差，要求性能</td>
+<td style="text-align:left">TD(λ) 或 n-step TD（n=4-8）</td>
+</tr>
+<tr>
+<td style="text-align:left">大状态空间</td>
+<td style="text-align:left">TD + 函数逼近（Ch7 起）</td>
+</tr>
+<tr>
+<td style="text-align:left">想要 “GAE 那样” 的优势估计</td>
+<td style="text-align:left">TD(λ) 的策略梯度版本（Ch6）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-三种估计的统一视角"><a href="#D-1-三种估计的统一视角" class="headerlink" title="D.1 三种估计的统一视角"></a>D.1 三种估计的统一视角</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">目标值</th>
+<th style="text-align:center">偏差</th>
+<th style="text-align:center">方差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>DP</strong>（Ch2）</td>
+<td style="text-align:left">$T^\pi V$（精确期望）</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MC</strong></td>
+<td style="text-align:left">$G_t$（实际样本）</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center"><strong>高</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>TD(0)</strong></td>
+<td style="text-align:left">$r<em>t + \gamma V(s</em>{t+1})$（一步样本 + bootstrap）</td>
+<td style="text-align:center"><strong>有</strong></td>
+<td style="text-align:center">低</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>n-step TD</strong></td>
+<td style="text-align:left">$\sum r + \gamma^n V$</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">中</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>TD(λ)</strong></td>
+<td style="text-align:left">λ-return 加权平均</td>
+<td style="text-align:center">可调</td>
+<td style="text-align:center">可调</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>理解了这张表，你就理解了所有 RL 方法的”价值估计部分”</strong>。</p>
+</blockquote>
+<h2 id="D-2-常见面试题"><a href="#D-2-常见面试题" class="headerlink" title="D.2 常见面试题"></a>D.2 常见面试题</h2><p><strong>Q1：MC 和 TD 哪个偏差大？哪个方差大？</strong></p>
+<ul>
+<li>MC：偏差 0、方差<strong>高</strong>（看完整 episode）</li>
+<li>TD：偏差<strong>有</strong>（bootstrap）、方差低</li>
+<li>这是 RL 中最经典的 bias-variance trade-off</li>
+</ul>
+<p><strong>Q2：TD(0) 收敛到的是 $V^\pi$ 吗？</strong></p>
+<ul>
+<li>Tabular 设置 + 满足 Robbins-Monro 学习率 → 是</li>
+<li>函数逼近设置（如神经网络）下，<strong>TD 不一定收敛</strong>——这是 deep RL 的一大挑战</li>
+</ul>
+<p><strong>Q3：为什么 TD 需要 Markov 性？</strong></p>
+<ul>
+<li>TD 用 $V(s<em>{t+1})$ 作 bootstrap，假设 “$s</em>{t+1}$ 包含未来所有信息”</li>
+<li>MC 直接用真实 $G_t$，不依赖 Markov 性</li>
+<li>状态设计不充分时，TD 会有系统性偏差</li>
+</ul>
+<p><strong>Q4：n-step TD 的 n 怎么选？</strong></p>
+<ul>
+<li>有理论分析（Sutton 第 7 章）：根据 reward 信号的 “时间尺度” 选</li>
+<li>实践：$n \in {4, 8, 16}$，配合学习率调</li>
+<li>大 n 偏差小但方差大、需要更长 episode 才能更新</li>
+</ul>
+<p><strong>Q5：TD(λ) 与 GAE 的关系？</strong></p>
+<ul>
+<li>TD(λ) 是价值估计层面的指数加权</li>
+<li>GAE 是优势估计 $\hat{A}_t$ 层面的指数加权（Ch6）</li>
+<li>数学上几乎一样，只差 baseline 的减除</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>我们现在能从样本估计 $V^\pi$（评估）。但 RL 真正的目标是<strong>找到最优策略</strong>——这是控制问题。</p>
+<p>控制有两条路：</p>
+<ol>
+<li><strong>Value-based</strong>：估计 $Q^\pi$（不是 $V^\pi$，因为要选 action 必须有 $Q$），用 GPI 改进策略 → <strong>Ch4 Q-Learning / SARSA</strong></li>
+<li><strong>Policy-based</strong>：直接对策略 $\pi_\theta$ 求梯度上升 → <strong>Ch5 Policy Gradient</strong></li>
+</ol>
+<p>Ch4 我们走第一条路，看 Q-Learning 如何成为 RL 史上最经典的算法。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/ReinforcementLearning/Chapter3/">https://SGDBS.github.io/ReinforcementLearning/Chapter3/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">强化学习</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter12/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                        
+                        <span class="card-title">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter13/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角">
+                        
+                        <span class="card-title">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

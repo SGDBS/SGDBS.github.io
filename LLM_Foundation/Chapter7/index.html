@@ -1,0 +1,1643 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO） | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">大语言模型</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="大语言模型">大语言模型</span>
+            <span class="sidebar-count">10</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter0/" title="Chapter0 全景导读：LLM 训练全链路学习路径">
+                <span class="sidebar-label">Chapter0 全景导读：LLM 训练全链路学习路径</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter1/" title="Chapter1 数学工具箱：相似度、散度与 LLM 损失基础">
+                <span class="sidebar-label">Chapter1 数学工具箱：相似度、散度与 LLM 损失基础</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter2/" title="Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo">
+                <span class="sidebar-label">Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter3/" title="Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器">
+                <span class="sidebar-label">Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter4/" title="Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角">
+                <span class="sidebar-label">Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter5/" title="Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA">
+                <span class="sidebar-label">Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter6/" title="Chapter6 经典 RLHF：奖励模型 RM + PPO">
+                <span class="sidebar-label">Chapter6 经典 RLHF：奖励模型 RM + PPO</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/LLM_Foundation/Chapter7/" title="Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）">
+                <span class="sidebar-label">Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter8/" title="Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI">
+                <span class="sidebar-label">Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/KnowledgeFramework/" title="工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版">
+                <span class="sidebar-label">工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/">学习笔记-大模型</a>
+        
+        <span>/</span>
+        <span>Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                学习笔记-大模型
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-04-03
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：2024–2026 年 LLM 对齐的主流方向。DPO 用一个漂亮的数学推导<strong>砍掉了 RM 和 Critic</strong>，把 RL 问题变成纯监督学习。Llama 3、Mistral、Qwen 2.5 都以 DPO 为主。</p>
+<p><strong>承上</strong>：Ch6 §A.1 的 Bradley-Terry 模型 + Ch6 §A.5 的 KL-约束 RL 目标。<br><strong>启下</strong>：Ch8 推理时代会回到 RL（GRPO），但 DPO 仍是绝大多数对齐场景的首选。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-起点：KL-约束-RL-的优化目标"><a href="#1-起点：KL-约束-RL-的优化目标" class="headerlink" title="1. 起点：KL-约束 RL 的优化目标"></a>1. 起点：KL-约束 RL 的优化目标</h2><p>回忆 Ch6，RLHF 优化目标是：</p>
+<script type="math/tex; mode=display">\max_\pi \mathbb{E}_{x, y \sim \pi}[r(x,y)] - \beta \cdot \text{KL}(\pi(\cdot \mid x) \| \pi_{\text{ref}}(\cdot \mid x))</script><p>PPO 用迭代采样的方式优化它，但<strong>这个问题其实有闭式解</strong>。</p>
+<h2 id="2-闭式解推导（DPO-核心一）"><a href="#2-闭式解推导（DPO-核心一）" class="headerlink" title="2. 闭式解推导（DPO 核心一）"></a>2. 闭式解推导（DPO 核心一）</h2><p>把 KL 展开：</p>
+<script type="math/tex; mode=display">\max_\pi \mathbb{E}_{y \sim \pi}\left[r(x,y) - \beta \log \frac{\pi(y \mid x)}{\pi_{\text{ref}}(y \mid x)}\right]</script><p>对 $\pi$ 求变分极值。设 $\pi(y \mid x)$ 的拉格朗日函数（含归一化约束 $\sum_y \pi = 1$），对 $\pi(y)$ 求导并令其为零：</p>
+<script type="math/tex; mode=display">r(x,y) - \beta(\log \pi(y \mid x) - \log \pi_{\text{ref}}(y \mid x)) - \beta - \lambda(x) = 0</script><p>整理得：</p>
+<script type="math/tex; mode=display">\boxed{\pi^*(y \mid x) = \frac{1}{Z(x)} \pi_{\text{ref}}(y \mid x) \exp\left(\frac{1}{\beta} r(x, y)\right)}</script><p>其中 $Z(x) = \sum<em>y \pi</em>{\text{ref}}(y \mid x) \exp(r(x,y)/\beta)$ 是<strong>归一化常数</strong>（仅依赖 $x$）。</p>
+<p><strong>几何直觉</strong>：最优 Policy = 在 reference 分布上”按 reward 重加权”的分布。Reward 越高的 response 概率被乘以一个指数放大因子。</p>
+<h2 id="3-反解-reward（DPO-核心二）"><a href="#3-反解-reward（DPO-核心二）" class="headerlink" title="3. 反解 reward（DPO 核心二）"></a>3. 反解 reward（DPO 核心二）</h2><p>对 $\pi^*$ 取对数：</p>
+<script type="math/tex; mode=display">\log \pi^*(y \mid x) = \log \pi_{\text{ref}}(y \mid x) + \frac{1}{\beta} r(x, y) - \log Z(x)</script><p>反解 reward：</p>
+<script type="math/tex; mode=display">\boxed{r(x, y) = \beta \log \frac{\pi^*(y \mid x)}{\pi_{\text{ref}}(y \mid x)} + \beta \log Z(x)}</script><p>这是 DPO 最关键的等式：<strong>reward 可以用 policy 的 log-ratio 表达</strong>。</p>
+<h2 id="4-代入-Bradley-Terry：log-Z-x-神奇消去"><a href="#4-代入-Bradley-Terry：log-Z-x-神奇消去" class="headerlink" title="4. 代入 Bradley-Terry：log Z(x) 神奇消去"></a>4. 代入 Bradley-Terry：log Z(x) 神奇消去</h2><p>回忆 Ch6 §A.1.2，BT 模型给出偏好概率：</p>
+<script type="math/tex; mode=display">P(y_w \succ y_l \mid x) = \sigma(r(x, y_w) - r(x, y_l))</script><p>把第 3 步的 reward 表达代入：</p>
+<script type="math/tex; mode=display">r(x, y_w) - r(x, y_l) = \beta \log \frac{\pi^*(y_w)}{\pi_{\text{ref}}(y_w)} - \beta \log \frac{\pi^*(y_l)}{\pi_{\text{ref}}(y_l)} + \underbrace{\beta \log Z(x) - \beta \log Z(x)}_{= 0}</script><p><strong>$\log Z(x)$ 自动消去！</strong> 这是 DPO 推导最神奇的一步——$Z(x)$ 是个棘手的、不可计算的归一化常数（要对所有 $y$ 求和），但它只依赖 $x$，在两项相减时正好抵消。</p>
+<h2 id="5-最终：DPO-损失函数"><a href="#5-最终：DPO-损失函数" class="headerlink" title="5. 最终：DPO 损失函数"></a>5. 最终：DPO 损失函数</h2><p>把上面代回 BT 模型，再做 MLE，得到：</p>
+<script type="math/tex; mode=display">\boxed{\mathcal{L}_{\text{DPO}}(\theta) = -\mathbb{E}_{(x, y_w, y_l) \sim D}\left[\log \sigma\left( \beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)} \right)\right]}</script><p><strong>核心洞察</strong>：</p>
+<ul>
+<li>不需要训练 RM——Policy 自身的 log-ratio <strong>就是</strong> reward 的隐式表达</li>
+<li>不需要 Critic——直接用偏好对训练</li>
+<li>不需要 online 采样——纯 offline 监督学习</li>
+</ul>
+<h2 id="6-DPO-的几何解读"><a href="#6-DPO-的几何解读" class="headerlink" title="6. DPO 的几何解读"></a>6. DPO 的几何解读</h2><p>设 $\Delta<em>w = \log \frac{\pi</em>\theta(y<em>w)}{\pi</em>{\text{ref}}(y<em>w)}$，$\Delta_l = \log \frac{\pi</em>\theta(y<em>l)}{\pi</em>{\text{ref}}(y_l)}$。</p>
+<p>DPO 损失变为：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{DPO}} = -\log \sigma(\beta(\Delta_w - \Delta_l))</script><p><strong>梯度方向</strong>：</p>
+<script type="math/tex; mode=display">\nabla_\theta \mathcal{L}_{\text{DPO}} \propto \underbrace{(1 - \sigma(\beta(\Delta_w - \Delta_l)))}_{\text{越确信差距大，梯度越小}} \cdot (\nabla \Delta_l - \nabla \Delta_w)</script><p>直觉：让 $\pi_\theta$ 在 $y_w$ 上的”相对 ref 提升”超过在 $y_l$ 上的提升。差距越大（已经学得很好），梯度越小。</p>
+<hr>
+<h1 id="§B-模型结构（PyTorch-实现）"><a href="#§B-模型结构（PyTorch-实现）" class="headerlink" title="§B 模型结构（PyTorch 实现）"></a>§B 模型结构（PyTorch 实现）</h1><h2 id="B-1-DPO-损失函数（核心）"><a href="#B-1-DPO-损失函数（核心）" class="headerlink" title="B.1 DPO 损失函数（核心）"></a>B.1 DPO 损失函数（核心）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dpo_loss</span>(<span class="params">policy_chosen_logps, policy_rejected_logps,</span></span><br><span class="line"><span class="params">             reference_chosen_logps, reference_rejected_logps,</span></span><br><span class="line"><span class="params">             beta=<span class="number">0.1</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    所有 logp 都是 [B] —— 整条 response 的 sum log-prob</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 计算 log-ratio</span></span><br><span class="line">    pi_logratios = policy_chosen_logps - policy_rejected_logps</span><br><span class="line">    ref_logratios = reference_chosen_logps - reference_rejected_logps</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ⭐ 核心公式：β · (log π_θ - log π_ref) 的差</span></span><br><span class="line">    logits = beta * (pi_logratios - ref_logratios)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ⭐ 等价于 -log σ(...)，但 logsigmoid 数值更稳</span></span><br><span class="line">    losses = -F.logsigmoid(logits)</span><br><span class="line">    <span class="keyword">return</span> losses.mean()</span><br></pre></td></tr></table></figure>
+<h2 id="B-2-计算整条-response-的-sum-log-prob"><a href="#B-2-计算整条-response-的-sum-log-prob" class="headerlink" title="B.2 计算整条 response 的 sum log-prob"></a>B.2 计算整条 response 的 sum log-prob</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_batch_logps</span>(<span class="params">logits, labels, average=<span class="literal">False</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    logits: [B, L, V]   labels: [B, L]</span></span><br><span class="line"><span class="string">    返回每条样本的 sum log-prob：Σ_t log π(y_t | y_&lt;t)</span></span><br><span class="line"><span class="string">    labels 中 -100 的位置不计入（相当于 prompt 部分）</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 错位（呼应 Ch1 §B.2）</span></span><br><span class="line">    labels = labels[:, <span class="number">1</span>:].clone()                                       <span class="comment"># [B, L-1]</span></span><br><span class="line">    logits = logits[:, :-<span class="number">1</span>, :]                                            <span class="comment"># [B, L-1, V]</span></span><br><span class="line"></span><br><span class="line">    loss_mask = (labels != -<span class="number">100</span>)                                          <span class="comment"># [B, L-1]</span></span><br><span class="line">    labels = labels.masked_fill(~loss_mask, <span class="number">0</span>)                            <span class="comment"># 填 0 防 gather 报错</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># gather 出每个位置目标 token 的 log-prob</span></span><br><span class="line">    per_token_logps = torch.gather(</span><br><span class="line">        F.log_softmax(logits, dim=-<span class="number">1</span>), dim=<span class="number">2</span>, index=labels.unsqueeze(<span class="number">2</span>)</span><br><span class="line">    ).squeeze(<span class="number">2</span>)                                                          <span class="comment"># [B, L-1]</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 用 mask 屏蔽 prompt 部分，sum 或 mean</span></span><br><span class="line">    per_token_logps = per_token_logps * loss_mask</span><br><span class="line">    <span class="keyword">if</span> average:</span><br><span class="line">        <span class="keyword">return</span> per_token_logps.<span class="built_in">sum</span>(-<span class="number">1</span>) / loss_mask.<span class="built_in">sum</span>(-<span class="number">1</span>)               <span class="comment"># SimPO 用</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> per_token_logps.<span class="built_in">sum</span>(-<span class="number">1</span>)                                    <span class="comment"># 标准 DPO 用</span></span><br></pre></td></tr></table></figure>
+<h2 id="B-3-完整-DPO-训练循环"><a href="#B-3-完整-DPO-训练循环" class="headerlink" title="B.3 完整 DPO 训练循环"></a>B.3 完整 DPO 训练循环</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">dpo_train_step</span>(<span class="params">policy, reference, batch, optimizer, beta=<span class="number">0.1</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    batch 包含：</span></span><br><span class="line"><span class="string">      chosen_input_ids,   chosen_labels,    chosen_attention_mask</span></span><br><span class="line"><span class="string">      rejected_input_ids, rejected_labels,  rejected_attention_mask</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 1. Policy 前向：计算 sum log-prob</span></span><br><span class="line">    chosen_logits = policy(batch[<span class="string">&#x27;chosen_input_ids&#x27;</span>],</span><br><span class="line">                          attention_mask=batch[<span class="string">&#x27;chosen_attention_mask&#x27;</span>]).logits</span><br><span class="line">    rejected_logits = policy(batch[<span class="string">&#x27;rejected_input_ids&#x27;</span>],</span><br><span class="line">                            attention_mask=batch[<span class="string">&#x27;rejected_attention_mask&#x27;</span>]).logits</span><br><span class="line">    policy_chosen_logps = get_batch_logps(chosen_logits, batch[<span class="string">&#x27;chosen_labels&#x27;</span>])</span><br><span class="line">    policy_rejected_logps = get_batch_logps(rejected_logits, batch[<span class="string">&#x27;rejected_labels&#x27;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. ⭐ Reference 前向：no_grad，节省显存</span></span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        ref_chosen_logits = reference(batch[<span class="string">&#x27;chosen_input_ids&#x27;</span>],</span><br><span class="line">                                     attention_mask=batch[<span class="string">&#x27;chosen_attention_mask&#x27;</span>]).logits</span><br><span class="line">        ref_rejected_logits = reference(batch[<span class="string">&#x27;rejected_input_ids&#x27;</span>],</span><br><span class="line">                                       attention_mask=batch[<span class="string">&#x27;rejected_attention_mask&#x27;</span>]).logits</span><br><span class="line">        ref_chosen_logps = get_batch_logps(ref_chosen_logits, batch[<span class="string">&#x27;chosen_labels&#x27;</span>])</span><br><span class="line">        ref_rejected_logps = get_batch_logps(ref_rejected_logits, batch[<span class="string">&#x27;rejected_labels&#x27;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 3. DPO 损失</span></span><br><span class="line">    loss = dpo_loss(policy_chosen_logps, policy_rejected_logps,</span><br><span class="line">                    ref_chosen_logps, ref_rejected_logps, beta=beta)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 4. 反传</span></span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    loss.backward()</span><br><span class="line">    optimizer.step()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 监控指标：reward margin</span></span><br><span class="line">    chosen_reward = beta * (policy_chosen_logps - ref_chosen_logps).detach()</span><br><span class="line">    rejected_reward = beta * (policy_rejected_logps - ref_rejected_logps).detach()</span><br><span class="line">    <span class="keyword">return</span> loss.item(), (chosen_reward - rejected_reward).mean().item()</span><br></pre></td></tr></table></figure>
+<h2 id="B-4-IPO：DPO-的”防过拟合”变种"><a href="#B-4-IPO：DPO-的”防过拟合”变种" class="headerlink" title="B.4 IPO：DPO 的”防过拟合”变种"></a>B.4 IPO：DPO 的”防过拟合”变种</h2><p>DPO 有个问题：当 chosen-rejected 差距已经很大时，loss 仍可能继续推高 $\Delta<em>w - \Delta_l$，导致 $\pi</em>\theta$ 过度偏离 $\pi_{\text{ref}}$。</p>
+<p>IPO（Identity-PO, 2023）用平方损失替代 sigmoid：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{IPO}} = \mathbb{E}\left[\left(\Delta_w - \Delta_l - \frac{1}{2\beta}\right)^2\right]</script><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">ipo_loss</span>(<span class="params">policy_chosen_logps, policy_rejected_logps,</span></span><br><span class="line"><span class="params">             reference_chosen_logps, reference_rejected_logps, beta=<span class="number">0.1</span></span>):</span><br><span class="line">    pi_logratios = policy_chosen_logps - policy_rejected_logps</span><br><span class="line">    ref_logratios = reference_chosen_logps - reference_rejected_logps</span><br><span class="line">    logits = pi_logratios - ref_logratios</span><br><span class="line">    <span class="comment"># ⭐ 让 logits 收敛到目标值 1/(2β) 而非无穷</span></span><br><span class="line">    <span class="keyword">return</span> ((logits - <span class="number">1</span> / (<span class="number">2</span> * beta)) ** <span class="number">2</span>).mean()</span><br></pre></td></tr></table></figure>
+<h2 id="B-5-KTO：单点偏好（不要-pairwise）"><a href="#B-5-KTO：单点偏好（不要-pairwise）" class="headerlink" title="B.5 KTO：单点偏好（不要 pairwise）"></a>B.5 KTO：单点偏好（不要 pairwise）</h2><p>KTO（Kahneman-Tversky Optimization）的洞察：很多场景没有成对偏好，只有”这个回答好/坏”的单点标注。</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{KTO}} = \mathbb{E}_{(x,y)}\left[\lambda(y) - v(\Delta(x,y))\right]</script><p>其中 $v$ 是 prospect theory 的 value function（不对称：损失比收益感受更强）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">kto_loss</span>(<span class="params">policy_logps, reference_logps, labels,</span></span><br><span class="line"><span class="params">             beta=<span class="number">0.1</span>, desirable_weight=<span class="number">1.0</span>, undesirable_weight=<span class="number">1.0</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    labels: [B] 标签（1=好, 0=坏）</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    logratios = policy_logps - reference_logps                            <span class="comment"># [B]</span></span><br><span class="line">    <span class="comment"># 估算 KL 作为 prospect value 的&quot;参考点&quot;</span></span><br><span class="line">    KL = (policy_logps - reference_logps).mean().clamp(<span class="built_in">min</span>=<span class="number">0</span>).detach()</span><br><span class="line"></span><br><span class="line">    chosen_logits = beta * (logratios - KL)</span><br><span class="line">    <span class="comment"># ⭐ 好样本：用 sigmoid，坏样本：用 1 - sigmoid</span></span><br><span class="line">    chosen_loss = desirable_weight * (<span class="number">1</span> - F.sigmoid(chosen_logits[labels == <span class="number">1</span>]))</span><br><span class="line">    rejected_loss = undesirable_weight * (<span class="number">1</span> - F.sigmoid(-chosen_logits[labels == <span class="number">0</span>]))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> torch.cat([chosen_loss, rejected_loss]).mean()</span><br></pre></td></tr></table></figure>
+<h2 id="B-6-ORPO：不需要-reference-模型"><a href="#B-6-ORPO：不需要-reference-模型" class="headerlink" title="B.6 ORPO：不需要 reference 模型"></a>B.6 ORPO：不需要 reference 模型</h2><p>ORPO（Odds Ratio Preference Optimization, 2024）把 SFT 损失和偏好损失合二为一，<strong>完全不需要 reference 模型</strong>：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{ORPO}} = \mathcal{L}_{\text{SFT}}(y_w) + \lambda \cdot \mathcal{L}_{\text{OR}}</script><p>其中 odds ratio loss：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{OR}} = -\log \sigma\left(\log \frac{\text{odds}_\theta(y_w)}{\text{odds}_\theta(y_l)}\right)</script><p>$\text{odds}(y) = \frac{\pi(y)}{1 - \pi(y)}$。直觉：让”选 $y_w$ 的几率”显著高于”选 $y_l$ 的几率”。</p>
+<p><strong>显存节省</strong>：DPO 需要 2 个模型（policy + ref），ORPO 只需要 1 个。</p>
+<h2 id="B-7-SimPO：去掉-reference-的另一种思路"><a href="#B-7-SimPO：去掉-reference-的另一种思路" class="headerlink" title="B.7 SimPO：去掉 reference 的另一种思路"></a>B.7 SimPO：去掉 reference 的另一种思路</h2><p>SimPO（Simple Preference Optimization, 2024）观察到 DPO 的 log-ratio 形式与”长度”耦合（response 越长，logp 越小）。</p>
+<p>它直接用 <strong>平均 token log-prob</strong> 替代 sum：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{SimPO}} = -\mathbb{E}\left[\log \sigma\left(\frac{\beta}{|y_w|}\log \pi_\theta(y_w) - \frac{\beta}{|y_l|}\log \pi_\theta(y_l) - \gamma\right)\right]</script><ul>
+<li><strong>平均化</strong>：消除长度偏差</li>
+<li><strong>margin $\gamma$</strong>：避免 logits 无限增大</li>
+<li><strong>无 reference</strong>：直接用 policy 的 logp，不需要 $\pi_{\text{ref}}$</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">simpo_loss</span>(<span class="params">policy_chosen_logps_avg, policy_rejected_logps_avg,</span></span><br><span class="line"><span class="params">               beta=<span class="number">2.0</span>, gamma=<span class="number">1.4</span></span>):</span><br><span class="line">    <span class="comment"># ⭐ 注意是 average logp（除以长度），不是 sum</span></span><br><span class="line">    logits = beta * (policy_chosen_logps_avg - policy_rejected_logps_avg) - gamma</span><br><span class="line">    <span class="keyword">return</span> -F.logsigmoid(logits).mean()</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-DPO-vs-PPO：完整对比"><a href="#C-1-DPO-vs-PPO：完整对比" class="headerlink" title="C.1 DPO vs PPO：完整对比"></a>C.1 DPO vs PPO：完整对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">PPO（Ch6）</th>
+<th style="text-align:left">DPO（本章）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>显式 RM</strong></td>
+<td style="text-align:left">需要</td>
+<td style="text-align:left">不需要</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Critic</strong></td>
+<td style="text-align:left">需要</td>
+<td style="text-align:left">不需要</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>采样方式</strong></td>
+<td style="text-align:left">online（每次重新生成）</td>
+<td style="text-align:left">offline（直接用偏好数据）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>模型数</strong></td>
+<td style="text-align:left">4 个</td>
+<td style="text-align:left">2 个（Policy + Reference）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>显存</strong></td>
+<td style="text-align:left">极高</td>
+<td style="text-align:left">中等</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练稳定性</strong></td>
+<td style="text-align:left">难</td>
+<td style="text-align:left">容易</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>超参敏感度</strong></td>
+<td style="text-align:left">高</td>
+<td style="text-align:left">低</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>上限</strong></td>
+<td style="text-align:left">高（online 探索）</td>
+<td style="text-align:left">受限于偏好数据集</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>代表模型</strong></td>
+<td style="text-align:left">InstructGPT, GPT-4</td>
+<td style="text-align:left">Llama 3, Mistral, Qwen 2.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="C-2-DPO-训练流程"><a href="#C-2-DPO-训练流程" class="headerlink" title="C.2 DPO 训练流程"></a>C.2 DPO 训练流程</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1. 准备偏好数据集 D = &#123;(x, y_w, y_l)&#125;（与 RM 训练同源）</span><br><span class="line">2. 加载 SFT 模型作为 Policy 初始化</span><br><span class="line">3. 复制一份冻结作为 Reference</span><br><span class="line">4. 训练循环：</span><br><span class="line">   for batch in D:</span><br><span class="line">       计算 policy_chosen/rejected_logps</span><br><span class="line">       计算 reference_chosen/rejected_logps  (no_grad)</span><br><span class="line">       loss = -log σ(β · (Δ_w - Δ_l))</span><br><span class="line">       backward + step</span><br><span class="line">5. 训完即对齐</span><br></pre></td></tr></table></figure>
+<p><strong>关键超参</strong>：</p>
+<ul>
+<li>$\beta = 0.1$（最常用），范围 0.01–0.5<ul>
+<li>$\beta$ 大 → 更强 KL 约束，更接近 ref</li>
+<li>$\beta$ 小 → 更激进对齐，但易过拟合 chosen</li>
+</ul>
+</li>
+<li>学习率：5e-7 到 5e-6（比 SFT 小 10 倍）</li>
+<li>Epoch：1–3（DPO 容易过拟合）</li>
+</ul>
+<h2 id="C-3-DPO-的局限与常见-pitfalls"><a href="#C-3-DPO-的局限与常见-pitfalls" class="headerlink" title="C.3 DPO 的局限与常见 pitfalls"></a>C.3 DPO 的局限与常见 pitfalls</h2><h3 id="Pitfall-1：Length-Bias（最常见）"><a href="#Pitfall-1：Length-Bias（最常见）" class="headerlink" title="Pitfall 1：Length Bias（最常见）"></a>Pitfall 1：Length Bias（最常见）</h3><p>DPO 的 $\sum_t \log \pi(y_t)$ 与长度相关，导致模型倾向<strong>写长</strong>。</p>
+<p><strong>缓解</strong>：</p>
+<ul>
+<li>SimPO（用 average logp）</li>
+<li>训练数据中加入长度多样的 chosen/rejected 对</li>
+</ul>
+<h3 id="Pitfall-2：Chosen-reward-下降"><a href="#Pitfall-2：Chosen-reward-下降" class="headerlink" title="Pitfall 2：Chosen reward 下降"></a>Pitfall 2：Chosen reward 下降</h3><p>监控指标：<code>policy_chosen_logps - reference_chosen_logps</code></p>
+<ul>
+<li>健康训练：这个数值应该上升或稳定</li>
+<li>不健康：chosen 和 rejected <strong>都在下降</strong>，但 chosen 下降得慢——这是 DPO 的”边际效应”，模型为了拉开差距，可能同时降低两者</li>
+</ul>
+<p><strong>缓解</strong>：</p>
+<ul>
+<li>加 NLL 辅助损失（在 chosen 上做 SFT 损失，正则）</li>
+<li>用 IPO 替代 DPO</li>
+</ul>
+<h3 id="Pitfall-3：Distribution-shift"><a href="#Pitfall-3：Distribution-shift" class="headerlink" title="Pitfall 3：Distribution shift"></a>Pitfall 3：Distribution shift</h3><p>如果偏好数据 $(x, y_w, y_l)$ 不是来自当前 SFT 模型的输出（来自其他模型），DPO 效果会变差。</p>
+<p><strong>缓解</strong>：</p>
+<ul>
+<li>用 SFT 模型自己生成 $y_w, y_l$（self-generated preference）</li>
+<li>Iterative DPO / Online DPO（详见 C.5）</li>
+</ul>
+<h2 id="C-4-推理视角：DPO-后的模型与-PPO-后有何不同？"><a href="#C-4-推理视角：DPO-后的模型与-PPO-后有何不同？" class="headerlink" title="C.4 推理视角：DPO 后的模型与 PPO 后有何不同？"></a>C.4 推理视角：DPO 后的模型与 PPO 后有何不同？</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">PPO 后</th>
+<th style="text-align:left">DPO 后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>输出分布</strong></td>
+<td style="text-align:left">向 RM 偏好聚集，可能 mode collapse</td>
+<td style="text-align:left">向 chosen 分布对齐，相对温和</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>创造性</strong></td>
+<td style="text-align:left">显著下降</td>
+<td style="text-align:left">略下降</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>风格一致性</strong></td>
+<td style="text-align:left">强</td>
+<td style="text-align:left">中等</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>适合的 temperature</strong></td>
+<td style="text-align:left">0.0（greedy 最优）</td>
+<td style="text-align:left">0.5–0.7（保留多样性）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>拒答倾向</strong></td>
+<td style="text-align:left">强（向 harmless 偏好对齐）</td>
+<td style="text-align:left">中等</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>经验法则</strong>：DPO 后的模型在采样时更”灵活”，PPO 后的模型更”刻板”。这是因为 DPO 是 offline 学习，没有 online 探索 RM 的”顶峰”。</p>
+</blockquote>
+<h2 id="C-5-Iterative-DPO-Online-DPO：闭环演进"><a href="#C-5-Iterative-DPO-Online-DPO：闭环演进" class="headerlink" title="C.5 Iterative DPO / Online DPO：闭环演进"></a>C.5 Iterative DPO / Online DPO：闭环演进</h2><p>DPO 的 offline 限制可以通过迭代缓解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Round 1:</span><br><span class="line">  用 SFT 模型生成多个 response → 人类/AI 标注偏好 → DPO</span><br><span class="line">Round 2:</span><br><span class="line">  用 Round 1 的 DPO 模型生成新 response → 重新标注 → 再次 DPO</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这就是 <strong>SPIN / Self-Rewarding LM / Online DPO</strong> 的核心思想——本质是 BYOL 中”周期性更新 Target”思想的离散化（呼应 Ch4 §D）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 伪代码</span></span><br><span class="line">policy_t = SFT_model</span><br><span class="line"><span class="keyword">for</span> <span class="built_in">round</span> <span class="keyword">in</span> <span class="built_in">range</span>(N):</span><br><span class="line">    <span class="comment"># 1. 用当前 policy 生成 response</span></span><br><span class="line">    responses = [policy_t.generate(p) <span class="keyword">for</span> p <span class="keyword">in</span> prompts]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. 用 RM 或 LLM-as-a-judge 标注</span></span><br><span class="line">    preferences = label(responses)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 3. ⭐ 用上一轮 policy 当作 reference</span></span><br><span class="line">    policy_t = DPO_train(policy_t, reference=policy_t.copy(), preferences)</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-DPO-家族对比"><a href="#D-1-DPO-家族对比" class="headerlink" title="D.1 DPO 家族对比"></a>D.1 DPO 家族对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">核心思路</th>
+<th style="text-align:center">是否需要 ref</th>
+<th style="text-align:center">长度归一化</th>
+<th style="text-align:left">适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>DPO</strong></td>
+<td style="text-align:left">KL-RL 闭式解 + BT</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:left">主流场景</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>IPO</strong></td>
+<td style="text-align:left">DPO 用平方损失防过拟合</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:left">数据量小、想稳</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>KTO</strong></td>
+<td style="text-align:left">单点偏好</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:left">没有 pairwise 标注</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>ORPO</strong></td>
+<td style="text-align:left">SFT + odds ratio</td>
+<td style="text-align:center"><strong>✗</strong></td>
+<td style="text-align:center">✗</td>
+<td style="text-align:left">显存极限</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SimPO</strong></td>
+<td style="text-align:left">平均 logp 去长度偏差</td>
+<td style="text-align:center"><strong>✗</strong></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">长度偏差严重</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-2-选型指南"><a href="#D-2-选型指南" class="headerlink" title="D.2 选型指南"></a>D.2 选型指南</h2><ul>
+<li><strong>首选 DPO</strong>：90% 场景的默认选择</li>
+<li><strong>数据量小 (&lt; 1万对)</strong>：选 IPO，更稳</li>
+<li><strong>没有 pairwise 数据</strong>：选 KTO</li>
+<li><strong>极限显存</strong>：选 ORPO 或 SimPO（不需要 ref model）</li>
+<li><strong>想要 online 探索</strong>：用 Iterative DPO</li>
+</ul>
+<h2 id="D-3-常见面试题"><a href="#D-3-常见面试题" class="headerlink" title="D.3 常见面试题"></a>D.3 常见面试题</h2><p><strong>Q1：DPO 怎么从 KL 约束 RL 推导出来的？</strong></p>
+<ul>
+<li>第一步：写出 KL 约束 RL 的拉格朗日 → 闭式解 $\pi^* = \frac{1}{Z}\pi_{\text{ref}}\exp(r/\beta)$</li>
+<li>第二步：反解 $r = \beta \log(\pi^*/\pi_{\text{ref}}) + \beta \log Z$</li>
+<li>第三步：代入 BT 模型，$\log Z(x)$ 在差中消去</li>
+<li>第四步：MLE → DPO 损失</li>
+</ul>
+<p><strong>Q2：DPO 的 $\beta$ 起什么作用？</strong></p>
+<ul>
+<li>数学上：原 RL 目标里的 KL 强度系数</li>
+<li>直觉上：控制 policy 偏离 reference 的程度<ul>
+<li>$\beta$ 大 → 接近 ref（保守）</li>
+<li>$\beta$ 小 → 激进对齐（容易过拟合）</li>
+</ul>
+</li>
+</ul>
+<p><strong>Q3：为什么 DPO 不需要采样？</strong></p>
+<ul>
+<li>数据集 $(x, y_w, y_l)$ 已经预先准备好</li>
+<li>DPO loss 只需要在 $y_w$ 和 $y_l$ 上计算 logp，不需要 model.generate()</li>
+<li>这是 DPO 比 PPO 工程门槛低的根本原因</li>
+</ul>
+<p><strong>Q4：DPO 的 reference 一定要是 SFT 模型吗？</strong></p>
+<ul>
+<li>不一定，但<strong>必须是和偏好数据”分布匹配”的模型</strong></li>
+<li>如果偏好数据来自 SFT 模型的输出，reference 就用 SFT</li>
+<li>如果偏好数据来自其他源，需要谨慎处理 distribution shift</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>DPO 把”经典 RLHF”工程化成了纯监督学习，是 2024–2026 年 LLM 对齐的<strong>主流路径</strong>。但它仍有局限：</p>
+<ul>
+<li><strong>离线限制</strong>：无法探索 RM 边界（PPO 能）</li>
+<li><strong>依赖偏好数据质量</strong>：好数据贵</li>
+<li><strong>不适合纯客观奖励的场景</strong>（如数学题对错）</li>
+</ul>
+<p>下一章 <strong>Ch8</strong> 进入”推理时代”，看 GRPO / PRM / RLAIF 如何分别解决这三个问题：</p>
+<ul>
+<li><strong>GRPO</strong>：去掉 Critic 的 PPO 简化版，DeepSeek-R1 同款</li>
+<li><strong>PRM</strong>：对推理过程每一步打分（不只看最终答案）</li>
+<li><strong>RLAIF / Constitutional AI</strong>：用 AI 反馈替代人类标注，规模化生成偏好数据</li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/LLM_Foundation/Chapter7/">https://SGDBS.github.io/LLM_Foundation/Chapter7/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/Blog/blog-guide/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="博客工程全解析：项目结构与自定义样式指南">
+                        
+                        <span class="card-title">博客工程全解析：项目结构与自定义样式指南</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-04-04
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%9E%E5%BB%BA/" class="post-category">
+                                    博客搞建
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Hexo/">
+                        <span class="chip bg-color">Hexo</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%95%99%E7%A8%8B/">
+                        <span class="chip bg-color">教程</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%8D%9A%E5%AE%A2/">
+                        <span class="chip bg-color">博客</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/Recommendation/Study_Notes/Chapter1/Chapter1.1/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/17.jpg" class="responsive-img" alt="推荐算法Chapter1.1 数据预处理与特征工程">
+                        
+                        <span class="card-title">推荐算法Chapter1.1 数据预处理与特征工程</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-04-02
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/" class="post-category">
+                                    推荐系统
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

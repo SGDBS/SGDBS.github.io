@@ -1,0 +1,1642 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="7. Checkpoint 与训练恢复, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>7. Checkpoint 与训练恢复 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>7. Checkpoint 与训练恢复</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">7. Checkpoint 与训练恢复</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-09
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>长训练必然挂——硬件会坏、网络会抽风、人会按错按钮、kernel 会触发数值 NaN。一个跑两周的 70B 训练 job 中途崩一次,如果没有 checkpoint,<strong>两周白干</strong>。所以 checkpoint 不是”训练好了之后存起来”,而是<strong>训练循环里和 forward/backward 同等重要的一环</strong>。</p>
+<p>但 checkpoint 远不是 <code>torch.save(model.state_dict())</code> 那么简单。在 DDP / FSDP / ZeRO / Pipeline 各种并行下,”完整状态”包含什么、怎么保存、怎么加载、怎么和不同的 world_size 兼容、怎么不让 ckpt I/O 阻塞训练——每个问题都有对应的工程坑。这一篇把这些坑全部串起来讲。</p>
+<h2 id="一、起因-什么算”训练状态”"><a href="#一、起因-什么算”训练状态”" class="headerlink" title="一、起因:什么算”训练状态”"></a>一、起因:什么算”训练状态”</h2><h3 id="1-1-错误示范-只存权重"><a href="#1-1-错误示范-只存权重" class="headerlink" title="1.1 错误示范:只存权重"></a>1.1 错误示范:只存权重</h3><p>新手最容易犯的错:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ❌ 这样保存,resume 之后训练动力学被悄悄重置</span></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    torch.save(model.state_dict(), <span class="string">&quot;ckpt.pt&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>这样恢复出来的训练<strong>和原训练不等价</strong>,以下东西全都会被重置或丢失:</p>
+<ul>
+<li><strong>优化器状态</strong>(Adam 的 m、v):重置后头几百步训练会偏向重新冷启动的方向</li>
+<li><strong>学习率调度器</strong>:重新从初始 LR 开始 warmup,等价于 LR schedule 整个错位</li>
+<li><strong>DataLoader 进度</strong>:从 epoch 0 开始,等于把已经训过的数据再训一遍</li>
+<li><strong>RNG 状态</strong>:dropout / 数据增强的随机性变了,严格意义上不等价</li>
+<li><strong>GradScaler 状态</strong>(FP16 训练时):loss scale 重置回初始值,前几百步可能 skip 大量更新</li>
+</ul>
+<p>如果你的 loss 曲线从 ckpt resume 之后看起来”明显偏离原轨迹”,大概率就是这些状态没存全。</p>
+<h3 id="1-2-完整-checkpoint-包含的内容"><a href="#1-2-完整-checkpoint-包含的内容" class="headerlink" title="1.2 完整 checkpoint 包含的内容"></a>1.2 完整 checkpoint 包含的内容</h3><p><strong>严格意义上能让训练完全恢复</strong>的 ckpt 至少包括:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>是什么</th>
+<th>为什么必须存</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model.state_dict()</code></td>
+<td>模型参数</td>
+<td>显然</td>
+</tr>
+<tr>
+<td><code>optimizer.state_dict()</code></td>
+<td>Adam m、v、step counter 等</td>
+<td>优化方向连续性</td>
+</tr>
+<tr>
+<td><code>scheduler.state_dict()</code></td>
+<td>当前 step、LR 计划状态</td>
+<td>LR 不被重置</td>
+</tr>
+<tr>
+<td><code>step</code> / <code>epoch</code></td>
+<td>训练进度</td>
+<td>DataLoader 跳到正确位置</td>
+</tr>
+<tr>
+<td><code>dataloader.state_dict()</code></td>
+<td>数据迭代器位置(可选,新 API)</td>
+<td>不重复训练旧数据</td>
+</tr>
+<tr>
+<td><code>torch.get_rng_state()</code> 等</td>
+<td>CPU/GPU/NumPy RNG 状态</td>
+<td>严格可复现</td>
+</tr>
+<tr>
+<td><code>scaler.state_dict()</code></td>
+<td>(FP16 时)GradScaler 内部状态</td>
+<td>loss scale 不被重置</td>
+</tr>
+<tr>
+<td>任何自定义 metric tracker</td>
+<td>你的 EMA、moving average 等</td>
+<td>状态不丢</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>实际工业代码里,通常用一个大 dict 一次性存:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ckpt = &#123;</span><br><span class="line">    <span class="string">&quot;step&quot;</span>: global_step,</span><br><span class="line">    <span class="string">&quot;model&quot;</span>: model.state_dict(),</span><br><span class="line">    <span class="string">&quot;optimizer&quot;</span>: optimizer.state_dict(),</span><br><span class="line">    <span class="string">&quot;scheduler&quot;</span>: scheduler.state_dict(),</span><br><span class="line">    <span class="string">&quot;scaler&quot;</span>: scaler.state_dict() <span class="keyword">if</span> scaler <span class="keyword">else</span> <span class="literal">None</span>,</span><br><span class="line">    <span class="string">&quot;rng&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;cpu&quot;</span>: torch.get_rng_state(),</span><br><span class="line">        <span class="string">&quot;cuda&quot;</span>: torch.cuda.get_rng_state_all(),  <span class="comment"># 注意是 all,每张卡一份</span></span><br><span class="line">        <span class="string">&quot;numpy&quot;</span>: np.random.get_state(),</span><br><span class="line">        <span class="string">&quot;python&quot;</span>: random.getstate(),</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;config&quot;</span>: training_config,  <span class="comment"># 训练超参,resume 时用来 sanity check</span></span><br><span class="line">&#125;</span><br><span class="line">torch.save(ckpt, ckpt_path)</span><br></pre></td></tr></table></figure>
+<p>以及 resume 时严格按相反顺序加载:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ckpt = torch.load(ckpt_path, map_location=<span class="string">&quot;cpu&quot;</span>)</span><br><span class="line">model.load_state_dict(ckpt[<span class="string">&quot;model&quot;</span>])</span><br><span class="line">optimizer.load_state_dict(ckpt[<span class="string">&quot;optimizer&quot;</span>])</span><br><span class="line">scheduler.load_state_dict(ckpt[<span class="string">&quot;scheduler&quot;</span>])</span><br><span class="line"><span class="keyword">if</span> scaler: scaler.load_state_dict(ckpt[<span class="string">&quot;scaler&quot;</span>])</span><br><span class="line">torch.set_rng_state(ckpt[<span class="string">&quot;rng&quot;</span>][<span class="string">&quot;cpu&quot;</span>])</span><br><span class="line">torch.cuda.set_rng_state_all(ckpt[<span class="string">&quot;rng&quot;</span>][<span class="string">&quot;cuda&quot;</span>])</span><br><span class="line">np.random.set_state(ckpt[<span class="string">&quot;rng&quot;</span>][<span class="string">&quot;numpy&quot;</span>])</span><br><span class="line">random.setstate(ckpt[<span class="string">&quot;rng&quot;</span>][<span class="string">&quot;python&quot;</span>])</span><br><span class="line">global_step = ckpt[<span class="string">&quot;step&quot;</span>]</span><br></pre></td></tr></table></figure>
+<h2 id="二、DDP-的-checkpoint-陷阱与标准写法"><a href="#二、DDP-的-checkpoint-陷阱与标准写法" class="headerlink" title="二、DDP 的 checkpoint:陷阱与标准写法"></a>二、DDP 的 checkpoint:陷阱与标准写法</h2><h3 id="2-1-model-module-这个细节"><a href="#2-1-model-module-这个细节" class="headerlink" title="2.1 model.module 这个细节"></a>2.1 <code>model.module</code> 这个细节</h3><p>DDP 包装后,你的原模型在 <code>.module</code> 属性下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">model = DDP(my_model, device_ids=[local_rank])</span><br><span class="line"><span class="comment"># model.state_dict() 的 key 都带 &quot;module.&quot; 前缀</span></span><br><span class="line"><span class="comment"># model.module.state_dict() 才是干净的、能跨 DDP 加载的版本</span></span><br></pre></td></tr></table></figure>
+<p><strong>保存规则</strong>:统一存 <code>model.module.state_dict()</code>,不带 <code>module.</code> 前缀。这样 ckpt 能被:</p>
+<ul>
+<li>单卡推理直接加载</li>
+<li>任意 world_size 的 DDP 加载(只要参数形状一样)</li>
+<li>别人 fork 出去用任何方式加载</li>
+</ul>
+<p>如果你不小心存了 <code>model.state_dict()</code>,加载到单卡模型时会报”Unexpected key ‘module.xxx’”,还得手写代码去 strip 前缀,纯属自找麻烦。</p>
+<h3 id="2-2-只在-rank-0-写-其他-rank-barrier-等"><a href="#2-2-只在-rank-0-写-其他-rank-barrier-等" class="headerlink" title="2.2 只在 rank 0 写,其他 rank barrier 等"></a>2.2 只在 rank 0 写,其他 rank barrier 等</h3><p>DDP 下所有 rank 的 model.module 是同步的(每步 AllReduce 保证),没必要每个 rank 都写一份 ckpt:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">save_ckpt</span>(<span class="params">state, path</span>):</span><br><span class="line">    <span class="keyword">if</span> dist.get_rank() == <span class="number">0</span>:</span><br><span class="line">        torch.save(state, path + <span class="string">&quot;.tmp&quot;</span>)</span><br><span class="line">        os.replace(path + <span class="string">&quot;.tmp&quot;</span>, path)   <span class="comment"># 原子替换,避免半截 ckpt</span></span><br><span class="line">    dist.barrier()  <span class="comment"># 其他 rank 等 rank 0 写完</span></span><br></pre></td></tr></table></figure>
+<p><code>dist.barrier()</code> 这一行不能少:</p>
+<ul>
+<li>没有它,非 0 rank 立刻往下跑,可能开始下一次 AllReduce,而 rank 0 还在写 I/O,<strong>两边时序错开</strong></li>
+<li>写 ckpt 在大模型上耗时几十秒到几分钟,期间 NCCL 没有任何通信,<strong>watchdog 会触发 30 分钟 timeout 警告</strong></li>
+</ul>
+<h3 id="2-3-写-tmp-再-rename-的原子性"><a href="#2-3-写-tmp-再-rename-的原子性" class="headerlink" title="2.3 写 .tmp 再 rename 的原子性"></a>2.3 写 .tmp 再 rename 的原子性</h3><p><code>os.replace(tmp, final)</code> 在 POSIX 文件系统上是原子操作。这个细节防止”程序在写 ckpt 的过程中又崩了”——如果直接写 <code>final</code>,挂掉时 ckpt 是半截的,resume 会读到坏数据。先写 <code>.tmp</code>、再 rename,任何时候 <code>final</code> 要么是上次的完整 ckpt、要么是这次的完整 ckpt,<strong>永远不会是半截</strong>。</p>
+<p>更工业化的做法:保留多份 ckpt 滚动,比如 <code>ckpt-1000.pt / ckpt-2000.pt / ckpt-3000.pt</code>,只保留最近 3 份,加上一个软链 <code>latest.pt -&gt; ckpt-3000.pt</code>。这样万一最新 ckpt 因某种原因损坏,可以回退到上一份。</p>
+<h2 id="三、FSDP-ZeRO-的-checkpoint-三种-state-dict-类型"><a href="#三、FSDP-ZeRO-的-checkpoint-三种-state-dict-类型" class="headerlink" title="三、FSDP / ZeRO 的 checkpoint:三种 state_dict 类型"></a>三、FSDP / ZeRO 的 checkpoint:三种 state_dict 类型</h2><p>DDP 下所有 rank 的模型完全一样,存哪个 rank 都行。FSDP 下<strong>每张卡只持有 1/N 参数分片</strong>——保存时怎么做就有了选择。FSDP 提供三种 state_dict 类型,各有适用场景:</p>
+<h3 id="3-1-FULL-STATE-DICT-聚合到一份完整-ckpt"><a href="#3-1-FULL-STATE-DICT-聚合到一份完整-ckpt" class="headerlink" title="3.1 FULL_STATE_DICT:聚合到一份完整 ckpt"></a>3.1 <code>FULL_STATE_DICT</code>:聚合到一份完整 ckpt</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.distributed.fsdp <span class="keyword">import</span> (</span><br><span class="line">    FullyShardedDataParallel <span class="keyword">as</span> FSDP,</span><br><span class="line">    StateDictType,</span><br><span class="line">    FullStateDictConfig,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">cfg = FullStateDictConfig(offload_to_cpu=<span class="literal">True</span>, rank0_only=<span class="literal">True</span>)</span><br><span class="line"><span class="keyword">with</span> FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, cfg):</span><br><span class="line">    state = model.state_dict()</span><br><span class="line">    <span class="keyword">if</span> dist.get_rank() == <span class="number">0</span>:</span><br><span class="line">        torch.save(state, <span class="string">&quot;ckpt.pt&quot;</span>)</span><br><span class="line">dist.barrier()</span><br></pre></td></tr></table></figure>
+<p>工作流程:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GPU0 [P₀] ┐</span><br><span class="line">GPU1 [P₁] ├─ AllGather 到 rank 0 的 CPU 内存 ─► [P₀|P₁|P₂|P₃]</span><br><span class="line">GPU2 [P₂] │                                              ↓</span><br><span class="line">GPU3 [P₃] ┘                                          torch.save</span><br></pre></td></tr></table></figure>
+<p><strong>优点</strong>:ckpt 是单一完整文件,可以单卡加载、跨任意 world_size 加载、和 transformers 等推理库直接兼容。</p>
+<p><strong>缺点</strong>:rank 0 的 CPU 必须能装下整个模型——70B 的 ckpt 是 280 GB(FP32)或 140 GB(BF16),需要相应大小的内存。同时聚合本身有 AllGather 开销。<strong>适合中小模型(&lt; 30B)和最终发布</strong>。</p>
+<h3 id="3-2-SHARDED-STATE-DICT-每张卡存自己那一份"><a href="#3-2-SHARDED-STATE-DICT-每张卡存自己那一份" class="headerlink" title="3.2 SHARDED_STATE_DICT:每张卡存自己那一份"></a>3.2 <code>SHARDED_STATE_DICT</code>:每张卡存自己那一份</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.distributed.fsdp <span class="keyword">import</span> StateDictType, ShardedStateDictConfig</span><br><span class="line"><span class="keyword">import</span> torch.distributed.checkpoint <span class="keyword">as</span> dcp</span><br><span class="line"></span><br><span class="line">cfg = ShardedStateDictConfig(offload_to_cpu=<span class="literal">True</span>)</span><br><span class="line"><span class="keyword">with</span> FSDP.state_dict_type(model, StateDictType.SHARDED_STATE_DICT, cfg):</span><br><span class="line">    state = &#123;<span class="string">&quot;model&quot;</span>: model.state_dict()&#125;</span><br><span class="line">    dcp.save(state, checkpoint_id=<span class="string">&quot;ckpt_dir&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>工作流程:<strong>每张卡把自己持有的 1/N 参数写入磁盘</strong>,文件夹结构类似:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ckpt_dir/</span><br><span class="line">  __0_0.distcp     ← rank 0 的分片</span><br><span class="line">  __1_0.distcp     ← rank 1 的分片</span><br><span class="line">  __2_0.distcp     ← rank 2 的分片</span><br><span class="line">  ...</span><br><span class="line">  .metadata        ← 描述每个 tensor 在哪个文件、什么 offset</span><br></pre></td></tr></table></figure>
+<p><strong>优点</strong>:写 I/O 完全分布式,<strong>保存速度随 world_size 线性提升</strong>;rank 0 不需要装下整个模型;文件大小均衡。<strong>适合大模型训练中频繁保存</strong>(每 500 步一次)。</p>
+<p><strong>缺点</strong>:加载时需要相同(或兼容)的并行策略;不能直接喂给单卡推理。</p>
+<h3 id="3-3-LOCAL-STATE-DICT-不带-reshape-信息"><a href="#3-3-LOCAL-STATE-DICT-不带-reshape-信息" class="headerlink" title="3.3 LOCAL_STATE_DICT:不带 reshape 信息"></a>3.3 <code>LOCAL_STATE_DICT</code>:不带 reshape 信息</h3><p>更底层、不带 metadata 的版本,几乎只在 PyTorch 内部用,普通用户不直接接触。</p>
+<h3 id="3-4-三种类型怎么选"><a href="#3-4-三种类型怎么选" class="headerlink" title="3.4 三种类型怎么选"></a>3.4 三种类型怎么选</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>用哪个</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>训练过程中频繁保存(每 500-2000 步)</td>
+<td>SHARDED_STATE_DICT(快、不阻塞)</td>
+</tr>
+<tr>
+<td>训练结束的最终 ckpt(要发布、要推理)</td>
+<td>FULL_STATE_DICT(单文件、通用)</td>
+</tr>
+<tr>
+<td>中途想换卡数继续训练(比如 8 卡训到一半改成 16 卡)</td>
+<td>SHARDED + DCP 的 reshard 加载</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>最佳实践:<strong>训练中只存 sharded,定期(比如每 epoch)再存一份 full</strong>——既快又有可移植的 ckpt 备份。</p>
+<h2 id="四、torch-distributed-checkpoint-跨-world-size-加载"><a href="#四、torch-distributed-checkpoint-跨-world-size-加载" class="headerlink" title="四、torch.distributed.checkpoint:跨 world_size 加载"></a>四、<code>torch.distributed.checkpoint</code>:跨 world_size 加载</h2><h3 id="4-1-重要的能力-resharding"><a href="#4-1-重要的能力-resharding" class="headerlink" title="4.1 重要的能力:resharding"></a>4.1 重要的能力:resharding</h3><p>实际训练里经常碰到这种需求——8 卡训到一半,扩容到 32 卡继续训。如果 ckpt 是按 8 卡 shard 存的,32 卡能加载吗?</p>
+<p>PyTorch 2.x 的 <code>torch.distributed.checkpoint</code>(简称 DCP)支持<strong>自动 resharding</strong>:加载时根据当前 world_size 自动把每个 tensor 重新切分到对应 rank 上。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.distributed.checkpoint <span class="keyword">as</span> dcp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8 卡时保存</span></span><br><span class="line"><span class="keyword">with</span> FSDP.state_dict_type(model, StateDictType.SHARDED_STATE_DICT):</span><br><span class="line">    state = &#123;<span class="string">&quot;model&quot;</span>: model.state_dict(), <span class="string">&quot;optim&quot;</span>: optimizer.state_dict()&#125;</span><br><span class="line">    dcp.save(state, checkpoint_id=<span class="string">&quot;ckpt_dir&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 32 卡时加载——自动 reshard,代码完全一样</span></span><br><span class="line"><span class="keyword">with</span> FSDP.state_dict_type(model, StateDictType.SHARDED_STATE_DICT):</span><br><span class="line">    state = &#123;<span class="string">&quot;model&quot;</span>: model.state_dict(), <span class="string">&quot;optim&quot;</span>: optimizer.state_dict()&#125;</span><br><span class="line">    dcp.load(state, checkpoint_id=<span class="string">&quot;ckpt_dir&quot;</span>)</span><br><span class="line">    model.load_state_dict(state[<span class="string">&quot;model&quot;</span>])</span><br><span class="line">    optimizer.load_state_dict(state[<span class="string">&quot;optim&quot;</span>])</span><br></pre></td></tr></table></figure>
+<p>DCP 内部的工作:读 <code>.metadata</code> 知道每个 tensor 完整形状;每个 rank 计算自己在 32 卡下应该持有哪一段;从 8 卡的 .distcp 文件里<strong>只读自己需要的那部分</strong>,组装成本地 shard。</p>
+<p><strong>这是大模型训练扩缩容的关键基础设施</strong>——没有它,改 world_size 等于重新训。</p>
+<h3 id="4-2-优化器状态的分片"><a href="#4-2-优化器状态的分片" class="headerlink" title="4.2 优化器状态的分片"></a>4.2 优化器状态的分片</h3><p>DDP 下优化器状态和参数同步,直接 <code>optimizer.state_dict()</code> 就是完整的。FSDP 下优化器状态本身就是分片的(每卡只管自己那 1/N 参数的 m、v),保存时直接每卡存自己的就行——<strong>FSDP + DCP 内部已经处理好了</strong>。</p>
+<p>但有个重要细节:<code>optimizer.state_dict()</code> 返回的状态用 <code>state[param_id]</code> 索引,<strong><code>param_id</code> 是参数在创建顺序里的位置</strong>,不是参数名。如果模型结构变了(添加/删除某层),resume 时 param_id 就对不上。所以<strong>ckpt 必须用相同的模型结构加载</strong>——sanity check 这一点放进 resume 代码里:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># resume 时验证 config 一致</span></span><br><span class="line"><span class="keyword">assert</span> ckpt[<span class="string">&quot;config&quot;</span>][<span class="string">&quot;hidden_size&quot;</span>] == current_config[<span class="string">&quot;hidden_size&quot;</span>]</span><br><span class="line"><span class="keyword">assert</span> ckpt[<span class="string">&quot;config&quot;</span>][<span class="string">&quot;num_layers&quot;</span>] == current_config[<span class="string">&quot;num_layers&quot;</span>]</span><br><span class="line"><span class="comment"># ... 其他关键超参</span></span><br></pre></td></tr></table></figure>
+<h2 id="五、DataLoader-状态-被忽视的”半个-ckpt”"><a href="#五、DataLoader-状态-被忽视的”半个-ckpt”" class="headerlink" title="五、DataLoader 状态:被忽视的”半个 ckpt”"></a>五、DataLoader 状态:被忽视的”半个 ckpt”</h2><h3 id="5-1-不存-dataloader-状态会怎样"><a href="#5-1-不存-dataloader-状态会怎样" class="headerlink" title="5.1 不存 dataloader 状态会怎样"></a>5.1 不存 dataloader 状态会怎样</h3><p>假设你训了 10000 步,在第 7000 步保存 ckpt。每步 batch_size = 256,数据集有 100M 样本——你已经过了 7000 × 256 = 1.79M 个样本,大约 1.8% 的数据集。</p>
+<p>resume 时,默认 <code>DataLoader</code> 会<strong>从头开始迭代</strong>:你用 ckpt 的模型权重,但又从样本 0 开始重新喂数据。等价于让模型多看了一遍那些已经训过的数据,<strong>LR scheduler 已经走到 7000 步对应的低 LR,但训练分布偏移了</strong>——loss 曲线会出现一段诡异的”先降后升”。</p>
+<p>这个问题在小训练上不明显(数据循环很快),但在大模型训练上极其重要——预训练通常<strong>只过一遍数据</strong>,重复样本意味着浪费配额。</p>
+<h3 id="5-2-DistributedSampler-的-set-epoch-step-offset"><a href="#5-2-DistributedSampler-的-set-epoch-step-offset" class="headerlink" title="5.2 DistributedSampler 的 set_epoch + step offset"></a>5.2 DistributedSampler 的 set_epoch + step offset</h3><p>最简单的方案:把”这是第几个 epoch、epoch 内已经走了多少步”存进 ckpt:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 保存时</span></span><br><span class="line">ckpt[<span class="string">&quot;epoch&quot;</span>] = current_epoch</span><br><span class="line">ckpt[<span class="string">&quot;step_in_epoch&quot;</span>] = step_in_epoch</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载时</span></span><br><span class="line">sampler.set_epoch(ckpt[<span class="string">&quot;epoch&quot;</span>])</span><br><span class="line">loader_iter = <span class="built_in">iter</span>(loader)</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(ckpt[<span class="string">&quot;step_in_epoch&quot;</span>]):</span><br><span class="line">    <span class="built_in">next</span>(loader_iter)  <span class="comment"># 跳过已经训过的样本</span></span><br></pre></td></tr></table></figure>
+<p>这个方案简单但 ugly——<code>next</code> 跳过会触发实际的 IO 和数据增强,resume 慢且浪费。</p>
+<h3 id="5-3-PyTorch-2-x-的-stateful-DataLoader"><a href="#5-3-PyTorch-2-x-的-stateful-DataLoader" class="headerlink" title="5.3 PyTorch 2.x 的 stateful DataLoader"></a>5.3 PyTorch 2.x 的 stateful DataLoader</h3><p>PyTorch 2.x 起的 <code>StatefulDataLoader</code>(在 <code>torchdata</code> 包)直接支持 state_dict:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torchdata.stateful_dataloader <span class="keyword">import</span> StatefulDataLoader</span><br><span class="line"></span><br><span class="line">loader = StatefulDataLoader(dataset, batch_size=<span class="number">256</span>, ...)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保存</span></span><br><span class="line">ckpt[<span class="string">&quot;dataloader&quot;</span>] = loader.state_dict()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载</span></span><br><span class="line">loader.load_state_dict(ckpt[<span class="string">&quot;dataloader&quot;</span>])</span><br><span class="line"><span class="comment"># 接下来 iter(loader) 直接从断点继续,无 skip 开销</span></span><br></pre></td></tr></table></figure>
+<p>它内部记录了当前 worker 的位置、shuffle seed 状态、prefetch 队列等,resume 后<strong>精确从中断点继续</strong>,这是当前最干净的做法。</p>
+<h2 id="六、异步-checkpoint-不让-I-O-阻塞训练"><a href="#六、异步-checkpoint-不让-I-O-阻塞训练" class="headerlink" title="六、异步 checkpoint:不让 I/O 阻塞训练"></a>六、异步 checkpoint:不让 I/O 阻塞训练</h2><h3 id="6-1-为什么-ckpt-写慢会拖训练"><a href="#6-1-为什么-ckpt-写慢会拖训练" class="headerlink" title="6.1 为什么 ckpt 写慢会拖训练"></a>6.1 为什么 ckpt 写慢会拖训练</h3><p>70B 模型 BF16 一份 ckpt 140 GB,即使按 sharded 切到 32 张卡,每张也要写 4.4 GB。本地 NVMe 写带宽通常 3-7 GB/s,<strong>单卡写一份要 1-1.5 秒</strong>。</p>
+<p>这 1.5 秒里所有 rank 都被 <code>dist.barrier()</code> 阻塞,什么训练都做不了。如果每 500 步存一次,1.5 秒的 ckpt 意味着 <strong>0.3% 的训练时间被 ckpt I/O 占用</strong>——看起来不多,但在 1024 卡训练上 1% 就是几千美元的算力浪费。</p>
+<p>更糟糕的是远端存储:很多集群 ckpt 必须写到共享文件系统(如 Lustre、GPFS、S3),网络带宽远低于本地 NVMe,可能拖到 30 秒一份。</p>
+<h3 id="6-2-异步-ckpt-的思路"><a href="#6-2-异步-ckpt-的思路" class="headerlink" title="6.2 异步 ckpt 的思路"></a>6.2 异步 ckpt 的思路</h3><p>Ckpt 数据本身在 GPU 显存里,实际 I/O 阶段 GPU 并不参与——它只需要把数据搬到 CPU pinned memory,然后让 CPU 后台慢慢写磁盘:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GPU 训练流:  step N ──► step N+1 ──► step N+2 ──► step N+3 ...</span><br><span class="line">                                                     ↑ 这一步前 ckpt 已经写好</span><br><span class="line"></span><br><span class="line">GPU→CPU 拷贝:    [拷贝 N 状态]</span><br><span class="line">                     ↓</span><br><span class="line">CPU 后台 I/O:        [写磁盘 N 状态.....................]</span><br><span class="line">                     ↑ 在 GPU 跑 step N+1, N+2 期间慢慢写</span><br></pre></td></tr></table></figure>
+<p>PyTorch 2.x 的 DCP 提供 <code>async_save</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.distributed.checkpoint <span class="keyword">as</span> dcp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 异步保存,立刻返回一个 future</span></span><br><span class="line">future = dcp.async_save(state, checkpoint_id=<span class="string">&quot;ckpt_dir&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练继续,GPU 不阻塞</span></span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(...):</span><br><span class="line">    train_step()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在下一次 ckpt 之前确认上一次写完了</span></span><br><span class="line">future.result()</span><br></pre></td></tr></table></figure>
+<p><strong>关键约束</strong>:<code>async_save</code> 拷贝 state 到 CPU 后,你不能继续修改原 state(否则数据竞态)。所以异步 ckpt 通常配合 sharded state_dict 用——CPU 收到的是 tensor 引用,后续训练修改的是 GPU 上的原 tensor,引用本身不变,但内容会被覆盖。要么 DCP 内部拷贝一份 CPU 副本(显存换时间),要么你保证 ckpt 拷贝完 N 步以内 GPU 不会修改这些 tensor。</p>
+<h3 id="6-3-直觉-把-ckpt-当后台-logging"><a href="#6-3-直觉-把-ckpt-当后台-logging" class="headerlink" title="6.3 直觉:把 ckpt 当后台 logging"></a>6.3 直觉:把 ckpt 当后台 logging</h3><p>异步 ckpt 之后,保存 ckpt 在心理上和 print logging 一样——主线训练完全不感知它在干什么,只在很久之后某次 future.result() 才确认完成。这才是工业级长训练的标准模式,不是”训练 → 等 30 秒写 ckpt → 继续训练”。</p>
+<h2 id="七、几个实战-checklist"><a href="#七、几个实战-checklist" class="headerlink" title="七、几个实战 checklist"></a>七、几个实战 checklist</h2><h3 id="7-1-启动训练前"><a href="#7-1-启动训练前" class="headerlink" title="7.1 启动训练前"></a>7.1 启动训练前</h3><ul>
+<li>把 ckpt 路径配好,<strong>先建空目录、确认有写权限</strong>——别等训练 1000 步要保存第一个 ckpt 时才发现写不进</li>
+<li>设置 ckpt 保留策略,<strong>最少保留 3 份</strong>(防止最新一份损坏)</li>
+<li>决定 ckpt 频率:训练总长 / 每个 ckpt 时间 / 可接受的 fail 重训成本——典型设置是每 30-60 分钟一份</li>
+</ul>
+<h3 id="7-2-训练中"><a href="#7-2-训练中" class="headerlink" title="7.2 训练中"></a>7.2 训练中</h3><ul>
+<li><strong>每个 ckpt 都验证一遍</strong>:加载回来跑一个 micro-step,验证 loss 与保存时一致</li>
+<li>监控 ckpt 写入耗时,<strong>异常变长</strong>通常意味着存储系统拥堵或者 NIC 问题</li>
+<li>异步 ckpt 时,确保 ckpt 队列没有挤压(否则 CPU 内存会涨)</li>
+</ul>
+<h3 id="7-3-Resume-时"><a href="#7-3-Resume-时" class="headerlink" title="7.3 Resume 时"></a>7.3 Resume 时</h3><ul>
+<li><strong>首先验证 config 一致性</strong>,模型结构变了直接报错</li>
+<li>加载顺序:<code>model → optimizer → scheduler → scaler → dataloader → rng</code></li>
+<li><strong>加载完后跑一个 forward + loss,与 ckpt 保存时记录的 loss 比较</strong>——偏差超过 1% 说明哪里没恢复对</li>
+<li>LR 应该<strong>正好等于</strong> scheduler 在该 step 的 LR,不要自己手动改 LR</li>
+</ul>
+<h3 id="7-4-发布最终模型时"><a href="#7-4-发布最终模型时" class="headerlink" title="7.4 发布最终模型时"></a>7.4 发布最终模型时</h3><ul>
+<li>训练用 sharded ckpt,发布前用 FULL_STATE_DICT 转一份完整 ckpt</li>
+<li><strong>去掉所有训练专用状态</strong>(optimizer、scheduler、scaler、rng、dataloader),只留 model state_dict</li>
+<li>文件命名带 step / epoch / loss 信息,方便后续 ablation</li>
+<li>最好附一个 <code>model_card.md</code> 说明训练数据、硬件、超参——不属于 infra 范畴但相当重要</li>
+</ul>
+<h2 id="八、一句话总结"><a href="#八、一句话总结" class="headerlink" title="八、一句话总结"></a>八、一句话总结</h2><p>Checkpoint 是大模型训练的<strong>保险机制</strong>——理解它的不只是”<code>torch.save</code> 几行代码”,而是<strong>完整状态包含什么、并行策略下怎么切、I/O 怎么不阻塞训练、resume 怎么严格无偏</strong>。这套东西做不好,你训练的每一步都在赌运气;做好之后,长训练才会有真正的稳定可恢复性。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/1.DataParallel/Checkpoint/">https://SGDBS.github.io/AI_Infra/1.DataParallel/Checkpoint/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/AI_Infra/0.Introduction/KernelRoadmap/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/18.jpg" class="responsive-img" alt="0.5 GPU Kernel 学习路线图">
+                        
+                        <span class="card-title">0.5 GPU Kernel 学习路线图</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                    <a href="/tags/CUDA/">
+                        <span class="chip bg-color">CUDA</span>
+                    </a>
+                    
+                    <a href="/tags/Triton/">
+                        <span class="chip bg-color">Triton</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/MultiNode/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/8.jpg" class="responsive-img" alt="6. 多机训练与 NCCL 工程">
+                        
+                        <span class="card-title">6. 多机训练与 NCCL 工程</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

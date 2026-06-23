@@ -1,0 +1,1757 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="1. GPipe:朴素流水线与 micro-batch, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>1. GPipe:朴素流水线与 micro-batch | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>1. GPipe:朴素流水线与 micro-batch</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">1. GPipe:朴素流水线与 micro-batch</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-10
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>这一篇是 Ch2 Pipeline Parallel 的开篇。GPipe 是 Google 在 2018 年提出的第一代实用流水线方案,它的核心贡献只有一个——<strong>用 micro-batch 把朴素流水线的 bubble 压下去</strong>——但围绕这一招衍生出来的 bubble 公式、激活显存账、调度顺序,几乎是后续所有 PP 算法(1F1B / Interleaved / Zero Bubble / DualPipe)的共同语言。把 GPipe 吃透,后面的进化都只是在它的基础上做局部优化。</p>
+<p>按之前的风格,这篇仍然按 <strong>起因 → 数学/系统原理 → 工程细节 → 直觉与踩坑</strong> 推进。最后会顺带说清楚 GPipe 为什么注定要被 1F1B 接班——这是 Ch2 第二篇的引子。</p>
+<h2 id="一、起因-数据并行-ZeRO-解决不了的场景"><a href="#一、起因-数据并行-ZeRO-解决不了的场景" class="headerlink" title="一、起因:数据并行 + ZeRO 解决不了的场景"></a>一、起因:数据并行 + ZeRO 解决不了的场景</h2><h3 id="1-1-ZeRO-的天花板"><a href="#1-1-ZeRO-的天花板" class="headerlink" title="1.1 ZeRO 的天花板"></a>1.1 ZeRO 的天花板</h3><p>Ch1 的 ZeRO/FSDP 已经把”参数 + 梯度 + 优化器状态”切到了多卡上,理论上 N 张卡可以训 N 倍大的模型。但实际上 ZeRO-3 有两个工程上的硬天花板:</p>
+<p><strong>第一,激活显存切不掉</strong>。ZeRO 切的是静态状态(参数/梯度/optimizer),激活值仍然完整地待在每张卡上。前面 <code>MemoryBudget</code> 算过,7B + 32k 序列下激活就要上百 GB——ZeRO 对它一筹莫展,只能靠 activation checkpointing。但 AC 也只能把激活降到 $O(\sqrt{L})$,<strong>一旦单层激活本身就装不下,任何 AC 都救不了</strong>。</p>
+<p><strong>第二,跨节点 AllGather 太慢</strong>。ZeRO-3 forward 时需要把当前层的参数从所有 rank AllGather 回来,backward 时再 AllGather 一次。这套通信发生在每一层、每一步,<strong>节点内吃 NVLink 没问题(900 GB/s),跨节点吃 IB(50 GB/s)就直接拖慢 5-10 倍</strong>。Llama-3 405B 这种规模,光 ZeRO-3 在 1024 卡上的 AllGather 就把训练时间吃掉一半。</p>
+<p>简单说:<strong>模型再大一点、序列再长一点,ZeRO 就够不着了</strong>。</p>
+<h3 id="1-2-流水线并行的核心思想"><a href="#1-2-流水线并行的核心思想" class="headerlink" title="1.2 流水线并行的核心思想"></a>1.2 流水线并行的核心思想</h3><p>GPipe 的解法和 ZeRO 完全不同——它不切”状态”,而是<strong>按层切模型</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">原模型 (32 层 Transformer):</span><br><span class="line">  Layer 0 → Layer 1 → ... → Layer 31</span><br><span class="line"></span><br><span class="line">切成 4 个 stage(P=4 张 GPU):</span><br><span class="line">  GPU 0:  Layer 0  ~ Layer 7    (stage 0)</span><br><span class="line">  GPU 1:  Layer 8  ~ Layer 15   (stage 1)</span><br><span class="line">  GPU 2:  Layer 16 ~ Layer 23   (stage 2)</span><br><span class="line">  GPU 3:  Layer 24 ~ Layer 31   (stage 3)</span><br></pre></td></tr></table></figure>
+<p>每张卡只持有原模型的 1/P 参数,激活也只存自己负责的那段层数。<strong>显存压力直接从 O(L) 降到 O(L/P)</strong>,这就是 PP 能跑超大模型的根本原因。</p>
+<p>代价是:<strong>stage 之间必须串行</strong>。Stage 1 要等 Stage 0 把激活送过来才能开始算,Stage 2 要等 Stage 1……一个 batch 流完 P 个 stage 需要 P 倍的时间。</p>
+<h3 id="1-3-与-DP-TP-的对比"><a href="#1-3-与-DP-TP-的对比" class="headerlink" title="1.3 与 DP / TP 的对比"></a>1.3 与 DP / TP 的对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>并行方式</th>
+<th>切什么</th>
+<th>通信原语</th>
+<th>通信频率</th>
+<th>适合的硬件层级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data Parallel</strong></td>
+<td>切 batch,模型完整复制</td>
+<td>AllReduce</td>
+<td>每 step 一次</td>
+<td>跨节点都行</td>
+</tr>
+<tr>
+<td><strong>ZeRO / FSDP</strong></td>
+<td>切 batch + 切静态状态</td>
+<td>AllGather / ReduceScatter</td>
+<td>每层一次</td>
+<td>节点内最佳</td>
+</tr>
+<tr>
+<td><strong>Tensor Parallel</strong></td>
+<td>切单层内的矩阵</td>
+<td>AllReduce</td>
+<td>每层 2-4 次</td>
+<td><strong>必须节点内</strong>(NVLink)</td>
+</tr>
+<tr>
+<td><strong>Pipeline Parallel</strong></td>
+<td>切层</td>
+<td>P2P send/recv</td>
+<td>每个 stage 边界一次</td>
+<td><strong>跨节点首选</strong>(IB 也够)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>PP 最大的工程优势是<strong>通信量最小</strong>——只有 stage 边界的激活/梯度需要 P2P 传输,而且只发给相邻 rank,不需要 AllReduce 这种全局集合通信。这就是为什么工业训练的拓扑通常是 <strong>节点内 TP + 跨节点 PP</strong>——把贵的通信放在 NVLink,便宜的通信留给 IB。</p>
+<h2 id="二、Naive-Pipeline-能跑但是慢"><a href="#二、Naive-Pipeline-能跑但是慢" class="headerlink" title="二、Naive Pipeline:能跑但是慢"></a>二、Naive Pipeline:能跑但是慢</h2><h3 id="2-1-单-batch-的调度图"><a href="#2-1-单-batch-的调度图" class="headerlink" title="2.1 单 batch 的调度图"></a>2.1 单 batch 的调度图</h3><p>最朴素的实现:一个 batch 顺序通过所有 stage,forward 流到底,backward 回来,然后下一个 batch。假设每个 stage 的 forward 时间为 $T_f$,backward 为 $T_b$:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">t:        0   1   2   3   4   5   6   7</span><br><span class="line">Stage 0:  F   ·   ·   ·   ·   ·   ·   B</span><br><span class="line">Stage 1:  ·   F   ·   ·   ·   ·   B   ·</span><br><span class="line">Stage 2:  ·   ·   F   ·   ·   B   ·   ·</span><br><span class="line">Stage 3:  ·   ·   ·   F   B   ·   ·   ·</span><br></pre></td></tr></table></figure>
+<p>(为了图清晰,这里假设 $T_f = T_b = 1$,P=4 个 stage)</p>
+<p>肉眼可见:<strong>任何时刻都只有一个 stage 在干活,其他 3 个在等</strong>。</p>
+<h3 id="2-2-利用率分析"><a href="#2-2-利用率分析" class="headerlink" title="2.2 利用率分析"></a>2.2 利用率分析</h3><p>总时间 = forward 流过 P 个 stage + backward 回来 P 个 stage = $2P \cdot T$(假设 $T_f = T_b = T$)。</p>
+<p>每个 stage 真正干活的时间只有 forward + backward = $2T$。</p>
+<p>利用率:</p>
+<script type="math/tex; mode=display">
+\text{utilization} = \frac{2T}{2P \cdot T} = \frac{1}{P}</script><p><strong>P 张卡只达到了单卡 1/P 的利用率</strong>——4 卡的 PP 比单卡训练还慢!这显然不能用。</p>
+<p>问题的根源很清楚:<strong>一次只送一个 batch,流水线根本”流”不起来</strong>。这就是 GPipe 要解决的问题。</p>
+<h2 id="三、GPipe-的核心招式-Micro-batch-Pipeline"><a href="#三、GPipe-的核心招式-Micro-batch-Pipeline" class="headerlink" title="三、GPipe 的核心招式:Micro-batch + Pipeline"></a>三、GPipe 的核心招式:Micro-batch + Pipeline</h2><h3 id="3-1-思想-把-batch-切成-micro-batch-顺序发射"><a href="#3-1-思想-把-batch-切成-micro-batch-顺序发射" class="headerlink" title="3.1 思想:把 batch 切成 micro-batch 顺序发射"></a>3.1 思想:把 batch 切成 micro-batch 顺序发射</h3><p>GPipe 的洞察:<strong>既然 stage 之间是串行的,那就让多个样本”同时在不同 stage 上跑”</strong>。</p>
+<p>具体做法:把一个 mini-batch(假设 batch_size = 32)切成 M 个 micro-batch(假设 M = 8,每个 micro-batch_size = 4),按顺序往流水线里塞。Stage 0 不必等 micro-batch 0 走完整个流水线再发 micro-batch 1——它做完 micro-batch 0 就立刻开始 micro-batch 1。</p>
+<p>这样多个 micro-batch 像水流一样<strong>同时</strong>流过不同的 stage,前面的 stage 不再空等。</p>
+<p>这里的 micro-batch 和 Ch1 <code>MemoryBudget</code> §2 里梯度累积的 micro-batch <strong>本质上是同一种东西</strong>——都是把大 batch 切成 M 份,分别做 forward + backward,梯度累加到同一份 buffer,最后才 <code>optimizer.step()</code>。区别只在目的:梯度累积是为了让大 batch 的激活别同时塞进单卡;GPipe 是为了让多个 micro-batch 在不同 stage 上同时跑、填满流水线。所以一句话概括:<strong>GPipe = 流水线 + 梯度累积</strong>——Ch1 §2.4 里”loss 必须除以 accumulation_steps”那个细节,在 GPipe 里也得原样照搬,否则梯度尺度会偏。</p>
+<h3 id="3-2-GPipe-完整调度图"><a href="#3-2-GPipe-完整调度图" class="headerlink" title="3.2 GPipe 完整调度图"></a>3.2 GPipe 完整调度图</h3><p>P = 4,M = 4,假设 $T_f = T_b = 1$,<strong>先全部 forward,再全部 backward</strong>(这是 GPipe 的关键特征):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">t:        0   1   2   3   4   5   6   7   8   9   10  11  12  13</span><br><span class="line">Stage 0:  F0  F1  F2  F3  ·   ·   ·   ·   ·   ·   B3  B2  B1  B0</span><br><span class="line">Stage 1:  ·   F0  F1  F2  F3  ·   ·   ·   ·   B3  B2  B1  B0  ·</span><br><span class="line">Stage 2:  ·   ·   F0  F1  F2  F3  ·   ·   B3  B2  B1  B0  ·   ·</span><br><span class="line">Stage 3:  ·   ·   ·   F0  F1  F2  F3  B3  B2  B1  B0  ·   ·   ·</span><br><span class="line">          |←─ warmup ─→|              |←─── steady ───→|←cooldown→|</span><br></pre></td></tr></table></figure>
+<p>观察这张图(请认真对照,后面所有公式都基于它):</p>
+<ul>
+<li><strong>Warmup 阶段</strong>(t = 0~3):流水线在”灌水”,前 P-1 个时刻总有 stage 在等</li>
+<li><strong>Steady 阶段</strong>(t = 3~7 forward / t = 7~10 backward):中间这段是流水线满载状态,效率最高</li>
+<li><strong>Cooldown 阶段</strong>(t = 11~13):反向走完最后几个 stage,后 P-1 个时刻又开始有 stage 空闲</li>
+</ul>
+<p>forward 全部完成在 t = P + M - 1 = 7 时刻,然后立刻进入 backward,backward 全部完成在 t = 2(M + P - 1) = 14 时刻。</p>
+<p>注意 <strong>GPipe 是严格”先 F 后 B”</strong>——所有 micro-batch 的 forward 跑完才开始任何 backward。这是它和 1F1B 的核心区别(1F1B 会立刻交替),也是 GPipe 激活显存爆炸的根源(下一节会算)。</p>
+<h3 id="3-3-Bubble-公式推导"><a href="#3-3-Bubble-公式推导" class="headerlink" title="3.3 Bubble 公式推导"></a>3.3 Bubble 公式推导</h3><p>设 $T_f = T_b = T$(简化,实际两者不一定相等)。</p>
+<p><strong>总时间</strong>:从 stage 0 开始第一个 forward,到 stage 0 完成最后一个 backward,需要</p>
+<script type="math/tex; mode=display">
+T_{\text{total}} = (M + P - 1)(T_f + T_b) = 2(M + P - 1)T</script><p>直觉:从 micro-batch 0 进入 stage 0,到 micro-batch 0 在 stage P-1 完成 forward,经过 P 个时间单位;然后 M-1 个 micro-batch 依次涌入,每个再加 1 个时间单位,共 $M + P - 1$ 个时间单位完成所有 forward。Backward 完全对称,再加 $M + P - 1$ 个时间单位。</p>
+<p><strong>有效计算时间</strong>:每个 stage 真正在算的时间是 $M$ 个 forward + $M$ 个 backward = $2MT$。</p>
+<p><strong>Bubble 时间</strong>:</p>
+<script type="math/tex; mode=display">
+T_{\text{bubble}} = T_{\text{total}} - 2MT = 2(P-1)T</script><p><strong>Bubble 比例</strong>(无效时间 / 总时间):</p>
+<script type="math/tex; mode=display">
+\text{bubble ratio} = \frac{T_{\text{bubble}}}{T_{\text{total}}} = \frac{2(P-1)T}{2(M+P-1)T} = \boxed{\frac{P-1}{M+P-1}}</script><p>这个公式是整个 PP 算法演进的”基线”——后续所有调度算法都是想办法把分子降低(Zero Bubble)或者把分母提高(Interleaved)。</p>
+<h3 id="3-4-数值直觉-M-取多少够用"><a href="#3-4-数值直觉-M-取多少够用" class="headerlink" title="3.4 数值直觉:M 取多少够用"></a>3.4 数值直觉:M 取多少够用</h3><p>把上面的公式代几个数,感受一下 bubble 怎么随 M 变化(P = 8,工业典型设置):</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>M</th>
+<th>bubble ratio</th>
+<th>利用率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>7/8 = 87.5%</td>
+<td>12.5%(等于 naive,完全没用)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>7/9 ≈ 78%</td>
+<td>22%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>7/11 ≈ 64%</td>
+<td>36%</td>
+</tr>
+<tr>
+<td>8</td>
+<td>7/15 ≈ 47%</td>
+<td>53%</td>
+</tr>
+<tr>
+<td><strong>16</strong></td>
+<td>7/23 ≈ <strong>30%</strong></td>
+<td>70%</td>
+</tr>
+<tr>
+<td><strong>32</strong></td>
+<td>7/39 ≈ <strong>18%</strong></td>
+<td>82%</td>
+</tr>
+<tr>
+<td>64</td>
+<td>7/71 ≈ 10%</td>
+<td>90%</td>
+</tr>
+<tr>
+<td>128</td>
+<td>7/135 ≈ 5%</td>
+<td>95%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>工业上的经验法则:<strong>M 至少要是 P 的 4 倍</strong>(对应 ~70% 利用率才划算),典型设置是 $M = 4P \sim 8P$。Megatron-LM、DeepSpeed Pipeline 默认值就在这个区间。</p>
+<p>但 M 不能无限大——下一节会看到,<strong>M 大了激活显存会爆</strong>。这个 “想要小 bubble vs 不想 OOM” 的矛盾是 GPipe 的核心痛点,也是后续 1F1B 的动机。</p>
+<h2 id="四、激活显存-GPipe-的代价"><a href="#四、激活显存-GPipe-的代价" class="headerlink" title="四、激活显存:GPipe 的代价"></a>四、激活显存:GPipe 的代价</h2><h3 id="4-1-在飞-micro-batch-数"><a href="#4-1-在飞-micro-batch-数" class="headerlink" title="4.1 在飞 micro-batch 数"></a>4.1 在飞 micro-batch 数</h3><p>回到 §3.2 那张调度图,看每个 stage 在某个时刻”压着多少个 micro-batch 的激活”。</p>
+<p>以 stage 0 为例:</p>
+<ul>
+<li>t = 0:刚算完 F0,激活计数 = 1(等 F0 反向时用)</li>
+<li>t = 1:算完 F1,激活计数 = 2(F0 + F1 都还没反向)</li>
+<li>t = 2:算完 F2,激活计数 = 3</li>
+<li>t = 3:算完 F3,激活计数 = <strong>4</strong>(峰值!所有 micro-batch 的 forward 都跑完了,但反向一个还没开始)</li>
+<li>t = 4 ~ 9:stage 0 闲着,激活计数保持 4</li>
+<li>t = 10:开始 B3,反向消耗 F3 的激活,计数降到 3</li>
+<li>t = 11:B2,计数 2</li>
+<li>t = 12:B1,计数 1</li>
+<li>t = 13:B0,计数 0</li>
+</ul>
+<p><strong>Stage 0 的激活峰值是 M 个 micro-batch 的激活</strong>。也就是说,GPipe 切了 M 个 micro-batch 之后,stage 0 上的激活总量并没有减少——单个 micro-batch 的激活变小了 M 倍,但同时压着 M 个,<strong>乘起来不变</strong>。</p>
+<h3 id="4-2-所有-stage-的激活峰值都-M"><a href="#4-2-所有-stage-的激活峰值都-M" class="headerlink" title="4.2 所有 stage 的激活峰值都 = M"></a>4.2 所有 stage 的激活峰值都 = M</h3><p>对 stage k 同样的方法分析:</p>
+<ul>
+<li>Stage k 的第一个 forward 在 t = k 完成,第 M 个 forward 在 t = k + M - 1 完成</li>
+<li>但 stage k 的第一个 backward 要等 stage P-1 把所有 forward 跑完、backward 再从 stage P-1 一路传回来,中间隔很久</li>
+<li>这段窗口里,stage k <strong>一直压着 M 个 micro-batch 的激活,从不释放</strong></li>
+</ul>
+<p>所以 GPipe 在<strong>每个 stage 上的激活峰值都 = M × 单 micro-batch 激活</strong>,没有 stage 0 / stage P-1 的差别。这是 GPipe “全 F 后全 B” 调度的直接后果——任何 stage 都得等所有 micro-batch 反向才能开始消耗激活。</p>
+<h3 id="4-3-用-in-flight-框架精确化显存公式"><a href="#4-3-用-in-flight-框架精确化显存公式" class="headerlink" title="4.3 用 in-flight 框架精确化显存公式"></a>4.3 用 in-flight 框架精确化显存公式</h3><p>把激活峰值写成更通用的形式:</p>
+<script type="math/tex; mode=display">
+\text{stage 显存峰值} = (\text{在飞 micro-batch 数}) \times (\text{单 micro-batch 激活})</script><p>代入 GPipe(在飞数 = M):</p>
+<script type="math/tex; mode=display">
+\text{GPipe 峰值} = M \times A_{\text{per-micro}} = M \cdot m \cdot A_{\text{sample}}</script><p><strong>这里有一个常见的混淆要小心</strong>:乘积 $M \cdot m$ 实际上就是 global batch size $B$。如果 <strong>B 固定</strong>(给定 batch 大小,只是切成更多 micro-batch),那 GPipe 的激活峰值 = $B \cdot A_{\text{sample}}$,<strong>和 M 完全无关</strong>——M 上去 m 下来,代数上抵消。</p>
+<p>但工程中<strong>真正被固定的不是 B,而是 m</strong>。原因:m 太小会让单个 forward 的 GPU kernel 跑不满(矩阵乘的有效维度不够,Tensor Core 利用率掉),70B 量级的大模型,m 通常已经压到 1~2 这种”地板值”,再小也省不下去。</p>
+<p>这种”m 固定”模式下,M 是被 bubble 公式 $\frac{P-1}{M+P-1}$ 拽着往上加的——</p>
+<ul>
+<li>想降 bubble → 加大 M</li>
+<li>m 是地板值,不能动 → 加大 M 等于加大 $B = M \cdot m$</li>
+<li>加大 B → 激活峰值 $B \cdot A_{\text{sample}}$ 线性涨</li>
+</ul>
+<p>所以 GPipe 的根本困境其实是:<strong>bubble 和显存通过 B 耦合在一起</strong>。你不能既要小 bubble 又要小显存——加大 M 必然加大 B,加大 B 必然加大显存。GPipe 的 M 被显存死死限在 $4P \sim 8P$,bubble 怎么也压不下来。</p>
+<p>下一章 1F1B 的核心贡献,就是把”在飞数”从 M 解放出来——让它只和 P 有关,从而 M 可以独立加大而不带任何代价。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>在飞数(stage 0)</th>
+<th>显存峰值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不切 micro-batch</td>
+<td>1</td>
+<td>$B \cdot A_{\text{sample}}$</td>
+</tr>
+<tr>
+<td>梯度累积(单卡顺序)</td>
+<td>1</td>
+<td>$\frac{B}{M} \cdot A_{\text{sample}}$ ← M 真正起作用</td>
+</tr>
+<tr>
+<td><strong>GPipe</strong></td>
+<td><strong>M</strong></td>
+<td>$M \cdot m \cdot A<em>{\text{sample}} = B \cdot A</em>{\text{sample}}$ ← M 被 m 抵消,只看 B</td>
+</tr>
+<tr>
+<td>1F1B(下一篇)</td>
+<td><strong>P</strong></td>
+<td>$P \cdot m \cdot A_{\text{sample}}$ ← 和 M 无关</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="4-4-为什么-GPipe-必须配-activation-checkpointing"><a href="#4-4-为什么-GPipe-必须配-activation-checkpointing" class="headerlink" title="4.4 为什么 GPipe 必须配 activation checkpointing"></a>4.4 为什么 GPipe 必须配 activation checkpointing</h3><p>正因为激活显存没省,GPipe 的论文从一开始就<strong>强制配合 activation checkpointing</strong>——前向时只在每个 stage 入口存激活,中间层全部丢掉,反向时按需重算。</p>
+<p>效果:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>激活显存(stage 0)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPipe,无 AC</td>
+<td>$M \times L<em>{\text{per-stage}} \times \text{激活} / L</em>{\text{per-stage}}$(全部层激活)</td>
+</tr>
+<tr>
+<td>GPipe + AC</td>
+<td>$M \times \text{stage 入口激活}$(只存边界)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>激活从”所有层”降到”只有 stage 边界”,通常能降一个数量级。代价是 GPipe + AC 的总计算量比 naive 多一次 forward(约 +33%),叠加 PP 本身的 bubble(假设 30%),GPipe 的总开销是 naive 的 $1.33 \times 1.3 \approx 1.73$ 倍——<strong>用 1.7 倍算力换”能跑得起来”</strong>。</p>
+<h3 id="4-5-三个旋钮的耦合关系"><a href="#4-5-三个旋钮的耦合关系" class="headerlink" title="4.5 三个旋钮的耦合关系"></a>4.5 三个旋钮的耦合关系</h3><p>GPipe 调参其实是在三个量之间找平衡:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">┌─ M (micro-batch 数)</span><br><span class="line">│</span><br><span class="line">├─ B/M (单个 micro-batch 大小)</span><br><span class="line">│</span><br><span class="line">└─ P (stage 数)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>M ↑ → bubble 降,但激活显存升</li>
+<li>B/M ↑ → 激活显存升,但 kernel 跑得更高效(避免太小 batch 的 GPU 利用率不足)</li>
+<li>P ↑ → 单 stage 模型更小,但 bubble 升、跨节点通信也增多</li>
+</ul>
+<p>工业经验:<strong>先定 P(由模型大小和单卡显存决定),再选 B/M(让单 micro-batch GPU 利用率 &gt; 70%),最后用 M 把 bubble 压到能接受的范围</strong>。如果三者怎么配都不满足,就要换 1F1B / Interleaved。</p>
+<h2 id="五、工程实现"><a href="#五、工程实现" class="headerlink" title="五、工程实现"></a>五、工程实现</h2><h3 id="5-1-怎么把模型切成-stage"><a href="#5-1-怎么把模型切成-stage" class="headerlink" title="5.1 怎么把模型切成 stage"></a>5.1 怎么把模型切成 stage</h3><p>最简单的均匀切层:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">split_model_by_layer</span>(<span class="params">model, num_stages</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;假设 model 是一个 nn.Sequential 或 layer list&quot;&quot;&quot;</span></span><br><span class="line">    layers = <span class="built_in">list</span>(model.children())</span><br><span class="line">    L = <span class="built_in">len</span>(layers)</span><br><span class="line">    <span class="keyword">assert</span> L % num_stages == <span class="number">0</span>, <span class="string">&quot;层数要整除 stage 数,否则得手动平衡&quot;</span></span><br><span class="line">    </span><br><span class="line">    layers_per_stage = L // num_stages</span><br><span class="line">    stages = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num_stages):</span><br><span class="line">        stage_layers = layers[i * layers_per_stage : (i+<span class="number">1</span>) * layers_per_stage]</span><br><span class="line">        stages.append(nn.Sequential(*stage_layers))</span><br><span class="line">    <span class="keyword">return</span> stages</span><br></pre></td></tr></table></figure>
+<p>这是教学版,<strong>生产代码要做的远不止这些</strong>:</p>
+<ul>
+<li><strong>embedding 和 LM head 的归属</strong>:embedding 通常和 stage 0 绑,lm_head 和 stage P-1 绑;但两者在 LLM 中常常<strong>共享权重</strong>,这时候要么放弃共享,要么在 stage 0 和 stage P-1 之间做一次 AllReduce 同步梯度</li>
+<li><strong>均匀切层不一定均衡</strong>:第一层(带 embedding)和最后一层(带 lm_head + loss)显存压力天然更大,实际生产代码会按 FLOPs 或显存做加权切分。Megatron-LM 的 <code>--num-layers-per-virtual-pipeline-stage</code> 就是给这个用的</li>
+<li><strong>LayerNorm / Dropout 等小算子</strong>:跨 stage 时要小心权重位置,通常和它依附的主体层放一起</li>
+</ul>
+<h3 id="5-2-Micro-batch-数据流与-send-recv"><a href="#5-2-Micro-batch-数据流与-send-recv" class="headerlink" title="5.2 Micro-batch 数据流与 send/recv"></a>5.2 Micro-batch 数据流与 send/recv</h3><p>GPipe 调度的核心代码长这样(简化版,只关心 stage k):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">gpipe_step</span>(<span class="params">stage_module, micro_batches, prev_rank, next_rank, rank, world_size</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;rank: 当前 stage 编号 (0 ~ P-1)&quot;&quot;&quot;</span></span><br><span class="line">    M = <span class="built_in">len</span>(micro_batches)</span><br><span class="line">    activations = []  <span class="comment"># 存所有 micro-batch 的输出,反向用</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># ===== 全部 forward =====</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(M):</span><br><span class="line">        <span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">            <span class="comment"># 第一个 stage 直接读 micro-batch</span></span><br><span class="line">            x = micro_batches[i]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 其他 stage 从前一个 stage 接收激活</span></span><br><span class="line">            x = recv_tensor(src=prev_rank)</span><br><span class="line">        </span><br><span class="line">        x = stage_module(x)</span><br><span class="line">        activations.append(x)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> rank != world_size - <span class="number">1</span>:</span><br><span class="line">            <span class="comment"># 不是最后一个 stage 的话,把激活发给下一个</span></span><br><span class="line">            send_tensor(x, dst=next_rank)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ===== 全部 backward =====</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(M)):  <span class="comment"># 反向按相反顺序</span></span><br><span class="line">        <span class="keyword">if</span> rank == world_size - <span class="number">1</span>:</span><br><span class="line">            <span class="comment"># 最后一个 stage 自己算 loss、自己起反向</span></span><br><span class="line">            loss = compute_loss(activations[i], targets[i]) / M</span><br><span class="line">            grad = torch.autograd.grad(loss, activations[i])[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 其他 stage 从后一个 stage 接收梯度</span></span><br><span class="line">            grad = recv_tensor(src=next_rank)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 反向算这一段的梯度,顺便把梯度往前传</span></span><br><span class="line">        input_grad = backward_through_stage(activations[i], grad)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> rank != <span class="number">0</span>:</span><br><span class="line">            send_tensor(input_grad, dst=prev_rank)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ===== 一次性更新参数 =====</span></span><br><span class="line">    optimizer.step()</span><br><span class="line">    optimizer.zero_grad()</span><br></pre></td></tr></table></figure>
+<p>几个关键工程点:</p>
+<ul>
+<li><code>loss / M</code>:和 Ch1 梯度累积里的除法一个道理,<strong>M 个 micro-batch 的梯度累加成一份,要除以 M 才数学等价于 batch_size = M·m 的训练</strong></li>
+<li><code>optimizer.step()</code> 在所有 M 个 micro-batch 反向完之后才调用一次——本质上 GPipe 就是”流水线版的梯度累积”</li>
+<li><code>send_tensor / recv_tensor</code> 用 <code>torch.distributed.isend / irecv</code> 或 NCCL 的 <code>ncclSend / ncclRecv</code>,<strong>只对相邻 rank 通信</strong></li>
+</ul>
+<h3 id="5-3-P2P-通信的实现细节"><a href="#5-3-P2P-通信的实现细节" class="headerlink" title="5.3 P2P 通信的实现细节"></a>5.3 P2P 通信的实现细节</h3><p>NCCL 从 2.7 版本开始正式支持 <code>ncclSend</code> / <code>ncclRecv</code>,这是 PP 的通信基础。PyTorch 上对应:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.distributed <span class="keyword">as</span> dist</span><br><span class="line"></span><br><span class="line"><span class="comment"># 异步 send</span></span><br><span class="line">req_send = dist.isend(tensor=x, dst=next_rank)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 异步 recv(必须先分配好 buffer)</span></span><br><span class="line">recv_buf = torch.empty_like(x)</span><br><span class="line">req_recv = dist.irecv(tensor=recv_buf, src=prev_rank)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 等待完成</span></span><br><span class="line">req_send.wait()</span><br><span class="line">req_recv.wait()</span><br></pre></td></tr></table></figure>
+<p><strong>几个常见踩坑</strong>:</p>
+<ol>
+<li><strong>shape 必须事先匹配</strong>。<code>irecv</code> 要求接收方提前知道张量形状,所以 PP 框架通常会在第一个 micro-batch 之前先发一次”shape 协商”消息,或者要求所有 micro-batch shape 严格一致(不然变长序列就麻烦)</li>
+<li><strong>dtype 也要一致</strong>。混合精度下激活通常是 BF16,梯度可能是 FP32,要分开处理</li>
+<li><strong>死锁</strong>。如果两个 stage 都在 <code>recv</code> 而没人 <code>send</code>,直接卡死。GPipe 的”先全 F 再全 B”调度天然避免了这个问题,但写自定义调度要非常小心</li>
+<li><strong>CUDA stream 管理</strong>。计算和通信最好在不同 stream 上,这样 send/recv 能藏在下一个 micro-batch 的 forward 后面——这是 PP 实现”通信隐藏”的关键</li>
+</ol>
+<h3 id="5-4-PyTorch-中的官方接口"><a href="#5-4-PyTorch-中的官方接口" class="headerlink" title="5.4 PyTorch 中的官方接口"></a>5.4 PyTorch 中的官方接口</h3><p>PyTorch 2.4 起把 PP 的官方实现归到 <code>torch.distributed.pipelining</code>(原 PiPPy 项目并入主线):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.distributed.pipelining <span class="keyword">import</span> pipeline, ScheduleGPipe, SplitPoint</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 把模型切成 stage(自动追踪)</span></span><br><span class="line">pipe = pipeline(</span><br><span class="line">    module=model,</span><br><span class="line">    mb_args=(example_input,),</span><br><span class="line">    split_spec=&#123;<span class="string">&quot;layers.8&quot;</span>: SplitPoint.BEGINNING,</span><br><span class="line">                <span class="string">&quot;layers.16&quot;</span>: SplitPoint.BEGINNING,</span><br><span class="line">                <span class="string">&quot;layers.24&quot;</span>: SplitPoint.BEGINNING&#125;,  <span class="comment"># 4 个 stage 的切点</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 取出当前 rank 的 stage</span></span><br><span class="line">stage = pipe.build_stage(stage_index=rank, device=device)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 用 GPipe 调度跑</span></span><br><span class="line">schedule = ScheduleGPipe(stage, n_microbatches=<span class="number">8</span>, loss_fn=loss_fn)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 训练</span></span><br><span class="line"><span class="keyword">for</span> batch <span class="keyword">in</span> dataloader:</span><br><span class="line">    <span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">        schedule.step(batch.<span class="built_in">input</span>)</span><br><span class="line">    <span class="keyword">elif</span> rank == world_size - <span class="number">1</span>:</span><br><span class="line">        losses = []</span><br><span class="line">        schedule.step(target=batch.target, losses=losses)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        schedule.step()</span><br><span class="line">    </span><br><span class="line">    optimizer.step()</span><br><span class="line">    optimizer.zero_grad()</span><br></pre></td></tr></table></figure>
+<p>PyTorch 同时提供了 <code>ScheduleGPipe / Schedule1F1B / ScheduleInterleaved1F1B</code> 等多个调度器——只要切完 stage,换一个 schedule 类就能切换算法,不用动模型代码。这是 2024 年起 PyTorch PP 主推的工作流。</p>
+<p>DeepSpeed Pipeline 和 Megatron-LM 的接口风格不同,但抽象层级一致(切 stage + 选 schedule + 用 micro-batch),原理都是这一套。</p>
+<h3 id="5-5-PP-×-DP-的拓扑组合"><a href="#5-5-PP-×-DP-的拓扑组合" class="headerlink" title="5.5 PP × DP 的拓扑组合"></a>5.5 PP × DP 的拓扑组合</h3><p>实际生产里很少单独用 PP——通常和 DP 一起组合。把 N 张卡先按 PP 切成 P 份(每份是一个 stage),然后<strong>每个 stage 内部再做 DP</strong>:每个 stage 占 N/P 张卡,这 N/P 张卡上做数据并行,看不同的 micro-batch 子集。</p>
+<p>实现上要建两个 process group:</p>
+<ul>
+<li><code>pp_group</code>:同一个 DP rank 内、跨 stage 的 P2P send/recv 通信</li>
+<li><code>dp_group</code>:同一个 stage 内、跨 DP rank 的梯度 AllReduce</li>
+</ul>
+<p>举例:32 张卡,P=4 PP × 8 DP。所有 stage 0 的 8 张卡共享一个 dp_group(stage 0 内部做 DP),每张 stage 0 的卡和它对应的 stage 1/2/3 卡组成一条 pp_group 链。Megatron-LM 内部就是这么建 communicator 的。</p>
+<p>这套组合已经能跑到几千卡规模。再叠上节点内 TP,就是 3D 并行的标准配方——<code>(节点内 TP) × (跨节点 PP) × (跨节点 DP)</code>,<strong>通信量从大到小匹配带宽从大到小</strong>。完整的 process group 设计、rank 到三维坐标 <code>(pp_rank, tp_rank, dp_rank)</code> 的映射,放到 Ch2 后面 <code>Topology3D.md</code> 里讲。</p>
+<h2 id="六、GPipe-的边界-为什么-1F1B-接班"><a href="#六、GPipe-的边界-为什么-1F1B-接班" class="headerlink" title="六、GPipe 的边界:为什么 1F1B 接班"></a>六、GPipe 的边界:为什么 1F1B 接班</h2><p>把前面所有内容串起来,GPipe 的根本问题是:</p>
+<p><strong>问题一:激活显存随 M 线性增长</strong></p>
+<p>§4.1 推导过,stage 0 上的激活峰值正比于 M 个 micro-batch。M 越大 bubble 越小,但 M 越大 OOM 风险越高——这两个目标直接打架。</p>
+<p><strong>问题二:反向必须等所有 forward 完成</strong></p>
+<p>§3.2 调度图里,stage 0 在 t=4 之后就闲了 6 个时间单位,直到 t=10 才开始反向。这段时间它只是在”占着激活”——既不在算前向(因为 micro-batch 已经发完),也不在算反向(因为反向还没传到这里)。这是纯浪费。</p>
+<p>1F1B(One Forward One Backward,Ch2 第二篇要讲)的核心就是<strong>修这两个问题</strong>:</p>
+<ul>
+<li>让反向尽早开始(不等所有 forward 完),反向一开始就能释放对应的激活显存</li>
+<li>在 steady 阶段严格交替 1F1B,<strong>激活峰值只和 P 相关,不和 M 相关</strong></li>
+</ul>
+<p>代价是调度复杂度上升、send/recv 的依赖关系更复杂。但有一个反直觉的事实必须提前点明:<strong>1F1B 和 GPipe 的总 bubble 公式完全相同</strong>——都是 $\frac{P-1}{M+P-1}$,因为 warmup + cooldown 的总时长只由 P-1 决定,和 forward / backward 是否交替无关。</p>
+<p><strong>1F1B 的胜负手是”操作意义上”的</strong>——bubble 公式只是一张地图,GPipe 拿着这张地图但被显存死死困在原地走不远(M 取不到 100、1000),1F1B 把显存的束缚解开,M 才能真正放大,公式那一项才能真正趋近 0。<strong>算法的真正贡献往往是把不可达变可达,而不是把极限本身往下挪</strong>。</p>
+<p>所以工业上 GPipe 几乎没人用了,<strong>Megatron-LM、DeepSpeed Pipeline 的默认调度都是 1F1B</strong>,2023 年之后又出现了 Interleaved 1F1B、Zero Bubble Pipeline、DualPipe(DeepSeek V3)等更激进的方案。但所有这些算法的概念母版都是 GPipe——bubble 公式、激活账、micro-batch 调度顺序、AC 强绑定,都是从 GPipe 沿用下来的。把 GPipe 吃透,后面的演进只是在它的基础上做局部优化;不学透它,后面那些”省 bubble”、”省激活”的招式都无从理解。</p>
+<hr>
+<p><strong>Zero Bubble 的种子已经埋好</strong>:GPipe 和 1F1B 都把 forward 和 backward 当成”原子操作”。但 backward 其实可以再拆——</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial x} = W^T \cdot g_{\text{out}} \quad \text{(B,有链式依赖,必须串行往上游传)}</script><script type="math/tex; mode=display">
+\frac{\partial L}{\partial W} = g_{\text{out}} \cdot x^T \quad \text{(W,只要 } g_{\text{out}} \text{ 和保存的 } x \text{ 都在,任意时刻都能算)}</script><p>W 没有链式依赖,<strong>可以塞进 bubble 时刻去算</strong>——这就是 2023 年 Zero Bubble Pipeline 的核心招式。GPipe 和 1F1B 都把 B 和 W 绑成一个原子的 backward,所以 bubble 公式 $\frac{P-1}{M+P-1}$ 就是它们的下限;一旦把 B 和 W 拆开,这个下限就被打穿了。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/2.PipelineParallel/GPipe/">https://SGDBS.github.io/AI_Infra/2.PipelineParallel/GPipe/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/AI_Infra/2.PipelineParallel/OneF1B/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="2. 1F1B">
+                        
+                        <span class="card-title">2. 1F1B</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-11
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="3. Interleaved 1F1B">
+                        
+                        <span class="card-title">3. Interleaved 1F1B</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

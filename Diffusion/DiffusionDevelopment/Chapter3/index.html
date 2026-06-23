@@ -1,0 +1,1664 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter 3. Sohl-Dickstein Model, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter 3. Sohl-Dickstein Model | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">Diffusion Models</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="扩散模型从入门到入土">扩散模型从入门到入土</span>
+            <span class="sidebar-count">9</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter0/" title="Chapter 0. 数学知识">
+                <span class="sidebar-label">Chapter 0. 数学知识</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter1/" title="Chapter 1. 贝叶斯 &amp; 变分推断">
+                <span class="sidebar-label">Chapter 1. 贝叶斯 &amp; 变分推断</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter2/" title="Chapter 2. EM &amp; VAE">
+                <span class="sidebar-label">Chapter 2. EM &amp; VAE</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/Diffusion/DiffusionDevelopment/Chapter3/" title="Chapter 3. Sohl-Dickstein Model">
+                <span class="sidebar-label">Chapter 3. Sohl-Dickstein Model</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter4/" title="Chapter 4. Score-based Models">
+                <span class="sidebar-label">Chapter 4. Score-based Models</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter5/" title="Chapter 5. NCSN Models">
+                <span class="sidebar-label">Chapter 5. NCSN Models</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter6/" title="Chapter 6. DDPM">
+                <span class="sidebar-label">Chapter 6. DDPM</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter7/" title="Chapter 7. Score SDE">
+                <span class="sidebar-label">Chapter 7. Score SDE</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter8/" title="Chapter 8. DDIM">
+                <span class="sidebar-label">Chapter 8. DDIM</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/Diffusion-Models/">Diffusion Models</a>
+        
+        <span>/</span>
+        <span>Chapter 3. Sohl-Dickstein Model</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter 3. Sohl-Dickstein Model</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/Diffusion-Models/">
+                                <span class="chip bg-color">Diffusion Models</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                Diffusion Models
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-01
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h2 id="1-模型框架的全貌"><a href="#1-模型框架的全貌" class="headerlink" title="1. 模型框架的全貌"></a>1. 模型框架的全貌</h2><p>这是 diffusion model 真正的”鼻祖”论文:”Deep Unsupervised Learning using Nonequilibrium Thermodynamics”。</p>
+<p>核心思想来自统计物理:任何复杂分布 q(x0)q(x_0)<br>q(x0​),只要慢慢加噪声,最终都会变成简单分布(高斯)。如果能学会逆转这个过程,就能从高斯采样回到数据分布。</p>
+<p>Sohl-Dickstein 的模型有两个过程,<strong>一个固定、一个学习</strong>。</p>
+<h3 id="1-1-前向过程-固定-不学习"><a href="#1-1-前向过程-固定-不学习" class="headerlink" title="1.1. 前向过程(固定,不学习)"></a>1.1. 前向过程(固定,不学习)</h3><p>把数据 $x_0 \sim q(x_0)$ 逐步加噪,经过 $T$ 步变成纯噪声:</p>
+<script type="math/tex; mode=display">q(x_t \mid x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}\, x_{t-1},\, \beta_t I)</script><p>整个前向链:</p>
+<script type="math/tex; mode=display">q(x_{1:T} \mid x_0) = \prod_{t=1}^T q(x_t \mid x_{t-1})</script><p><strong>关键性质</strong>:</p>
+<ul>
+<li>$\beta_t \in (0, 1)$ 是预设的 noise schedule(比如线性从 $10^{-4}$ 到 $0.02$)</li>
+<li>系数 $\sqrt{1-\beta<em>t}$ 保证方差不爆炸:若 $\text{Var}(x</em>{t-1}) = 1$,则 $\text{Var}(x_t) = 1$</li>
+<li>$T$ 足够大时,$x_T \approx \mathcal{N}(0, I)$,与 $x_0$ 无关</li>
+<li><strong>没有任何参数</strong>——这一步设计完就锁死</li>
+</ul>
+<h3 id="1-2-逆向过程-要学习"><a href="#1-2-逆向过程-要学习" class="headerlink" title="1.2. 逆向过程(要学习)"></a>1.2. 逆向过程(要学习)</h3><p>从纯噪声 $x_T \sim \mathcal{N}(0, I)$ 出发,逐步去噪生成 $x_0$:</p>
+<script type="math/tex; mode=display">p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(x_{t-1};\, \mu_\theta(x_t, t),\, \Sigma_\theta(x_t, t))</script><p>整个逆向链:</p>
+<script type="math/tex; mode=display">p_\theta(x_{0:T}) = p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)</script><p>其中 $p(x_T) = \mathcal{N}(0, I)$ 是固定的。</p>
+<p><strong>为什么逆向也用高斯?</strong> 这是 Sohl-Dickstein 引用 Feller (1949) 的关键洞察:<strong>当前向每步 $\beta<em>t$ 足够小时,真实的逆向条件分布 $q(x</em>{t-1} \mid x_t)$ 也近似为高斯</strong>。所以用高斯参数化是合理的。</p>
+<p>直觉解释:每步加的噪声很小,所以”撤销”这一步只需要小幅修正,小幅修正的不确定性也是高斯的。如果一步加大量噪声,逆向分布就不再是高斯(可能多峰),那就学不动了。</p>
+<p><strong>这一点决定了 diffusion 必须用很多步</strong>——这是它和 GAN 一步生成的本质区别。</p>
+<details><summary>为什么要用高斯分布</summary><div class="details-content"><p><strong>理论上不必须,但高斯是被多重约束逼出来的几乎唯一选择</strong>。让我把这些约束一条条摊开。</p>
+<h3 id="%E4%B8%80%E3%80%81%E5%85%88%E5%9B%9E%E7%AD%94-%E8%83%BD%E4%B8%8D%E8%83%BD%E4%B8%8D%E7%94%A8%E9%AB%98%E6%96%AF">一、先回答&quot;能不能不用高斯&quot;</h3>
+<p><strong>理论上完全可以</strong>。Sohl-Dickstein 2015 原论文里就讨论了两种:</p>
+<ul>
+<li><strong>高斯扩散</strong>:用于连续数据(图像、音频)</li>
+<li><strong>二项扩散</strong>:用于二值数据(每像素 0/1)</li>
+</ul>
+<p>后来还有人做过:</p>
+<ul>
+<li><strong>分类扩散</strong>(Categorical Diffusion):用于离散数据(token、文本)——D3PM (2021)、Argmax Flow 等</li>
+<li><strong>泊松扩散</strong>:用于计数数据</li>
+<li><strong>流形扩散</strong>(Manifold Diffusion):在球面、SO(3) 等流形上</li>
+<li><strong>泡沫扩散、混合扩散</strong>:研究性质</li>
+</ul>
+<p><strong>所以高斯不是必须的——它是一个选择。</strong></p>
+<p>但当你看大多数主流 diffusion 模型(DDPM、Stable Diffusion、FLUX、Sora 等)时,几乎全是高斯。这是因为高斯有<strong>一系列其他分布凑不齐的好性质</strong>。</p>
+<h3 id="%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E9%AB%98%E6%96%AF-%E4%B8%83%E5%A4%A7%E7%90%86%E7%94%B1">二、为什么选高斯?七大理由</h3>
+<h3 id="%E7%90%86%E7%94%B1-1-%E9%AB%98%E6%96%AF%E4%B9%8B%E9%97%B4%E7%9A%84-kl-%E6%9C%89%E9%97%AD%E5%BC%8F">理由 1:高斯之间的 KL 有闭式</h3>
+<p>这是最关键的工程理由。回忆 DDPM 训练目标的核心化简:</p>
+<script type="math/tex; mode=display">D_{\text{KL}}(\mathcal{N}(\mu_1, \sigma^2 I) \| \mathcal{N}(\mu_2, \sigma^2 I)) = \frac{\|\mu_1 - \mu_2\|^2}{2\sigma^2}</script><p>这个公式让 ELBO 化简成 MSE。<strong>换成其他分布族</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>分布</th>
+<th>KL 闭式?</th>
+<th>简洁度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>高斯</td>
+<td>✓</td>
+<td>极简(就是均值差的平方)</td>
+</tr>
+<tr>
+<td>伯努利、分类</td>
+<td>✓</td>
+<td>还行(熵 + 交叉熵)</td>
+</tr>
+<tr>
+<td>学生 t、Cauchy、混合分布</td>
+<td>✗</td>
+<td>没有闭式</td>
+</tr>
+<tr>
+<td>高斯 vs 非高斯</td>
+<td>✗</td>
+<td>没有闭式</td>
+</tr>
+</tbody>
+</table>
+<p>很多分布有 KL 闭式,但<strong>没有哪个能像高斯一样让 KL 简化成&quot;均值差平方&quot;这么干净</strong>。</p>
+<h3 id="%E7%90%86%E7%94%B1-2-%E9%AB%98%E6%96%AF%E4%B9%8B%E5%92%8C%E8%BF%98%E6%98%AF%E9%AB%98%E6%96%AF-%E5%8F%AF%E5%8A%A0%E6%80%A7">理由 2:高斯之和还是高斯(可加性)</h3>
+<p>如果 $X_1 \sim \mathcal{N}(\mu_1, \sigma_1^2)$ 和 $X_2 \sim \mathcal{N}(\mu_2, \sigma_2^2)$ 独立,那么</p>
+<script type="math/tex; mode=display">X_1 + X_2 \sim \mathcal{N}(\mu_1 + \mu_2,\, \sigma_1^2 + \sigma_2^2)</script><p><strong>这个性质让 diffusion 能算闭式边际</strong>——多步累积的噪声&quot;塌缩&quot;成一个等效的单步高斯。</p>
+<p>如果换成别的分布:</p>
+<ul>
+<li>伯努利之和是二项分布(不再是伯努利) ✗</li>
+<li>Cauchy 之和还是 Cauchy ✓ 但 Cauchy 没有方差,无法度量&quot;信号&quot;</li>
+<li>拉普拉斯之和不是拉普拉斯 ✗</li>
+<li>学生 t 之和不是学生 t ✗</li>
+</ul>
+<p><strong>几乎只有高斯同时满足&quot;和封闭&quot;且&quot;有有限方差&quot;</strong>——这就是它在概率论里的特殊地位。</p>
+<h3 id="%E7%90%86%E7%94%B1-3-%E9%87%8D%E5%8F%82%E6%95%B0%E5%8C%96%E8%B6%85%E7%BA%A7%E5%B9%B2%E5%87%80">理由 3:重参数化超级干净</h3>
+<script type="math/tex; mode=display">z \sim \mathcal{N}(\mu, \sigma^2) \iff z = \mu + \sigma \epsilon,\quad \epsilon \sim \mathcal{N}(0, 1)</script><p>这是个<strong>线性、可逆、可微</strong>的变换。<strong>线性重参数化让所有 diffusion 公式保持简洁</strong>——比如 $x_t$ 是 $x_0$ 和 $\epsilon$ 的<strong>线性</strong>组合,这个事实在推导反向公式、分析理论性质时都至关重要。</p>
+<h3 id="%E7%90%86%E7%94%B1-4-%E9%80%86%E5%90%91%E6%9D%A1%E4%BB%B6%E5%88%86%E5%B8%83%E4%B9%9F%E6%98%AF%E9%AB%98%E6%96%AF-feller-%E5%AE%9A%E7%90%86">理由 4:逆向条件分布也是高斯(Feller 定理)</h3>
+<p>Sohl-Dickstein 论文的关键洞察来自 Feller 1949:</p>
+<blockquote>
+<p>对一个连续马尔可夫扩散过程,<strong>当时间步 $\Delta t \to 0$ 时,逆向条件分布 $q(x_{t-1} \mid x_t)$ 也是高斯的</strong>(且与前向同族)。</p>
+</blockquote>
+<p>这个性质让我们可以<strong>用高斯参数化逆向过程</strong> $p<em>\theta(x</em>{t-1} \mid x<em>t) = \mathcal{N}(\mu</em>\theta, \Sigma_\theta)$,而且这个选择<strong>不会损失表达力</strong>——只要前向步够小,真实的逆向就是高斯,我们就能精确学到。</p>
+<h3 id="%E7%90%86%E7%94%B1-5-%E4%B8%AD%E5%BF%83%E6%9E%81%E9%99%90%E5%AE%9A%E7%90%86%E7%9A%84-%E6%99%AE%E9%80%82%E6%80%A7">理由 5:中心极限定理的&quot;普适性&quot;</h3>
+<p>中心极限定理:<strong>任何独立随机变量(满足温和条件)的和,经过归一化后趋向高斯</strong>。</p>
+<p>物理意义:把数据反复加各种小扰动,最终收敛到的极限分布<strong>一定是高斯</strong>——这是物理世界的普遍规律。所以&quot;用高斯加噪&quot;不只是数学方便,<strong>它本身就是&quot;信息消失&quot;过程的自然终态</strong>。</p>
+<h3 id="%E7%90%86%E7%94%B1-6-%E5%92%8C-sde-%E6%A1%86%E6%9E%B6%E7%9A%84%E4%BC%98%E9%9B%85%E5%AF%B9%E5%BA%94">理由 6:和 SDE 框架的优雅对应</h3>
+<p>VP 扩散其实是 OU 过程的精确离散化:</p>
+<script type="math/tex; mode=display">dx = -\tfrac{1}{2}\beta(t) x\, dt + \sqrt{\beta(t)}\, dw</script><p>这里 $dw$ 是布朗运动,<strong>布朗运动的增量本身就是高斯的</strong>。整个 SDE 理论(Itô 微积分、Fokker-Planck 方程、Anderson 反向 SDE)都建立在高斯噪声上——换成别的噪声,你失去整套 SDE 工具箱。</p>
+<h3 id="%E7%90%86%E7%94%B1-7-%E5%92%8C-score-matching-%E7%9A%84%E5%A4%A9%E7%84%B6%E5%AF%B9%E6%8E%A5">理由 7:和 Score Matching 的天然对接</h3>
+<p>Score 是 $\nabla_x \log p_t(x)$。对高斯加噪,score 有特别简单的形式:</p>
+<script type="math/tex; mode=display">\nabla_{x_t} \log q(x_t \mid x_0) = -\frac{x_t - \sqrt{\bar\alpha_t}\, x_0}{1-\bar\alpha_t} = -\frac{\epsilon}{\sqrt{1-\bar\alpha_t}}</script><p><strong>预测噪声 $\epsilon$ 等价于预测 score</strong>——这才让 DDPM(变分视角)和 NCSN(score 视角)被统一。</p>
+<h3 id="%E4%B8%89%E3%80%81%E4%B8%8D%E7%94%A8%E9%AB%98%E6%96%AF%E7%9A%84%E4%BB%A3%E4%BB%B7-%E5%85%B7%E4%BD%93%E7%9C%8B%E5%87%A0%E4%B8%AA%E4%BE%8B%E5%AD%90">三、不用高斯的代价(具体看几个例子)</h3>
+<h3 id="%E4%BE%8B-1-d3pm-%E5%88%86%E7%B1%BB%E6%89%A9%E6%95%A3-austin-et-al-2021">例 1:D3PM(分类扩散,Austin et al. 2021)</h3>
+<p>为离散 token 设计。前向过程用一个<strong>转移矩阵</strong> $Q_t$。代价:每一步是矩阵乘法、$q(x_t \mid x_0)$ 的闭式需要矩阵幂、没有重参数化技巧。效果能用,但比连续 diffusion 难调,实践中常用的方法反而是把 token 嵌入到连续空间再做高斯 diffusion。</p>
+<h3 id="%E4%BE%8B-2-%E6%B5%81%E5%BD%A2%E6%89%A9%E6%95%A3">例 2:流形扩散</h3>
+<p>研究方向之一,用于分子构象、机器人姿态。前向过程用流形上的布朗运动。代价:没有简单的&quot;加性噪声&quot;、$q(x_t \mid x_0)$ 通常没有简洁闭式、需要重新推导 score、loss、实现复杂。</p>
+<h3 id="%E4%BE%8B-3-cold-diffusion-%E5%8E%BB%E6%8E%89%E9%9A%8F%E6%9C%BA%E6%80%A7%E8%AF%95%E8%AF%95-bansal-et-al-2022">例 3:Cold Diffusion(去掉随机性试试,Bansal et al. 2022)</h3>
+<p><strong>用确定性变换替换高斯加噪</strong>(比如逐步模糊、像素化、遮罩)。也能 work,但失去了 SDE/score 的理论框架,只能从损失上 motivate。</p>
+<p><strong>结论</strong>:不是不能不用高斯,但你失去的远多于得到的。</p>
+<h3 id="%E5%9B%9B%E3%80%81flow-matching-%E7%AE%97%E4%BB%80%E4%B9%88">四、Flow Matching 算什么?</h3>
+<p>Flow Matching(Lipman et al. 2023)、Rectified Flow 是 diffusion 的现代推广,FLUX、SD3 都在用。</p>
+<p><strong>它仍然在用高斯</strong>——只是把&quot;高斯到数据的路径&quot;从扩散过程推广到任意概率路径。比如可以用直线插值:</p>
+<script type="math/tex; mode=display">x_t = (1-t)\, \epsilon + t\, x_0,\quad \epsilon \sim \mathcal{N}(0, I)</script><p>仍然是高斯噪声,只是路径变了。这反而进一步证明了<strong>高斯的核心地位</strong>。</p>
+<h3 id="%E4%BA%94%E3%80%81%E4%B8%80%E4%B8%AA%E6%9B%B4%E6%B7%B1%E7%9A%84%E8%A7%86%E8%A7%92-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%89%A9%E7%90%86%E4%B8%96%E7%95%8C%E5%81%8F%E7%88%B1%E9%AB%98%E6%96%AF">五、一个更深的视角:为什么物理世界偏爱高斯?</h3>
+<p><strong>为什么高斯在概率论里这么特殊?</strong></p>
+<ol>
+<li><strong>最大熵分布</strong>:在固定均值和方差的约束下,<strong>高斯是熵最大的分布</strong>——也就是&quot;最不偏见&quot;的分布</li>
+<li><strong>CLT 终态</strong>:任何独立扰动的和都趋向高斯——它是&quot;扰动累积&quot;的吸引子</li>
+<li><strong>平移不变 + 旋转不变 + 独立性</strong>:满足&quot;$X, Y$ 独立 ⇒ $X+Y, X-Y$ 独立&quot;的连续分布<strong>只有</strong>高斯(Bernstein 定理)</li>
+<li><strong>指数族 + 二阶充分统计</strong>:统计量只需要均值和方差,所有信息都浓缩了</li>
+</ol>
+<p>所以高斯不是数学家&quot;选出来&quot;的,<strong>它是从一些极简的对称性公理里&quot;长出来&quot;的</strong>。</p>
+<p><strong>diffusion 用高斯,本质上是在&quot;借用物理世界已经验证好的最优噪声形式&quot;</strong>。</p>
+<h3 id="%E5%85%AD%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">六、要点回顾</h3>
+<ul>
+<li>高斯<strong>不是必须的</strong>——可以做分类、二项、流形等其他扩散</li>
+<li>但高斯<strong>有一系列其他分布凑不齐的好性质</strong>:<ol>
+<li>KL 有简洁闭式</li>
+<li>高斯之和还是高斯(支持闭式边际)</li>
+<li>重参数化是线性的</li>
+<li>Feller 定理保证逆向也是高斯</li>
+<li>CLT 让它成为&quot;信息消失&quot;的自然终态</li>
+<li>和 SDE/Itô 微积分天然兼容</li>
+<li>Score 形式简单,统一变分和 score-based 两条线</li>
+</ol>
+</li>
+<li><strong>diffusion 不是&quot;先选了高斯然后推出整套理论&quot;,而是&quot;在追求闭式 + 简洁 + 普适的多重约束下,被逼到只能选高斯&quot;</strong></li>
+</ul>
+</div></details>
+<h3 id="1-3-模型参数化-mu-theta-和-Sigma-theta-是什么"><a href="#1-3-模型参数化-mu-theta-和-Sigma-theta-是什么" class="headerlink" title="1.3. 模型参数化:$\mu\theta$ 和 $\Sigma\theta$ 是什么?"></a>1.3. 模型参数化:$\mu<em>\theta$ 和 $\Sigma</em>\theta$ 是什么?</h3><p>在 2015 年原版,$\mu<em>\theta$ 和 $\Sigma</em>\theta$ 都是神经网络的输出。给定 $(x_t, t)$,网络输出均值向量和协方差矩阵(实践中通常对角)。</p>
+<p>网络架构在原论文里比较朴素(MLP 或简单 CNN)——这也是它当年效果不够惊艳的原因之一。后来 DDPM 用 UNet 才让效果上去。</p>
+<details><summary>附录:逆向条件分布的密度怎么算</summary><div class="details-content"><h3 id="%E4%B8%80%E3%80%81%E5%85%88%E6%BE%84%E6%B8%85-%E4%B8%8D%E6%98%AF-%E8%AE%A1%E7%AE%97-p-theta-x-t-1-mid-x-t-%E8%80%8C%E6%98%AF-%E8%AE%A1%E7%AE%97%E8%BF%99%E4%B8%AA%E5%88%86%E5%B8%83%E5%9C%A8%E6%9F%90%E7%82%B9%E7%9A%84%E5%AF%86%E5%BA%A6%E5%80%BC">一、先澄清:不是&quot;计算 $p<em>\theta(x</em>{t-1} \mid x_t)$&quot;,而是&quot;计算这个分布在某点的密度值&quot;</h3>
+<p>先把概念分开:</p>
+<ul>
+<li>$p<em>\theta(x</em>{t-1} \mid x<em>t)$ 作为<strong>分布</strong>,本身就是 $\mathcal{N}(\mu</em>\theta(x<em>t, t), \Sigma</em>\theta(x<em>t, t))$——它是一个高斯,由网络输出 $\mu</em>\theta, \Sigma_\theta$ 完全定义</li>
+<li><strong>训练时我们要算的不是这个分布,而是&quot;已经采到的 $x_{t-1}$ 在这个分布下的概率密度值&quot;</strong> $p<em>\theta(x</em>{t-1} \mid x_t)$ 在那个特定点的取值</li>
+</ul>
+<p>也就是说,损失里的 $\log p<em>\theta(x</em>{t-1} \mid x<em>t)$ 是一个<strong>数</strong>,通过把具体的 $x</em>{t-1}$ 代入高斯密度公式得到。</p>
+<h3 id="%E4%BA%8C%E3%80%81%E5%85%B7%E4%BD%93%E8%AE%A1%E7%AE%97%E6%B5%81%E7%A8%8B">二、具体计算流程</h3>
+<h3 id="%E6%AD%A5%E9%AA%A4-1-%E5%89%8D%E5%90%91%E9%87%87%E6%A0%B7%E5%BE%97%E5%88%B0-x-t-1-%E5%92%8C-x-t">步骤 1:前向采样得到 $x_{t-1}$ 和 $x_t$</h3>
+<p>从数据 $x_0$ 出发,跑前向链:</p>
+<script type="math/tex; mode=display">x_1 = \sqrt{1-\beta_1}\, x_0 + \sqrt{\beta_1}\, \epsilon_0</script><script type="math/tex; mode=display">x_2 = \sqrt{1-\beta_2}\, x_1 + \sqrt{\beta_2}\, \epsilon_1</script><script type="math/tex; mode=display">\vdots</script><script type="math/tex; mode=display">x_{t-1} = \sqrt{1-\beta_{t-1}}\, x_{t-2} + \sqrt{\beta_{t-1}}\, \epsilon_{t-2}</script><script type="math/tex; mode=display">x_t = \sqrt{1-\beta_t}\, x_{t-1} + \sqrt{\beta_t}\, \epsilon_{t-1}</script><p>现在我们手上有两个<strong>具体的向量</strong>:$x_{t-1}$ 和 $x_t$(都是 $d$ 维向量,比如 28×28=784 维)。</p>
+<p>它们都是 $\theta$-无关的——纯粹由前向链和随机种子决定。</p>
+<h3 id="%E6%AD%A5%E9%AA%A4-2-%E6%8A%8A-x-t-%E5%96%82%E7%BB%99%E7%BD%91%E7%BB%9C-%E5%BE%97%E5%88%B0-mu-theta-%E5%92%8C-sigma-theta">步骤 2:把 $x<em>t$ 喂给网络,得到 $\mu</em>\theta$ 和 $\Sigma_\theta$</h3>
+<p>神经网络 $f_\theta$ 的输入:$(x_t, t)$
+神经网络的输出:两个量</p>
+<script type="math/tex; mode=display">\mu_\theta(x_t, t) \in \mathbb{R}^d \quad (\text{一个 } d \text{ 维向量})</script><script type="math/tex; mode=display">\Sigma_\theta(x_t, t) \in \mathbb{R}^{d \times d} \quad (\text{一个协方差矩阵,实践中通常对角})</script><p>实践中协方差用对角矩阵 $\Sigma<em>\theta = \text{diag}(\sigma</em>\theta^2)$,网络输出 $d$ 个方差值(或对数方差),这样:</p>
+<ul>
+<li>网络输出 $2d$ 个数</li>
+<li>前 $d$ 个是 $\mu_\theta$</li>
+<li>后 $d$ 个是 $\sigma_\theta^2$(对角元素)</li>
+</ul>
+<h3 id="%E6%AD%A5%E9%AA%A4-3-%E6%8A%8A-x-t-1-%E4%BB%A3%E5%85%A5%E9%AB%98%E6%96%AF%E5%AF%86%E5%BA%A6%E5%85%AC%E5%BC%8F">步骤 3:把 $x_{t-1}$ 代入高斯密度公式</h3>
+<p>现在 $p<em>\theta(\cdot \mid x_t) = \mathcal{N}(\mu</em>\theta, \Sigma<em>\theta)$ 这个分布被完全定义了。我们要算这个分布在 $x</em>{t-1}$ 这个点的密度值。</p>
+<p>多维高斯密度公式:</p>
+<script type="math/tex; mode=display">\mathcal{N}(x; \mu, \Sigma) = \frac{1}{(2\pi)^{d/2} |\Sigma|^{1/2}} \exp\left(-\frac{1}{2}(x-\mu)^\top \Sigma^{-1} (x-\mu)\right)</script><p>取 $\log$:</p>
+<script type="math/tex; mode=display">\log \mathcal{N}(x; \mu, \Sigma) = -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log|\Sigma| - \frac{1}{2}(x-\mu)^\top \Sigma^{-1} (x-\mu)</script><p>把 $x = x<em>{t-1}$、$\mu = \mu</em>\theta(x<em>t, t)$、$\Sigma = \Sigma</em>\theta(x_t, t)$ 代入:</p>
+<script type="math/tex; mode=display">\log p_\theta(x_{t-1} \mid x_t) = -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log|\Sigma_\theta| - \frac{1}{2}(x_{t-1}-\mu_\theta)^\top \Sigma_\theta^{-1} (x_{t-1}-\mu_\theta)</script><p>如果 $\Sigma<em>\theta = \text{diag}(\sigma</em>{\theta,1}^2, \ldots, \sigma_{\theta,d}^2)$ 是对角的,这进一步简化为:</p>
+<script type="math/tex; mode=display">\log p_\theta(x_{t-1} \mid x_t) = -\frac{d}{2}\log(2\pi) - \frac{1}{2}\sum_{i=1}^d \log \sigma_{\theta,i}^2 - \frac{1}{2}\sum_{i=1}^d \frac{(x_{t-1,i} - \mu_{\theta,i})^2}{\sigma_{\theta,i}^2}</script><p><strong>这就是一个具体可算的标量</strong>。每一项都是当前张量的简单运算——对应到代码里就是几行 <code>torch</code> 操作。</p>
+<h3 id="%E4%B8%89%E3%80%81%E4%BC%AA%E4%BB%A3%E7%A0%81%E7%89%88%E6%9C%AC">三、伪代码版本</h3>
+<p>让流程更具体一些:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 训练一个数据点</span></span><br><span class="line">x_0 = sample_from_dataset()</span><br><span class="line">t = random.randint(<span class="number">1</span>, T)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤 1: 前向采样到 x_&#123;t-1&#125; 和 x_t</span></span><br><span class="line">x_prev = forward_sample(x_0, t-<span class="number">1</span>)   <span class="comment"># 即 x_&#123;t-1&#125;</span></span><br><span class="line">eps = randn_like(x_prev)</span><br><span class="line">x_t = sqrt(<span class="number">1</span> - beta[t]) * x_prev + sqrt(beta[t]) * eps</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤 2: 网络输出 mu 和 sigma^2</span></span><br><span class="line">mu_theta, log_var_theta = network(x_t, t)</span><br><span class="line">var_theta = exp(log_var_theta)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤 3: 算 log p(x_&#123;t-1&#125; | x_t),代高斯密度公式</span></span><br><span class="line">diff = x_prev - mu_theta</span><br><span class="line">log_p = -<span class="number">0.5</span> * d * log(<span class="number">2</span>*pi) \</span><br><span class="line">        - <span class="number">0.5</span> * <span class="built_in">sum</span>(log_var_theta) \</span><br><span class="line">        - <span class="number">0.5</span> * <span class="built_in">sum</span>(diff**<span class="number">2</span> / var_theta)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 损失里的对应项:-log p</span></span><br><span class="line">loss_term = -log_p</span><br></pre></td></tr></table></figure>
+<h3 id="%E5%9B%9B%E3%80%81%E5%85%B3%E9%94%AE%E6%BE%84%E6%B8%85%E7%82%B9">四、关键澄清点</h3>
+<h3 id="4-1-%E8%AE%AD%E7%BB%83%E6%97%B6%E7%9A%84-x-t-1-%E4%B8%8D%E6%98%AF%E7%BD%91%E7%BB%9C%E7%94%9F%E6%88%90%E7%9A%84">4.1 训练时的 $x_{t-1}$ 不是网络生成的</h3>
+<p><strong>初学者最容易混淆的一点</strong>:训练时,$x<em>{t-1}$ 不是从 $p</em>\theta$ 采样得到的——它是<strong>前向链事先采好的&quot;标签&quot;</strong>。</p>
+<p>我们做的事情是:</p>
+<ul>
+<li>给网络看 $x_t$</li>
+<li>让网络输出一个分布 $p_\theta(\cdot \mid x_t)$</li>
+<li>评估这个分布在&quot;真实&quot;的 $x_{t-1}$ 上的概率密度</li>
+<li>优化网络让这个密度尽量大</li>
+</ul>
+<p><strong>这是经典的最大似然训练</strong>——网络输出一个分布,我们让它在真实数据上的概率最大。和分类任务里&quot;输出 softmax 概率,让真实类别的概率最大&quot;完全同构,只是这里&quot;类别&quot;换成了连续的 $x_{t-1}$,概率换成了高斯密度。</p>
+<h3 id="4-2-%E6%A2%AF%E5%BA%A6%E6%80%8E%E4%B9%88%E6%B5%81">4.2 梯度怎么流?</h3>
+<p>梯度路径:</p>
+<script type="math/tex; mode=display">\theta \xrightarrow{\text{网络}} (\mu_\theta, \Sigma_\theta) \xrightarrow{\text{密度公式}} \log p_\theta(x_{t-1} \mid x_t) \xrightarrow{} \text{loss}</script><p>注意 $x<em>t, x</em>{t-1}$ 是常量(对梯度而言),只有 $\mu<em>\theta, \Sigma</em>\theta$ 是 $\theta$ 的函数。所以梯度只通过这两个量回流——<strong>不需要重参数化穿过任何采样动作</strong>(这就是上一讲说的&quot;Sohl-Dickstein 不必须用重参数化&quot;的具体含义)。</p>
+<h3 id="4-3-%E7%9B%B4%E8%A7%82%E4%B8%8A%E7%BD%91%E7%BB%9C%E5%9C%A8%E5%AD%A6%E4%BB%80%E4%B9%88">4.3 直观上网络在学什么</h3>
+<p>最关键的一项是:</p>
+<script type="math/tex; mode=display">-\frac{1}{2}\| x_{t-1} - \mu_\theta(x_t, t) \|^2 / \sigma^2</script><p>最大化它 = 让 $\mu<em>\theta(x_t, t)$ 尽量靠近 $x</em>{t-1}$。</p>
+<p>也就是说:<strong>网络看到 $x_t$,要预测出&quot;这个 $x_t$ 上一步应该长啥样&quot;</strong>——一种&quot;去噪&quot;行为。这就是 diffusion 网络在做的事的本质。</p>
+<p>DDPM 后来做的&quot;预测 $\epsilon$&quot;其实是这个目标的等价变换——既然 $x<em>t = \sqrt{\bar\alpha_t}x_0 + \sqrt{1-\bar\alpha_t}\epsilon$,与其让网络预测 $\mu</em>\theta$,不如让它预测 $\epsilon$,数学上完全等价但优化更稳定。</p>
+<h3 id="%E4%BA%94%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">五、要点回顾</h3>
+<ul>
+<li>$p<em>\theta(x</em>{t-1} \mid x<em>t)$ 是个高斯分布,由网络输出 $\mu</em>\theta, \Sigma_\theta$ 完全定义</li>
+<li>&quot;计算 $p<em>\theta(x</em>{t-1} \mid x<em>t)$&quot; 实际指**算高斯密度公式在 $x</em>{t-1}$ 这个点的取值**</li>
+<li>$x_{t-1}$ 是从前向链采样得到的&quot;标签&quot;,不是网络生成的</li>
+<li>梯度只通过 $\mu<em>\theta, \Sigma</em>\theta$ 回流,不穿过采样</li>
+<li>本质上是最大似然:让网络输出的分布在真实 $x_{t-1}$ 上概率最大</li>
+</ul>
+</div></details>
+<hr>
+<h2 id="2-损失函数-从-ELBO-到具体形式"><a href="#2-损失函数-从-ELBO-到具体形式" class="headerlink" title="2. 损失函数:从 ELBO 到具体形式"></a>2. 损失函数:从 ELBO 到具体形式</h2><h3 id="2-1-起点-ELBO"><a href="#2-1-起点-ELBO" class="headerlink" title="2.1. 起点:ELBO"></a>2.1. 起点:ELBO</h3><p>我们已经推过:</p>
+<script type="math/tex; mode=display">\log p_\theta(x_0) \geq \mathbb{E}_{q(x_{1:T} \mid x_0)}\left[\log \frac{p_\theta(x_{0:T})}{q(x_{1:T} \mid x_0)}\right] =: \mathcal{L}</script><p>在训练时我们最小化 $-\mathcal{L}$(负 ELBO)。</p>
+<h3 id="2-2-展开"><a href="#2-2-展开" class="headerlink" title="2.2. 展开"></a>2.2. 展开</h3><p>把 $p<em>\theta(x</em>{0:T})$ 和 $q(x_{1:T} \mid x_0)$ 的乘积形式代入:</p>
+<script type="math/tex; mode=display">-\mathcal{L} = \mathbb{E}_q\left[-\log \frac{p(x_T) \prod_{t=1}^T p_\theta(x_{t-1} \mid x_t)}{\prod_{t=1}^T q(x_t \mid x_{t-1})}\right]</script><p>把 $\log$ 拆开:</p>
+<script type="math/tex; mode=display">= \mathbb{E}_q\left[-\log p(x_T) - \sum_{t=1}^T \log \frac{p_\theta(x_{t-1} \mid x_t)}{q(x_t \mid x_{t-1})}\right]</script><p>整理成更标准的形式:</p>
+<script type="math/tex; mode=display">\boxed{-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \sum_{t=1}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}\right]}</script><p>这就是 <strong>Sohl-Dickstein 2015 的训练目标</strong>。</p>
+<h3 id="2-3-这个目标怎么训练"><a href="#2-3-这个目标怎么训练" class="headerlink" title="2.3. 这个目标怎么训练?"></a>2.3. 这个目标怎么训练?</h3><p>具体训练步骤:</p>
+<ol>
+<li>从数据集采 $x_0$</li>
+<li>前向采样整条链 $x<em>1, x_2, \ldots, x_T$(每一步都按 $q(x_t \mid x</em>{t-1})$ 采)</li>
+<li>计算每一项 $\log \frac{q(x<em>t \mid x</em>{t-1})}{p<em>\theta(x</em>{t-1} \mid x_t)}$</li>
+<li>求和,反向传播,更新 $\theta$</li>
+</ol>
+<p>这就是<strong>完整的 Sohl-Dickstein 训练流程</strong>。</p>
+<h3 id="2-4-为什么这个目标”能算但不好用”"><a href="#2-4-为什么这个目标”能算但不好用”" class="headerlink" title="2.4. 为什么这个目标”能算但不好用”?"></a>2.4. 为什么这个目标”能算但不好用”?</h3><p>每一项里:</p>
+<ul>
+<li><strong>分子</strong> $q(x<em>t \mid x</em>{t-1}) = \mathcal{N}(x<em>t; \sqrt{1-\beta_t}\, x</em>{t-1},\, \beta_t I)$ 是已知的高斯,$\log$ 有闭式</li>
+<li><strong>分母</strong> $p<em>\theta(x</em>{t-1} \mid x<em>t) = \mathcal{N}(x</em>{t-1}; \mu<em>\theta(x_t, t),\, \Sigma</em>\theta(x_t, t))$ 是网络输出的高斯,$\log$ 也有闭式</li>
+</ul>
+<p>所以每一项的对数比值都能算。问题是<strong>方差</strong>。</p>
+<p>让我具体分析一下方差从哪儿来。在前向采样时:</p>
+<ul>
+<li>你从 $x_0$ 走到 $x_t$,中间每步都是随机的</li>
+<li>$x_t$ 的随机性会”传染”给所有后续步骤</li>
+</ul>
+<p>于是这个估计量 $\log \frac{q(x<em>t \mid x</em>{t-1})}{p<em>\theta(x</em>{t-1} \mid x_t)}$ 在不同的随机轨迹下取值跳得很厉害,$T = 1000$ 步求和后方差会累积得很大。</p>
+<h3 id="2-5-一个不那么明显的问题-方向不一致"><a href="#2-5-一个不那么明显的问题-方向不一致" class="headerlink" title="2.5. 一个不那么明显的问题:方向不一致"></a>2.5. 一个不那么明显的问题:<strong>方向不一致</strong></h3><p>更深的问题是:</p>
+<ul>
+<li>分子 $q(x<em>t \mid x</em>{t-1})$ 是<strong>前向</strong>的:已知 $x_{t-1}$,问 $x_t$</li>
+<li>分母 $p<em>\theta(x</em>{t-1} \mid x<em>t)$ 是<strong>逆向</strong>的:已知 $x_t$,问 $x</em>{t-1}$</li>
+</ul>
+<p>两者条件方向相反,导致:</p>
+<ul>
+<li>这不是一个”自然”的 KL 散度形式</li>
+<li>没法用闭式 KL 简化</li>
+<li>每一项必须用蒙特卡洛估计</li>
+</ul>
+<p>DDPM 后来的关键改写就是<strong>把分子也变成逆向条件分布</strong>,让每项都变成两个高斯之间的 KL,有闭式解,直接消除蒙特卡洛噪声。</p>
+<h2 id="3-Sohl-Dickstein-论文里的另外两件事"><a href="#3-Sohl-Dickstein-论文里的另外两件事" class="headerlink" title="3. Sohl-Dickstein 论文里的另外两件事"></a>3. Sohl-Dickstein 论文里的另外两件事</h2><p>为了完整,提一下论文里的另外两个细节:</p>
+<h3 id="3-1-noise-schedule-的选择"><a href="#3-1-noise-schedule-的选择" class="headerlink" title="3.1. noise schedule 的选择"></a>3.1. noise schedule 的选择</h3><p>原论文用了几种:</p>
+<ul>
+<li>二项扩散(用于二值数据)</li>
+<li>高斯扩散(用于连续数据)——也就是我们上面讨论的</li>
+</ul>
+<p>他们做了一些手工设计,后来 DDPM 用了简单的线性 schedule,效果就很好。</p>
+<h3 id="3-2-一个有意思的小细节-乘性-vs-加性"><a href="#3-2-一个有意思的小细节-乘性-vs-加性" class="headerlink" title="3.2. 一个有意思的小细节:乘性 vs 加性"></a>3.2. 一个有意思的小细节:乘性 vs 加性</h3><p>注意前向 $q(x<em>t \mid x</em>{t-1}) = \mathcal{N}(\sqrt{1-\beta<em>t}\, x</em>{t-1}, \beta_t I)$ 里的 $\sqrt{1-\beta_t}$。这个<strong>乘性收缩</strong>有什么用?</p>
+<p>如果只用加性噪声 $q(x<em>t \mid x</em>{t-1}) = \mathcal{N}(x_{t-1}, \beta_t I)$,方差会一直涨,$T \to \infty$ 时 $x_T$ 是无限大方差——不收敛到标准高斯。</p>
+<p>加上 $\sqrt{1-\beta_t}$ 这个收缩,信号每一步都向 $0$ 靠拢一点,噪声也加一点,<strong>总方差保持不变</strong>。这种设计叫 <strong>Variance Preserving (VP)</strong>,是 DDPM 沿用的形式。</p>
+<p>后来 NCSN/Score SDE 用了另一种思路 <strong>Variance Exploding (VE)</strong>:不收缩,直接加大量噪声让方差爆炸。两种都行,只是参数化不同。</p>
+<hr>
+<h2 id="4-用一张图总结"><a href="#4-用一张图总结" class="headerlink" title="4. 用一张图总结"></a>4. 用一张图总结</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">                  前向(固定,加噪)</span><br><span class="line">   x_0  ────→  x_1  ────→  x_2  ────→ ... ────→  x_T ≈ N(0, I)</span><br><span class="line">        q(x_1|x_0)    q(x_2|x_1)              q(x_T|x_&#123;T-1&#125;)</span><br><span class="line">   </span><br><span class="line">   </span><br><span class="line">   x_0  ←────  x_1  ←────  x_2  ←──── ... ←────  x_T</span><br><span class="line">         p_θ(x_0|x_1)  p_θ(x_1|x_2)         p_θ(x_&#123;T-1&#125;|x_T)</span><br><span class="line">                  逆向(学习,去噪)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">训练目标(Sohl-Dickstein 2015):</span><br><span class="line">  最小化 −ELBO</span><br><span class="line">       = E_q [−log p(x_T) + Σ_t log q(x_t|x_&#123;t-1&#125;) / p_θ(x_&#123;t-1&#125;|x_t) ]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">采样:</span><br><span class="line">  x_T ~ N(0, I)</span><br><span class="line">  for t = T, ..., 1:</span><br><span class="line">      x_&#123;t-1&#125; ~ p_θ(x_&#123;t-1&#125; | x_t)   # 用学到的网络</span><br><span class="line">  return x_0</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="5-和后续工作的承接"><a href="#5-和后续工作的承接" class="headerlink" title="5. 和后续工作的承接"></a>5. 和后续工作的承接</h2><p>理解了原版,后续每一步”改进”你都能看清:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>谁解决的</th>
+<th>怎么解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ELBO 里 $q$ 和 $p_\theta$ 方向不一致</td>
+<td>DDPM (2020)</td>
+<td>用贝叶斯把 ELBO 重写成 KL 之和</td>
+</tr>
+<tr>
+<td>KL 没闭式</td>
+<td>DDPM</td>
+<td>高斯之间的 KL 有闭式</td>
+</tr>
+<tr>
+<td>损失里要预测 $\mu_\theta$</td>
+<td>DDPM</td>
+<td>重参数化为预测噪声 $\epsilon$</td>
+</tr>
+<tr>
+<td>网络架构弱</td>
+<td>DDPM</td>
+<td>UNet + 自注意力 + 时间嵌入</td>
+</tr>
+<tr>
+<td>采样要 $T$ 步太慢</td>
+<td>DDIM (2020) / DPM-Solver (2022)</td>
+<td>跳步采样 / ODE 数值解</td>
+</tr>
+<tr>
+<td>直接在像素空间太贵</td>
+<td>LDM / Stable Diffusion (2022)</td>
+<td>在 VAE 潜空间做 diffusion</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="6-要点回顾"><a href="#6-要点回顾" class="headerlink" title="6. 要点回顾"></a>6. 要点回顾</h2><ul>
+<li>Sohl-Dickstein 的框架 = <strong>固定的高斯加噪前向 + 学习的高斯去噪逆向</strong></li>
+<li>损失函数 = ELBO,展开后是一串”前向条件 / 逆向条件”的对数比值之和</li>
+<li>这个目标<strong>理论上正确、实际上方差大</strong>,导致原始版本训练效果一般</li>
+<li>关键卡点:前向和逆向条件方向不一致,无法化简成闭式 KL</li>
+<li>DDPM 的本质改进就是<strong>通过贝叶斯把这个不一致修好</strong></li>
+</ul>
+<hr>
+<p>到这里,<strong>第一讲(Sohl-Dickstein 起源)</strong>就讲完整了。我们已经覆盖:</p>
+<ul>
+<li>物理动机和 ELBO 的推导</li>
+<li>蒙特卡洛采样估计的本质</li>
+<li>完整的模型框架和损失函数</li>
+<li>它为什么 work、为什么不够好</li>
+</ul>
+<h2 id="7-为什么-2015-年没火"><a href="#7-为什么-2015-年没火" class="headerlink" title="7. 为什么 2015 年没火?"></a>7. 为什么 2015 年没火?</h2><p>Sohl-Dickstein 的论文方向完全正确,但有几个问题:</p>
+<ol>
+<li><strong>算力不够</strong>:2015 年训练一个像样的 diffusion 模型代价很大</li>
+<li><strong>架构不够好</strong>:UNet + attention 的组合是后来才成熟的</li>
+<li><strong>目标函数没简化</strong>:直接的 ELBO 训练信号弱</li>
+<li><strong>采样太慢</strong>:几百步采样在当时不可接受</li>
+</ol>
+<p>所以这篇论文沉寂了 5 年,直到 2020 年 DDPM 才让它重新焕发生机。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/Diffusion/DiffusionDevelopment/Chapter3/">https://SGDBS.github.io/Diffusion/DiffusionDevelopment/Chapter3/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/Diffusion-Models/">
+                                    <span class="chip bg-color">Diffusion Models</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/Diffusion/DiffusionDevelopment/Chapter0/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Chapter 0. 数学知识">
+                        
+                        <span class="card-title">Chapter 0. 数学知识</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-01
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                    Diffusion Models
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/Diffusion-Models/">
+                        <span class="chip bg-color">Diffusion Models</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/Diffusion/DiffusionDevelopment/Chapter6/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="Chapter 6. DDPM">
+                        
+                        <span class="card-title">Chapter 6. DDPM</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-01
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                    Diffusion Models
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/Diffusion-Models/">
+                        <span class="chip bg-color">Diffusion Models</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

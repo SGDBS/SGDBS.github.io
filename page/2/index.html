@@ -1,0 +1,928 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+<main class="content latest-home">
+    <section class="latest-shell">
+        <header class="latest-header">
+            <div>
+                <p class="latest-eyebrow">Latest Notes</p>
+                <h1>YANG's Blog</h1>
+                <p class="latest-subtitle">按时间整理的技术笔记、学习记录和工程实践。</p>
+            </div>
+            <a class="latest-kb-link" href="/categories/">
+                <i class="fas fa-layer-group"></i>
+                知识库
+            </a>
+        </header>
+
+        <div class="latest-feed">
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/">3. Interleaved 1F1B</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    1. 故事线:为什么会出现 interleaved1.1 前一代留下的问题Gpipe 解决了”pipeline 怎么并行”的问题,但激活内存爆炸——in-flight 的 micro-batch 数 = $M$。 1F1B(One Forward One Backward)解决了显存:forward
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI-Infra/">AI Infra</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter10/">RL Chapter10 探索：从 ε-greedy 到 Curiosity</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：所有 RL 算法都隐式依赖”探索”才能成立——没有探索，agent 永远学不到更好的策略。本章系统讲解从经典多臂老虎机到现代 deep RL 的探索方法。 承上：Ch4 ε-greedy + Ch9 高斯噪声 + Ch5/8 熵正则。启下：Ch11 offline RL（不需要探索的极端
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter11/">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：和前面所有章节（online RL）正相反——完全不与环境交互，只用预先收集的固定数据集训练。这是医疗、自动驾驶、推荐系统的现实约束，也是 DPO 的数学根基。理解 offline RL，就理解了为什么 DPO 能存在。 承上：Ch4 Q-Learning + Ch9 DDPG/SAC（
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter12/">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：模仿学习从专家演示中学策略，SFT 的 RL 视角即 BC。本章串起 BC → DAgger → GAIL → IRL，最后回到 LLM：为什么 SFT 不够（BC 的分布偏移），为什么需要 RLHF（DPO 是 GAIL 风格的偏好学习）。 承上：Ch11 offline RL 的极端
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter3/">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：DP（Ch2）需要已知 MDP，但现实中 $P, R$ 几乎总是未知。本章引入 RL 的核心思想——从交互样本估计 Bellman 方程，奠定后续所有 model-free 算法的基础。 承上：Ch1 §A.7 的 $Q^\pi$ 采样形式 + Ch2 §6 的 GPI 框架。启下：Ch
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter13/">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：整套笔记的终章。把前 12 章的 RL 知识应用到 LLM 时代——PPO/DPO/GRPO/RLAIF/PRM 在数学和工程上分别属于哪个 RL 范式，为什么不同公司选不同算法，以及 R1/o1 等推理模型如何”用 RL 涌现思考能力”。 承上：本系列全部章节。关联：与《学习笔记-大模
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter2/">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：在 MDP 已知（$P, R$ 已知）的前提下，迭代求解 Bellman 方程。DP 是 RL 的”理论基线”——后续所有 model-free 方法（MC、TD、Q-Learning、PG、PPO）都是在 DP 不可行时（MDP 未知）的替代方案。 承上：Ch1 §A.4 Bellma
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter5/">RL Chapter5 Policy Gradient：直接对策略求梯度</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：RL 的另一条主线——直接参数化策略并求梯度上升。Policy Gradient 是 PPO（Ch8）、DPO（Ch11/Ch13）、GRPO 的共同根基。本章包含整套 RL 中最重要的一个证明：策略梯度定理。 承上：Ch1 价值函数 + Ch3 期望估计。启下：Ch6 把 PG + 价
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter4/">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：把 Ch3 的 TD 思想从”评估”扩展到”控制”——直接从交互经验中学最优策略，不需要已知 MDP。Q-Learning 是 RL 史上最经典的算法，第一个在理论上保证收敛到最优的 model-free 控制方法。 承上：Ch2 §6 GPI 框架 + Ch3 §A.2 TD-erro
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/ReinforcementLearning/Chapter7/">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-05-10</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                     本章定位：把 Ch4 的 Q-Learning 从表格法升级到神经网络，进入”深度强化学习”时代。DQN（DeepMind 2013/2015）是 RL 史上的里程碑——首次在大状态空间（Atari 像素输入）上达到人类水平。 承上：Ch4 Q-Learning 公式 + Ch1 Bellman 
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">AI面试知识</a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a>
+                    
+                </div>
+                
+            </article>
+            
+        </div>
+    </section>
+</main>
+
+
+<div class="container paging">
+    <div class="row">
+        <div class="col s6 m4 l4">
+            
+            <a href="/"
+               class="left btn-floating btn-large waves-effect waves-light bg-color">
+                <i class="fas fa-angle-left"></i>
+            </a>
+            
+        </div>
+        <div class="page-info col m4 l4 hide-on-small-only">
+            <div class="center-align b-text-gray">2 / 22</div>
+        </div>
+        <div class="col s6 m4 l4">
+            
+            <a href="/page/3/"
+               class="right btn-floating btn-large waves-effect waves-light bg-color">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

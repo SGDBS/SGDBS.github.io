@@ -1,0 +1,1699 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="RL Chapter7 DQN 家族：深度学习接入 Q-Learning, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>RL Chapter7 DQN 家族：深度学习接入 Q-Learning | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">学习笔记-强化学习</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="学习笔记-强化学习">学习笔记-强化学习</span>
+            <span class="sidebar-count">14</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter0/" title="RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1">
+                <span class="sidebar-label">RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter1/" title="RL Chapter1 MDP 与 Bellman 方程">
+                <span class="sidebar-label">RL Chapter1 MDP 与 Bellman 方程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter2/" title="RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代">
+                <span class="sidebar-label">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter3/" title="RL Chapter3 Monte Carlo 与 TD：从样本估计价值">
+                <span class="sidebar-label">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter4/" title="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                <span class="sidebar-label">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter5/" title="RL Chapter5 Policy Gradient：直接对策略求梯度">
+                <span class="sidebar-label">RL Chapter5 Policy Gradient：直接对策略求梯度</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter6/" title="RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化">
+                <span class="sidebar-label">RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/ReinforcementLearning/Chapter7/" title="RL Chapter7 DQN 家族：深度学习接入 Q-Learning">
+                <span class="sidebar-label">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter8/" title="RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化">
+                <span class="sidebar-label">RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter9/" title="RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑">
+                <span class="sidebar-label">RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter10/" title="RL Chapter10 探索：从 ε-greedy 到 Curiosity">
+                <span class="sidebar-label">RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter11/" title="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源">
+                <span class="sidebar-label">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter12/" title="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                <span class="sidebar-label">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter13/" title="RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角">
+                <span class="sidebar-label">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+        
+        <span>/</span>
+        <span>RL Chapter7 DQN 家族：深度学习接入 Q-Learning</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">强化学习</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                学习笔记-强化学习
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-10
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：把 Ch4 的 Q-Learning 从表格法升级到神经网络，进入”深度强化学习”时代。DQN（DeepMind 2013/2015）是 RL 史上的里程碑——首次在大状态空间（Atari 像素输入）上达到人类水平。</p>
+<p><strong>承上</strong>：Ch4 Q-Learning 公式 + Ch1 Bellman 最优方程。<br><strong>启下</strong>：DQN 解决离散动作，Ch8/Ch9 处理连续动作和稳定性。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-函数逼近的挑战"><a href="#1-函数逼近的挑战" class="headerlink" title="1. 函数逼近的挑战"></a>1. 函数逼近的挑战</h2><h3 id="1-1-表格法的死路"><a href="#1-1-表格法的死路" class="headerlink" title="1.1 表格法的死路"></a>1.1 表格法的死路</h3><p>表格 Q 在 Atari 上不可行：</p>
+<ul>
+<li>状态 = 84×84 灰度图 = $256^{7056}$ 种可能</li>
+<li>不可能枚举存储</li>
+</ul>
+<p><strong>自然的想法</strong>：用神经网络 $Q_\theta(s, a)$ 逼近 $Q$。但简单地把 Q-Learning 加上神经网络会发散。三大致命问题：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">问题</th>
+<th style="text-align:left">原因</th>
+<th style="text-align:left">解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>样本高度相关</strong></td>
+<td style="text-align:left">连续轨迹中 $s<em>t, s</em>{t+1}$ 高度相似</td>
+<td style="text-align:left"><strong>Replay Buffer</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>目标非平稳</strong></td>
+<td style="text-align:left">$\max<em>{a’} Q</em>\theta(s’, a’)$ 中 $\theta$ 自身在变</td>
+<td style="text-align:left"><strong>Target Network</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>过估计</strong></td>
+<td style="text-align:left">$\max$ 操作放大噪声</td>
+<td style="text-align:left"><strong>Double DQN</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="1-2-训练目标"><a href="#1-2-训练目标" class="headerlink" title="1.2 训练目标"></a>1.2 训练目标</h3><p>DQN 的损失（最简形式）：</p>
+<script type="math/tex; mode=display">\mathcal{L}(\theta) = \mathbb{E}_{(s, a, r, s')}\left[\left(Q_\theta(s, a) - \underbrace{(r + \gamma \max_{a'} Q_\theta(s', a'))}_{\text{TD target}}\right)^2\right]</script><p>这是一个<strong>回归问题</strong>：让 $Q_\theta(s, a)$ 拟合 TD target。</p>
+<h2 id="2-Replay-Buffer：解决样本相关性"><a href="#2-Replay-Buffer：解决样本相关性" class="headerlink" title="2. Replay Buffer：解决样本相关性"></a>2. Replay Buffer：解决样本相关性</h2><h3 id="2-1-思想"><a href="#2-1-思想" class="headerlink" title="2.1 思想"></a>2.1 思想</h3><p>存储所有过往交互 $(s, a, r, s’, \text{done})$ 到一个固定大小（如 $10^6$）的环形缓冲区。每次更新从中<strong>随机采样 minibatch</strong>。</p>
+<h3 id="2-2-为什么有效？"><a href="#2-2-为什么有效？" class="headerlink" title="2.2 为什么有效？"></a>2.2 为什么有效？</h3><ol>
+<li><strong>打破时序相关性</strong>：连续状态在 minibatch 内被打散，更接近 i.i.d.</li>
+<li><strong>重复利用数据</strong>：每个样本被使用多次（数据效率高）</li>
+<li><strong>稳定训练分布</strong>：避免”策略一变，训练分布就变”的问题</li>
+</ol>
+<h3 id="2-3-Q-Learning-的-off-policy-性使其可行"><a href="#2-3-Q-Learning-的-off-policy-性使其可行" class="headerlink" title="2.3 Q-Learning 的 off-policy 性使其可行"></a>2.3 Q-Learning 的 off-policy 性使其可行</h3><p>Replay Buffer 中的数据来自旧策略，但 Q-Learning 的目标 $\max_{a’} Q$ 不依赖采样策略——所以历史数据仍可用。</p>
+<blockquote>
+<p><strong>这是 Q-Learning off-policy 优势的最重要体现</strong>：PG 系列（Ch5/6）on-policy，没法用 Replay Buffer。</p>
+</blockquote>
+<h2 id="3-Target-Network：解决目标非平稳"><a href="#3-Target-Network：解决目标非平稳" class="headerlink" title="3. Target Network：解决目标非平稳"></a>3. Target Network：解决目标非平稳</h2><h3 id="3-1-问题诊断"><a href="#3-1-问题诊断" class="headerlink" title="3.1 问题诊断"></a>3.1 问题诊断</h3><p>朴素 DQN 的 TD target 中 $\max<em>{a’} Q</em>\theta(s’, a’)$ 用的是当前 $\theta$。问题：</p>
+<ul>
+<li>我们刚把 $Q_\theta(s, a)$ 推高</li>
+<li>但同样的 $\theta$ 也让 $Q_\theta(s’, a’)$ 变高</li>
+<li>然后 target 跟着升 → $Q_\theta(s, a)$ 又被推得更高</li>
+<li>… <strong>正反馈循环 → 发散</strong></li>
+</ul>
+<h3 id="3-2-解决：用一个”冻结”的-Target-Network"><a href="#3-2-解决：用一个”冻结”的-Target-Network" class="headerlink" title="3.2 解决：用一个”冻结”的 Target Network"></a>3.2 解决：用一个”冻结”的 Target Network</h3><p>引入 $Q_{\theta^-}$，参数 $\theta^-$ 是 $\theta$ 的延迟副本：</p>
+<script type="math/tex; mode=display">y = r + \gamma \max_{a'} Q_{\theta^-}(s', a')</script><p>更新规则：</p>
+<ul>
+<li>每步用 $y$ 训练 $Q_\theta$</li>
+<li><strong>每 $C$ 步把 $\theta^- \leftarrow \theta$</strong>（如 $C = 10000$）</li>
+</ul>
+<p>这样 target 在每 $C$ 步内保持不变，回归目标稳定。</p>
+<h3 id="3-3-软更新（Polyak-Averaging）"><a href="#3-3-软更新（Polyak-Averaging）" class="headerlink" title="3.3 软更新（Polyak Averaging）"></a>3.3 软更新（Polyak Averaging）</h3><p>变种：每步做指数移动平均</p>
+<script type="math/tex; mode=display">\theta^- \leftarrow \tau \theta + (1 - \tau) \theta^-</script><p>$\tau$ 通常取 0.005。这就是 Ch4 BYOL 的 EMA Target 思想（呼应 Ch4 §D）！</p>
+<blockquote>
+<p><strong>跨章联系</strong>：BYOL/SimSiam 中的 EMA Target、DQN 中的 Target Network、PPO/DPO 中的 Reference Policy ——本质都是同一个想法：<strong>用一个慢速演化的目标提供稳定回归方向</strong>。</p>
+</blockquote>
+<h2 id="4-Double-DQN：解决最大化偏差"><a href="#4-Double-DQN：解决最大化偏差" class="headerlink" title="4. Double DQN：解决最大化偏差"></a>4. Double DQN：解决最大化偏差</h2><h3 id="4-1-问题：DQN-的-max-偏差"><a href="#4-1-问题：DQN-的-max-偏差" class="headerlink" title="4.1 问题：DQN 的 max 偏差"></a>4.1 问题：DQN 的 max 偏差</h3><p>延续 Ch4 §A.5：$\max$ 一组带噪 Q 值会过估计真值。在神经网络场景下这个问题更严重——网络初期 Q 估计极不准。</p>
+<h3 id="4-2-解法（同-Ch4-§A-5-2）"><a href="#4-2-解法（同-Ch4-§A-5-2）" class="headerlink" title="4.2 解法（同 Ch4 §A.5.2）"></a>4.2 解法（同 Ch4 §A.5.2）</h3><p>把”选 action”和”评估 Q”解耦：</p>
+<script type="math/tex; mode=display">y = r + \gamma Q_{\theta^-}\left(s', \underbrace{\arg\max_{a'} Q_\theta(s', a')}_{\text{用 online 网络选}}\right)</script><ul>
+<li>用 <strong>online 网络</strong> $Q_\theta$ 选最佳 action</li>
+<li>用 <strong>target 网络</strong> $Q_{\theta^-}$ 评估这个 action 的 Q</li>
+</ul>
+<p>仅一行改动（从 Q-target.max() 改为 Q-target.gather(…)），但在 Atari 上提升 10-30%。</p>
+<h2 id="5-Dueling-DQN：分离-V-和-A"><a href="#5-Dueling-DQN：分离-V-和-A" class="headerlink" title="5. Dueling DQN：分离 V 和 A"></a>5. Dueling DQN：分离 V 和 A</h2><h3 id="5-1-思想"><a href="#5-1-思想" class="headerlink" title="5.1 思想"></a>5.1 思想</h3><p>把 $Q$ 分解为 $V + A$：</p>
+<script type="math/tex; mode=display">Q(s, a) = V(s) + A(s, a)</script><p>直觉：很多 action 其实差别不大，重要的是状态本身的价值。<strong>分别学 V 和 A 比直接学 Q 更有数据效率</strong>。</p>
+<h3 id="5-2-网络结构"><a href="#5-2-网络结构" class="headerlink" title="5.2 网络结构"></a>5.2 网络结构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">                  ┌──── V_head ─────► V(s)        [B, 1]</span><br><span class="line">共享 backbone ────┤</span><br><span class="line">                  └──── A_head ─────► A(s, a)     [B, n_actions]</span><br></pre></td></tr></table></figure>
+<p>合并方式（避免 V 和 A 分配不唯一）：</p>
+<script type="math/tex; mode=display">Q(s, a) = V(s) + \left(A(s, a) - \frac{1}{|\mathcal{A}|}\sum_{a'} A(s, a')\right)</script><p>减去 A 的均值是为了”锚定” V 和 A 的分配（数学上严格对称的设计）。</p>
+<h2 id="6-Rainbow：六大改进的集成"><a href="#6-Rainbow：六大改进的集成" class="headerlink" title="6. Rainbow：六大改进的集成"></a>6. Rainbow：六大改进的集成</h2><p>DeepMind 2017 把六种改进打包：</p>
+<ol>
+<li>Double DQN</li>
+<li>Dueling DQN</li>
+<li>Prioritized Experience Replay（按 TD-error 加权采样）</li>
+<li>Multi-step Returns（n-step）</li>
+<li>Distributional RL（学 Q 的分布而非均值）</li>
+<li>Noisy Nets（参数空间噪声替代 ε-greedy）</li>
+</ol>
+<p>Rainbow 在 Atari 上比 vanilla DQN 性能高约 200%。但每加一项的边际收益递减——实践中常用 Double + Dueling + Prioritized 三件套。</p>
+<hr>
+<h1 id="§B-模型架构"><a href="#§B-模型架构" class="headerlink" title="§B 模型架构"></a>§B 模型架构</h1><h2 id="B-1-数据流总览"><a href="#B-1-数据流总览" class="headerlink" title="B.1 数据流总览"></a>B.1 数据流总览</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Atari 游戏画面 (84×84×4 stack)</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">  ┌──────────────────┐</span><br><span class="line">  │  CNN Backbone    │</span><br><span class="line">  │  (3 个 conv 层)  │</span><br><span class="line">  └──────────────────┘</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">  ┌──────────────────┐</span><br><span class="line">  │  Flatten + FC    │</span><br><span class="line">  └──────────────────┘</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">  ┌──────────────────┐</span><br><span class="line">  │  Q Head: [n_a]   │</span><br><span class="line">  └──────────────────┘</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">  Q(s, a₀), Q(s, a₁), ..., Q(s, a_&#123;n-1&#125;)</span><br></pre></td></tr></table></figure>
+<p>每一步的 shape：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">层</th>
+<th style="text-align:left">输入</th>
+<th style="text-align:left">输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">输入</td>
+<td style="text-align:left">$[B, 4, 84, 84]$</td>
+<td style="text-align:left">—</td>
+</tr>
+<tr>
+<td style="text-align:left">Conv1 (8×8, stride 4, 32 ch)</td>
+<td style="text-align:left">$[B, 4, 84, 84]$</td>
+<td style="text-align:left">$[B, 32, 20, 20]$</td>
+</tr>
+<tr>
+<td style="text-align:left">Conv2 (4×4, stride 2, 64 ch)</td>
+<td style="text-align:left">$[B, 32, 20, 20]$</td>
+<td style="text-align:left">$[B, 64, 9, 9]$</td>
+</tr>
+<tr>
+<td style="text-align:left">Conv3 (3×3, stride 1, 64 ch)</td>
+<td style="text-align:left">$[B, 64, 9, 9]$</td>
+<td style="text-align:left">$[B, 64, 7, 7]$</td>
+</tr>
+<tr>
+<td style="text-align:left">Flatten</td>
+<td style="text-align:left">$[B, 64, 7, 7]$</td>
+<td style="text-align:left">$[B, 3136]$</td>
+</tr>
+<tr>
+<td style="text-align:left">FC 512 + ReLU</td>
+<td style="text-align:left">$[B, 3136]$</td>
+<td style="text-align:left">$[B, 512]$</td>
+</tr>
+<tr>
+<td style="text-align:left">Output</td>
+<td style="text-align:left">$[B, 512]$</td>
+<td style="text-align:left">$[B, n_actions]$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="B-2-DQN-网络的-PyTorch-实现"><a href="#B-2-DQN-网络的-PyTorch-实现" class="headerlink" title="B.2 DQN 网络的 PyTorch 实现"></a>B.2 DQN 网络的 PyTorch 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DQN</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Atari-style CNN DQN&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n_actions, in_channels=<span class="number">4</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv = nn.Sequential(</span><br><span class="line">            nn.Conv2d(in_channels, <span class="number">32</span>, kernel_size=<span class="number">8</span>, stride=<span class="number">4</span>), nn.ReLU(),</span><br><span class="line">            nn.Conv2d(<span class="number">32</span>, <span class="number">64</span>, kernel_size=<span class="number">4</span>, stride=<span class="number">2</span>), nn.ReLU(),</span><br><span class="line">            nn.Conv2d(<span class="number">64</span>, <span class="number">64</span>, kernel_size=<span class="number">3</span>, stride=<span class="number">1</span>), nn.ReLU(),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.fc = nn.Sequential(</span><br><span class="line">            nn.Linear(<span class="number">7</span> * <span class="number">7</span> * <span class="number">64</span>, <span class="number">512</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">512</span>, n_actions),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        x: [B, 4, 84, 84]  浮点 0-1（注意要先 / 255）</span></span><br><span class="line"><span class="string">        返回: [B, n_actions] Q 值</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        h = <span class="variable language_">self</span>.conv(x).reshape(x.size(<span class="number">0</span>), -<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.fc(h)</span><br></pre></td></tr></table></figure>
+<h2 id="B-3-Replay-Buffer"><a href="#B-3-Replay-Buffer" class="headerlink" title="B.3 Replay Buffer"></a>B.3 Replay Buffer</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ReplayBuffer</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;简单环形缓冲区&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, capacity=<span class="built_in">int</span>(<span class="params"><span class="number">1e6</span></span>)</span>):</span><br><span class="line">        <span class="variable language_">self</span>.buffer = deque(maxlen=capacity)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">push</span>(<span class="params">self, s, a, r, s_new, done</span>):</span><br><span class="line">        <span class="variable language_">self</span>.buffer.append((s, a, r, s_new, done))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">sample</span>(<span class="params">self, batch_size</span>):</span><br><span class="line">        batch = random.sample(<span class="variable language_">self</span>.buffer, batch_size)</span><br><span class="line">        s, a, r, s_new, done = <span class="built_in">zip</span>(*batch)</span><br><span class="line">        <span class="keyword">return</span> (</span><br><span class="line">            torch.tensor(np.array(s), dtype=torch.float32),</span><br><span class="line">            torch.tensor(a, dtype=torch.long),</span><br><span class="line">            torch.tensor(r, dtype=torch.float32),</span><br><span class="line">            torch.tensor(np.array(s_new), dtype=torch.float32),</span><br><span class="line">            torch.tensor(done, dtype=torch.float32),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__len__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">len</span>(<span class="variable language_">self</span>.buffer)</span><br></pre></td></tr></table></figure>
+<h2 id="B-4-完整-DQN-训练循环（含-Double-DQN）"><a href="#B-4-完整-DQN-训练循环（含-Double-DQN）" class="headerlink" title="B.4 完整 DQN 训练循环（含 Double DQN）"></a>B.4 完整 DQN 训练循环（含 Double DQN）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> copy</span><br><span class="line"><span class="keyword">from</span> torch.optim <span class="keyword">import</span> Adam</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train_dqn</span>(<span class="params">env, n_steps=<span class="built_in">int</span>(<span class="params"><span class="number">1e6</span></span>), batch_size=<span class="number">32</span>, gamma=<span class="number">0.99</span>,</span></span><br><span class="line"><span class="params">              lr=<span class="number">1e-4</span>, buffer_size=<span class="built_in">int</span>(<span class="params"><span class="number">1e6</span></span>), eps_start=<span class="number">1.0</span>, eps_end=<span class="number">0.05</span>,</span></span><br><span class="line"><span class="params">              eps_decay_steps=<span class="built_in">int</span>(<span class="params"><span class="number">1e5</span></span>), target_update_freq=<span class="number">10000</span>,</span></span><br><span class="line"><span class="params">              learning_starts=<span class="number">10000</span>, double_dqn=<span class="literal">True</span></span>):</span><br><span class="line">    n_actions = env.action_space.n</span><br><span class="line"></span><br><span class="line">    online = DQN(n_actions)</span><br><span class="line">    target = copy.deepcopy(online)                        <span class="comment"># ⭐ Target 网络</span></span><br><span class="line">    <span class="keyword">for</span> p <span class="keyword">in</span> target.parameters(): p.requires_grad = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">    optim = Adam(online.parameters(), lr=lr)</span><br><span class="line">    buffer = ReplayBuffer(buffer_size)</span><br><span class="line"></span><br><span class="line">    obs, _ = env.reset()</span><br><span class="line">    <span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(n_steps):</span><br><span class="line">        <span class="comment"># ============ ε 衰减 ============</span></span><br><span class="line">        eps = <span class="built_in">max</span>(eps_end, eps_start - (eps_start - eps_end) * step / eps_decay_steps)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ 选 action ============</span></span><br><span class="line">        <span class="keyword">if</span> random.random() &lt; eps:</span><br><span class="line">            a = env.action_space.sample()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">                obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(<span class="number">0</span>) / <span class="number">255.0</span></span><br><span class="line">                a = online(obs_t).argmax(dim=-<span class="number">1</span>).item()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ 环境交互 ============</span></span><br><span class="line">        obs_new, r, terminated, truncated, _ = env.step(a)</span><br><span class="line">        done = <span class="built_in">float</span>(terminated)</span><br><span class="line">        buffer.push(obs, a, r, obs_new, done)</span><br><span class="line">        obs = obs_new <span class="keyword">if</span> <span class="keyword">not</span> (terminated <span class="keyword">or</span> truncated) <span class="keyword">else</span> env.reset()[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ 训练 ============</span></span><br><span class="line">        <span class="keyword">if</span> step &gt; learning_starts <span class="keyword">and</span> <span class="built_in">len</span>(buffer) &gt; batch_size:</span><br><span class="line">            s, action, reward, s_new, done = buffer.sample(batch_size)</span><br><span class="line">            s = s / <span class="number">255.0</span></span><br><span class="line">            s_new = s_new / <span class="number">255.0</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># 当前 Q</span></span><br><span class="line">            q = online(s).gather(<span class="number">1</span>, action.unsqueeze(<span class="number">1</span>)).squeeze(<span class="number">1</span>)   <span class="comment"># [B]</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># ⭐ Target 计算</span></span><br><span class="line">            <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">                <span class="keyword">if</span> double_dqn:</span><br><span class="line">                    <span class="comment"># online 选 action，target 评估</span></span><br><span class="line">                    a_star = online(s_new).argmax(dim=-<span class="number">1</span>)              <span class="comment"># [B]</span></span><br><span class="line">                    q_next = target(s_new).gather(<span class="number">1</span>, a_star.unsqueeze(<span class="number">1</span>)).squeeze(<span class="number">1</span>)</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    q_next = target(s_new).<span class="built_in">max</span>(dim=-<span class="number">1</span>).values</span><br><span class="line">                y = reward + gamma * q_next * (<span class="number">1</span> - done)</span><br><span class="line"></span><br><span class="line">            loss = F.smooth_l1_loss(q, y)                              <span class="comment"># ⭐ Huber loss 比 MSE 稳</span></span><br><span class="line"></span><br><span class="line">            optim.zero_grad()</span><br><span class="line">            loss.backward()</span><br><span class="line">            torch.nn.utils.clip_grad_norm_(online.parameters(), <span class="number">10.0</span>)</span><br><span class="line">            optim.step()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ 定期同步 Target ============</span></span><br><span class="line">        <span class="keyword">if</span> step % target_update_freq == <span class="number">0</span>:</span><br><span class="line">            target.load_state_dict(online.state_dict())                <span class="comment"># ⭐</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> online</span><br></pre></td></tr></table></figure>
+<p><strong>几个关键工程细节</strong>：</p>
+<ol>
+<li><strong>Huber loss (smooth_l1_loss)</strong>：对 outlier 不敏感，比 MSE 稳定</li>
+<li><strong>Frame stack 4</strong>：把过去 4 帧拼在一起，弥补 Markov 性不足（单帧无法判断速度）</li>
+<li><strong>Reward clipping</strong>：reward 截断到 [-1, 1]，跨游戏统一尺度</li>
+<li><strong>ε 线性衰减</strong>：1.0 → 0.05 在前 10% 训练步内</li>
+<li><strong>Target update freq</strong>：10000 步（约 4 万环境步）</li>
+</ol>
+<h2 id="B-5-Dueling-DQN-的-PyTorch-实现"><a href="#B-5-Dueling-DQN-的-PyTorch-实现" class="headerlink" title="B.5 Dueling DQN 的 PyTorch 实现"></a>B.5 Dueling DQN 的 PyTorch 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DuelingDQN</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n_actions, in_channels=<span class="number">4</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv = nn.Sequential(</span><br><span class="line">            nn.Conv2d(in_channels, <span class="number">32</span>, <span class="number">8</span>, <span class="number">4</span>), nn.ReLU(),</span><br><span class="line">            nn.Conv2d(<span class="number">32</span>, <span class="number">64</span>, <span class="number">4</span>, <span class="number">2</span>), nn.ReLU(),</span><br><span class="line">            nn.Conv2d(<span class="number">64</span>, <span class="number">64</span>, <span class="number">3</span>, <span class="number">1</span>), nn.ReLU(),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.fc_v = nn.Sequential(</span><br><span class="line">            nn.Linear(<span class="number">7</span> * <span class="number">7</span> * <span class="number">64</span>, <span class="number">512</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">512</span>, <span class="number">1</span>),                            <span class="comment"># ⭐ V head</span></span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.fc_a = nn.Sequential(</span><br><span class="line">            nn.Linear(<span class="number">7</span> * <span class="number">7</span> * <span class="number">64</span>, <span class="number">512</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">512</span>, n_actions),                    <span class="comment"># ⭐ A head</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        h = <span class="variable language_">self</span>.conv(x).reshape(x.size(<span class="number">0</span>), -<span class="number">1</span>)</span><br><span class="line">        v = <span class="variable language_">self</span>.fc_v(h)                                   <span class="comment"># [B, 1]</span></span><br><span class="line">        a = <span class="variable language_">self</span>.fc_a(h)                                   <span class="comment"># [B, n_actions]</span></span><br><span class="line">        <span class="comment"># ⭐ Q = V + (A - mean(A))</span></span><br><span class="line">        q = v + (a - a.mean(dim=-<span class="number">1</span>, keepdim=<span class="literal">True</span>))</span><br><span class="line">        <span class="keyword">return</span> q</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-Atari-Pong-训练经验"><a href="#C-1-Atari-Pong-训练经验" class="headerlink" title="C.1 Atari Pong 训练经验"></a>C.1 Atari Pong 训练经验</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gymnasium <span class="keyword">as</span> gym</span><br><span class="line"><span class="keyword">from</span> gymnasium.wrappers <span class="keyword">import</span> AtariPreprocessing, FrameStack</span><br><span class="line"></span><br><span class="line">env = gym.make(<span class="string">&quot;PongNoFrameskip-v4&quot;</span>)</span><br><span class="line">env = AtariPreprocessing(env, grayscale_obs=<span class="literal">True</span>, frame_skip=<span class="number">4</span>)</span><br><span class="line">env = FrameStack(env, num_stack=<span class="number">4</span>)                        <span class="comment"># ⭐ 帧堆叠</span></span><br><span class="line"></span><br><span class="line">dqn = train_dqn(env, n_steps=<span class="built_in">int</span>(<span class="number">2e6</span>))                    <span class="comment"># 约 2 小时（GPU）</span></span><br></pre></td></tr></table></figure>
+<p><strong>关键预处理</strong>：</p>
+<ol>
+<li>灰度化（节省计算）</li>
+<li>Resize to 84×84</li>
+<li>Frame skip = 4（每 4 帧只取动作 1 次）</li>
+<li>Frame stack = 4（把过去 4 帧叠起来作为状态，弥补 Markov 性）</li>
+</ol>
+<p><strong>典型训练曲线</strong>（Pong）：</p>
+<ul>
+<li>50 万步：reward = -19（开始击球但每球都丢）</li>
+<li>100 万步：reward = -5</li>
+<li>200 万步：reward = 18（接近满分 21）</li>
+</ul>
+<h2 id="C-2-推理：DQN-部署"><a href="#C-2-推理：DQN-部署" class="headerlink" title="C.2 推理：DQN 部署"></a>C.2 推理：DQN 部署</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">play</span>(<span class="params">env, dqn</span>):</span><br><span class="line">    obs, _ = env.reset()</span><br><span class="line">    total_r = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(<span class="number">0</span>) / <span class="number">255.0</span></span><br><span class="line">            a = dqn(obs_t).argmax(dim=-<span class="number">1</span>).item()           <span class="comment"># greedy</span></span><br><span class="line">        obs, r, terminated, truncated, _ = env.step(a)</span><br><span class="line">        total_r += r</span><br><span class="line">        <span class="keyword">if</span> terminated <span class="keyword">or</span> truncated: <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">return</span> total_r</span><br></pre></td></tr></table></figure>
+<p>注意：DQN 推理时<strong>完全去掉 ε</strong>（纯 greedy）。target 网络也不需要——只用 online 网络。</p>
+<h2 id="C-3-DQN-调参-checklist"><a href="#C-3-DQN-调参-checklist" class="headerlink" title="C.3 DQN 调参 checklist"></a>C.3 DQN 调参 checklist</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">参数</th>
+<th style="text-align:left">推荐值</th>
+<th style="text-align:left">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">learning rate</td>
+<td style="text-align:left">1e-4</td>
+<td style="text-align:left">太大会发散</td>
+</tr>
+<tr>
+<td style="text-align:left">batch size</td>
+<td style="text-align:left">32-64</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">gamma</td>
+<td style="text-align:left">0.99</td>
+<td style="text-align:left">远视 Atari</td>
+</tr>
+<tr>
+<td style="text-align:left">ε 衰减</td>
+<td style="text-align:left">1.0 → 0.05 in 100K-1M 步</td>
+<td style="text-align:left">视任务难度</td>
+</tr>
+<tr>
+<td style="text-align:left">target update</td>
+<td style="text-align:left">10K 步</td>
+<td style="text-align:left">软更新 τ=0.005 也常用</td>
+</tr>
+<tr>
+<td style="text-align:left">buffer size</td>
+<td style="text-align:left">1e6</td>
+<td style="text-align:left">Atari 内存吃紧时降到 1e5</td>
+</tr>
+<tr>
+<td style="text-align:left">learning_starts</td>
+<td style="text-align:left">10K-50K</td>
+<td style="text-align:left">让 buffer 先填一些数据</td>
+</tr>
+<tr>
+<td style="text-align:left">Huber δ</td>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">smooth_l1_loss 的默认</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="C-4-DQN-的局限"><a href="#C-4-DQN-的局限" class="headerlink" title="C.4 DQN 的局限"></a>C.4 DQN 的局限</h2><p>DQN 的成功仅限于：</p>
+<ul>
+<li><strong>离散动作</strong>（Atari）</li>
+<li><strong>马尔可夫近似良好</strong>（4 帧 stack 够用）</li>
+</ul>
+<p>不适用：</p>
+<ul>
+<li><strong>连续动作</strong>（机器人）→ Ch9 DDPG/SAC</li>
+<li><strong>大动作空间</strong>（围棋 19×19 = 361 个 action 还行，但更大就不行）</li>
+<li><strong>稀疏 reward</strong>（探索难）→ Ch10 探索方法</li>
+</ul>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-三大改进对照表"><a href="#D-1-三大改进对照表" class="headerlink" title="D.1 三大改进对照表"></a>D.1 三大改进对照表</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">改进</th>
+<th style="text-align:left">解决问题</th>
+<th style="text-align:left">代码改动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Replay Buffer</strong></td>
+<td style="text-align:left">样本相关 / 数据效率</td>
+<td style="text-align:left">维护 deque，随机 sample</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Target Network</strong></td>
+<td style="text-align:left">目标非平稳</td>
+<td style="text-align:left">维护 $\theta^-$，定期同步</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Double DQN</strong></td>
+<td style="text-align:left">最大化偏差</td>
+<td style="text-align:left">online 选 action，target 评估</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Dueling DQN</strong></td>
+<td style="text-align:left">数据效率</td>
+<td style="text-align:left">$Q = V + (A - \bar{A})$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Prioritized Replay</strong></td>
+<td style="text-align:left">重要样本欠学习</td>
+<td style="text-align:left">按 TD-error 加权采样</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-2-常见面试题"><a href="#D-2-常见面试题" class="headerlink" title="D.2 常见面试题"></a>D.2 常见面试题</h2><p><strong>Q1：DQN 为什么需要 Replay Buffer？</strong></p>
+<ul>
+<li>打破样本时序相关性</li>
+<li>提高数据利用率</li>
+<li>稳定训练分布</li>
+<li>仅 off-policy 算法可用——这是 Q-Learning 的关键优势</li>
+</ul>
+<p><strong>Q2：Target Network 必须每 N 步 hard update 吗？</strong></p>
+<ul>
+<li>不一定。软更新 $\theta^- \leftarrow \tau \theta + (1-\tau)\theta^-$ 也常用（DDPG 的标配）</li>
+<li>软更新呼应 Ch4 BYOL 的 EMA Target、Ch6 PPO 的 Reference Policy</li>
+</ul>
+<p><strong>Q3：Double DQN 为什么有效？</strong></p>
+<ul>
+<li>解耦”选 action”（online）与”评估 action 的 Q”（target）</li>
+<li>减轻 max 偏差（Jensen 不等式：$\mathbb{E}[\max] &gt; \max \mathbb{E}$）</li>
+</ul>
+<p><strong>Q4：DQN 与 Q-Learning 算法上有何不同？</strong></p>
+<ul>
+<li>Q-Learning：tabular，每步更新 1 个 Q</li>
+<li>DQN：神经网络 + Replay Buffer + Target Network</li>
+<li>DQN 在大状态空间下可行，但需要很多 trick 让它稳定</li>
+</ul>
+<p><strong>Q5：Dueling DQN 的 V/A 分解为什么需要 “减均值”？</strong></p>
+<ul>
+<li>不减均值会有”分配不唯一”问题：$Q = V + A = (V + c) + (A - c)$</li>
+<li>减均值锚定 $A$ 的均值为 0，让分解唯一</li>
+<li>也可以减 max，但减均值的实证效果更好</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>DQN 系列把 Q-Learning 在视觉领域推上人类水平，但只能处理离散动作。<strong>连续控制</strong>（机器人、自动驾驶）需要不同的算法。</p>
+<p>下一章 <strong>Ch8 TRPO/PPO</strong> 走 policy-based 路线，用 trust region 思想稳定 PG 训练。这是 RLHF 的核心，也是从经典 RL 走向 LLM 时代的关键桥梁。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/ReinforcementLearning/Chapter7/">https://SGDBS.github.io/ReinforcementLearning/Chapter7/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">强化学习</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter4/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                        
+                        <span class="card-title">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter8/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/1.jpg" class="responsive-img" alt="RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化">
+                        
+                        <span class="card-title">RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

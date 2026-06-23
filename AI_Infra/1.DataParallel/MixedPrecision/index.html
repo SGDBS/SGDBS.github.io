@@ -1,0 +1,1656 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="4. 混合精度训练, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>4. 混合精度训练 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>4. 混合精度训练</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">4. 混合精度训练</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-09
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>这一篇是后续 DDP / ZeRO / Pipeline 章节都会反复用到的”基石设定”。所有大模型训练都默认开混合精度——但<strong>到底什么是混合,混到什么程度,为什么不能直接全用 FP16,为什么 BF16 来了之后反而更简单了</strong>——很多人只知道”加个 <code>autocast</code> 就行”。这一篇把每个细节都拆开讲清楚:从浮点数的位级布局,到 loss scaling 的数学,到 <code>autocast</code> 的 op 级派发机制,再到混合精度怎么和 DDP/FSDP 协作。最后看一眼 H100/Hopper 引入的 FP8 训练。</p>
+<h2 id="一、起因-为什么需要混合精度"><a href="#一、起因-为什么需要混合精度" class="headerlink" title="一、起因:为什么需要混合精度"></a>一、起因:为什么需要混合精度</h2><h3 id="1-1-FP32-训练的两笔账"><a href="#1-1-FP32-训练的两笔账" class="headerlink" title="1.1 FP32 训练的两笔账"></a>1.1 FP32 训练的两笔账</h3><p>深度学习十年前几乎全部用 <strong>FP32</strong>(每个数 4 字节)。在小模型时代这没问题——ResNet-50 参数 25M,训练时显存压力主要在数据。但到了 LLM 时代,FP32 同时撞上两面墙:</p>
+<p><strong>显存墙</strong>。前面 <code>MemoryBudget</code> 那篇里算过:7B 模型 + Adam,显存账是参数 + 梯度 + (master + m + v) ≈ $16P$ 字节。如果全用 FP32,<strong>这个 16 要变成 28</strong>——参数 4、梯度 4、master 4、m 4、v 4、再加上 4 字节的 FP32 激活,7B 模型直接 200 GB 起步。</p>
+<p><strong>算力墙</strong>。Tensor Core 这种专用矩阵乘单元,从 V100 起就为半精度优化:V100 的 FP32 算力 15.7 TFLOPS,FP16 算力 125 TFLOPS——<strong>相差 8 倍</strong>。A100 上 BF16/FP16 是 312 TFLOPS、FP32 只有 19.5 TFLOPS。H100 上更夸张,BF16 是 989 TFLOPS、FP32 67 TFLOPS。如果不用半精度,你买的 GPU 算力一大半在闲着。</p>
+<p>合起来一句话:<strong>全用 FP32 训练,既塞不下也跑不快</strong>。</p>
+<h3 id="1-2-半精度的麻烦"><a href="#1-2-半精度的麻烦" class="headerlink" title="1.2 半精度的麻烦"></a>1.2 半精度的麻烦</h3><p>半精度的好处显而易见:存得下、算得快。但直接把 FP32 换成 FP16 时,Google/Baidu 在 2017 年前后踩了大量坑——loss 训着训着就 NaN、梯度突然全为 0、或者训练曲线在某个 epoch 突然崩盘。问题的根源不是 bug,而是<strong>半精度的数值范围根本不够装训练时见到的数</strong>。</p>
+<p>这就是混合精度——准确说叫 <strong>Automatic Mixed Precision (AMP)</strong>——存在的理由:<strong>用半精度去算耗时大头(矩阵乘),用单精度去算敏感的部分(loss、reduction、参数更新)</strong>,再用一些数值技巧(loss scaling、master weights)把半精度的数值范围问题修补回来。</p>
+<h2 id="二、浮点格式的位级真相"><a href="#二、浮点格式的位级真相" class="headerlink" title="二、浮点格式的位级真相"></a>二、浮点格式的位级真相</h2><p>要理解混合精度为什么”修补”得动,必须先看清半精度到底有多窄。一个浮点数由三部分组成:</p>
+<script type="math/tex; mode=display">x = (-1)^{\text{sign}} \cdot 2^{\text{exp} - \text{bias}} \cdot (1.\text{mantissa})_2</script><p><strong>sign</strong>(符号位)总是 1 位。<strong>exp</strong>(指数位)决定<strong>动态范围</strong>——能表示多大或多小的数。<strong>mantissa</strong>(尾数位)决定<strong>精度</strong>——两个相邻可表示数之间能有多近。</p>
+<h3 id="2-1-四种格式的字节布局"><a href="#2-1-四种格式的字节布局" class="headerlink" title="2.1 四种格式的字节布局"></a>2.1 四种格式的字节布局</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">                     ┌─────────────────────────────────────────────┐</span><br><span class="line">FP32   (4 字节)      │ S │ EEEEEEEE │ MMMMMMMMMMMMMMMMMMMMMMM │     │</span><br><span class="line">                     │ 1 │   8      │           23             │     │</span><br><span class="line">                     └─────────────────────────────────────────────┘</span><br><span class="line">                       ↑      ↑                ↑</span><br><span class="line">                     符号   指数(广)        尾数(高精度)</span><br><span class="line"></span><br><span class="line">                     ┌─────────────────────┐</span><br><span class="line">BF16   (2 字节)      │ S │ EEEEEEEE │ MMMMMMM │</span><br><span class="line">                     │ 1 │   8      │   7     │</span><br><span class="line">                     └─────────────────────┘</span><br><span class="line">                       ↑     ↑          ↑</span><br><span class="line">                     符号  和 FP32 一样的 8 位指数</span><br><span class="line">                                      尾数被砍到 7 位</span><br><span class="line">                                      → 范围广,精度差</span><br><span class="line"></span><br><span class="line">                     ┌─────────────────────┐</span><br><span class="line">FP16   (2 字节)      │ S │ EEEEE │ MMMMMMMMMM │</span><br><span class="line">                     │ 1 │  5    │     10     │</span><br><span class="line">                     └─────────────────────┘</span><br><span class="line">                       ↑     ↑          ↑</span><br><span class="line">                     符号  指数砍到 5 位</span><br><span class="line">                                      尾数 10 位,比 BF16 准</span><br><span class="line">                                      → 精度好,范围窄</span><br><span class="line"></span><br><span class="line">                     ┌─────────────┐</span><br><span class="line">FP8 E4M3 (1 字节)    │ S │ EEEE │ MMM │      ← 训练前向用,精度优先</span><br><span class="line">                     │ 1 │  4   │ 3   │</span><br><span class="line">                     └─────────────┘</span><br><span class="line"></span><br><span class="line">                     ┌─────────────┐</span><br><span class="line">FP8 E5M2 (1 字节)    │ S │ EEEEE │ MM │      ← 训练反向用,范围优先</span><br><span class="line">                     │ 1 │  5    │ 2  │</span><br><span class="line">                     └─────────────┘</span><br></pre></td></tr></table></figure>
+<p><strong>关键观察</strong>:BF16 的指数位<strong>和 FP32 完全一样多</strong>(8 位),所以 BF16 能表示的最大/最小数和 FP32 一致;它只是把尾数砍掉了。FP16 反过来,牺牲指数换精度。</p>
+<h3 id="2-2-数值范围对比"><a href="#2-2-数值范围对比" class="headerlink" title="2.2 数值范围对比"></a>2.2 数值范围对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>最大正常数</th>
+<th>最小正常数</th>
+<th>相对精度(eps)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP32</td>
+<td>$\sim 3.4 \times 10^{38}$</td>
+<td>$\sim 1.2 \times 10^{-38}$</td>
+<td>$\sim 1.2 \times 10^{-7}$</td>
+</tr>
+<tr>
+<td>BF16</td>
+<td>$\sim 3.4 \times 10^{38}$</td>
+<td>$\sim 1.2 \times 10^{-38}$</td>
+<td>$\sim 7.8 \times 10^{-3}$</td>
+</tr>
+<tr>
+<td>FP16</td>
+<td>$65504$</td>
+<td>$\sim 6.1 \times 10^{-5}$</td>
+<td>$\sim 9.8 \times 10^{-4}$</td>
+</tr>
+<tr>
+<td>FP8 E4M3</td>
+<td>$448$</td>
+<td>$\sim 1.95 \times 10^{-3}$</td>
+<td>$\sim 0.125$</td>
+</tr>
+<tr>
+<td>FP8 E5M2</td>
+<td>$57344$</td>
+<td>$\sim 1.5 \times 10^{-5}$</td>
+<td>$\sim 0.25$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>注意 FP16 那一行:<strong>最大数只有 65504</strong>。训练 Transformer 时,某些梯度很容易超过这个值;某些梯度又会小于 $6 \times 10^{-5}$ 直接 underflow 到 0。这就是 FP16 训练不稳的根源。</p>
+<p>而 BF16 的范围和 FP32 一模一样——它只是精度差了大概一个数量级,但深度学习对相对精度其实不敏感(梯度 noise 本来就比这大),所以 BF16 训练<strong>几乎不需要任何额外技巧</strong>就能跑稳。</p>
+<h3 id="2-3-为什么-BF16-是大模型训练的事实标准"><a href="#2-3-为什么-BF16-是大模型训练的事实标准" class="headerlink" title="2.3 为什么 BF16 是大模型训练的事实标准"></a>2.3 为什么 BF16 是大模型训练的事实标准</h3><p>把上面的事实串起来:</p>
+<ul>
+<li>FP16 范围窄,<strong>梯度容易 underflow / overflow</strong>,需要配 loss scaling、需要 GradScaler 动态调整,工程链条复杂</li>
+<li>BF16 范围 = FP32 范围,<strong>直接换上去就跑</strong>,不需要 loss scaling、不需要 GradScaler</li>
+<li>现代 GPU(A100 起)BF16 和 FP16 的算力相同,<strong>没有性能差</strong></li>
+</ul>
+<p>所以 2022 年之后训练 LLM 几乎没人用 FP16 了:GPT-3、PaLM、Llama 全系列、Mistral、DeepSeek-V3 都是 BF16 训练。FP16 主要剩在<strong>老 GPU(V100 没有原生 BF16 支持)</strong> 和<strong>推理</strong>(推理对范围要求低、对精度要求高)。</p>
+<h2 id="三、Loss-Scaling-FP16-训练的”数值油门”"><a href="#三、Loss-Scaling-FP16-训练的”数值油门”" class="headerlink" title="三、Loss Scaling:FP16 训练的”数值油门”"></a>三、Loss Scaling:FP16 训练的”数值油门”</h2><p>虽然 LLM 用 BF16,但理解 loss scaling 仍然重要——它是历史上”半精度训练”得以工作的核心技巧,Vision/CV 大量代码到现在还在用 FP16 + GradScaler。</p>
+<h3 id="3-1-问题-梯度-underflow"><a href="#3-1-问题-梯度-underflow" class="headerlink" title="3.1 问题:梯度 underflow"></a>3.1 问题:梯度 underflow</h3><p>考虑一个 ReLU 网络的反向传播,某层激活的导数 $\frac{\partial L}{\partial x}$ 在训练后期通常落在 $10^{-5}$ ~ $10^{-7}$ 量级——对 FP32 完全无压力,但<strong>已经在 FP16 的可表示下界附近</strong>。再乘上 weight 的反向(通常更小一两个数量级),很多梯度会直接被舍入到 0,等价于这个参数永远不更新。</p>
+<p>直方图大概长这样:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">FP32 梯度的分布(对数尺度):</span><br><span class="line">            count</span><br><span class="line">              │</span><br><span class="line">              │      ████████</span><br><span class="line">              │   █████████████</span><br><span class="line">              │ ███████████████████</span><br><span class="line">              │ ███████████████████████</span><br><span class="line">              │ █████████████████████████████████</span><br><span class="line">              ├─────────────────────────────────────► |grad|</span><br><span class="line">              10⁻¹⁰  10⁻⁸   10⁻⁶   10⁻⁴   10⁻²   10⁰</span><br><span class="line"></span><br><span class="line">FP16 表示能力的下界 ≈ 6×10⁻⁵</span><br><span class="line">              ▲ 这一点以下的梯度全部丢失 = underflow</span><br></pre></td></tr></table></figure>
+<p>底下被吃掉一大坨——大概率包含了<strong>对训练真正重要的小梯度信号</strong>。</p>
+<h3 id="3-2-解法-把-loss-整体放大-K-倍"><a href="#3-2-解法-把-loss-整体放大-K-倍" class="headerlink" title="3.2 解法:把 loss 整体放大 K 倍"></a>3.2 解法:把 loss 整体放大 K 倍</h3><p>数学上,梯度对 loss 是线性的:</p>
+<script type="math/tex; mode=display">\nabla_\theta (K \cdot L) = K \cdot \nabla_\theta L</script><p>如果在反向传播开始之前把 loss 乘以一个大的常数 $K$,整个梯度图都被同步放大 $K$ 倍。原本落在 $10^{-7}$ 的梯度,放大 $K = 2^{16} = 65536$ 倍后变成 $\sim 10^{-2}$,稳稳地落在 FP16 范围内。</p>
+<p>更新参数之前,再把累加好的梯度除以 $K$ 还原回真实尺度,在 FP32 master weights 上做更新。整个流程:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">forward (FP16/BF16) ──► loss (FP32) ──► loss × K ──► backward (FP16) </span><br><span class="line">                                                          │</span><br><span class="line">                                                          ▼</span><br><span class="line">                                                   gradient (FP16, 被放大 K 倍)</span><br><span class="line">                                                          │</span><br><span class="line">                                                   unscale: g /= K  (转 FP32)</span><br><span class="line">                                                          │</span><br><span class="line">                                                   ┌──────┴──────┐</span><br><span class="line">                                                   ▼             ▼</span><br><span class="line">                                              clip_grad_norm   是否 inf/nan?</span><br><span class="line">                                                   │             │</span><br><span class="line">                                                   ▼            是 → 跳过这步</span><br><span class="line">                                              optimizer.step</span><br><span class="line">                                              (在 FP32 master 上)</span><br></pre></td></tr></table></figure>
+<h3 id="3-3-静态-vs-动态-loss-scaling"><a href="#3-3-静态-vs-动态-loss-scaling" class="headerlink" title="3.3 静态 vs 动态 loss scaling"></a>3.3 静态 vs 动态 loss scaling</h3><p>最简单的方案是<strong>静态</strong>——固定 $K = 2^{15}$ 或 $2^{16}$。但训练后期梯度可能变大,固定的 $K$ 又会让梯度 overflow。</p>
+<p><strong>动态 loss scaling</strong>(PyTorch 的 <code>GradScaler</code> 用的方法):</p>
+<ul>
+<li>初始 $K = 2^{16}$</li>
+<li>每步反向后检查梯度是否有 inf/nan<ul>
+<li>没有:这步正常更新;每 $N$ 步(默认 2000)把 $K$ 翻倍 → 适应可能变小的梯度</li>
+<li>有:<strong>跳过这步参数更新</strong>(梯度被污染了);把 $K$ 减半 → 适应可能变大的梯度</li>
+</ul>
+</li>
+</ul>
+<p>这个机制就像汽车的自动变速箱——根据路况(梯度大小)自动调挡(scale 大小),代价是偶尔丢一两步训练。实际训练里 skip 比例通常 &lt; 0.1%,可以忽略。</p>
+<h3 id="3-4-PyTorch-标准写法"><a href="#3-4-PyTorch-标准写法" class="headerlink" title="3.4 PyTorch 标准写法"></a>3.4 PyTorch 标准写法</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.cuda.amp <span class="keyword">import</span> autocast, GradScaler</span><br><span class="line"></span><br><span class="line">scaler = GradScaler()</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> x, y <span class="keyword">in</span> loader:</span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 1. forward 在 autocast 区域内,自动用 FP16 跑矩阵乘等</span></span><br><span class="line">    <span class="keyword">with</span> autocast(dtype=torch.float16):</span><br><span class="line">        pred = model(x)</span><br><span class="line">        loss = criterion(pred, y)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. backward 之前先把 loss 放大</span></span><br><span class="line">    scaler.scale(loss).backward()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 3. 梯度裁剪之前必须先 unscale,否则裁的是放大版的梯度</span></span><br><span class="line">    scaler.unscale_(optimizer)</span><br><span class="line">    torch.nn.utils.clip_grad_norm_(model.parameters(), <span class="number">1.0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 4. step 内部:检查 inf/nan → 决定是否 skip;调整 scale</span></span><br><span class="line">    scaler.step(optimizer)</span><br><span class="line">    scaler.update()</span><br></pre></td></tr></table></figure>
+<p>四个 GradScaler 调用的语义:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>调用</th>
+<th>干啥</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scaler.scale(loss)</code></td>
+<td>返回 loss × K,backward 后 .grad 也是放大的</td>
+</tr>
+<tr>
+<td><code>scaler.unscale_(optimizer)</code></td>
+<td>把 optimizer 管的所有参数的 .grad 除以 K,转回真实尺度</td>
+</tr>
+<tr>
+<td><code>scaler.step(optimizer)</code></td>
+<td>检查 inf/nan;无则 step,有则跳过</td>
+</tr>
+<tr>
+<td><code>scaler.update()</code></td>
+<td>根据这一步的结果调整 K(翻倍或减半)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="3-5-BF16-不需要这套吗"><a href="#3-5-BF16-不需要这套吗" class="headerlink" title="3.5 BF16 不需要这套吗?"></a>3.5 BF16 不需要这套吗?</h3><p>不需要。BF16 的范围 = FP32,梯度不会 underflow / overflow,所以 loss scaling 完全没意义。BF16 训练的代码就纯粹:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> autocast(dtype=torch.bfloat16):</span><br><span class="line">    pred = model(x)</span><br><span class="line">    loss = criterion(pred, y)</span><br><span class="line">loss.backward()</span><br><span class="line">torch.nn.utils.clip_grad_norm_(model.parameters(), <span class="number">1.0</span>)</span><br><span class="line">optimizer.step()</span><br></pre></td></tr></table></figure>
+<p>少了 GradScaler 这一整套,代码干净得多。这是 LLM 全面切到 BF16 的另一个工程理由——<strong>调试链路短</strong>。</p>
+<h2 id="四、autocast-op-级-dtype-派发"><a href="#四、autocast-op-级-dtype-派发" class="headerlink" title="四、autocast:op 级 dtype 派发"></a>四、autocast:op 级 dtype 派发</h2><h3 id="4-1-autocast-在干什么"><a href="#4-1-autocast-在干什么" class="headerlink" title="4.1 autocast 在干什么"></a>4.1 autocast 在干什么</h3><p><code>torch.amp.autocast</code> 是一个<strong>上下文管理器</strong>,它不改变张量的存储 dtype,而是<strong>在 PyTorch 的 op dispatcher 里插入一层</strong>——每次调用一个 op 时,先看这个 op 在 autocast 名单里属于哪一档,然后把输入 cast 成对应 dtype 再算。</p>
+<p>PyTorch 把 op 分成三类:</p>
+<ul>
+<li><strong>白名单(用半精度跑)</strong>:矩阵乘、卷积、各种线性层——计算量大、对精度不敏感</li>
+<li><strong>黑名单(强制 FP32)</strong>:<code>softmax</code>、<code>log</code>、<code>exp</code>、<code>pow</code>、loss、归一化、reduction——数值敏感</li>
+<li><strong>未列入(随输入)</strong>:大多数 elementwise op,跟着输入的 dtype 走</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> autocast(dtype=torch.bfloat16):</span><br><span class="line">    a = torch.randn(<span class="number">1024</span>, <span class="number">1024</span>, device=<span class="string">&quot;cuda&quot;</span>)  <span class="comment"># FP32</span></span><br><span class="line">    b = torch.randn(<span class="number">1024</span>, <span class="number">1024</span>, device=<span class="string">&quot;cuda&quot;</span>)  <span class="comment"># FP32</span></span><br><span class="line"></span><br><span class="line">    c = a @ b           <span class="comment"># 白名单 → 输入会被自动 cast 成 BF16,输出 BF16</span></span><br><span class="line">    d = c.softmax(-<span class="number">1</span>)   <span class="comment"># 黑名单 → 输入被 cast 回 FP32,输出 FP32</span></span><br><span class="line">    e = d * <span class="number">2.0</span>         <span class="comment"># 未列入 → 跟 d,FP32</span></span><br></pre></td></tr></table></figure>
+<p>这就是”混合”两个字的来源:<strong>同一段代码里不同 op 跑在不同精度上</strong>,而且对用户透明——你只管写正常 PyTorch 代码,autocast 帮你决定每步用什么 dtype。</p>
+<h3 id="4-2-模型权重的-dtype-与-autocast-的关系"><a href="#4-2-模型权重的-dtype-与-autocast-的关系" class="headerlink" title="4.2 模型权重的 dtype 与 autocast 的关系"></a>4.2 模型权重的 dtype 与 autocast 的关系</h3><p>这里是初学者最容易混的地方。<strong>模型参数本身仍然是 FP32</strong>——你 <code>model = MyModel().cuda()</code> 时它默认是 FP32。autocast 只是<strong>在 op 调用时临时把输入和权重一起 cast 成 BF16/FP16</strong> 算一遍,算完不会改变权重原本的存储 dtype。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">model parameters (FP32)            ← 永远以 FP32 存</span><br><span class="line">       │</span><br><span class="line">       ├── 进入 autocast 区域</span><br><span class="line">       │      │</span><br><span class="line">       │      ▼  (临时 cast 成 BF16)</span><br><span class="line">       │   matmul / conv ──► 输出 BF16</span><br><span class="line">       │      │</span><br><span class="line">       │      ▼  (黑名单 op 把它 cast 回 FP32)</span><br><span class="line">       │   softmax / log ──► 输出 FP32</span><br><span class="line">       │</span><br><span class="line">       └── 离开 autocast 区域,后续操作维持 FP32</span><br></pre></td></tr></table></figure>
+<p>为什么参数要保持 FP32?<strong>这就是所谓的 master weights</strong>。优化器更新 $\theta \leftarrow \theta - \eta g$ 中,$\eta$ 通常 $10^{-4}$,$g$ 量级 $10^{-3}$,乘起来 $10^{-7}$——在 BF16 里(精度只有 $10^{-3}$)这个更新会被直接舍入掉,等价于学习率为 0。所以<strong>最终的参数加法必须在 FP32 上做</strong>。</p>
+<p>这也是为什么 ZeRO/FSDP 的 <code>MixedPrecision</code> 配置里有三个独立的 dtype——参数计算用什么 / 梯度通信用什么 / 缓冲区用什么——但<strong>优化器内部的 master 权重永远 FP32</strong>(除非你显式开 <code>optim_in_bf16</code> 那种激进选项)。</p>
+<h3 id="4-3-一个常踩的坑-custom-kernel-不会被-autocast-转"><a href="#4-3-一个常踩的坑-custom-kernel-不会被-autocast-转" class="headerlink" title="4.3 一个常踩的坑:custom kernel 不会被 autocast 转"></a>4.3 一个常踩的坑:custom kernel 不会被 autocast 转</h3><p>PyTorch 内置的 op 都注册了 autocast 行为,但<strong>你自己写的 CUDA kernel 不会</strong>。如果训练里用了一个第三方库(比如 xformers、Apex 的某个 fused op),它在 autocast 区域里<strong>可能不会自动转 dtype</strong>——你给它 FP32 输入它就老老实实 FP32 算,看起来 autocast”没生效”。</p>
+<p>排查方法:在 autocast 区域里 <code>print(x.dtype)</code>,如果矩阵乘后的张量还是 FP32 就说明这个 op 没注册 autocast。解决方案:要么手动 <code>x = x.to(torch.bfloat16)</code>,要么让库支持 autocast(<code>@torch.amp.custom_fwd</code>/<code>custom_bwd</code> 装饰器)。</p>
+<h2 id="五、混合精度-×-DDP-FSDP"><a href="#五、混合精度-×-DDP-FSDP" class="headerlink" title="五、混合精度 × DDP / FSDP"></a>五、混合精度 × DDP / FSDP</h2><h3 id="5-1-DDP-AMP"><a href="#5-1-DDP-AMP" class="headerlink" title="5.1 DDP + AMP"></a>5.1 DDP + AMP</h3><p>最简单的组合。DDP 不关心 dtype,它只管”把 .grad AllReduce 一下”。autocast + GradScaler 在 forward / backward 里独立运作,DDP 在 backward 末尾接管 .grad 的同步。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">model = DDP(model.cuda(), device_ids=[local_rank])</span><br><span class="line">scaler = GradScaler()</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> autocast(dtype=torch.bfloat16):</span><br><span class="line">    loss = criterion(model(x), y)</span><br><span class="line"></span><br><span class="line">scaler.scale(loss).backward()   <span class="comment"># DDP hook 在反向中触发,AllReduce .grad</span></span><br><span class="line">scaler.unscale_(optimizer)</span><br><span class="line">torch.nn.utils.clip_grad_norm_(model.parameters(), <span class="number">1.0</span>)</span><br><span class="line">scaler.step(optimizer)</span><br><span class="line">scaler.update()</span><br></pre></td></tr></table></figure>
+<p>唯一一个细节:DDP 的梯度通信(AllReduce)用的是 .grad 当前的 dtype。如果你想<strong>用 BF16 通信</strong>省一半带宽,有两种做法:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 做法 1:把 backward 通信 dtype 设成 BF16(FSDP 直接支持,见下面)</span></span><br><span class="line"><span class="comment"># DDP 这里要走 communication hook(详见 DDP.md 的 comm hook 部分)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 做法 2:让 backward 出来的 .grad 直接是 BF16</span></span><br><span class="line"><span class="comment"># 默认 FP32 master 模型在 autocast 反向后 .grad 仍是 FP32</span></span><br><span class="line"><span class="comment"># 想要 BF16 通信,需要用 FSDP 或者手写 hook</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-2-FSDP-的-MixedPrecision-配置"><a href="#5-2-FSDP-的-MixedPrecision-配置" class="headerlink" title="5.2 FSDP 的 MixedPrecision 配置"></a>5.2 FSDP 的 MixedPrecision 配置</h3><p>FSDP 把混合精度拆成<strong>三个独立可调的 dtype</strong>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.distributed.fsdp <span class="keyword">import</span> FullyShardedDataParallel <span class="keyword">as</span> FSDP, MixedPrecision</span><br><span class="line"></span><br><span class="line">mp_policy = MixedPrecision(</span><br><span class="line">    param_dtype=torch.bfloat16,     <span class="comment"># 参数计算时的 dtype</span></span><br><span class="line">    reduce_dtype=torch.bfloat16,    <span class="comment"># 梯度通信(ReduceScatter)用的 dtype</span></span><br><span class="line">    buffer_dtype=torch.bfloat16,    <span class="comment"># buffers (BN running_mean 等) 的 dtype</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">model = FSDP(model, mixed_precision=mp_policy, ...)</span><br></pre></td></tr></table></figure>
+<p>三个 dtype 的含义:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>控制什么</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>param_dtype</code></td>
+<td>前向反向时的参数和激活计算 dtype</td>
+<td>算力(用 BF16 才能跑 Tensor Core)</td>
+</tr>
+<tr>
+<td><code>reduce_dtype</code></td>
+<td>梯度跨卡通信的 dtype</td>
+<td>通信带宽(BF16 比 FP32 减半)</td>
+</tr>
+<tr>
+<td><code>buffer_dtype</code></td>
+<td>non-trainable buffers 的存储 dtype</td>
+<td>显存(很小,影响有限)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键工程优化</strong>:<code>reduce_dtype=torch.bfloat16</code> 让 FSDP 在 ReduceScatter 时把 FP32 .grad 临时 cast 成 BF16 再通信,<strong>通信量直接减半</strong>。代价是数值精度——大模型训练里这点精度损失对收敛几乎没影响,所以是默认推荐配置。</p>
+<p>而 <code>optimizer state</code> 不在 MixedPrecision 控制范围内——FSDP 默认把分片的 optimizer states 仍然以 FP32 存,这就是 master weights 的物理实现。</p>
+<h3 id="5-3-一张图看清谁是什么-dtype"><a href="#5-3-一张图看清谁是什么-dtype" class="headerlink" title="5.3 一张图看清谁是什么 dtype"></a>5.3 一张图看清谁是什么 dtype</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────┐</span><br><span class="line">│ FSDP shard (1/N)    │</span><br><span class="line">│  ┌───────────────┐  │</span><br><span class="line">│  │ FP32 master   │  │  ← optimizer 看到的(更新在这里发生)</span><br><span class="line">│  │     ↕         │  │</span><br><span class="line">│  │ FP32 m, v     │  │</span><br><span class="line">│  └───────────────┘  │</span><br><span class="line">└──────────┬──────────┘</span><br><span class="line">           │</span><br><span class="line">forward 时 cast 成 param_dtype</span><br><span class="line">           ↓</span><br><span class="line">┌─────────────────────┐</span><br><span class="line">│ AllGather → BF16    │  ← 临时聚成完整层参数,BF16 算</span><br><span class="line">│ (param_dtype)       │</span><br><span class="line">└─────────────────────┘</span><br><span class="line">           ↓</span><br><span class="line">┌─────────────────────┐</span><br><span class="line">│ matmul/conv (BF16)  │  ← Tensor Core 跑得飞起</span><br><span class="line">│ activations (BF16)  │</span><br><span class="line">└─────────────────────┘</span><br><span class="line">           ↓</span><br><span class="line">┌─────────────────────┐</span><br><span class="line">│ softmax/loss (FP32) │  ← autocast 黑名单提升回 FP32</span><br><span class="line">└─────────────────────┘</span><br><span class="line"></span><br><span class="line">反向时再走一遍 AllGather,梯度 BF16</span><br><span class="line">           ↓</span><br><span class="line">┌─────────────────────┐</span><br><span class="line">│ ReduceScatter BF16  │  ← reduce_dtype 控制</span><br><span class="line">│ → 落回每卡 1/N grad │</span><br><span class="line">└─────────────────────┘</span><br><span class="line">           ↓</span><br><span class="line">在 FSDP 内部 cast 回 FP32 master,做 step</span><br></pre></td></tr></table></figure>
+<p>理解了这张图,FSDP 的混合精度配置就不再神秘——<strong>每一层 cast 都对应一个具体的工程目的</strong>(算力 / 显存 / 通信),没有一处是为了”看起来高级”。</p>
+<h2 id="六、FP8-训练-Hopper-时代的下一步"><a href="#六、FP8-训练-Hopper-时代的下一步" class="headerlink" title="六、FP8 训练:Hopper 时代的下一步"></a>六、FP8 训练:Hopper 时代的下一步</h2><p>H100/Hopper 引入了对 FP8 的硬件支持,Tensor Core FP8 算力是 BF16 的 2 倍——训练时长直接砍半的诱惑。NVIDIA 的 transformer-engine 和后来的 Megatron-Core 把它产品化,Llama-3 的训练里就有部分 FP8 推理实验。</p>
+<h3 id="6-1-两种-FP8-各管一段"><a href="#6-1-两种-FP8-各管一段" class="headerlink" title="6.1 两种 FP8 各管一段"></a>6.1 两种 FP8 各管一段</h3><p>FP8 不像 BF16 那样能”一刀切”用在所有地方,因为只有 8 位实在太窄了——必须用两种格式分别处理前向和反向:</p>
+<ul>
+<li><strong>E4M3</strong>(4 指数 + 3 尾数):<strong>前向用</strong>。范围窄($\pm 448$)但精度相对好,适合 activation 和 weight</li>
+<li><strong>E5M2</strong>(5 指数 + 2 尾数):<strong>反向用</strong>。范围广($\pm 57344$)但精度差,适合 gradient(梯度数值范围跨好几个数量级)</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">forward 计算:           backward 计算:</span><br><span class="line">  使用 E4M3                 使用 E5M2</span><br><span class="line">┌─────────────┐           ┌─────────────┐</span><br><span class="line">│ act × weight│           │ dL/dy × W^T │</span><br><span class="line">│ → BF16 累加 │           │ → BF16 累加 │</span><br><span class="line">└─────────────┘           └─────────────┘</span><br><span class="line">       ↓                          ↑</span><br><span class="line">  量化回 E4M3              量化回 E5M2</span><br></pre></td></tr></table></figure>
+<h3 id="6-2-Per-tensor-scaling"><a href="#6-2-Per-tensor-scaling" class="headerlink" title="6.2 Per-tensor scaling"></a>6.2 Per-tensor scaling</h3><p>FP8 范围太窄,<strong>单一 scale 装不下</strong>整个 batch 不同 tensor 的数值范围。所以每个 tensor 都需要带一个 scale factor——存储时:</p>
+<script type="math/tex; mode=display">x_{\text{stored}} = \text{round}(x_{\text{real}} / s)</script><p>读取时反量化回来 $x<em>{\text{real}} = x</em>{\text{stored}} \times s$。$s$ 通常根据 tensor 当前 batch 的 amax(绝对值最大值)动态计算,使得 max value 正好用满 FP8 的最大可表示数。这套 scale 的管理就是 transformer-engine 的核心抽象。</p>
+<h3 id="6-3-工程现状"><a href="#6-3-工程现状" class="headerlink" title="6.3 工程现状"></a>6.3 工程现状</h3><p>到 2026 年,FP8 训练基本成熟,但还没有像 BF16 那样”换上去就能用”:</p>
+<ul>
+<li><strong>稳定性</strong>:某些层(尤其 attention 输出的 softmax 之前)对 FP8 敏感,需要保留 BF16</li>
+<li><strong>精度损失</strong>:对小模型(7B 以下)有可观察的 loss 差异;大模型(70B+)基本看不出</li>
+<li><strong>生态</strong>:transformer-engine 主要支持 NVIDIA 自家的 Megatron-Core 和 NeMo,PyTorch 原生 FSDP + FP8 还在快速演进</li>
+</ul>
+<p>实战推荐:<strong>70B+ 训练且预算紧张</strong>才考虑 FP8;否则 BF16 仍然是默认选择。</p>
+<h2 id="七、关于精度的几个有用直觉"><a href="#七、关于精度的几个有用直觉" class="headerlink" title="七、关于精度的几个有用直觉"></a>七、关于精度的几个有用直觉</h2><p>把整篇串起来,留几条能记得住的判断准则:</p>
+<p><strong>第一</strong>,<strong>为什么 master weights 必须 FP32</strong>——不是因为参数本身需要 FP32,而是因为 <code>param += lr * grad</code> 这个更新里 <code>lr * grad</code> 太小,半精度直接舍掉。如果你在 LR warmup 阶段看到 loss 完全不动,先怀疑这个。</p>
+<p><strong>第二</strong>,<strong>为什么 LLM 全部 BF16 而 CV 还有 FP16</strong>——LLM 的梯度数值范围跨好几个数量级(transformer 的 layernorm + softmax 让数值非常 wild),FP16 撑不住。CV 的 ResNet 类网络相对温和,FP16 + GradScaler 在那个数据分布下足够用。<strong>所以遇到新模型,先用 BF16 训,稳了再考虑切 FP16 省那点尾数精度的事</strong>(实际上几乎没人这么干)。</p>
+<p><strong>第三</strong>,<strong>为什么 FSDP 的 reduce_dtype 默认是 FP32 而不是 BF16</strong>——FSDP 默认配置保守,不打开 BF16 通信。<strong>主动把它改成 BF16 通常能省 30-50% 通信时间</strong>,是现代大模型训练的”免费午餐”——记得你自己加上。</p>
+<p><strong>第四</strong>,<strong>autocast 不是万能解决方案</strong>——它只覆盖 PyTorch 内置 op。如果你的代码里有自定义 CUDA / Triton kernel 或者第三方库,autocast 不会自动给它们转 dtype,需要你手动 cast 输入或在 kernel 里 dtype-aware。这是”训练曲线和理论不符”的最常见 footgun 之一。</p>
+<p><strong>第五</strong>,<strong>mixed precision 不会”调小学习率”</strong>——很多人以为换 BF16 / FP16 之后要相应缩小学习率,这是错的。Master weights 是 FP32,优化器仍然在 FP32 上更新,与学习率配置完全无关。学习率只跟模型规模、batch size、warmup 有关。如果换混合精度后必须改 LR 才能稳,大概率是 GradScaler 没配好或者有 dtype 不匹配。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/1.DataParallel/MixedPrecision/">https://SGDBS.github.io/AI_Infra/1.DataParallel/MixedPrecision/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/MultiNode/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/8.jpg" class="responsive-img" alt="6. 多机训练与 NCCL 工程">
+                        
+                        <span class="card-title">6. 多机训练与 NCCL 工程</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter1/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/18.jpg" class="responsive-img" alt="RL Chapter1 MDP 与 Bellman 方程">
+                        
+                        <span class="card-title">RL Chapter1 MDP 与 Bellman 方程</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

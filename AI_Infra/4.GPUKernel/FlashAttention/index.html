@@ -1,0 +1,2390 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="1. Flash Attention, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>1. Flash Attention | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>1. Flash Attention</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">1. Flash Attention</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-04-23
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h2 id="1-FlashAttention-整体结构"><a href="#1-FlashAttention-整体结构" class="headerlink" title="1.FlashAttention 整体结构"></a>1.FlashAttention 整体结构</h2><p>FlashAttention 是由斯坦福大学 Tri Dao 等人在 2022 年提出的一种<strong>精确</strong>（非近似）的注意力计算算法。它通过重新设计注意力的计算方式，大幅降低了显存占用并加速了训练与推理,现已成为现代大模型（如 GPT、LLaMA 等）的标配。</p>
+<h3 id="一、问题背景：标准-Attention-的瓶颈"><a href="#一、问题背景：标准-Attention-的瓶颈" class="headerlink" title="一、问题背景：标准 Attention 的瓶颈"></a>一、问题背景：标准 Attention 的瓶颈</h3><p>在 Transformer 中，自注意力的核心计算是:</p>
+<script type="math/tex; mode=display">
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V</script><p>其中 $Q, K, V \in \mathbb{R}^{N \times d}$，$N$ 是序列长度，$d$ 是每个头的维度。</p>
+<p><strong>标准实现的做法</strong>（PyTorch 默认的 naive 实现）：</p>
+<ol>
+<li>计算 $S = QK^T$，得到一个 $N \times N$ 的矩阵,写回 HBM（显存）</li>
+<li>计算 $P = \text{softmax}(S)$，再次写回 HBM</li>
+<li>计算 $O = PV$，写回 HBM</li>
+</ol>
+<p><strong>两个核心问题：</strong></p>
+<ul>
+<li><strong>显存占用 $O(N^2)$</strong>：当 $N=8192$ 时,单个注意力矩阵就要 256MB（fp32）,多头多层叠加显存爆炸</li>
+<li><strong>速度瓶颈不是算力,而是显存带宽</strong>：GPU 的算力增长远快于显存带宽,注意力计算是典型的 <strong>memory-bound</strong>（访存受限）问题,大量时间花在 HBM 读写上</li>
+</ul>
+<h3 id="二、GPU-内存层级的关键认知"><a href="#二、GPU-内存层级的关键认知" class="headerlink" title="二、GPU 内存层级的关键认知"></a>二、GPU 内存层级的关键认知</h3><p>理解 FlashAttention 必须先理解 GPU 的内存结构:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>容量</th>
+<th>带宽</th>
+<th>速度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HBM（全局显存）</td>
+<td>40–80 GB</td>
+<td>~1.5–3 TB/s</td>
+<td>慢</td>
+</tr>
+<tr>
+<td>SRAM（片上共享内存）</td>
+<td>~20 MB（A100 全部 SM 合计）</td>
+<td>~19 TB/s</td>
+<td>快约 10 倍</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>标准 attention 反复在 HBM 中读写大矩阵,SRAM 几乎没被利用。FlashAttention 的核心思路就是:<strong>尽可能把计算留在 SRAM 里,避免往 HBM 写中间结果</strong>。</p>
+<h3 id="三、核心思想：Tiling-Online-Softmax-Recomputation"><a href="#三、核心思想：Tiling-Online-Softmax-Recomputation" class="headerlink" title="三、核心思想：Tiling + Online Softmax + Recomputation"></a>三、核心思想：Tiling + Online Softmax + Recomputation</h3><h4 id="1-Tiling（分块计算）"><a href="#1-Tiling（分块计算）" class="headerlink" title="1. Tiling（分块计算）"></a>1. Tiling（分块计算）</h4><p>把 $Q, K, V$ 沿序列维度切成小块（block）,每次只把一小块加载到 SRAM 中计算,这样 $N \times N$ 的大矩阵永远不会被完整地实例化。</p>
+<p>假设将 $Q$ 切成 $T_r$ 块，$K, V$ 切成 $T_c$ 块,算法变成一个双层循环: 外层遍历 $Q$ 的块,内层遍历 $K, V$ 的块。</p>
+<h4 id="2-Online-Softmax（增量式-softmax）"><a href="#2-Online-Softmax（增量式-softmax）" class="headerlink" title="2. Online Softmax（增量式 softmax）"></a>2. Online Softmax（增量式 softmax）</h4><p>最大的技术难点是: <strong>softmax 需要看到整行所有元素才能归一化</strong>（要算分母 $\sum e^{x_i}$）,而分块计算时一次只能看到一部分。FlashAttention 采用了 Milakov &amp; Gimelshein 提出的 online softmax 技巧。</p>
+<p>为了数值稳定,softmax 通常减去最大值:</p>
+<script type="math/tex; mode=display">
+\text{softmax}(x)_i = \frac{e^{x_i - m}}{\sum_j e^{x_j - m}}, \quad m = \max_j x_j</script><p>当新的一块数据进来,当前块最大值是 $m^{new}$,则可以这样更新:</p>
+<script type="math/tex; mode=display">
+m^{total} = \max(m^{old}, m^{new})</script><script type="math/tex; mode=display">
+\ell^{total} = e^{m^{old} - m^{total}} \cdot \ell^{old} + e^{m^{new} - m^{total}} \cdot \ell^{new}</script><p>输出 $O$ 也可以用类似的 rescaling 进行增量更新:</p>
+<script type="math/tex; mode=display">
+O^{total} = \text{diag}(e^{m^{old} - m^{total}}) \cdot O^{old} + e^{m^{new} - m^{total}} \cdot P^{new} V^{new}</script><p>这样每处理完一个 $K, V$ 块,就用缩放因子修正之前累积的结果,<strong>数学上与标准 softmax 完全等价,精度没有任何损失</strong>。</p>
+<h4 id="3-Recomputation（反向传播时重算）"><a href="#3-Recomputation（反向传播时重算）" class="headerlink" title="3. Recomputation（反向传播时重算）"></a>3. Recomputation（反向传播时重算）</h4><p>在反向传播中,原本需要保存 $N \times N$ 的注意力矩阵 $P$ 来算梯度。FlashAttention 只保存 softmax 的统计量（每行的最大值 $m$ 和归一化因子 $\ell$,各 $O(N)$）,反向时<strong>重新计算</strong> $S$ 和 $P$。</p>
+<p>看起来增加了计算量,但由于 attention 是 memory-bound 的,<strong>省下来的 HBM 访问时间远多于重算的时间</strong>,整体反而更快。</p>
+<h3 id="四、复杂度分析"><a href="#四、复杂度分析" class="headerlink" title="四、复杂度分析"></a>四、复杂度分析</h3><p>设 $M$ 是 SRAM 大小:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th style="text-align:center">标准 Attention</th>
+<th style="text-align:center">FlashAttention</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>计算量（FLOPs）</td>
+<td style="text-align:center">$O(N^2 d)$</td>
+<td style="text-align:center">$O(N^2 d)$</td>
+</tr>
+<tr>
+<td><strong>HBM 访问量</strong></td>
+<td style="text-align:center">$O(Nd + N^2)$</td>
+<td style="text-align:center">$O(N^2 d^2 / M)$</td>
+</tr>
+<tr>
+<td><strong>显存占用</strong></td>
+<td style="text-align:center">$O(N^2)$</td>
+<td style="text-align:center">$O(N)$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>计算量没变,但 HBM 访问量在 $d \ll M$ 的常见情况下大幅降低（$d$ 一般是 64 或 128,$M$ 在 A100 上约 100KB 级别）,这是加速的根本来源。</p>
+<h2 id="2-推理场景：Prefill-Decode-与-KV-Cache"><a href="#2-推理场景：Prefill-Decode-与-KV-Cache" class="headerlink" title="2. 推理场景：Prefill / Decode 与 KV Cache"></a>2. 推理场景：Prefill / Decode 与 KV Cache</h2><p>第 1 节我们用训练前向作为切入点，分析了 attention 的 memory-bound 本质。但 FlashAttention 在生产环境最大的价值其实在<strong>推理服务</strong>——LLM 部署后每秒成千上万次的请求都在跑这个 kernel。</p>
+<p>推理和训练的计算模式不完全相同。GPT 类自回归模型的推理分<strong>两个阶段</strong>，瓶颈完全不同，对 attention kernel 的要求也不一样。理解这两个阶段之后，才能完整地看到 FlashAttention 在工程上的意义，也能理解为什么后续会演化出 FlashAttention-2、FlashDecoding 等变体。</p>
+<h3 id="一、GPT-的两阶段推理"><a href="#一、GPT-的两阶段推理" class="headerlink" title="一、GPT 的两阶段推理"></a>一、GPT 的两阶段推理</h3><p>给定一个 prompt（比如 “今天天气真好”），模型要生成后续 token。这个过程分为：</p>
+<ul>
+<li><strong>Prefill（预填充）</strong>：一次性处理整个 prompt。输入是 N 个 token，模型并行算出它们的 Q, K, V，然后做一次完整的（带因果 mask 的）attention。这一步只发生一次。</li>
+<li><strong>Decode（解码）</strong>：从生成第一个新 token 开始，每次只输入 1 个 token（上一步刚生成的），计算它的 Q, K, V，与<strong>前面所有 token 的 K, V</strong> 做 attention，得到 logits 后采样下一个 token。这一步循环执行，直到 EOS 或达到最大长度。</li>
+</ul>
+<p>数据流如下（省略 batch 维度，单层视角）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">Step 0: Prefill (prompt 长度 N=6)</span><br><span class="line"></span><br><span class="line">  Q[1..6], K[1..6], V[1..6]  ∈ R^&#123;6×d&#125;</span><br><span class="line">              │</span><br><span class="line">              ▼</span><br><span class="line">  ┌──────────────────────────────────────────┐</span><br><span class="line">  │  S = Q·Kᵀ ∈ R^&#123;6×6&#125;  (causal mask)       │</span><br><span class="line">  │  P = softmax(S)                          │</span><br><span class="line">  │  O = P·V    ∈ R^&#123;6×d&#125;                    │  ← 完整 N×N attention</span><br><span class="line">  └──────────────┬───────────────────────────┘</span><br><span class="line">                 │</span><br><span class="line">                 ▼ 同时把 K, V 存进 cache</span><br><span class="line">  ┌──────────────────────────────────────────┐</span><br><span class="line">  │  KV Cache (HBM):  K[1..6],  V[1..6]      │</span><br><span class="line">  └──────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Step 1: Decode 生成第 7 个 token</span><br><span class="line"></span><br><span class="line">  Q[7], K[7], V[7]  ∈ R^&#123;1×d&#125;   ← 只算 1 行!</span><br><span class="line">       │</span><br><span class="line">  ┌────┴────────────────────────────────────┐</span><br><span class="line">  │  读 KV Cache: K[1..6], V[1..6]          │</span><br><span class="line">  └────┬────────────────────────────────────┘</span><br><span class="line">       ▼</span><br><span class="line">  ┌─────────────────────────────────────────┐</span><br><span class="line">  │  S = Q[7] · K[1..7]ᵀ ∈ R^&#123;1×7&#125;          │</span><br><span class="line">  │  P = softmax(S)                         │</span><br><span class="line">  │  O = P · V[1..7]    ∈ R^&#123;1×d&#125;           │</span><br><span class="line">  └─────────────┬───────────────────────────┘</span><br><span class="line">                │</span><br><span class="line">                ▼ 追加 K[7], V[7]</span><br><span class="line">  ┌──────────────────────────────────────────┐</span><br><span class="line">  │  KV Cache (HBM):  K[1..7],  V[1..7]      │</span><br><span class="line">  └──────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Step 2 ~ T-1: 重复 Decode，每一步 cache 增长 1 行</span><br></pre></td></tr></table></figure>
+<p>注意几个关键点：</p>
+<ol>
+<li><strong>Prefill 的计算模式和训练前向几乎一样</strong>——都是 N×d 的 Q, K, V，都要算完整的 N×N attention 矩阵。所以<strong>第 1 节里讲的所有 memory-bound 分析、FlashAttention 的所有优化，直接就适用于 prefill</strong>。</li>
+<li><strong>Decode 的 Q 只有 1 行</strong>，根本不存在所谓的 “N×N 注意力矩阵”——这一步要算的是 1×(N+t) 的 attention，瓶颈完全是另一回事。</li>
+<li><strong>每一步 decode 都依赖前面所有步的 K, V</strong>——这就是 KV Cache 存在的根本原因。</li>
+</ol>
+<h3 id="二、为什么需要-KV-Cache"><a href="#二、为什么需要-KV-Cache" class="headerlink" title="二、为什么需要 KV Cache"></a>二、为什么需要 KV Cache</h3><p>不存 cache 行不行？假设不存，每生成第 t 个 token 时，要重新计算前 t-1 个 token 的 K, V。整个序列生成完，每个 token 的 K, V 平均会被重算 T/2 次——<strong>生成 T 个 token 总共做了 O(T²) 量级的 K/V 重复投影</strong>。</p>
+<p>存了 cache 之后：</p>
+<ul>
+<li>每一步 decode 只算<strong>当前这 1 个 token</strong> 的 Q, K, V，是 O(d²) 的开销</li>
+<li>之前所有 token 的 K, V 直接从 cache 里读出来，不再重算</li>
+<li>然后做 1×(N+t) 的 attention</li>
+</ul>
+<p>总计算量从 O(T²) 量级降到 O(T) 量级——<strong>计算量的问题被解决了</strong>。</p>
+<p>但代价是什么？<strong>每一步 decode 都要把整个 KV cache 从 HBM 完整读出来一次</strong>。一个典型的 7B 模型，prefill 之后 KV cache 大小为：</p>
+<script type="math/tex; mode=display">
+\text{KV cache size} = 2 \times L \times N \times d_{\text{model}} \times \text{bytes}</script><p>（2 是 K 和 V 两个张量,$L$ 是层数,$d_{\text{model}}$ 是隐藏维度。）以 LLaMA-7B、$N=2048$、fp16 为例,KV cache ≈ $2 \times 32 \times 2048 \times 4096 \times 2$ ≈ <strong>1 GB</strong>。每生成一个 token 都要把这 1 GB 从 HBM 完整搬一次到 SRAM。</p>
+<p><strong>所以 KV cache 把”算力问题”转换成了”带宽问题”</strong>——这恰好是 FlashAttention 最擅长解决的那一类问题。</p>
+<h3 id="三、Decode-的算术强度有多低"><a href="#三、Decode-的算术强度有多低" class="headerlink" title="三、Decode 的算术强度有多低"></a>三、Decode 的算术强度有多低</h3><p>把训练前向（或 prefill）和 decode 放在一起对比：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>Q 形状</th>
+<th>KV 形状</th>
+<th>主要算力</th>
+<th>主要 HBM 流量</th>
+<th>算术强度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>训练 / Prefill</td>
+<td>N×d</td>
+<td>N×d</td>
+<td>$O(N^2 d)$</td>
+<td>$O(N^2)$ 中间矩阵 + $O(Nd)$ 输入</td>
+<td>$\sim N$ (随序列长增长)</td>
+</tr>
+<tr>
+<td>Decode 单步</td>
+<td>1×d</td>
+<td>(N+t)×d</td>
+<td>$O((N+t) \cdot d)$</td>
+<td>$O((N+t) \cdot d)$ KV cache</td>
+<td><strong>$\sim 1$ (常数!)</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Decode 单步要做的算力大约是 $O(N \cdot d)$（Q 和 N 行 K 各做一次内积，再用 P 与 N 行 V 加权求和），读取的 KV cache 字节量也是 $O(N \cdot d)$ 量级——<strong>算术强度只有 ~1 FLOP/byte</strong>。</p>
+<p>对照第 1 节给的 A100 数字：算力/带宽比 200 FLOPs/byte。这意味着 decode 时 GPU 的 312 TFLOPS 算力<strong>几乎完全闲置</strong>，时间全部花在等 KV cache 从 HBM 加载。如果一个 decode kernel 跑 100 μs，可能 99 μs 在搬数据，1 μs 在算。</p>
+<p>这就是 <strong>memory-bound 的极端版本</strong>。第 1 节里我们用训练为例已经论证了 attention 是 memory-bound，但 decode 把这个矛盾推到了顶峰：</p>
+<ul>
+<li>训练 / prefill：算术强度 $\sim N$（数百到数千），低于临界值,已经 memory-bound</li>
+<li>Decode：算术强度 $\sim 1$（常数级），低于临界值<strong>两个数量级以上</strong>，重度 memory-bound</li>
+</ul>
+<h3 id="四、FlashAttention-在推理里的角色"><a href="#四、FlashAttention-在推理里的角色" class="headerlink" title="四、FlashAttention 在推理里的角色"></a>四、FlashAttention 在推理里的角色</h3><p>理解了这两个阶段，再看 FlashAttention 在推理中扮演什么角色：</p>
+<p><strong>(1) Prefill：FlashAttention v1 直接适用。</strong> Prefill 就是一次大的 attention 前向，FlashAttention 的 tiling + online softmax 完整适用。在长 prompt 场景（RAG、长文档总结、代码补全），prefill 阶段就是延迟瓶颈，FlashAttention 直接把它的延迟和显存都降下来。</p>
+<p><strong>(2) Decode：v1 不够好，需要 FlashDecoding。</strong> v1 的算法结构是”外层循环遍历 Q 块，内层循环遍历 K, V 块”。这套并行划分基于一个假设：<strong>Q 有很多行可以分给不同的 SM 并行处理</strong>。但在 decode 时 Q 只有 1 行，外层循环只有 1 步——<strong>整个 GPU 的几十个 SM 里只有 1 个在干活，其余全部闲置</strong>。</p>
+<p>FlashDecoding 的做法是反过来：<strong>把长长的 K, V 维度切分到多个 SM 上并行处理</strong>，每个 SM 负责一段 K, V，独立算出局部的 attention 输出和 softmax 统计量 $(m, \ell)$，最后用 online softmax 的合并公式把所有局部结果归一成最终输出。</p>
+<p>注意这里 online softmax 的”分块合并律”再次起到了关键作用——它使得 attention 这个看起来必须看全行才能归一的操作，可以被任意方式切分并行后再合并。在训练时它解决了”按 K, V 块<strong>串行扫描</strong>“的问题，在 decode 时它解决了”按 K, V 块<strong>并行 reduce</strong>“的问题，<strong>同一个数学结构在两种场景里被反向利用</strong>。</p>
+<h3 id="五、小结"><a href="#五、小结" class="headerlink" title="五、小结"></a>五、小结</h3><p>把推理这条线补上之后，FlashAttention 的故事就完整了：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>计算模式</th>
+<th>瓶颈</th>
+<th>FlashAttention 的角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>训练前向</td>
+<td>N×N attention</td>
+<td>$N^2$ 中间矩阵的 HBM 读写</td>
+<td>v1 的 tiling + online softmax</td>
+</tr>
+<tr>
+<td>训练反向</td>
+<td>N×N attention + 梯度</td>
+<td>$N^2$ 矩阵保存 + HBM 读写</td>
+<td>v1 的 recomputation</td>
+</tr>
+<tr>
+<td>推理 Prefill</td>
+<td>同训练前向</td>
+<td>同上</td>
+<td>v1 直接适用</td>
+</tr>
+<tr>
+<td>推理 Decode</td>
+<td>1×N attention，每步读 cache</td>
+<td>KV cache 的 HBM 读取</td>
+<td>FlashDecoding（K/V 维度并行）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>从工程哲学上看，可以总结出一个对偶：</p>
+<ul>
+<li><strong>KV Cache</strong>：用 HBM 存储换计算（不重算 K, V）</li>
+<li><strong>FlashAttention Recomputation</strong>：用计算换 HBM 存储（不存 $N \times N$ 矩阵）</li>
+</ul>
+<p>两者都是在”算力 vs 带宽”这把剪刀差下做的工程取舍，方向相反但目的一致——<strong>让宝贵的 HBM 带宽花在刀刃上</strong>。</p>
+<p>理解了这一点，再回去看后面的 Online Softmax 和 Recomputation，会发现它们不只是训练里的优化技巧，而是支撑整个现代 LLM 推理服务能跑起来的数学基础。</p>
+<h2 id="3-Online-Softmax"><a href="#3-Online-Softmax" class="headerlink" title="3.Online Softmax"></a>3.Online Softmax</h2><p>Online Softmax 是 FlashAttention 能成立的数学基石。它由 NVIDIA 的 Milakov &amp; Gimelshein 在 2018 年的论文 <em>“Online normalizer calculation for softmax”</em> 中提出,核心思想是:<strong>在只看过部分数据的情况下,增量地计算数值稳定的 softmax,并在新数据到来时做修正</strong>。</p>
+<p>下面我会从标准 softmax 的问题开始,一步步推导到 online 版本,并解释它在 FlashAttention 中的角色。</p>
+<h3 id="一、标准-Softmax-与数值稳定性问题"><a href="#一、标准-Softmax-与数值稳定性问题" class="headerlink" title="一、标准 Softmax 与数值稳定性问题"></a>一、标准 Softmax 与数值稳定性问题</h3><h4 id="1-1-朴素定义"><a href="#1-1-朴素定义" class="headerlink" title="1.1 朴素定义"></a>1.1 朴素定义</h4><p>给定向量 $x = (x_1, x_2, \dots, x_N)$,softmax 定义为:</p>
+<script type="math/tex; mode=display">
+y_i = \frac{e^{x_i}}{\sum_{j=1}^{N} e^{x_j}}</script><h4 id="1-2-数值溢出问题"><a href="#1-2-数值溢出问题" class="headerlink" title="1.2 数值溢出问题"></a>1.2 数值溢出问题</h4><p>如果某个 $x_i$ 较大(比如 1000),$e^{x_i}$ 会溢出变成 <code>inf</code>。即使在 fp16 下,$x_i &gt; 11$ 就会溢出($e^{11} \approx 59874$,fp16 的上限约 65504)。</p>
+<h4 id="1-3-Safe-Softmax-3-pass-版本"><a href="#1-3-Safe-Softmax-3-pass-版本" class="headerlink" title="1.3 Safe Softmax(3-pass 版本)"></a>1.3 Safe Softmax(3-pass 版本)</h4><p>解决方法是减去最大值:</p>
+<script type="math/tex; mode=display">
+y_i = \frac{e^{x_i - m}}{\sum_{j=1}^{N} e^{x_j - m}}, \quad m = \max_j x_j</script><p>这个变换<strong>数学上完全等价</strong>(分子分母同时乘以 $e^{-m}$),但把最大指数限制在 0,保证 $e^{x_i - m} \in (0, 1]$,不会溢出。</p>
+<p>算法变成 <strong>3 遍扫描</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Pass 1: 求最大值 m</span><br><span class="line">  m = -∞</span><br><span class="line">  for i = 1..N:</span><br><span class="line">      m = max(m, x[i])</span><br><span class="line"></span><br><span class="line">Pass 2: 求归一化因子 ℓ</span><br><span class="line">  ℓ = 0</span><br><span class="line">  for i = 1..N:</span><br><span class="line">      ℓ += exp(x[i] - m)</span><br><span class="line"></span><br><span class="line">Pass 3: 计算最终输出</span><br><span class="line">  for i = 1..N:</span><br><span class="line">      y[i] = exp(x[i] - m) / ℓ</span><br></pre></td></tr></table></figure>
+<p><strong>问题</strong>:需要 3 次读取整个 $x$ 向量,对 GPU 这种 memory-bound 场景非常不友好。如果 $x$ 太大放不进 SRAM,就得反复从 HBM 读 3 次。</p>
+<h3 id="二、Online-Softmax-的核心想法"><a href="#二、Online-Softmax-的核心想法" class="headerlink" title="二、Online Softmax 的核心想法"></a>二、Online Softmax 的核心想法</h3><p><strong>目标</strong>:把 Pass 1 和 Pass 2 合并成一次扫描,也就是<strong>边扫描边同时维护 $m$ 和 $\ell$</strong>。</p>
+<p>难点在于:$\ell$ 的定义依赖 $m$,而 $m$ 要扫完整个数组才能确定。扫到一半时的”局部最大值”可能比真正的最大值小,之前算出来的 $\ell$ 就是错的。</p>
+<p><strong>关键洞察</strong>:如果有办法在 $m$ 发生变化时<strong>修正</strong> $\ell$,就可以一边扫一边算。</p>
+<h4 id="2-1-推导修正公式"><a href="#2-1-推导修正公式" class="headerlink" title="2.1 推导修正公式"></a>2.1 推导修正公式</h4><p>假设已经处理了前 $i$ 个元素,维护着:</p>
+<ul>
+<li>$m_i$ = 前 $i$ 个元素中的最大值</li>
+<li>$\ell<em>i = \sum</em>{j=1}^{i} e^{x_j - m_i}$ = 基于当前最大值的归一化因子</li>
+</ul>
+<p>现在来了第 $i+1$ 个元素 $x_{i+1}$,新的最大值是:</p>
+<script type="math/tex; mode=display">
+m_{i+1} = \max(m_i, x_{i+1})</script><p>要得到新的 $\ell<em>{i+1} = \sum</em>{j=1}^{i+1} e^{x<em>j - m</em>{i+1}}$,观察:</p>
+<script type="math/tex; mode=display">
+\ell_{i+1} = \underbrace{\sum_{j=1}^{i} e^{x_j - m_{i+1}}}_{\text{旧元素,基准从 } m_i \text{ 改为 } m_{i+1}} + e^{x_{i+1} - m_{i+1}}</script><p>对旧部分做一个简单变换:</p>
+<script type="math/tex; mode=display">
+\sum_{j=1}^{i} e^{x_j - m_{i+1}} = \sum_{j=1}^{i} e^{x_j - m_i} \cdot e^{m_i - m_{i+1}} = \ell_i \cdot e^{m_i - m_{i+1}}</script><p>于是得到<strong>更新公式</strong>:</p>
+<script type="math/tex; mode=display">
+\boxed{\ell_{i+1} = \ell_i \cdot e^{m_i - m_{i+1}} + e^{x_{i+1} - m_{i+1}}}</script><p><strong>几何直觉</strong>: 每次最大值增大(即 $m<em>{i+1} &gt; m_i$),之前累积的 $\ell_i$ 是基于”旧基准” $m_i$ 的,现在基准变大了,所有旧项都得乘以 $e^{m_i - m</em>{i+1}} &lt; 1$ 进行<strong>缩小</strong>(rescale)。如果最大值没变($m_{i+1} = m_i$),缩放因子是 $e^0 = 1$,什么都不用调整。</p>
+<h4 id="2-2-2-pass-算法"><a href="#2-2-2-pass-算法" class="headerlink" title="2.2 2-pass 算法"></a>2.2 2-pass 算法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Pass 1: 同时计算 m 和 ℓ</span><br><span class="line">  m = -∞, ℓ = 0</span><br><span class="line">  for i = 1..N:</span><br><span class="line">      m_new = max(m, x[i])</span><br><span class="line">      ℓ = ℓ · exp(m - m_new) + exp(x[i] - m_new)</span><br><span class="line">      m = m_new</span><br><span class="line"></span><br><span class="line">Pass 2: 计算最终输出</span><br><span class="line">  for i = 1..N:</span><br><span class="line">      y[i] = exp(x[i] - m) / ℓ</span><br></pre></td></tr></table></figure>
+<p>从 3 遍扫描降到了 2 遍,而且<strong>数值稳定性与 safe softmax 完全相同</strong>(始终保持减去当前最大值)。</p>
+<h3 id="三、分块-Block-wise-版本-FlashAttention-的真正需求"><a href="#三、分块-Block-wise-版本-FlashAttention-的真正需求" class="headerlink" title="三、分块(Block-wise)版本:FlashAttention 的真正需求"></a>三、分块(Block-wise)版本:FlashAttention 的真正需求</h3><p>单元素的更新公式只是开胃菜。FlashAttention 需要<strong>按块处理</strong>——一次性算完一个块的局部 $m$ 和 $\ell$,再和已有的累积量合并。</p>
+<h4 id="3-1-两块合并公式"><a href="#3-1-两块合并公式" class="headerlink" title="3.1 两块合并公式"></a>3.1 两块合并公式</h4><p>设已经处理完块 A,维护着 $(m_A, \ell_A)$; 现在处理块 B,独立算出 $(m_B, \ell_B)$,其中:</p>
+<script type="math/tex; mode=display">
+m_A = \max_{j \in A} x_j, \quad \ell_A = \sum_{j \in A} e^{x_j - m_A}</script><script type="math/tex; mode=display">
+m_B = \max_{j \in B} x_j, \quad \ell_B = \sum_{j \in B} e^{x_j - m_B}</script><p>合并后的全局量 $(m, \ell)$ 应为:</p>
+<script type="math/tex; mode=display">
+m = \max(m_A, m_B)</script><script type="math/tex; mode=display">
+\boxed{\ell = \ell_A \cdot e^{m_A - m} + \ell_B \cdot e^{m_B - m}}</script><p><strong>这就是 FlashAttention 里那个看起来眼熟的公式</strong>。推导完全同上:两块都要把基准从自己的局部最大值改到全局最大值,各自乘以对应的 $e^{m<em>{\text{local}} - m</em>{\text{global}}}$ 缩放因子。</p>
+<p>注意这个合并操作是<strong>满足结合律的</strong>——合并 A、B 再合并 C,和先合并 B、C 再和 A 合并,结果一致。这使得它能很自然地并行化(比如 tree reduction)。</p>
+<h3 id="四、扩展-同时在线更新输出-O"><a href="#四、扩展-同时在线更新输出-O" class="headerlink" title="四、扩展:同时在线更新输出 $O$"></a>四、扩展:同时在线更新输出 $O$</h3><p>在普通 softmax 里,Pass 2 要重新扫一遍算 $y_i$。但在 attention 里,我们最终要的不是 softmax 本身,而是 $O = PV$,其中 $P = \text{softmax}(S)$。FlashAttention 需要<strong>把 $O$ 也一起在线累积</strong>,这样整个算法变成 <strong>1-pass</strong>。</p>
+<h4 id="4-1-定义未归一化的输出"><a href="#4-1-定义未归一化的输出" class="headerlink" title="4.1 定义未归一化的输出"></a>4.1 定义未归一化的输出</h4><p>定义”未归一化”的输出(只做了减最大值但没除以 $\ell$):</p>
+<script type="math/tex; mode=display">
+\tilde{O}_A = \sum_{j \in A} e^{x_j - m_A} \cdot V_j</script><p>处理块 B 时同理:</p>
+<script type="math/tex; mode=display">
+\tilde{O}_B = \sum_{j \in B} e^{x_j - m_B} \cdot V_j</script><p>合并后全局未归一化输出应为 $\tilde{O} = \sum_{j \in A \cup B} e^{x_j - m} V_j$,同样需要基准变换:</p>
+<script type="math/tex; mode=display">
+\boxed{\tilde{O} = \tilde{O}_A \cdot e^{m_A - m} + \tilde{O}_B \cdot e^{m_B - m}}</script><p>最后一步再除以 $\ell$ 得到真正的 $O = \tilde{O} / \ell$。</p>
+<h4 id="4-2-伪代码-FlashAttention-核心"><a href="#4-2-伪代码-FlashAttention-核心" class="headerlink" title="4.2 伪代码(FlashAttention 核心)"></a>4.2 伪代码(FlashAttention 核心)</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">m = -∞, ℓ = 0, O = 0   # O 此处表示未归一化的 Õ</span><br><span class="line">for 每个 K, V 块 j:</span><br><span class="line">    S_j = Q · K_j^T                     # 当前块的分数</span><br><span class="line">    m_j = rowmax(S_j)                   # 当前块最大值</span><br><span class="line">    P_j = exp(S_j - m_j)                # 当前块的未归一化权重</span><br><span class="line">    ℓ_j = rowsum(P_j)</span><br><span class="line">    </span><br><span class="line">    m_new = max(m, m_j)</span><br><span class="line">    α = exp(m - m_new)                  # 旧累积量的缩放因子</span><br><span class="line">    β = exp(m_j - m_new)                # 当前块的缩放因子</span><br><span class="line">    </span><br><span class="line">    ℓ = α · ℓ + β · ℓ_j</span><br><span class="line">    O = α · O + β · P_j · V_j           # 直接累积未归一化输出</span><br><span class="line">    m = m_new</span><br><span class="line"></span><br><span class="line">O = O / ℓ                               # 最后才归一化</span><br></pre></td></tr></table></figure>
+<p>这样,<strong>整个 attention 只需一次扫描 $K, V$</strong>,完全不需要实例化 $N \times N$ 的注意力矩阵。FlashAttention-2 的一个小优化就是把每一步的 <code>/ ℓ</code> 推迟到最后,避免反复做除法。</p>
+<h3 id="五、为什么数学上精确"><a href="#五、为什么数学上精确" class="headerlink" title="五、为什么数学上精确?"></a>五、为什么数学上精确?</h3><p>这点很多人初学时会怀疑:”边扫边更新,最后结果真的和一次性算一样吗?”</p>
+<p><strong>答案是完全一样</strong>,因为每次合并时:</p>
+<ul>
+<li>$m$ 始终是当前已见元素的真实最大值</li>
+<li>$\ell$ 通过缩放因子修正后,始终等于 $\sum<em>{j \in \text{已见}} e^{x_j - m</em>{\text{当前}}}$</li>
+<li>$\tilde{O}$ 同理</li>
+</ul>
+<p>扫描结束时,$m$ 等于全局最大值,$\ell$ 等于全局归一化因子,$\tilde{O} / \ell$ 等于标准 attention 的输出。这和”提前知道 $m$ 再一口气算”在代数上完全等价——<strong>没有任何近似</strong>。</p>
+<h3 id="六、一个数值例子"><a href="#六、一个数值例子" class="headerlink" title="六、一个数值例子"></a>六、一个数值例子</h3><p>以 $x = [1, 3, 2, 5]$ 为例,手工走一遍:</p>
+<p><strong>标准做法</strong>: $m = 5$,$\ell = e^{-4} + e^{-2} + e^{-3} + e^0 \approx 0.0183 + 0.1353 + 0.0498 + 1 = 1.2034$</p>
+<p><strong>Online 做法</strong>:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th style="text-align:center">新元素</th>
+<th style="text-align:center">$m_{\text{new}}$</th>
+<th style="text-align:center">缩放因子 $e^{m<em>{\text{old}} - m</em>{\text{new}}}$</th>
+<th style="text-align:left">$\ell$ 更新</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">$-\infty$</td>
+<td style="text-align:center">—</td>
+<td style="text-align:left">$\ell = 0$</td>
+</tr>
+<tr>
+<td>步 1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">$e^{-\infty - 1} = 0$</td>
+<td style="text-align:left">$\ell = 0 \cdot 0 + e^0 = 1$</td>
+</tr>
+<tr>
+<td>步 2</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">$e^{1 - 3} = 0.1353$</td>
+<td style="text-align:left">$\ell = 1 \cdot 0.1353 + e^0 = 1.1353$</td>
+</tr>
+<tr>
+<td>步 3</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">$e^{3 - 3} = 1$</td>
+<td style="text-align:left">$\ell = 1.1353 \cdot 1 + e^{-1} = 1.1353 + 0.3679 = 1.5032$</td>
+</tr>
+<tr>
+<td>步 4</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">$e^{3 - 5} = 0.1353$</td>
+<td style="text-align:left">$\ell = 1.5032 \cdot 0.1353 + e^0 = 0.2034 + 1 = 1.2034$ ✓</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>最后得到 $\ell = 1.2034$,与标准做法<strong>完全一致</strong>。</p>
+<h3 id="七、工程意义"><a href="#七、工程意义" class="headerlink" title="七、工程意义"></a>七、工程意义</h3><p>Online softmax 看似只是一个小技巧,实际上解锁了一整类算法:</p>
+<ol>
+<li><strong>FlashAttention</strong> — 让 attention 从 $O(N^2)$ 显存降到 $O(N)$</li>
+<li><strong>Ring Attention</strong> — 把序列分片到多 GPU,每个 GPU 持一部分 $K, V$,通过环形通信传递部分结果,用 online softmax 合并。支持百万级 token 序列</li>
+<li><strong>流式推理 / Prefix Caching</strong> — 先算一部分 prefix 的 softmax 状态,后续 token 来时增量更新</li>
+<li><strong>分布式 softmax</strong> — 跨设备的 softmax 归一化</li>
+</ol>
+<p>它的思想可以抽象为:<strong>任何 “reduce + 归一化”的操作,只要能找到带修正因子的合并律,就能分块并行计算</strong>。这一点也和 log-sum-exp 的并行化密切相关(实际上 $\log \ell + m$ 就是 log-sum-exp,online softmax 等价于 log-sum-exp 的在线计算)。</p>
+<h2 id="4-Recomputation-重计算-详解"><a href="#4-Recomputation-重计算-详解" class="headerlink" title="4.Recomputation(重计算)详解"></a>4.Recomputation(重计算)详解</h2><p>Recomputation 是 FlashAttention 反向传播的核心技巧。它的本质是一个<strong>用计算换显存</strong>的权衡——前向时故意不保存中间结果,反向时重新算一遍。这个思想本身不是 FlashAttention 发明的(在深度学习中叫 gradient checkpointing,2016 年就有了),但 FlashAttention 把它用到了极致,并且在这里<strong>不但不慢,反而更快</strong>。</p>
+<h3 id="一、为什么反向传播需要中间结果"><a href="#一、为什么反向传播需要中间结果" class="headerlink" title="一、为什么反向传播需要中间结果?"></a>一、为什么反向传播需要中间结果?</h3><p>先回顾反向传播的基本原理:链式法则需要”前向时的中间激活值”。</p>
+<p>举个最简单的例子,$y = \sigma(Wx)$,反向求 $\frac{\partial L}{\partial W}$:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial W} = \frac{\partial L}{\partial y} \cdot \sigma'(Wx) \cdot x^T</script><p>这里需要 $\sigma’(Wx)$,而 $\sigma’$ 依赖前向的中间量 $Wx$。所以默认情况下,<strong>所有中间激活值都得保存到反向用完为止</strong>。</p>
+<h3 id="二、标准-Attention-反向需要什么"><a href="#二、标准-Attention-反向需要什么" class="headerlink" title="二、标准 Attention 反向需要什么?"></a>二、标准 Attention 反向需要什么?</h3><p>前向是:</p>
+<script type="math/tex; mode=display">
+S = QK^T, \quad P = \text{softmax}(S), \quad O = PV</script><p>反向时给定 $\frac{\partial L}{\partial O} = dO$,要求 $dQ, dK, dV$。推导一下(详细推导步骤请看附录A“反向传播公式推导”):</p>
+<script type="math/tex; mode=display">
+dV = P^T \cdot dO</script><script type="math/tex; mode=display">
+dP = dO \cdot V^T</script><script type="math/tex; mode=display">
+dS = P \odot (dP - \text{rowsum}(dP \odot P)) \quad \text{(softmax 反向)}</script><script type="math/tex; mode=display">
+dQ = dS \cdot K, \quad dK = dS^T \cdot Q</script><p><strong>需要的中间量</strong>:</p>
+<ul>
+<li>$P$(用于算 $dV$ 和 $dS$)—— $N \times N$ 矩阵</li>
+<li>$S$ 本身不一定要,因为 $P$ 已经隐含了 $S$ 的信息</li>
+</ul>
+<p>所以标准实现要保存整个 $N \times N$ 的 $P$ 矩阵,反向期间一直占着显存。这又把我们带回了 $O(N^2)$。</p>
+<h3 id="三、FlashAttention-的选择-只保存最小必要信息"><a href="#三、FlashAttention-的选择-只保存最小必要信息" class="headerlink" title="三、FlashAttention 的选择:只保存最小必要信息"></a>三、FlashAttention 的选择:只保存最小必要信息</h3><p>FlashAttention 前向结束后,<strong>只保留两样东西用于反向</strong>:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>保留的量</th>
+<th>形状</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$O$</td>
+<td>$N \times d$</td>
+<td>前向的输出(本来就要保留)</td>
+</tr>
+<tr>
+<td>$L$</td>
+<td>$N \times 1$</td>
+<td>每行的 “logsumexp” 统计量</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其中 $L$ 是每行的:</p>
+<script type="math/tex; mode=display">
+L_i = m_i + \log \ell_i</script><p>$m_i$ 和 $\ell_i$ 就是上一节 online softmax 里的最大值和归一化因子。<strong>两个标量被合并成了一个</strong>(后面会解释为什么这样更方便)。</p>
+<p><strong>总共额外需要的显存</strong>:$O(N) + O(Nd) = O(N)$,比原来省了 $N \times N$ 矩阵那么多。</p>
+<h3 id="四、反向时怎么重算"><a href="#四、反向时怎么重算" class="headerlink" title="四、反向时怎么重算?"></a>四、反向时怎么重算?</h3><p>反向传播依然是<strong>分块</strong>进行的,和前向一样按 tile 扫描。核心观察是:</p>
+<blockquote>
+<p>给定 $Q<em>i, K_j, L_i$,可以<strong>完全重建</strong>某个小块的 $P</em>{ij}$。</p>
+</blockquote>
+<h4 id="4-1-重建-P-的公式"><a href="#4-1-重建-P-的公式" class="headerlink" title="4.1 重建 $P$ 的公式"></a>4.1 重建 $P$ 的公式</h4><p>对于块 $(i, j)$:</p>
+<script type="math/tex; mode=display">
+S_{ij} = Q_i K_j^T \quad \text{(在 SRAM 里重算)}</script><script type="math/tex; mode=display">
+P_{ij} = \exp(S_{ij} - L_i) \quad \text{(直接得到归一化后的 softmax)}</script><p><strong>这里的关键点</strong>:$L_i = m_i + \log \ell_i$,所以</p>
+<script type="math/tex; mode=display">
+\exp(S_{ij} - L_i) = \exp(S_{ij} - m_i - \log \ell_i) = \frac{\exp(S_{ij} - m_i)}{\ell_i}</script><p>正好是标准 softmax 的结果。把 $m$ 和 $\ell$ 合并成 $L$ 的好处就在这:<strong>一次减一次 exp 就拿到归一化的 $P$,不用再做除法</strong>。</p>
+<h4 id="4-2-反向算法-简化版"><a href="#4-2-反向算法-简化版" class="headerlink" title="4.2 反向算法(简化版)"></a>4.2 反向算法(简化版)</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">输入: Q, K, V, O, dO, L, 块大小 B_r, B_c</span><br><span class="line">初始化 dQ = 0, dK = 0, dV = 0 (都在 HBM)</span><br><span class="line"></span><br><span class="line">for i = 1..T_r:                      # 遍历 Q 块(也就是遍历行)</span><br><span class="line">    加载 Q_i, O_i, dO_i, L_i 到 SRAM</span><br><span class="line">    </span><br><span class="line">    for j = 1..T_c:                   # 遍历 K, V 块</span><br><span class="line">        加载 K_j, V_j 到 SRAM</span><br><span class="line">        </span><br><span class="line">        # === 重算前向 ===</span><br><span class="line">        S_ij = Q_i K_j^T              # 重新计算分数</span><br><span class="line">        P_ij = exp(S_ij - L_i)        # 重新得到 softmax 权重</span><br><span class="line">        </span><br><span class="line">        # === 算梯度 ===</span><br><span class="line">        dV_j += P_ij^T · dO_i         # 累加 dV</span><br><span class="line">        dP_ij = dO_i · V_j^T          # P 的梯度</span><br><span class="line">        </span><br><span class="line">        # softmax 反向: 需要 rowsum(dP ⊙ P)</span><br><span class="line">        D_i = rowsum(dO_i ⊙ O_i)      # 这是个技巧,等价于 rowsum(dP_ij ⊙ P_ij)</span><br><span class="line">        dS_ij = P_ij ⊙ (dP_ij - D_i)</span><br><span class="line">        </span><br><span class="line">        dQ_i += dS_ij · K_j           # 累加 dQ</span><br><span class="line">        dK_j += dS_ij^T · Q_i         # 累加 dK</span><br><span class="line">    </span><br><span class="line">    写回 dQ_i 到 HBM</span><br><span class="line"></span><br><span class="line">写回 dK, dV 到 HBM</span><br></pre></td></tr></table></figure>
+<p>注意里面那个 $D_i = \text{rowsum}(dO_i \odot O_i)$ 的小技巧——softmax 反向本来需要 $\text{rowsum}(dP \odot P)$,但在 attention 里有个恒等式:</p>
+<script type="math/tex; mode=display">
+\text{rowsum}(dP \odot P) = \text{rowsum}(dO \odot O)</script><p>这意味着这个量可以直接用 $O$ 和 $dO$ 算出来,<strong>不需要完整的 $P$ 和 $dP$</strong>。这个 $D_i$ 本来可以预先一次性算好(形状只有 $N \times 1$),让反向循环更干净。</p>
+<h3 id="五、计算量的账-真的能接受吗"><a href="#五、计算量的账-真的能接受吗" class="headerlink" title="五、计算量的账:真的能接受吗?"></a>五、计算量的账:真的能接受吗?</h3><p>重算显然多了 FLOPs,算算具体多多少。</p>
+<p><strong>前向计算量</strong>:</p>
+<ul>
+<li>$S = QK^T$: $2N^2 d$ FLOPs</li>
+<li>softmax: $O(N^2)$</li>
+<li>$O = PV$: $2N^2 d$ FLOPs</li>
+</ul>
+<p>总共约 $4N^2 d$。</p>
+<p><strong>反向计算量(标准实现,不重算)</strong>:</p>
+<ul>
+<li>$dV = P^T dO$: $2N^2 d$</li>
+<li>$dP = dO V^T$: $2N^2 d$</li>
+<li>softmax 反向: $O(N^2)$</li>
+<li>$dQ = dS \cdot K$: $2N^2 d$</li>
+<li>$dK = dS^T Q$: $2N^2 d$</li>
+</ul>
+<p>总共约 $8N^2 d$。</p>
+<p><strong>FlashAttention 反向(带重算)</strong>:</p>
+<ul>
+<li>多算一遍 $S = QK^T$: $+2N^2 d$</li>
+<li>其他同上</li>
+</ul>
+<p>总共约 $10N^2 d$。</p>
+<p><strong>增加了大约 25%</strong> 的 FLOPs(从 $8N^2d$ 到 $10N^2d$)。</p>
+<h3 id="六、为什么增加-25-FLOPs-反而更快"><a href="#六、为什么增加-25-FLOPs-反而更快" class="headerlink" title="六、为什么增加 25% FLOPs 反而更快?"></a>六、为什么增加 25% FLOPs 反而更快?</h3><p>这是 FlashAttention 最反直觉的地方:<strong>明明多算了,为什么还更快?</strong></p>
+<p>答案是之前反复强调的一点:<strong>attention 是 memory-bound,不是 compute-bound</strong>。</p>
+<h4 id="6-1-现代-GPU-的算力-带宽失衡"><a href="#6-1-现代-GPU-的算力-带宽失衡" class="headerlink" title="6.1 现代 GPU 的算力 / 带宽失衡"></a>6.1 现代 GPU 的算力 / 带宽失衡</h4><p>A100 的数字:</p>
+<ul>
+<li>FP16 算力:312 TFLOPS</li>
+<li>HBM 带宽:1.5 TB/s</li>
+<li><strong>算力/带宽比约 200 FLOPs/byte</strong></li>
+</ul>
+<p>这意味着:每从 HBM 读一个字节,GPU 最好能做 200 次浮点运算才”划算”。如果做不到(算术强度低于这个比值),GPU 就在等数据——算力闲置。</p>
+<p>Attention 的瓶颈就在于 $N^2$ 的中间矩阵读写,算术强度很低。</p>
+<h4 id="6-2-标准反向-vs-FlashAttention-反向的实际耗时"><a href="#6-2-标准反向-vs-FlashAttention-反向的实际耗时" class="headerlink" title="6.2 标准反向 vs FlashAttention 反向的实际耗时"></a>6.2 标准反向 vs FlashAttention 反向的实际耗时</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>标准反向</th>
+<th>FlashAttention 反向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FLOPs</td>
+<td>$8N^2d$</td>
+<td>$10N^2d$(多 25%)</td>
+</tr>
+<tr>
+<td>HBM 读写</td>
+<td>$O(N^2)$(读写 $P, dP, dS$ 等大矩阵)</td>
+<td>$O(N^2 d^2 / M)$(只读写 $Q, K, V, O, dO, dQ, dK, dV$ 和标量 $L, D$)</td>
+</tr>
+<tr>
+<td>实际瓶颈</td>
+<td>HBM 带宽</td>
+<td>算力</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>因为 HBM 读写从 $O(N^2)$ 降到接近 $O(Nd)$(忽略 block 层面的重复访问),省掉的 HBM 访问时间 <strong>远多于</strong> 多算 25% FLOPs 的时间。</p>
+<p>举个粗略的估算:若 $N = 4096, d = 64$,标准反向要读写的 $P, dP$ 等大约是 $4 \times N^2 \times 2 = 128$ MB,在 1.5 TB/s 的带宽下约耗时 85 μs。而多算的 $2N^2 d$ FLOPs 在 312 TFLOPS 下只需 <strong>0.2 μs</strong>。两个数量级的差距。</p>
+<h3 id="七、和通用-Gradient-Checkpointing-的关系"><a href="#七、和通用-Gradient-Checkpointing-的关系" class="headerlink" title="七、和通用 Gradient Checkpointing 的关系"></a>七、和通用 Gradient Checkpointing 的关系</h3><p>通用的 gradient checkpointing(Chen et al. 2016)是:</p>
+<ul>
+<li>前向只在某些”checkpoint”保存激活</li>
+<li>反向时从最近的 checkpoint 重跑一段前向</li>
+</ul>
+<p>FlashAttention 的 recomputation 可以看作是<strong>针对 attention 的专用 checkpointing</strong>:</p>
+<ul>
+<li>checkpoint 的是什么?$L$(softmax 统计量)和 $O$</li>
+<li>重算的是什么?$S$ 和 $P$ 这两个大矩阵</li>
+</ul>
+<p>但 FlashAttention 的做法比通用 checkpointing 更精细:</p>
+<ol>
+<li><strong>融合 kernel</strong>:重算和梯度计算在同一个 CUDA kernel 里完成,中间值只活在 SRAM,不走 HBM</li>
+<li><strong>按需重算,粒度是块</strong>:不是重跑整段前向,而是反向循环遍历到哪个 block 就重算哪个 block</li>
+<li><strong>倒过来快</strong>:通用 checkpointing 只是节省显存、会更慢;FlashAttention 因为跳过了 HBM 读写,<strong>同时更省显存并且更快</strong></li>
+</ol>
+<p>这是一个理论上罕见的”两全其美”——它得以成立,完全依赖于现代 GPU 算力 / 带宽的失衡。</p>
+<h3 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h3><p>Recomputation 在 FlashAttention 中解决的核心问题是:<strong>反向传播怎么不保存 $N \times N$ 的 $P$ 矩阵</strong>。</p>
+<p>关键要点:</p>
+<ol>
+<li><strong>只存 $L = m + \log \ell$ 和 $O$</strong>(都是 $O(N)$ 或 $O(Nd)$),不存 $S, P$</li>
+<li>反向时用 $Q<em>i, K_j, L_i$ <strong>在 SRAM 里重算</strong> $S</em>{ij}$ 和 $P_{ij}$,用完即丢</li>
+<li>利用 $\text{rowsum}(dP \odot P) = \text{rowsum}(dO \odot O)$ 这个恒等式避免需要完整的 $dP$</li>
+<li>多了约 25% 的 FLOPs,但因为 attention 是 memory-bound,省下的 HBM 读写时间远超重算的开销</li>
+</ol>
+<p>更高层的启示是:在现代 GPU 上,<strong>“少存一点、多算一点” 经常是更好的选择</strong>。算力在持续增长,带宽却增长缓慢,这个剪刀差会让 recomputation 这种技术越来越普遍。</p>
+<h2 id="5-附录A"><a href="#5-附录A" class="headerlink" title="5. 附录A"></a>5. 附录A</h2><details><summary>结论一：若 $Y = AB$，则 $dA = dY \cdot B^T, \quad dB = A^T \cdot dY $</summary><div class="details-content"><p><strong>结论 1</strong>:若 $Y = AB$,则</p>
+<script type="math/tex; mode=display">
+dA = dY \cdot B^T, \quad dB = A^T \cdot dY</script><p>这是矩阵求导里最基础也最重要的结论。我之前给的推导比较简略,这里从头一步步讲清楚,包括直觉、严格推导、和几种不同的验证方法。</p>
+<h3 id="%E4%B8%80%E3%80%81%E5%85%88%E6%8A%8A%E9%97%AE%E9%A2%98%E8%AF%B4%E6%B8%85%E6%A5%9A">一、先把问题说清楚</h3>
+<p><strong>设定</strong>:</p>
+<ul>
+<li>$A \in \mathbb{R}^{m \times k}$</li>
+<li>$B \in \mathbb{R}^{k \times n}$  </li>
+<li>$Y = AB \in \mathbb{R}^{m \times n}$</li>
+<li>$L$ 是某个标量损失函数,依赖 $Y$(通过 $Y$ 间接依赖 $A$ 和 $B$)</li>
+</ul>
+<p><strong>已知</strong>:$dY := \frac{\partial L}{\partial Y} \in \mathbb{R}^{m \times n}$(上游传下来的梯度,形状和 $Y$ 一样)</p>
+<p><strong>目标</strong>:求 $dA = \frac{\partial L}{\partial A} \in \mathbb{R}^{m \times k}$ 和 $dB = \frac{\partial L}{\partial B} \in \mathbb{R}^{k \times n}$</p>
+<p><strong>关键约定</strong>:梯度 $\frac{\partial L}{\partial X}$ 的形状<strong>总是和 $X$ 本身一样</strong>。也就是说,$dA$ 的第 $(i,k)$ 元素表示 $\frac{\partial L}{\partial A_{ik}}$。这个约定叫 &quot;denominator layout&quot;,是深度学习的通用惯例。</p>
+<h3 id="%E4%BA%8C%E3%80%81%E6%A0%87%E9%87%8F%E5%BD%A2%E5%BC%8F%E7%9A%84%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95">二、标量形式的矩阵乘法</h3>
+<p>先把矩阵乘法写成逐元素的形式:</p>
+<script type="math/tex; mode=display">
+Y_{ij} = \sum_{p=1}^{k} A_{ip} B_{pj}</script><p>即 $Y$ 的第 $(i,j)$ 个元素是 $A$ 的第 $i$ 行和 $B$ 的第 $j$ 列的点积。</p>
+<h3 id="%E4%B8%89%E3%80%81%E6%8E%A8%E5%AF%BC-da">三、推导 $dA$</h3>
+<h4 id="3-1-%E5%BA%94%E7%94%A8%E5%A4%9A%E5%8F%98%E9%87%8F%E9%93%BE%E5%BC%8F%E6%B3%95%E5%88%99">3.1 应用多变量链式法则</h4>
+<p>$L$ 依赖 $A$ 是通过所有 $Y_{ij}$ 实现的,所以:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial A_{ik}} = \sum_{i'=1}^{m} \sum_{j=1}^{n} \frac{\partial L}{\partial Y_{i'j}} \cdot \frac{\partial Y_{i'j}}{\partial A_{ik}}</script><p>这里 $i&#39;, j$ 遍历 $Y$ 的所有元素,因为改变 $A_{ik}$ <strong>可能</strong>影响 $Y$ 的每一个元素,所以要全部求和。</p>
+<h4 id="3-2-%E8%AE%A1%E7%AE%97-frac-partial-y-i-j-partial-a-ik">3.2 计算 $\frac{\partial Y<em>{i&#39;j}}{\partial A</em>{ik}}$</h4>
+<p>从 $Y<em>{i&#39;j} = \sum_p A</em>{i&#39;p} B_{pj}$ 出发。</p>
+<p><strong>$A<em>{ik}$ 是否出现在 $Y</em>{i&#39;j}$ 的表达式里?</strong> 分情况讨论:</p>
+<ul>
+<li>如果 $i&#39; \neq i$:表达式里是 $A<em>{i&#39;p}$ 的各种形式,第一个下标是 $i&#39;$,而我们关心的 $A</em>{ik}$ 第一个下标是 $i$,不同。<strong>根本不出现</strong>,所以偏导为 0。</li>
+<li>如果 $i&#39; = i$:$Y<em>{ij} = \sum_p A</em>{ip} B<em>{pj} = A</em>{i1}B<em>{1j} + A</em>{i2}B<em>{2j} + \dots + A</em>{ik}B<em>{kj} + \dots$。其中只有 $p = k$ 那一项含 $A</em>{ik}$,系数是 $B_{kj}$。</li>
+</ul>
+<p>所以:</p>
+<script type="math/tex; mode=display">
+\frac{\partial Y_{i'j}}{\partial A_{ik}} = \begin{cases} B_{kj} & \text{若 } i' = i \\ 0 & \text{否则} \end{cases} = \mathbb{1}[i' = i] \cdot B_{kj}</script><h4 id="3-3-%E4%BB%A3%E5%9B%9E%E9%93%BE%E5%BC%8F%E6%B3%95%E5%88%99">3.3 代回链式法则</h4>
+<p>把这个结果代入:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial A_{ik}} = \sum_{i'=1}^{m} \sum_{j=1}^{n} dY_{i'j} \cdot \mathbb{1}[i' = i] \cdot B_{kj}</script><p>由于指示函数 $\mathbb{1}[i&#39; = i]$ 只在 $i&#39; = i$ 时为 1,外层对 $i&#39;$ 的求和塌缩,只剩下 $i&#39; = i$ 这一项:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial A_{ik}} = \sum_{j=1}^{n} dY_{ij} \cdot B_{kj}</script><h4 id="3-4-%E8%AF%86%E5%88%AB%E8%BF%99%E6%98%AF%E4%B8%80%E4%B8%AA%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95">3.4 识别这是一个矩阵乘法</h4>
+<p>看这个式子的结构:$\sum<em>j dY</em>{ij} B_{kj}$。</p>
+<p>标准矩阵乘法 $(XZ)<em>{ik} = \sum_j X</em>{ij} Z<em>{jk}$,需要内部下标匹配。我们现在的 $B</em>{kj}$ 内部下标是 $j$,但 $k$ 在<strong>前面</strong>,所以要把 $B$ 转置一下:$B^T<em>{jk} = B</em>{kj}$。</p>
+<p>于是:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial A_{ik}} = \sum_{j=1}^{n} dY_{ij} \cdot B^T_{jk} = (dY \cdot B^T)_{ik}</script><p>写成矩阵形式:</p>
+<script type="math/tex; mode=display">
+\boxed{dA = dY \cdot B^T}</script><p><strong>形状验证</strong>:$dY \in \mathbb{R}^{m \times n}$,$B^T \in \mathbb{R}^{n \times k}$,乘积形状是 $m \times k$,与 $A$ 一致 ✓</p>
+<h3 id="%E5%9B%9B%E3%80%81%E6%8E%A8%E5%AF%BC-db">四、推导 $dB$</h3>
+<p>完全类似的过程。</p>
+<h4 id="4-1-%E9%93%BE%E5%BC%8F%E6%B3%95%E5%88%99">4.1 链式法则</h4>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial B_{kj}} = \sum_{i=1}^{m} \sum_{j'=1}^{n} \frac{\partial L}{\partial Y_{ij'}} \cdot \frac{\partial Y_{ij'}}{\partial B_{kj}}</script><h4 id="4-2-%E8%AE%A1%E7%AE%97-frac-partial-y-ij-partial-b-kj">4.2 计算 $\frac{\partial Y<em>{ij&#39;}}{\partial B</em>{kj}}$</h4>
+<p>从 $Y<em>{ij&#39;} = \sum_p A</em>{ip} B_{pj&#39;}$ 出发。</p>
+<ul>
+<li>如果 $j&#39; \neq j$:$B<em>{pj&#39;}$ 第二个下标是 $j&#39;$,不含 $B</em>{kj}$,偏导为 0。</li>
+<li>如果 $j&#39; = j$:$Y<em>{ij} = \sum_p A</em>{ip} B<em>{pj}$,其中 $p = k$ 的项是 $A</em>{ik} B_{kj}$,其他项无关。</li>
+</ul>
+<p>所以:</p>
+<script type="math/tex; mode=display">
+\frac{\partial Y_{ij'}}{\partial B_{kj}} = \mathbb{1}[j' = j] \cdot A_{ik}</script><h4 id="4-3-%E4%BB%A3%E5%9B%9E">4.3 代回</h4>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial B_{kj}} = \sum_{i=1}^{m} dY_{ij} \cdot A_{ik}</script><h4 id="4-4-%E8%AF%86%E5%88%AB%E4%B8%BA%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95">4.4 识别为矩阵乘法</h4>
+<p>现在要组成一个结果形状为 $k \times n$ 的矩阵,下标是 $(k,j)$。式子里是 $\sum<em>i A</em>{ik} dY_{ij}$。</p>
+<p>$A<em>{ik} = A^T</em>{ki}$,所以:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial B_{kj}} = \sum_{i=1}^{m} A^T_{ki} \cdot dY_{ij} = (A^T \cdot dY)_{kj}</script><p>写成矩阵形式:</p>
+<script type="math/tex; mode=display">
+\boxed{dB = A^T \cdot dY}</script><p><strong>形状验证</strong>:$A^T \in \mathbb{R}^{k \times m}$,$dY \in \mathbb{R}^{m \times n}$,乘积形状 $k \times n$,与 $B$ 一致 ✓</p>
+<h3 id="%E4%BA%94%E3%80%81%E7%9B%B4%E8%A7%89%E7%90%86%E8%A7%A3-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E5%AE%9A%E6%98%AF%E8%BD%AC%E7%BD%AE">五、直觉理解:为什么一定是转置?</h3>
+<p>光有严格推导还不够,这里讲两种<strong>直觉</strong>,帮助你以后不看推导也能秒写出来。</p>
+<h4 id="5-1-%E5%BD%A2%E7%8A%B6%E5%8C%B9%E9%85%8D%E6%B3%95-%E6%9C%80%E5%BF%AB">5.1 形状匹配法(最快)</h4>
+<p>已知 $Y = AB$,形状 $(m,n) = (m,k) \cdot (k,n)$。</p>
+<p>想求 $dA$,形状必须是 $(m,k)$。能用到的两块积木是 $dY$(形状 $m \times n$)和 $B$(形状 $k \times n$)。</p>
+<p>要得到 $m \times k$,唯一合理的方式是 $(m \times n) \cdot (n \times k) = (m \times k)$,所以 $B$ 必须转置。</p>
+<script type="math/tex; mode=display">
+dA = dY \cdot B^T</script><p>同理求 $dB$,形状必须 $(k,n)$,用 $A$ 和 $dY$ 拼:$(k \times m) \cdot (m \times n) = (k \times n)$,所以 $A$ 要转置。</p>
+<script type="math/tex; mode=display">
+dB = A^T \cdot dY</script><p><strong>这个技巧几乎万能</strong>。很多人做推导就是靠形状对齐。</p>
+<h4 id="5-2-%E4%BB%80%E4%B9%88%E4%B9%98%E4%BB%80%E4%B9%88%E5%BE%97%E5%88%B0-y-%E8%A7%86%E8%A7%92">5.2 &quot;什么乘什么得到 Y&quot; 视角</h4>
+<p>看 $Y = AB$:</p>
+<ul>
+<li>$A$ 在<strong>左边</strong>,所以它的梯度也要&quot;从左边构造出来&quot;,剩下的 $B$ 就得挪到右边,但为了形状对,$B$ 要转置 → $dA = dY \cdot B^T$</li>
+<li>$B$ 在<strong>右边</strong>,所以它的梯度也要&quot;从右边构造出来&quot;,$A$ 挪到左边并转置 → $dB = A^T \cdot dY$</li>
+</ul>
+<p><strong>助记</strong>:梯度的公式就是把 $Y = AB$ 里的 $Y$ 换成 $dY$,另一个因子转置并保持在原来的位置。</p>
+<h3 id="%E5%85%AD%E3%80%81%E7%94%A8%E6%9B%B4%E7%B4%A7%E5%87%91%E7%9A%84%E6%96%B9%E6%B3%95%E9%AA%8C%E8%AF%81-%E5%85%A8%E5%BE%AE%E5%88%86">六、用更紧凑的方法验证:全微分</h3>
+<p>上面是硬推,这里给一种优雅的验证方法,也是研究者常用的技巧。</p>
+<p><strong>核心工具</strong>:对标量 $L$,有</p>
+<script type="math/tex; mode=display">
+dL = \text{tr}\left(\left(\frac{\partial L}{\partial X}\right)^T dX\right)</script><p>意思是:$L$ 的微小变化 = 梯度与 $X$ 微小变化的&quot;内积&quot;(迹形式的 Frobenius 内积)。如果能把 $dL$ 写成 $\text{tr}(M^T dX)$,那么 $\frac{\partial L}{\partial X} = M$。</p>
+<h4 id="6-1-%E5%AF%B9-a-%E6%B1%82%E5%AF%BC">6.1 对 $A$ 求导</h4>
+<p>$Y = AB$,固定 $B$,$Y$ 的微分为 $dY = dA \cdot B$(这里 $dA$ 是 $A$ 的微小变化,不是梯度,记号冲突但上下文清楚)。</p>
+<script type="math/tex; mode=display">
+dL = \text{tr}(dY^T \cdot dY_{\text{梯度}}) = \text{tr}((dA \cdot B)^T \cdot dY_{\text{梯度}})</script><p>为避免混淆,换下记号:令 $G_Y = \frac{\partial L}{\partial Y}$。</p>
+<script type="math/tex; mode=display">
+dL = \text{tr}(G_Y^T \cdot dY) = \text{tr}(G_Y^T \cdot dA \cdot B)</script><p>利用迹的循环性 $\text{tr}(XYZ) = \text{tr}(ZXY)$:</p>
+<script type="math/tex; mode=display">
+dL = \text{tr}(B \cdot G_Y^T \cdot dA) = \text{tr}((G_Y \cdot B^T)^T \cdot dA)</script><p>对比 $dL = \text{tr}\left(\left(\frac{\partial L}{\partial A}\right)^T dA\right)$,读出:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial A} = G_Y \cdot B^T = dY \cdot B^T \quad \checkmark</script><h4 id="6-2-%E5%AF%B9-b-%E6%B1%82%E5%AF%BC">6.2 对 $B$ 求导</h4>
+<p>固定 $A$,$dY = A \cdot dB$:</p>
+<script type="math/tex; mode=display">
+dL = \text{tr}(G_Y^T \cdot A \cdot dB)</script><p>对比 $dL = \text{tr}\left(\left(\frac{\partial L}{\partial B}\right)^T dB\right)$:</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial B} = (G_Y^T \cdot A)^T = A^T \cdot G_Y = A^T \cdot dY \quad \checkmark</script><p>这种方法<strong>不需要下标</strong>,几行就搞定,是研究矩阵微分的标准套路。推荐掌握。</p>
+<h3 id="%E4%B8%83%E3%80%81%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%BE%8B%E5%AD%90%E6%89%8B%E5%8A%A8%E9%AA%8C%E8%AF%81">七、一个小例子手动验证</h3>
+<p>取最小的情况:$A \in \mathbb{R}^{1 \times 2}$,$B \in \mathbb{R}^{2 \times 1}$,则 $Y = AB \in \mathbb{R}^{1 \times 1}$ 是标量。</p>
+<p>记 $A = [a_1, a_2]$,$B = [b_1, b_2]^T$,则:</p>
+<script type="math/tex; mode=display">
+Y = a_1 b_1 + a_2 b_2</script><p><strong>直接求偏导</strong>:</p>
+<ul>
+<li>$\frac{\partial Y}{\partial a<em>1} = b_1$,$\frac{\partial Y}{\partial a_2} = b_2$,所以 $dA</em>{\text{直接}} = [b_1, b_2] = B^T$</li>
+<li>$\frac{\partial Y}{\partial b<em>1} = a_1$,$\frac{\partial Y}{\partial b_2} = a_2$,所以 $dB</em>{\text{直接}} = [a_1, a_2]^T = A^T$</li>
+</ul>
+<p><strong>用公式验证</strong>(取 $dY = 1$,因为 $Y$ 就是 $L$):</p>
+<ul>
+<li>$dA = dY \cdot B^T = 1 \cdot B^T = B^T$ ✓</li>
+<li>$dB = A^T \cdot dY = A^T \cdot 1 = A^T$ ✓</li>
+</ul>
+<p>手算结果和公式结果完全吻合。</p>
+<h3 id="%E5%85%AB%E3%80%81%E6%89%A9%E5%B1%95-%E5%B8%B8%E8%A7%81%E5%8F%98%E4%BD%93">八、扩展:常见变体</h3>
+<p>掌握了基础结论,其他情况都能直接推导:</p>
+<table>
+<thead>
+<tr>
+<th>前向</th>
+<th>反向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$Y = AB$</td>
+<td>$dA = dY \cdot B^T$,$dB = A^T \cdot dY$</td>
+</tr>
+<tr>
+<td>$Y = A^T B$</td>
+<td>$dA = B \cdot dY^T$,$dB = A \cdot dY$</td>
+</tr>
+<tr>
+<td>$Y = AB^T$</td>
+<td>$dA = dY \cdot B$,$dB = dY^T \cdot A$</td>
+</tr>
+<tr>
+<td>$Y = ABC$</td>
+<td>$dA = dY \cdot (BC)^T$,$dB = A^T \cdot dY \cdot C^T$,$dC = (AB)^T \cdot dY$</td>
+</tr>
+</tbody>
+</table>
+<p>规律就是前面说的:<strong>每个因子的梯度 = 把公式里对应位置换成 $dY$,其他因子保持位置不变,但要转置</strong>。</p>
+<h3 id="%E4%B9%9D%E3%80%81%E5%9C%A8-attention-%E9%87%8C%E7%9A%84%E5%85%B7%E4%BD%93%E5%BA%94%E7%94%A8">九、在 Attention 里的具体应用</h3>
+<p>回到上一节,这三处都用了结论 1:</p>
+<ol>
+<li><p><strong>$O = PV \Rightarrow dV = P^T \cdot dO, dP = dO \cdot V^T$</strong></p>
+<ul>
+<li>$P$ 在左,所以 $dV$ 公式里 $P$ 挪到左边并转置</li>
+<li>$V$ 在右,所以 $dP$ 公式里 $V$ 挪到右边并转置</li>
+</ul>
+</li>
+<li><p><strong>$S = QK^T$</strong>,看成 $S = Q \cdot (K^T)$,所以:</p>
+<ul>
+<li>$dQ = dS \cdot (K^T)^T = dS \cdot K$</li>
+<li>$d(K^T) = Q^T \cdot dS$,再转置:$dK = dS^T \cdot Q$</li>
+</ul>
+</li>
+</ol>
+<p>这正是为什么那些公式&quot;看起来对称但不完全对称&quot;——$Q, K$ 在前向里不是对称进入的($K$ 带了转置),反向里自然也不对称。</p>
+<h3 id="%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93">十、总结</h3>
+<script type="math/tex; mode=display">
+\boxed{Y = AB \implies dA = dY \cdot B^T, \quad dB = A^T \cdot dY}</script><p><strong>三种理解角度</strong>:</p>
+<ol>
+<li><strong>标量链式法则</strong>:逐元素写出 $Y<em>{ij} = \sum_p A</em>{ip} B_{pj}$,用多元链式法则加起来,识别出矩阵乘法结构</li>
+<li><strong>全微分 + 迹</strong>:$dL = \text{tr}((\partial L/\partial X)^T dX)$,用迹的循环性凑出梯度</li>
+<li><strong>形状对齐 / 位置对应</strong>:$dA$ 形状必须与 $A$ 一致,倒推转置位置;或者记&quot;梯度公式就是前向公式中某个因子换成 $dY$&quot;</li>
+</ol>
+<p>三种方法殊途同归。日常使用推荐方法 3(最快),遇到陌生情况用方法 2(最严谨),方法 1 是理解背后机制的基础。</p>
+</div></details>
+<details><summary>结论二： 设 $p = \text{softmax}(s)$，则 $dS = P \odot \big(dP - \text{rowsum}(dP \odot P)\big)$</summary><div class="details-content"><p><strong>结论 2</strong>:设 $p = \text{softmax}(s)$,其中 $s, p \in \mathbb{R}^N$,则:</p>
+<script type="math/tex; mode=display">
+ds = p \odot dp - p \cdot (p^T dp) = p \odot (dp - \rho), \quad \rho = p^T dp = \sum_k p_k \, dp_k</script><p>扩展到按行 softmax 的矩阵形式:</p>
+<script type="math/tex; mode=display">
+dS = P \odot \big(dP - \text{rowsum}(dP \odot P)\big)</script><p>下面从零开始推导。</p>
+<h3 id="%E4%B8%80%E3%80%81softmax-%E7%9A%84%E5%AE%9A%E4%B9%89%E5%9B%9E%E9%A1%BE">一、softmax 的定义回顾</h3>
+<p>对向量 $s = (s_1, s_2, \dots, s_N) \in \mathbb{R}^N$,softmax 输出:</p>
+<script type="math/tex; mode=display">
+p_i = \frac{e^{s_i}}{\sum_{k=1}^{N} e^{s_k}}, \quad i = 1, \dots, N</script><p>记分母 $Z = \sum_k e^{s_k}$,则 $p_i = e^{s_i} / Z$。</p>
+<p><strong>两个关键性质</strong>:</p>
+<ol>
+<li>$\sum_i p_i = 1$</li>
+<li>$p_i &gt; 0$ 对所有 $i$</li>
+</ol>
+<h3 id="%E4%BA%8C%E3%80%81%E6%B1%82%E9%9B%85%E5%8F%AF%E6%AF%94%E7%9F%A9%E9%98%B5-frac-partial-p-i-partial-s-j">二、求雅可比矩阵 $\frac{\partial p_i}{\partial s_j}$</h3>
+<p>这是整个推导的核心。我们要算:<strong>$p_i$ 对每个 $s_j$ 的偏导</strong>。</p>
+<p>由于 $p_i = e^{s_i} / Z$,而 $Z$ <strong>依赖所有的 $s_j$</strong>(不只是 $s_i$),这是关键——改变任何一个 $s_j$ 都会通过 $Z$ 影响每个 $p_i$。</p>
+<h4 id="2-1-%E5%88%86%E6%83%85%E5%86%B5%E6%8E%A8%E5%AF%BC">2.1 分情况推导</h4>
+<p>用商的求导法则:</p>
+<script type="math/tex; mode=display">
+\frac{\partial p_i}{\partial s_j} = \frac{\partial}{\partial s_j}\left(\frac{e^{s_i}}{Z}\right) = \frac{\frac{\partial e^{s_i}}{\partial s_j} \cdot Z - e^{s_i} \cdot \frac{\partial Z}{\partial s_j}}{Z^2}</script><p>先算两个关键偏导:</p>
+<script type="math/tex; mode=display">
+\frac{\partial e^{s_i}}{\partial s_j} = \begin{cases} e^{s_i} & \text{若 } i = j \\ 0 & \text{否则} \end{cases} = e^{s_i} \delta_{ij}</script><p>$\frac{\partial Z}{\partial s_j} = \frac{\partial}{\partial s_j}\sum_k e^{s_k} = e^{s_j}$(只有 $k = j$ 那一项有贡献)</p>
+<p>其中 $\delta_{ij}$ 是 Kronecker delta:$i = j$ 时为 1,否则为 0。</p>
+<h4 id="2-2-%E4%BB%A3%E5%85%A5%E6%95%B4%E7%90%86">2.2 代入整理</h4>
+<script type="math/tex; mode=display">
+\frac{\partial p_i}{\partial s_j} = \frac{e^{s_i} \delta_{ij} \cdot Z - e^{s_i} \cdot e^{s_j}}{Z^2}</script><p>分子分母同除以 $Z^2$:</p>
+<script type="math/tex; mode=display">
+\frac{\partial p_i}{\partial s_j} = \frac{e^{s_i}}{Z} \delta_{ij} - \frac{e^{s_i}}{Z} \cdot \frac{e^{s_j}}{Z}</script><p>注意 $e^{s_i} / Z = p_i$,$e^{s_j} / Z = p_j$,所以:</p>
+<script type="math/tex; mode=display">
+\boxed{\frac{\partial p_i}{\partial s_j} = p_i \delta_{ij} - p_i p_j}</script><h4 id="2-3-%E5%88%86%E4%B8%A4%E7%A7%8D%E6%83%85%E5%86%B5%E7%9A%84%E5%BD%A2%E5%BC%8F">2.3 分两种情况的形式</h4>
+<p>写得更直观一点:</p>
+<script type="math/tex; mode=display">
+\frac{\partial p_i}{\partial s_j} = \begin{cases} p_i (1 - p_i) & \text{若 } i = j \\ -p_i p_j & \text{若 } i \neq j \end{cases}</script><p>对角上是 $p_i(1-p_i)$,非对角是 $-p_i p_j$。注意这是一个<strong>对称</strong>雅可比(因为 $p_i p_j = p_j p_i$)。</p>
+<h4 id="2-4-%E9%AA%8C%E8%AF%81%E4%B8%80%E4%B8%8B">2.4 验证一下</h4>
+<p>简单验证:对角上 $p_i(1 - p_i) &gt; 0$(softmax 的输出是增函数,增大 $s_i$ 会增大 $p_i$),非对角 $-p_i p_j &lt; 0$(增大 $s_j$ 会减小别的 $p_i$),符合直觉。</p>
+<p>还可以验证每列求和为 0:</p>
+<script type="math/tex; mode=display">
+\sum_i \frac{\partial p_i}{\partial s_j} = \sum_i (p_i \delta_{ij} - p_i p_j) = p_j - p_j \sum_i p_i = p_j - p_j \cdot 1 = 0 \quad \checkmark</script><p>这反映了 $\sum_i p_i = 1$ 这个约束——所有 $p_i$ 对任意 $s_j$ 的变化量加起来必须为 0。</p>
+<h3 id="%E4%B8%89%E3%80%81%E9%9B%85%E5%8F%AF%E6%AF%94%E7%9A%84%E7%9F%A9%E9%98%B5%E5%86%99%E6%B3%95">三、雅可比的矩阵写法</h3>
+<p>把 $\frac{\partial p<em>i}{\partial s_j} = p_i \delta</em>{ij} - p_i p_j$ 整理成矩阵:</p>
+<script type="math/tex; mode=display">
+J = \text{diag}(p) - p p^T</script><p>其中:</p>
+<ul>
+<li>$\text{diag}(p)$ 是对角矩阵,对角线上是 $p<em>1, p_2, \dots, p_N$(对应 $\delta</em>{ij} p_i$ 项)</li>
+<li>$p p^T$ 是外积矩阵,第 $(i,j)$ 元素是 $p_i p_j$</li>
+</ul>
+<p><strong>形状</strong>:$J \in \mathbb{R}^{N \times N}$,$J_{ij} = \frac{\partial p_i}{\partial s_j}$。</p>
+<h3 id="%E5%9B%9B%E3%80%81%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD-%E6%B1%82-ds">四、反向传播:求 $ds$</h3>
+<h4 id="4-1-%E9%93%BE%E5%BC%8F%E6%B3%95%E5%88%99">4.1 链式法则</h4>
+<p>给定上游梯度 $dp \in \mathbb{R}^N$($dp_i = \frac{\partial L}{\partial p_i}$),反向得到:</p>
+<script type="math/tex; mode=display">
+ds_j = \frac{\partial L}{\partial s_j} = \sum_{i=1}^{N} \frac{\partial L}{\partial p_i} \cdot \frac{\partial p_i}{\partial s_j} = \sum_{i=1}^{N} dp_i \cdot J_{ij}</script><p>写成矩阵形式:</p>
+<script type="math/tex; mode=display">
+ds = J^T dp = J dp \quad \text{(因为 J 对称)}</script><h4 id="4-2-%E4%BB%A3%E5%85%A5-j-%E7%9A%84%E8%A1%A8%E8%BE%BE%E5%BC%8F">4.2 代入 $J$ 的表达式</h4>
+<script type="math/tex; mode=display">
+ds = (\text{diag}(p) - pp^T) dp = \text{diag}(p) \cdot dp - p p^T dp</script><p>逐项分析:</p>
+<ul>
+<li>$\text{diag}(p) \cdot dp$:对角矩阵左乘向量,等价于<strong>逐元素相乘</strong>,即 $p \odot dp$</li>
+<li>$p p^T dp$:先算 $p^T dp$,这是个<strong>标量</strong>(两个向量的点积),记为 $\rho = \sum_k p_k dp_k$。然后 $p \cdot \rho$ 是每个 $p_i$ 乘以这个标量。</li>
+</ul>
+<p>所以:</p>
+<script type="math/tex; mode=display">
+\boxed{ds = p \odot dp - \rho \cdot p, \quad \rho = p^T dp = \sum_k p_k \, dp_k}</script><h4 id="4-3-%E5%9B%A0%E5%BC%8F%E5%88%86%E8%A7%A3%E5%BD%A2%E5%BC%8F">4.3 因式分解形式</h4>
+<p>把 $p$ 提出来(每项都含 $p_i$):</p>
+<script type="math/tex; mode=display">
+ds_j = p_j \cdot dp_j - \rho \cdot p_j = p_j (dp_j - \rho)</script><p>写成向量:</p>
+<script type="math/tex; mode=display">
+\boxed{ds = p \odot (dp - \rho)}</script><p>这就是结论 2 的向量形式。$\rho$ 是个标量,被<strong>广播</strong>到 $dp$ 的每个位置做减法。</p>
+<h3 id="%E4%BA%94%E3%80%81%E7%9B%B4%E8%A7%89%E7%90%86%E8%A7%A3-ds-%E5%85%AC%E5%BC%8F%E5%9C%A8%E8%AF%B4%E4%BB%80%E4%B9%88">五、直觉理解:$ds$ 公式在说什么</h3>
+<p>这个公式有很清晰的几何/概率直觉。</p>
+<h4 id="5-1-rho-sum-k-p-k-dp-k-%E6%98%AF%E4%BB%80%E4%B9%88">5.1 $\rho = \sum_k p_k dp_k$ 是什么?</h4>
+<p>这是 <strong>$dp$ 在 $p$ 分布下的加权平均</strong>(因为 $\sum_k p_k = 1$,$p$ 本身是概率分布)。</p>
+<h4 id="5-2-dp-rho-%E6%98%AF%E4%BB%80%E4%B9%88">5.2 $(dp - \rho)$ 是什么?</h4>
+<p>是 $dp$ <strong>减去其加权平均</strong>,即&quot;中心化&quot;后的 $dp$。</p>
+<h4 id="5-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%B8%AD%E5%BF%83%E5%8C%96">5.3 为什么要中心化?</h4>
+<p>因为 softmax 有个根本约束:$\sum_i p_i = 1$,所以<strong>所有 $p_i$ 同时增加 1 单位</strong> 是不可能的——它们必须&quot;此消彼长&quot;。</p>
+<p>从梯度角度看:如果 $dp$ 是一个常量向量(所有 $dp_i$ 相等),说明损失对 $p$ 的每个分量&quot;要求&quot;同样的变化,但 softmax 无法同时满足(受约束)。此时应该 $ds = 0$。</p>
+<p>验证:若 $dp_i = c$(常量),则 $\rho = \sum_k p_k \cdot c = c$,所以 $dp - \rho = 0$,进而 $ds = 0$。<strong>完美符合直觉</strong>。</p>
+<h4 id="5-4-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B9%98-p">5.4 为什么乘 $p$?</h4>
+<p>中心化后,还要乘以 $p$(逐元素)。这反映了:$p_i$ 小的分量对 $s_i$ 的变化<strong>不敏感</strong>(因为 $p_i \approx 0$,改变 $s_i$ 影响很小)。</p>
+<h3 id="%E5%85%AD%E3%80%81%E6%89%A9%E5%B1%95%E5%88%B0%E7%9F%A9%E9%98%B5-%E6%8C%89%E8%A1%8C-softmax">六、扩展到矩阵(按行 softmax)</h3>
+<p>在 attention 里,$P = \text{softmax}(S)$ 是按 $S$ 的每一行独立做 softmax。设 $S, P \in \mathbb{R}^{N \times N}$,则<strong>不同行之间互不影响</strong>——第 $i$ 行的 $P$ 只依赖第 $i$ 行的 $S$。</p>
+<p>所以把前面的结论逐行应用即可。对第 $i$ 行:</p>
+<script type="math/tex; mode=display">
+\rho_i = \sum_k P_{ik} \, dP_{ik} = (P \odot dP) \text{ 的第 } i \text{ 行之和}</script><script type="math/tex; mode=display">
+dS_{ij} = P_{ij} (dP_{ij} - \rho_i)</script><p>写成矩阵形式:</p>
+<script type="math/tex; mode=display">
+\boxed{dS = P \odot (dP - \text{rowsum}(dP \odot P))}</script><p>其中 $\text{rowsum}(\cdot)$ 返回一个 $N \times 1$ 的列向量,每一行是对应行的和。减法时这个列向量被<strong>广播到整行</strong>(每行都减同一个标量)。</p>
+<h3 id="%E4%B8%83%E3%80%81%E4%B8%80%E4%B8%AA%E5%85%B7%E4%BD%93%E4%BE%8B%E5%AD%90%E6%89%8B%E7%AE%97%E9%AA%8C%E8%AF%81">七、一个具体例子手算验证</h3>
+<p>取 $N = 2$,$s = (1, 2)$。</p>
+<p><strong>前向</strong>:</p>
+<script type="math/tex; mode=display">
+p_1 = \frac{e}{e + e^2} = \frac{1}{1 + e}, \quad p_2 = \frac{e^2}{e + e^2} = \frac{e}{1 + e}</script><p>带入数值($e \approx 2.718$):$p_1 \approx 0.269$,$p_2 \approx 0.731$。</p>
+<p><strong>雅可比</strong>:</p>
+<script type="math/tex; mode=display">
+J = \text{diag}(p) - pp^T = \begin{pmatrix} p_1 - p_1^2 & -p_1 p_2 \\ -p_1 p_2 & p_2 - p_2^2 \end{pmatrix} \approx \begin{pmatrix} 0.197 & -0.197 \\ -0.197 & 0.197 \end{pmatrix}</script><p>(注意到 $p_1 p_2 = p_1(1-p_1) = p_2(1-p_2)$,因为 $N=2$ 时 $p_2 = 1 - p_1$。)</p>
+<p><strong>假设上游梯度</strong> $dp = (1, 0)$(即 $L = p_1$)。</p>
+<p><strong>用公式算</strong>:</p>
+<ul>
+<li>$\rho = p^T dp = p_1 \cdot 1 + p_2 \cdot 0 = p_1 \approx 0.269$</li>
+<li>$dp - \rho = (1 - 0.269, 0 - 0.269) = (0.731, -0.269)$</li>
+<li>$ds = p \odot (dp - \rho) = (0.269 \times 0.731, 0.731 \times (-0.269)) \approx (0.197, -0.197)$</li>
+</ul>
+<p><strong>直接用雅可比</strong>:</p>
+<ul>
+<li>$ds = J^T dp = J dp = (0.197, -0.197)$ ✓</li>
+</ul>
+<p><strong>再直接对 $p_1$ 求偏导验证</strong>:</p>
+<ul>
+<li>$\frac{\partial p_1}{\partial s_1} = p_1(1-p_1) \approx 0.197$ ✓</li>
+<li>$\frac{\partial p_1}{\partial s_2} = -p_1 p_2 \approx -0.197$ ✓</li>
+</ul>
+<p>三种方法结果一致,公式正确。</p>
+<h3 id="%E5%85%AB%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B8%AA%E7%BB%93%E6%9E%9C%E7%89%B9%E5%88%AB%E5%A5%BD">八、为什么这个结果特别好?</h3>
+<p>在 attention 的反向里,这个公式有几个重要的工程价值:</p>
+<h4 id="8-1-ds-%E5%8F%AF%E4%BB%A5%E9%80%90%E8%A1%8C%E3%80%81%E9%80%90%E5%85%83%E7%B4%A0%E7%AE%97">8.1 $ds$ 可以逐行、逐元素算</h4>
+<p>公式 $dS<em>{ij} = P</em>{ij}(dP_{ij} - \rho_i)$ 是一个<strong>逐元素</strong>操作(加上每行一个共享的 $\rho_i$)。</p>
+<p>这意味着如果把 $P, dP$ 分块,每个 $(i, j)$ 块可以独立算 $dS_{ij}$——只需要知道对应行的 $\rho_i$ 这一个标量。这正是 FlashAttention 能分块反向的基础。</p>
+<h4 id="8-2-rho-i-%E5%8F%AF%E4%BB%A5%E9%A2%84%E8%AE%A1%E7%AE%97%E6%88%96%E6%9B%BF%E6%8D%A2">8.2 $\rho_i$ 可以预计算或替换</h4>
+<p>$\rho<em>i = \sum_k P</em>{ik} dP_{ik}$ 看似需要完整的 $P$ 和 $dP$,但上一节的恒等式告诉我们:</p>
+<script type="math/tex; mode=display">
+\rho_i = \text{rowsum}(P \odot dP)_i = \text{rowsum}(dO \odot O)_i =: D_i</script><p>所以 $D_i$ 可以<strong>在反向循环开始前一次性算好</strong>(只用 $dO$ 和 $O$),每个 block 需要时直接读取。</p>
+<h4 id="8-3-%E9%81%BF%E5%85%8D%E6%98%BE%E5%BC%8F%E6%9E%84%E9%80%A0%E9%9B%85%E5%8F%AF%E6%AF%94">8.3 避免显式构造雅可比</h4>
+<p>若老老实实构造 $J = \text{diag}(p) - pp^T$,需要 $O(N^2)$ 存储一个稠密矩阵,然后做 $Jdp$ 这个矩阵-向量乘法 $O(N^2)$ 次运算。</p>
+<p>用因式分解形式 $ds = p \odot (dp - \rho)$:</p>
+<ul>
+<li>算 $\rho$:$O(N)$ 次乘加</li>
+<li>减去 $\rho$:$O(N)$ 次减法</li>
+<li>逐元素乘 $p$:$O(N)$ 次乘法</li>
+</ul>
+<p><strong>总共 $O(N)$</strong>,不需要显式构造雅可比矩阵。这在 $N$ 大(长序列)时是关键的优化。</p>
+<h3 id="%E4%B9%9D%E3%80%81%E5%8F%A6%E4%B8%80%E7%A7%8D%E6%8E%A8%E5%AF%BC%E8%B7%AF%E5%BE%84-%E7%94%A8%E4%BA%A4%E5%8F%89%E7%86%B5%E7%9B%B4%E8%A7%89">九、另一种推导路径:用交叉熵直觉</h3>
+<p>如果你学过分类问题里的 softmax + 交叉熵,可能见过一个著名公式:</p>
+<script type="math/tex; mode=display">
+L = -\sum_i y_i \log p_i \Rightarrow \frac{\partial L}{\partial s_j} = p_j - y_j</script><p>这个公式看起来和我们推的完全不同,但其实是一致的——它是<strong>特殊情况</strong>。</p>
+<p>当损失是交叉熵 $L = -\sum_i y_i \log p_i$ 时:</p>
+<script type="math/tex; mode=display">
+dp_i = \frac{\partial L}{\partial p_i} = -\frac{y_i}{p_i}</script><p>代入通用公式 $ds = p \odot (dp - \rho)$:</p>
+<script type="math/tex; mode=display">
+\rho = \sum_k p_k \cdot \left(-\frac{y_k}{p_k}\right) = -\sum_k y_k = -1 \quad \text{(假设 } y \text{ 是 one-hot 或概率分布)}</script><script type="math/tex; mode=display">
+ds_j = p_j \left(-\frac{y_j}{p_j} - (-1)\right) = p_j - y_j \quad \checkmark</script><p>一致!这也再次验证了通用公式的正确性。交叉熵之所以那么简洁,是因为它的 $dp$ 形式特别,让 $\rho = -1$ 消得很干净。</p>
+<h3 id="%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93">十、总结</h3>
+<p><strong>核心结果</strong>:</p>
+<script type="math/tex; mode=display">
+\boxed{ds = p \odot (dp - \rho), \quad \rho = p^T dp}</script><p><strong>三层理解</strong>:</p>
+<ol>
+<li><strong>数学层面</strong>:softmax 的雅可比是 $\text{diag}(p) - pp^T$,利用这个矩阵的特殊结构(一个对角加一个秩一),$Jdp$ 有 $O(N)$ 的分解形式</li>
+<li><strong>几何层面</strong>:$\rho$ 是 $dp$ 在 $p$ 分布下的加权平均,$dp - \rho$ 是中心化,反映了 softmax 的&quot;概率和为 1&quot;约束——共同平移不改变 softmax</li>
+<li><strong>工程层面</strong>:分解形式省时省空间,可以<strong>逐行、逐块</strong>计算,让 FlashAttention 的分块反向成为可能;$\rho$ 可以预计算或用 $dO \odot O$ 替换,彻底绕过 $N \times N$ 的 $P, dP$</li>
+</ol>
+<p><strong>在 FlashAttention 中的角色</strong>:这个结论加上结论 1(矩阵乘的梯度)和 $\rho = \text{rowsum}(dO \odot O)$ 的恒等式,构成了 attention 反向传播分块计算的完整数学基础。</p>
+</div></details>
+<details><summary>反向传播的公式推导</summary><div class="details-content"><p>这个推导是理解 FlashAttention 反向的基础。我会从最基本的链式法则开始,一步步把所有梯度推出来。</p>
+<h3 id="%E4%B8%80%E3%80%81%E5%89%8D%E5%90%91%E5%9B%9E%E9%A1%BE%E4%B8%8E%E8%AE%B0%E5%8F%B7%E7%BA%A6%E5%AE%9A">一、前向回顾与记号约定</h3>
+<p>前向传播:</p>
+<script type="math/tex; mode=display">
+S = QK^T \in \mathbb{R}^{N \times N}</script><script type="math/tex; mode=display">
+P = \text{softmax}(S) \in \mathbb{R}^{N \times N} \quad \text{(按行做 softmax)}</script><script type="math/tex; mode=display">
+O = PV \in \mathbb{R}^{N \times d}</script><p>其中 $Q, K, V \in \mathbb{R}^{N \times d}$(为简洁省略 $\sqrt{d}$ 缩放,加回去只是每处乘个常数)。</p>
+<p><strong>记号约定</strong>(这是关键,很多推导让人糊涂就是记号乱):</p>
+<script type="math/tex; mode=display">
+dX := \frac{\partial L}{\partial X}</script><p>即 $dX$ 表示损失 $L$ 对 $X$ 的梯度,形状与 $X$ <strong>完全相同</strong>。</p>
+<p>已知:$dO \in \mathbb{R}^{N \times d}$(从上游传下来)。</p>
+<p>目标:求 $dQ, dK, dV$,形状分别与 $Q, K, V$ 相同。</p>
+<h3 id="%E4%BA%8C%E3%80%81%E4%B8%A4%E4%B8%AA%E5%9F%BA%E7%A1%80%E7%BB%93%E8%AE%BA">二、两个基础结论</h3>
+<p>推导矩阵梯度时,以下两个结论会被反复使用。先把它们证明清楚,后面直接套用。</p>
+<h4 id="%E7%BB%93%E8%AE%BA-1-%E8%8B%A5-y-ab-%E5%88%99">结论 1:若 $Y = AB$,则</h4>
+<script type="math/tex; mode=display">
+dA = dY \cdot B^T, \quad dB = A^T \cdot dY</script><p><strong>推导</strong>:标量形式 $Y<em>{ij} = \sum_k A</em>{ik} B_{kj}$。</p>
+<script type="math/tex; mode=display">
+dA_{ik} = \sum_{i',j} \frac{\partial L}{\partial Y_{i'j}} \cdot \frac{\partial Y_{i'j}}{\partial A_{ik}}</script><p>$\frac{\partial Y<em>{i&#39;j}}{\partial A</em>{ik}} = B_{kj} \cdot \mathbb{1}[i&#39; = i]$,所以</p>
+<script type="math/tex; mode=display">
+dA_{ik} = \sum_j dY_{ij} B_{kj} = (dY \cdot B^T)_{ik}</script><p>同理得 $dB = A^T \cdot dY$。<strong>一个助记方法</strong>:梯度的形状必须和原矩阵一致,所以 $B$ 出现在右边就要转置,$A$ 出现在左边也要转置。</p>
+<h4 id="%E7%BB%93%E8%AE%BA-2-%E8%A1%8C-softmax-%E7%9A%84%E9%9B%85%E5%8F%AF%E6%AF%94">结论 2:行 softmax 的雅可比</h4>
+<p>设 $p = \text{softmax}(s)$,其中 $s, p \in \mathbb{R}^N$(单独一行),则给定 $dp$,</p>
+<script type="math/tex; mode=display">
+ds = p \odot \left(dp - \sum_k p_k \, dp_k\right) = p \odot dp - p \cdot (p^T dp)</script><p><strong>推导</strong>:softmax 的雅可比</p>
+<script type="math/tex; mode=display">
+\frac{\partial p_i}{\partial s_j} = p_i \delta_{ij} - p_i p_j</script><p>所以</p>
+<script type="math/tex; mode=display">
+ds_j = \sum_i dp_i \cdot \frac{\partial p_i}{\partial s_j} = \sum_i dp_i (p_i \delta_{ij} - p_i p_j) = p_j dp_j - p_j \sum_i p_i dp_i</script><p>写成向量形式:$ds = p \odot dp - p \cdot (\sum_i p_i dp_i)$。</p>
+<p>令 $\rho = \sum_i p_i dp_i$(这是个标量,即 $p$ 和 $dp$ 的点积),则:</p>
+<script type="math/tex; mode=display">
+ds = p \odot (dp - \rho)</script><p>扩展到整个矩阵 $P$(每行独立做 softmax),逐行应用上式,$\rho$ 变成每行一个的列向量,广播到对应行:</p>
+<script type="math/tex; mode=display">
+dS = P \odot (dP - \text{rowsum}(dP \odot P))</script><p>这里 $\text{rowsum}(\cdot)$ 返回一个 $N \times 1$ 的列向量,广播时每一行减去自己那行的标量。</p>
+<h3 id="%E4%B8%89%E3%80%81%E9%80%90%E6%AD%A5%E6%8E%A8%E5%AF%BC%E4%B8%89%E4%B8%AA%E6%A2%AF%E5%BA%A6">三、逐步推导三个梯度</h3>
+<h4 id="%E6%AD%A5%E9%AA%A4-1-%E4%BB%8E-o-pv-%E5%87%BA%E5%8F%91-%E6%B1%82-dv-%E5%92%8C-dp">步骤 1:从 $O = PV$ 出发,求 $dV$ 和 $dP$</h4>
+<p>套用结论 1(令 $Y = O, A = P, B = V$):</p>
+<script type="math/tex; mode=display">
+\boxed{dV = P^T \cdot dO}</script><script type="math/tex; mode=display">
+\boxed{dP = dO \cdot V^T}</script><p><strong>形状检查</strong>:</p>
+<ul>
+<li>$dV$:$(N \times N)^T \cdot (N \times d) = (N \times d)$ ✓</li>
+<li>$dP$:$(N \times d) \cdot (d \times N) = (N \times N)$ ✓</li>
+</ul>
+<h4 id="%E6%AD%A5%E9%AA%A4-2-%E4%BB%8E-p-text-softmax-s-%E6%B1%82-ds">步骤 2:从 $P = \text{softmax}(S)$,求 $dS$</h4>
+<p>直接套用结论 2:</p>
+<script type="math/tex; mode=display">
+\boxed{dS = P \odot \left(dP - \text{rowsum}(dP \odot P)\right)}</script><p><strong>形状检查</strong>:$N \times N$ ✓</p>
+<h4 id="%E6%AD%A5%E9%AA%A4-3-%E4%BB%8E-s-qk-t-%E6%B1%82-dq-%E5%92%8C-dk">步骤 3:从 $S = QK^T$,求 $dQ$ 和 $dK$</h4>
+<p>把 $S = QK^T$ 写成 $S = Q \cdot (K^T)$,套用结论 1(令 $Y = S, A = Q, B = K^T$):</p>
+<script type="math/tex; mode=display">
+dQ = dS \cdot (K^T)^T = dS \cdot K</script><p>对 $B = K^T$:</p>
+<script type="math/tex; mode=display">
+d(K^T) = Q^T \cdot dS</script><p>所以</p>
+<script type="math/tex; mode=display">
+dK = (d(K^T))^T = (Q^T \cdot dS)^T = dS^T \cdot Q</script><script type="math/tex; mode=display">
+\boxed{dQ = dS \cdot K, \qquad dK = dS^T \cdot Q}</script><p><strong>形状检查</strong>:</p>
+<ul>
+<li>$dQ$:$(N \times N) \cdot (N \times d) = (N \times d)$ ✓</li>
+<li>$dK$:$(N \times N) \cdot (N \times d) = (N \times d)$ ✓</li>
+</ul>
+<h3 id="%E5%9B%9B%E3%80%81%E6%95%B4%E5%90%88%E5%85%A8%E6%B5%81%E7%A8%8B">四、整合全流程</h3>
+<p>把五个公式串起来:</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+dV &= P^T \cdot dO \\
+dP &= dO \cdot V^T \\
+D &= \text{rowsum}(dP \odot P) \quad \text{(每行一个标量)} \\
+dS &= P \odot (dP - D) \\
+dQ &= dS \cdot K \\
+dK &= dS^T \cdot Q
+\end{aligned}</script><p>标准实现里,每一步都要在 HBM 中保存 $N \times N$ 的 $P, dP, dS$,显存 $O(N^2)$,且反复读写导致速度慢。</p>
+<h3 id="%E4%BA%94%E3%80%81%E4%B8%80%E4%B8%AA%E5%85%B3%E9%94%AE%E6%81%92%E7%AD%89%E5%BC%8F-d-%E5%8F%AF%E4%BB%A5%E5%8F%AA%E7%94%A8-do-%E5%92%8C-o-%E7%AE%97">五、一个关键恒等式:$D$ 可以只用 $dO$ 和 $O$ 算</h3>
+<p>FlashAttention 的一个优化点在于:那个 $D = \text{rowsum}(dP \odot P)$ 看起来需要完整的 $dP$ 和 $P$,但其实可以<strong>完全绕过</strong>它们。</p>
+<p><strong>断言</strong>:</p>
+<script type="math/tex; mode=display">
+\text{rowsum}(dP \odot P) = \text{rowsum}(dO \odot O)</script><p><strong>推导</strong>:注意 $O = PV$,$dP = dO \cdot V^T$。逐元素算:</p>
+<script type="math/tex; mode=display">
+(dP \odot P)_{ij} = P_{ij} \cdot (dO \cdot V^T)_{ij} = P_{ij} \sum_k dO_{ik} V_{jk}</script><p>对 $j$ 求和:</p>
+<script type="math/tex; mode=display">
+\sum_j (dP \odot P)_{ij} = \sum_j P_{ij} \sum_k dO_{ik} V_{jk} = \sum_k dO_{ik} \sum_j P_{ij} V_{jk}</script><p>里面的 $\sum<em>j P</em>{ij} V<em>{jk} = (PV)</em>{ik} = O_{ik}$,于是:</p>
+<script type="math/tex; mode=display">
+\sum_j (dP \odot P)_{ij} = \sum_k dO_{ik} O_{ik} = (dO \odot O)_i \text{ 行和}</script><p>即:</p>
+<script type="math/tex; mode=display">
+\boxed{D_i = \text{rowsum}(dO \odot O)_i}</script><p><strong>这个结论很重要</strong>,因为它意味着:</p>
+<ul>
+<li>$D \in \mathbb{R}^{N \times 1}$ 可以在反向循环<strong>开始之前</strong>用 $dO$ 和 $O$ 一次性算好</li>
+<li>每个 block 在需要 $D_i$ 时直接读取,不需要 $P$ 或 $dP$ 的全貌</li>
+<li>让分块反向在数学上变得干净:每个 block 所需的外部输入只有 $Q_i, K_j, V_j, dO_i, O_i, L_i, D_i$,全都是 $O(N)$ 或 $O(Nd)$ 的量</li>
+</ul>
+<h3 id="%E5%85%AD%E3%80%81flashattention-%E5%88%86%E5%9D%97%E5%8F%8D%E5%90%91%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B">六、FlashAttention 分块反向的完整流程</h3>
+<p>有了上面的公式,可以把整个反向重写为分块形式:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">预处理: D = rowsum(dO ⊙ O)      # 形状 N×1, 一次扫描搞定</span><br><span class="line">初始化: dQ = dK = dV = 0</span><br><span class="line"></span><br><span class="line">for i = 1..T_r:</span><br><span class="line">    加载 Q_i, O_i, dO_i, L_i, D_i 到 SRAM</span><br><span class="line">    </span><br><span class="line">    for j = 1..T_c:</span><br><span class="line">        加载 K_j, V_j 到 SRAM</span><br><span class="line">        </span><br><span class="line">        # --- 重算前向得到 P_ij ---</span><br><span class="line">        S_ij = Q_i K_j^T</span><br><span class="line">        P_ij = exp(S_ij - L_i)          # 利用 L_i 直接得到归一化的 P</span><br><span class="line">        </span><br><span class="line">        # --- 按上面五个公式算梯度 ---</span><br><span class="line">        dV_j += P_ij^T · dO_i           </span><br><span class="line">        dP_ij = dO_i · V_j^T             </span><br><span class="line">        dS_ij = P_ij ⊙ (dP_ij - D_i)    # 用预计算的 D_i, 不用 rowsum</span><br><span class="line">        dQ_i += dS_ij · K_j              </span><br><span class="line">        dK_j += dS_ij^T · Q_i            </span><br><span class="line">    </span><br><span class="line">    写回 dQ_i</span><br><span class="line">写回 dK, dV</span><br></pre></td></tr></table></figure>
+<p>注意 $P<em>{ij}, dP</em>{ij}, dS_{ij}$ 都是 $B_r \times B_c$ 的小块,只活在 SRAM 里,计算完就丢。整个反向期间 <strong>HBM 中从未出现完整的 $N \times N$ 矩阵</strong>。</p>
+<h3 id="%E4%B8%83%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93">七、一句话总结</h3>
+<table>
+<thead>
+<tr>
+<th>推导环节</th>
+<th>用到的工具</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$dV, dP$</td>
+<td>矩阵乘反向(结论 1)</td>
+</tr>
+<tr>
+<td>$dS$</td>
+<td>softmax 雅可比(结论 2)</td>
+</tr>
+<tr>
+<td>$dQ, dK$</td>
+<td>矩阵乘反向(结论 1)</td>
+</tr>
+<tr>
+<td>$D$ 的简化</td>
+<td>交换求和顺序 + $O = PV$ 恒等式</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最核心的两个技术点</strong>:</p>
+<ol>
+<li><strong>结论 2 的 softmax 反向</strong> 把 $dS$ 和 $P \odot dP$ 联系起来</li>
+<li><strong>$D = \text{rowsum}(dO \odot O)$ 的恒等式</strong> 让整个反向可以完全分块,不需要 $P, dP$ 的全貌</li>
+</ol>
+<p>这两点加上前向存下来的 $L$,让 FlashAttention 反向做到了数学上与标准实现完全等价,但显存 $O(N)$、速度更快。</p>
+</div></details>
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/4.GPUKernel/FlashAttention/">https://SGDBS.github.io/AI_Infra/4.GPUKernel/FlashAttention/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/Plan/plan/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="AI Infra学习计划">
+                        
+                        <span class="card-title">AI Infra学习计划</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-04-23
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%97%A5%E8%AE%B0/" class="post-category">
+                                    日记
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%97%A5%E8%AE%B0/">
+                        <span class="chip bg-color">日记</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/Blog/sidebar-config-json/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="用 config.json 自定义侧边栏分组名称">
+                        
+                        <span class="card-title">用 config.json 自定义侧边栏分组名称</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-04-20
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%9E%E5%BB%BA/" class="post-category">
+                                    博客搞建
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Hexo/">
+                        <span class="chip bg-color">Hexo</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%95%99%E7%A8%8B/">
+                        <span class="chip bg-color">教程</span>
+                    </a>
+                    
+                    <a href="/tags/EJS/">
+                        <span class="chip bg-color">EJS</span>
+                    </a>
+                    
+                    <a href="/tags/JavaScript/">
+                        <span class="chip bg-color">JavaScript</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

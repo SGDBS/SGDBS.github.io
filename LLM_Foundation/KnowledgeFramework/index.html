@@ -1,0 +1,1915 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">大语言模型</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="大语言模型">大语言模型</span>
+            <span class="sidebar-count">10</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter0/" title="Chapter0 全景导读：LLM 训练全链路学习路径">
+                <span class="sidebar-label">Chapter0 全景导读：LLM 训练全链路学习路径</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter1/" title="Chapter1 数学工具箱：相似度、散度与 LLM 损失基础">
+                <span class="sidebar-label">Chapter1 数学工具箱：相似度、散度与 LLM 损失基础</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter2/" title="Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo">
+                <span class="sidebar-label">Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter3/" title="Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器">
+                <span class="sidebar-label">Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter4/" title="Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角">
+                <span class="sidebar-label">Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter5/" title="Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA">
+                <span class="sidebar-label">Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter6/" title="Chapter6 经典 RLHF：奖励模型 RM + PPO">
+                <span class="sidebar-label">Chapter6 经典 RLHF：奖励模型 RM + PPO</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter7/" title="Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）">
+                <span class="sidebar-label">Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter8/" title="Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI">
+                <span class="sidebar-label">Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/LLM_Foundation/KnowledgeFramework/" title="工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版">
+                <span class="sidebar-label">工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/">学习笔记-大模型</a>
+        
+        <span>/</span>
+        <span>工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                            <a href="/tags/LLM-Foundation/">
+                                <span class="chip bg-color">LLM Foundation</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                学习笔记-大模型
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-26
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>你的笔记已经按三个文件夹组织：</p>
+<ul>
+<li><strong><code>source/_posts/AI_Model/</code></strong> —— 模型架构本体（Transformer、RoPE…）</li>
+<li><strong><code>source/_posts/AI_Infra/</code></strong> —— 训练/推理基础设施（DDP、ZeRO、Pipeline、Kernel…）</li>
+<li><strong><code>source/_posts/LLM_Foundation/</code></strong> —— 算法（表示学习、SFT、PPO、DPO、GRPO…）</li>
+</ul>
+<p>这份文档做三件事：</p>
+<ol>
+<li>给三个文件夹<strong>划清边界</strong>，每块写什么、不写什么</li>
+<li>对照 2025–2026 工业界完整知识树，<strong>列出每个模块的归属和当前覆盖情况</strong></li>
+<li>给出<strong>真正还缺的内容清单</strong>和补完优先级</li>
+</ol>
+</blockquote>
+<hr>
+<h1 id="Part-1：三大文件夹的边界与定位"><a href="#Part-1：三大文件夹的边界与定位" class="headerlink" title="Part 1：三大文件夹的边界与定位"></a>Part 1：三大文件夹的边界与定位</h1><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">文件夹</th>
+<th style="text-align:left">关注什么</th>
+<th style="text-align:left">不要碰什么</th>
+<th style="text-align:left">一句话定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>AI_Model</strong></td>
+<td style="text-align:left">模型架构本体、组件、组装方式</td>
+<td style="text-align:left">训练算法（SFT/PPO）、并行/Kernel</td>
+<td style="text-align:left">“<strong>这个网络长什么样</strong>“</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>AI_Infra</strong></td>
+<td style="text-align:left">训练并行、显存账、通信、Kernel、推理服务</td>
+<td style="text-align:left">模型架构、算法目标函数</td>
+<td style="text-align:left">“<strong>这个网络怎么跑起来</strong>“</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LLM_Foundation</strong></td>
+<td style="text-align:left">训练目标 / 损失 / 对齐 / RL 算法 / 表示学习</td>
+<td style="text-align:left">架构细节、底层并行</td>
+<td style="text-align:left">“<strong>这个网络要优化什么</strong>“</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>边界判断小技巧：</p>
+<ul>
+<li>看到”如何切”、”显存怎么省”、”通信路径”、”Kernel” → AI_Infra</li>
+<li>看到”网络结构”、”Block 怎么组装”、”位置编码”、”Norm 选哪个” → AI_Model</li>
+<li>看到”Loss 怎么定义”、”对齐怎么做”、”RM/PPO/DPO/GRPO”、”采样策略与 reward” → LLM_Foundation</li>
+</ul>
+<hr>
+<h1 id="Part-2：现有覆盖盘点"><a href="#Part-2：现有覆盖盘点" class="headerlink" title="Part 2：现有覆盖盘点"></a>Part 2：现有覆盖盘点</h1><h2 id="2-1-AI-Model-已覆盖"><a href="#2-1-AI-Model-已覆盖" class="headerlink" title="2.1 AI_Model 已覆盖"></a>2.1 AI_Model 已覆盖</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">主题</th>
+<th style="text-align:left">文件</th>
+<th style="text-align:left">状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Transformer 完整结构</td>
+<td style="text-align:left"><code>Transformer.md</code></td>
+<td style="text-align:left">✅ Encoder-Decoder / MHA / FFN / Add&amp;Norm（含 RMSNorm）/ Pre/Post-Norm</td>
+</tr>
+<tr>
+<td style="text-align:left">训练机制</td>
+<td style="text-align:left"><code>Transformer.md</code> §7</td>
+<td style="text-align:left">✅ Teacher Forcing / Label Smoothing / Warmup LR</td>
+</tr>
+<tr>
+<td style="text-align:left">推理解码</td>
+<td style="text-align:left"><code>Transformer.md</code> §8</td>
+<td style="text-align:left">✅ Greedy / Beam / Top-k / Top-p</td>
+</tr>
+<tr>
+<td style="text-align:left">位置编码（正弦）</td>
+<td style="text-align:left"><code>Transformer.md</code> §2.2–2.4</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>RoPE</strong></td>
+<td style="text-align:left"><code>RoPE.md</code></td>
+<td style="text-align:left">✅ 复数旋转 + 相对位置推导</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="2-2-AI-Infra-已覆盖"><a href="#2-2-AI-Infra-已覆盖" class="headerlink" title="2.2 AI_Infra 已覆盖"></a>2.2 AI_Infra 已覆盖</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">主题</th>
+<th style="text-align:left">文件</th>
+<th style="text-align:left">状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">显存账 / 7B 模型显存构成</td>
+<td style="text-align:left"><code>1.DataParallel/MemoryBudget.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">混合精度 BF16/FP16 + Loss Scaling</td>
+<td style="text-align:left"><code>1.DataParallel/MixedPrecision.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">DDP / Ring AllReduce</td>
+<td style="text-align:left"><code>1.DataParallel/DDP.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">ZeRO-1/2/3</td>
+<td style="text-align:left"><code>1.DataParallel/ZeRO.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">多机 NCCL + 网络拓扑</td>
+<td style="text-align:left"><code>1.DataParallel/MultiNode.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">异步计算 / CUDA Stream</td>
+<td style="text-align:left"><code>1.DataParallel/AsyncCompute.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Checkpoint（含 FSDP shard）</td>
+<td style="text-align:left"><code>1.DataParallel/Checkpoint.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">GPipe / 1F1B / Interleaved 1F1B</td>
+<td style="text-align:left"><code>2.PipelineParallel/*.md</code></td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>FlashAttention</strong></td>
+<td style="text-align:left"><code>4.GPUKernel/FlashAttention.md</code></td>
+<td style="text-align:left">✅ Tiling+Online Softmax+Recompute</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>KV Cache</strong></td>
+<td style="text-align:left"><code>4.GPUKernel/KVCache.md</code></td>
+<td style="text-align:left">✅ Prefill/Decode 全流程</td>
+</tr>
+<tr>
+<td style="text-align:left">总规划</td>
+<td style="text-align:left"><code>0.Introduction/Chapter0.md</code></td>
+<td style="text-align:left">✅ 12 章蓝图</td>
+</tr>
+<tr>
+<td style="text-align:left">Triton/CUDA Kernel 路线</td>
+<td style="text-align:left"><code>0.Introduction/KernelRoadmap.md</code></td>
+<td style="text-align:left">✅ 9 章规划</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="2-3-AI-Infra-已规划但还没写"><a href="#2-3-AI-Infra-已规划但还没写" class="headerlink" title="2.3 AI_Infra 已规划但还没写"></a>2.3 AI_Infra 已规划但还没写</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">模块</th>
+<th style="text-align:left">目录</th>
+<th style="text-align:left">你的规划里包含</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Tensor Parallel + Sequence Parallel</strong></td>
+<td style="text-align:left"><code>3.TensorParallel/</code></td>
+<td style="text-align:left">Megatron TP 切法、SP、ColumnParallel/RowParallel</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Expert Parallel（MoE 训练）</strong></td>
+<td style="text-align:left">（Chapter0 Ch4）</td>
+<td style="text-align:left">Top-k routing、load balance、EP 通信</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Context Parallel（长上下文训练）</strong></td>
+<td style="text-align:left">（Chapter0 Ch5）</td>
+<td style="text-align:left">Ring Attention、序列切分</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Inference 完整栈</strong></td>
+<td style="text-align:left"><code>5.Inference/</code></td>
+<td style="text-align:left">vLLM/SGLang、PagedAttention、Continuous Batching、Speculative、Quantization</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Triton/CUDA Kernel 实战</strong></td>
+<td style="text-align:left">KernelRoadmap</td>
+<td style="text-align:left">GPU 硬件心智模型、矩阵乘、Reduction、Fused Kernel、FlashAttn 实战</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="2-4-LLM-Foundation-已覆盖"><a href="#2-4-LLM-Foundation-已覆盖" class="headerlink" title="2.4 LLM_Foundation 已覆盖"></a>2.4 LLM_Foundation 已覆盖</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Ch</th>
+<th style="text-align:left">主题</th>
+<th style="text-align:left">状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Ch1</td>
+<td style="text-align:left">距离/散度/CE/KL</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch2</td>
+<td style="text-align:left">SimCLR / MoCo / InfoNCE</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch3</td>
+<td style="text-align:left">CLIP / SimCSE / BGE / RAG retriever 训练</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch4</td>
+<td style="text-align:left">BYOL / SimSiam / DINO（含 EM 推导）</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch5</td>
+<td style="text-align:left">SFT + LoRA/QLoRA/DoRA</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch6</td>
+<td style="text-align:left">RM + PPO + 失败模式 + Infra 视角</td>
+<td style="text-align:left">✅✅（质量很高）</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch7</td>
+<td style="text-align:left">DPO / IPO / KTO / ORPO / SimPO</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">Ch8</td>
+<td style="text-align:left">GRPO / PRM / RLAIF / CAI</td>
+<td style="text-align:left">✅</td>
+</tr>
+<tr>
+<td style="text-align:left">tmp.md</td>
+<td style="text-align:left">PPO IS 草稿</td>
+<td style="text-align:left">⚠️ 建议删（已并入 Ch6 §A.3）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h1 id="Part-3：完整工业知识树-×-你的目录归属"><a href="#Part-3：完整工业知识树-×-你的目录归属" class="headerlink" title="Part 3：完整工业知识树 × 你的目录归属"></a>Part 3：完整工业知识树 × 你的目录归属</h1><blockquote>
+<p>每个模块标注：<strong>已覆盖位置</strong>、<strong>还缺什么</strong>、<strong>该写在哪个文件夹</strong>。</p>
+</blockquote>
+<h2 id="模块-1：数学与基础-→-LLM-Foundation-Ch1"><a href="#模块-1：数学与基础-→-LLM-Foundation-Ch1" class="headerlink" title="模块 1：数学与基础 → LLM_Foundation/Ch1"></a>模块 1：数学与基础 → <code>LLM_Foundation/Ch1</code></h2><p>✅ 你的 Ch1 已经覆盖了所有 LLM 必需的数学工具。可微调补充：</p>
+<ul>
+<li><em>（小补充）</em> JS 散度、Wasserstein（在 GAN/分布对齐场景偶尔考）</li>
+<li><em>（小补充）</em> 互信息 / PMI（虽然 Ch2 用 InfoNCE 间接讲了 MI 下界）</li>
+</ul>
+<h2 id="模块-2：Tokenizer-amp-Chat-Template-→-缺，建议放-AI-Model"><a href="#模块-2：Tokenizer-amp-Chat-Template-→-缺，建议放-AI-Model" class="headerlink" title="模块 2：Tokenizer &amp; Chat Template → 缺，建议放 AI_Model"></a>模块 2：Tokenizer &amp; Chat Template → <strong>缺</strong>，建议放 <code>AI_Model</code></h2><p>工业 LLM 必备：</p>
+<ul>
+<li>BPE / BBPE / WordPiece / Unigram / SentencePiece 算法差异</li>
+<li>Tiktoken / Llama-3 / Qwen / DeepSeek 各家 tokenizer 对比</li>
+<li>特殊 token + Chat Template（ChatML、Llama-3、Qwen2）</li>
+<li>Tokenizer 边界 bug（SolidGoldMagikarp、leading-space）</li>
+<li>多语言压缩率与训练成本</li>
+</ul>
+<p>📁 建议：<code>AI_Model/Tokenizer.md</code>（这是模型本体的一部分）</p>
+<h2 id="模块-3：Transformer-架构本体-→-AI-Model-Transformer-md"><a href="#模块-3：Transformer-架构本体-→-AI-Model-Transformer-md" class="headerlink" title="模块 3：Transformer 架构本体 → AI_Model/Transformer.md"></a>模块 3：Transformer 架构本体 → <code>AI_Model/Transformer.md</code></h2><p>✅ 你的 Transformer.md 已经把核心讲透了（含 RMSNorm、Pre/Post-Norm）。</p>
+<p><strong>还缺的现代点</strong>（建议补到 Transformer.md 后半段或独立文件）：</p>
+<ul>
+<li><strong>SwiGLU / GeGLU / GLU 家族</strong>（Llama 系 FFN 标配）</li>
+<li><strong>GQA / MQA / MHA 切换</strong>（Llama-3、Qwen 都用 GQA）</li>
+<li>LM Head Tied / Untied、logit soft-capping（Gemma 2）</li>
+<li>µP 参数化（超参跨规模迁移）</li>
+</ul>
+<p>📁 建议：把这些追加到 <code>AI_Model/Transformer.md</code>，或新建 <code>AI_Model/ModernTransformer.md</code></p>
+<h2 id="模块-4：位置编码与长上下文-→-AI-Model-AI-Infra"><a href="#模块-4：位置编码与长上下文-→-AI-Model-AI-Infra" class="headerlink" title="模块 4：位置编码与长上下文 → AI_Model + AI_Infra"></a>模块 4：位置编码与长上下文 → <code>AI_Model</code> + <code>AI_Infra</code></h2><p>✅ RoPE 数学：<code>AI_Model/RoPE.md</code></p>
+<p><strong>还缺</strong>：</p>
+<ul>
+<li>ALiBi、T5 relative bias（对照组）</li>
+<li><strong>RoPE 外推</strong>：NTK-aware、<strong>YaRN</strong>、LongRoPE、Position Interpolation、θ-scaling</li>
+<li><strong>StreamingLLM</strong>（attention sink 现象）</li>
+<li>长上下文评测：Needle / RULER / LongBench</li>
+</ul>
+<p>📁 建议：</p>
+<ul>
+<li>外推数学 → <code>AI_Model/RoPEScaling.md</code>（接 RoPE.md）</li>
+<li>Ring Attention / Context Parallel 系统层面 → <code>AI_Infra/5.Inference/</code> 或 <code>AI_Infra/6.ContextParallel/</code>（你 Chapter0 Ch5 已规划）</li>
+</ul>
+<h2 id="模块-5：现代架构变体-→-缺，分两边写"><a href="#模块-5：现代架构变体-→-缺，分两边写" class="headerlink" title="模块 5：现代架构变体 → 缺，分两边写"></a>模块 5：现代架构变体 → <strong>缺</strong>，分两边写</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">主题</th>
+<th style="text-align:left">归属</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>MoE 架构本身</strong>（top-k routing、shared experts）</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+<td style="text-align:left">网络结构</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MoE 训练 Infra</strong>（Expert Parallel、load balance）</td>
+<td style="text-align:left"><code>AI_Infra</code>（Chapter0 Ch4 已规划）</td>
+<td style="text-align:left">切分与通信</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MLA</strong>（Multi-head Latent Attention，DeepSeek-V2）</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+<td style="text-align:left">KV 压缩到 latent，结构改造</td>
+</tr>
+<tr>
+<td style="text-align:left">GQA / MQA / MHA</td>
+<td style="text-align:left"><code>AI_Model</code>（已在 Transformer 提了但可加深）</td>
+<td style="text-align:left">结构与显存权衡</td>
+</tr>
+<tr>
+<td style="text-align:left">Sliding Window / Sparse / Global+Local</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+<td style="text-align:left">Mistral、Longformer</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SSM / Mamba / Mamba-2 / RWKV / RetNet</strong></td>
+<td style="text-align:left"><code>AI_Model</code>（如要写实现）+ <code>AI_Infra</code>（硬件感知 scan）</td>
+<td style="text-align:left">线性注意力替代</td>
+</tr>
+<tr>
+<td style="text-align:left">Hybrid（Jamba/Samba/Zamba）</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+<td style="text-align:left">Transformer⊕Mamba</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="模块-6：预训练（Pretraining）→-缺，建议新建专门系列"><a href="#模块-6：预训练（Pretraining）→-缺，建议新建专门系列" class="headerlink" title="模块 6：预训练（Pretraining）→ 缺，建议新建专门系列"></a>模块 6：预训练（Pretraining）→ <strong>缺</strong>，建议新建专门系列</h2><p>数据 + Scaling Laws + 训练目标这套属于”训练方法学”，三个文件夹都不完全对口。建议新建：</p>
+<p>📁 <strong><code>source/_posts/Pretraining/</code></strong>（新文件夹），内容：</p>
+<ul>
+<li>数据：CommonCrawl / FineWeb / RedPajama / Dolma、dedup / quality filter / mixture</li>
+<li>训练目标：CLM / FIM（代码必备）/ UL2 / Mixture-of-Denoisers</li>
+<li><strong>Scaling Laws</strong>：Kaplan、Chinchilla（20× tokens）、over-training、inference-aware、µP</li>
+<li>LR schedule：cosine / <strong>WSD</strong>（Warmup-Stable-Decay）/ Inverse-Sqrt、batch ramp</li>
+<li>Curriculum、continual / mid-training（DeepSeek-Math、Llama-3 long-context stage）</li>
+<li>训练稳定性：loss spike、Z-loss、QK-LayerNorm、router z-loss</li>
+<li>优化器：AdamW / <strong>Lion</strong> / <strong>Muon</strong> / Shampoo / SOAP</li>
+<li>数值精度战略：BF16 / FP16 / <strong>FP8</strong>（H100/B200）</li>
+</ul>
+<p>⚠️ 注意分工：</p>
+<ul>
+<li><strong>算法层</strong>（AdamW 数学、WSD 形状、Scaling Laws 公式）→ Pretraining</li>
+<li><strong>系统层</strong>（FP8 怎么在硬件上跑、optimizer state offload）→ AI_Infra/MixedPrecision</li>
+</ul>
+<h2 id="模块-7：分布式训练-→-AI-Infra（你已规划完整）"><a href="#模块-7：分布式训练-→-AI-Infra（你已规划完整）" class="headerlink" title="模块 7：分布式训练 → AI_Infra（你已规划完整）"></a>模块 7：分布式训练 → <code>AI_Infra</code>（你已规划完整）</h2><p>✅ DDP / ZeRO（1.DataParallel）<br>✅ GPipe / 1F1B / Interleaved（2.PipelineParallel）<br>⏳ <strong>Tensor Parallel + Sequence Parallel</strong>（3.TensorParallel 待写）<br>⏳ <strong>Expert Parallel</strong>（Chapter0 Ch4 已规划）<br>⏳ <strong>Context Parallel / Ring Attention</strong>（Chapter0 Ch5 已规划）<br>✅ Mixed Precision、AsyncCompute、Checkpoint、MultiNode  </p>
+<p><strong>还可以补</strong>：3D 并行（DP×TP×PP 组合策略）、TorchTitan / Megatron-LM / DeepSpeed 框架对比、Elastic training。</p>
+<h2 id="模块-8：Post-training（对齐）→-LLM-Foundation（你的核心，已覆盖）"><a href="#模块-8：Post-training（对齐）→-LLM-Foundation（你的核心，已覆盖）" class="headerlink" title="模块 8：Post-training（对齐）→ LLM_Foundation（你的核心，已覆盖）"></a>模块 8：Post-training（对齐）→ <code>LLM_Foundation</code>（你的核心，已覆盖）</h2><p>✅ SFT（Ch5）<br>✅ PEFT：LoRA/QLoRA/DoRA（Ch5）<br>✅ PPO/RLHF（Ch6）<br>✅ DPO 家族（Ch7）<br>✅ GRPO / PRM / RLAIF（Ch8）</p>
+<p><strong>建议补</strong>（在 Ch8 后或新增 Ch9）：</p>
+<ul>
+<li><strong>RFT（Rejection Fine-Tuning）/ STaR / Best-of-N → SFT</strong></li>
+<li><strong>蒸馏</strong>：黑盒 vs 白盒、top-k logit、<strong>on-policy distillation（MiniLLM、DistiLLM）</strong></li>
+<li>合成数据：Self-Instruct、Evol-Instruct、Magpie、persona-hub</li>
+<li><strong>Reasoning 训练栈细节</strong>：long CoT 训练、Self-Play（SPIN、Self-Rewarding、SPPO）</li>
+<li>新 PG 变体：<strong>RLOO、ReMax、REINFORCE++、DAPO、VAPO</strong>（GRPO 的近亲）</li>
+</ul>
+<h2 id="模块-9：推理与服务-→-AI-Infra-5-Inference-（你已规划）"><a href="#模块-9：推理与服务-→-AI-Infra-5-Inference-（你已规划）" class="headerlink" title="模块 9：推理与服务 → AI_Infra/5.Inference/（你已规划）"></a>模块 9：推理与服务 → <code>AI_Infra/5.Inference/</code>（你已规划）</h2><p>⏳ 这块你 Chapter0 列了规划，但 5.Inference 目录还是空的。建议写：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">子主题</th>
+<th style="text-align:left">内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">FlashAttention v2/v3</td>
+<td style="text-align:left">✅ <code>4.GPUKernel/FlashAttention.md</code> 已有；可补 v3 / FlashDecoding</td>
+</tr>
+<tr>
+<td style="text-align:left">Quantization</td>
+<td style="text-align:left"><strong>GPTQ / AWQ / SmoothQuant / FP8 / GGUF / Marlin kernel</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">批处理调度</td>
+<td style="text-align:left"><strong>Continuous Batching、PagedAttention、Chunked Prefill、Prefix Caching</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Disaggregated Prefill/Decode</strong></td>
+<td style="text-align:left">Splitwise、DistServe、Mooncake</td>
+</tr>
+<tr>
+<td style="text-align:left">投机解码</td>
+<td style="text-align:left">Vanilla Spec / <strong>Medusa / EAGLE / Lookahead</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">推理框架</td>
+<td style="text-align:left"><strong>vLLM / SGLang / TensorRT-LLM / llama.cpp / LMDeploy</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">Multi-LoRA serving</td>
+<td style="text-align:left">LoRAX / Punica</td>
+</tr>
+<tr>
+<td style="text-align:left">解码策略</td>
+<td style="text-align:left"><em>已在 <code>AI_Model/Transformer.md</code> §8 覆盖</em>；可补 Min-p / DRY / Contrastive / Constrained（Outlines）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>⚠️ 注意：解码算法（Top-k/p/Beam）放 AI_Model，<strong>服务系统</strong>（vLLM/调度/量化 kernel）放 AI_Infra。</p>
+<h2 id="模块-10：评测（Evaluation）→-缺，建议放-LLM-Foundation"><a href="#模块-10：评测（Evaluation）→-缺，建议放-LLM-Foundation" class="headerlink" title="模块 10：评测（Evaluation）→ 缺，建议放 LLM_Foundation"></a>模块 10：评测（Evaluation）→ <strong>缺</strong>，建议放 <code>LLM_Foundation</code></h2><p>评测和对齐紧密耦合（Reward Model 训练数据来自评测），但单独一章更好：</p>
+<p>📁 建议：<code>LLM_Foundation/Ch9_Evaluation.md</code>，覆盖：</p>
+<ul>
+<li>综合：MMLU / MMLU-Pro / AGIEval / BBH / GPQA / SuperGPQA</li>
+<li>数学：GSM8K / MATH / <strong>AIME 2024-2025</strong> / OlympiadBench</li>
+<li>代码：HumanEval+ / MBPP+ / <strong>LiveCodeBench / SWE-Bench Verified / Aider</strong></li>
+<li>指令：IFEval / FollowBench</li>
+<li>对话：MT-Bench / <strong>Arena Hard / Chatbot Arena ELO</strong> / AlpacaEval 2 LC</li>
+<li>长文本：Needle / RULER / LongBench / InfiniteBench</li>
+<li>Agent：BFCL / τ-bench / GAIA / WebArena / OSWorld</li>
+<li>多模态：MMMU / MathVista / VideoMME</li>
+<li>安全：HarmBench / AdvBench / WildJailbreak</li>
+<li><strong>方法学</strong>：LLM-as-judge 偏差（position/length/self-preference）、Pairwise vs Single、数据污染、可复现性</li>
+</ul>
+<h2 id="模块-11：RAG-完整栈-→-LLM-Foundation-或新建-RAG"><a href="#模块-11：RAG-完整栈-→-LLM-Foundation-或新建-RAG" class="headerlink" title="模块 11：RAG 完整栈 → LLM_Foundation 或新建 RAG/"></a>模块 11：RAG 完整栈 → <code>LLM_Foundation</code> 或新建 <code>RAG/</code></h2><p>你的 Ch3 只讲了 retriever 训练。RAG 工程栈还缺：</p>
+<p>📁 建议：<code>LLM_Foundation/Ch10_RAG.md</code> 或独立文件夹</p>
+<ul>
+<li>分块：fixed / recursive / semantic / late chunking</li>
+<li>向量索引：FAISS（IVF/HNSW/PQ）/ Milvus / Qdrant / pgvector</li>
+<li><strong>混合检索</strong>：BM25 + dense + RRF / <strong>ColBERT v2</strong>（late interaction）</li>
+<li><strong>Reranker</strong>：bge-reranker、Cohere、Jina、LLM-as-reranker</li>
+<li>Query 增强：<strong>HyDE、Multi-query、Step-back、Query decomposition</strong></li>
+<li>高级范式：<strong>GraphRAG（Microsoft）、RAPTOR、Self-RAG、Corrective RAG、Agentic RAG</strong></li>
+<li>评测：<strong>RAGAS、ARES</strong>、Faithfulness / Answer Relevance / Context Precision</li>
+<li>长上下文 vs RAG：lost-in-the-middle、需求场景分流</li>
+</ul>
+<h2 id="模块-12：Agent-Tool-Use-→-缺，建议新建-Agent"><a href="#模块-12：Agent-Tool-Use-→-缺，建议新建-Agent" class="headerlink" title="模块 12：Agent / Tool Use → 缺，建议新建 Agent/"></a>模块 12：Agent / Tool Use → <strong>缺</strong>，建议新建 <code>Agent/</code></h2><p>📁 建议：<code>source/_posts/Agent/</code></p>
+<ul>
+<li>Function Calling（OpenAI / Anthropic / Qwen-Agent）</li>
+<li><strong>MCP（Model Context Protocol）</strong> —— 2024-2026 工业标准</li>
+<li>范式：ReAct / Reflexion / Plan-and-Solve / Self-Ask</li>
+<li>Code Interpreter / Sandbox（E2B）</li>
+<li>Multi-Agent：AutoGen / CrewAI / LangGraph / MetaGPT / Swarm</li>
+<li>Browser/Desktop Agent：WebArena / SeeAct / <strong>Anthropic Computer Use</strong></li>
+<li>RL for Agents：Tool-Star / ToolRL / Agent Tuning</li>
+<li>评测：BFCL / τ-bench / SWE-bench / OSWorld</li>
+</ul>
+<h2 id="模块-13：多模态-VLM-→-多个文件夹"><a href="#模块-13：多模态-VLM-→-多个文件夹" class="headerlink" title="模块 13：多模态 VLM → 多个文件夹"></a>模块 13：多模态 VLM → 多个文件夹</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">子主题</th>
+<th style="text-align:left">归属</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">视觉骨干（CLIP/DINOv2/SigLIP）</td>
+<td style="text-align:left">✅ 已在 <code>LLM_Foundation/Ch3, Ch4</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>投影方式</strong>：MLP / Q-Former / Perceiver Resampler</td>
+<td style="text-align:left"><code>AI_Model/VLM.md</code>（新增）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练阶段</strong>：alignment → instruction tuning</td>
+<td style="text-align:left"><code>LLM_Foundation</code>（属于 post-training）</td>
+</tr>
+<tr>
+<td style="text-align:left">高分辨率：AnyRes / tile / native res（Qwen2-VL）</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+</tr>
+<tr>
+<td style="text-align:left">原生多模态：Chameleon / Gemini / GPT-4o / Janus</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+</tr>
+<tr>
+<td style="text-align:left">视频 / 音频</td>
+<td style="text-align:left"><code>AI_Model</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>多模态对齐</strong>：RLHF-V / VLFeedback / SPA-VL</td>
+<td style="text-align:left"><code>LLM_Foundation</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="模块-14：安全-红队-→-缺，建议放-LLM-Foundation"><a href="#模块-14：安全-红队-→-缺，建议放-LLM-Foundation" class="headerlink" title="模块 14：安全 / 红队 → 缺，建议放 LLM_Foundation"></a>模块 14：安全 / 红队 → <strong>缺</strong>，建议放 <code>LLM_Foundation</code></h2><p>📁 建议：<code>LLM_Foundation/Ch11_Safety.md</code></p>
+<ul>
+<li>Jailbreak：DAN / role-play / Many-shot / <strong>PAIR / AutoDAN / GCG</strong></li>
+<li>Prompt Injection（间接注入 via tool/retrieval）</li>
+<li>防御：system prompt hardening、output filtering、Constitutional Classifier</li>
+<li>Refusal training、harmlessness vs helpfulness 平衡</li>
+<li>红队工具：HarmBench / JailbreakBench / PyRIT</li>
+<li>水印（Kirchenbauer / SynthID-Text）</li>
+<li>隐私：成员推断、数据萃取</li>
+</ul>
+<h2 id="模块-15：工具链与生态-→-各处自然渗透即可"><a href="#模块-15：工具链与生态-→-各处自然渗透即可" class="headerlink" title="模块 15：工具链与生态 → 各处自然渗透即可"></a>模块 15：工具链与生态 → 各处自然渗透即可</h2><p>不需要单独写章。在用到的地方自然提到：</p>
+<ul>
+<li>训练：HF Transformers / TRL / Accelerate / PEFT / Axolotl / LLaMA-Factory / Unsloth / TorchTune / DeepSpeed / Megatron / NeMo / TorchTitan / <strong>veRL</strong></li>
+<li>推理：vLLM / SGLang / TensorRT-LLM / Ollama / llama.cpp / LMDeploy</li>
+<li>RAG：LangChain / LlamaIndex / DSPy</li>
+<li>Agent：LangGraph / AutoGen / CrewAI / Smol-Agents</li>
+</ul>
+<hr>
+<h1 id="Part-4：你目前的全景图（视觉化）"><a href="#Part-4：你目前的全景图（视觉化）" class="headerlink" title="Part 4：你目前的全景图（视觉化）"></a>Part 4：你目前的全景图（视觉化）</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                      已完成（深度 ★★★★+）                            │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  AI_Model:          Transformer 主体 + RoPE                          │</span><br><span class="line">│  AI_Infra:          DP/ZeRO/Pipeline/FlashAttn/KV/MixedPrec/NCCL    │</span><br><span class="line">│  LLM_Foundation:    数学 + 表示学习 + SFT + PPO + DPO + GRPO         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">┌─────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                  已规划但未写（你已经知道要补）                       │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  AI_Infra:                                                           │</span><br><span class="line">│    • 3.TensorParallel（Megatron TP/SP）                              │</span><br><span class="line">│    • Expert Parallel（MoE 训练）                                     │</span><br><span class="line">│    • Context Parallel（Ring Attention）                              │</span><br><span class="line">│    • 5.Inference（vLLM/Quant/Spec/Disaggregated）                    │</span><br><span class="line">│    • Triton/CUDA Kernel 实战路线                                     │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">┌─────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                    全空白（建议补的高优先级）                         │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  AI_Model:                                                           │</span><br><span class="line">│    P0  • Tokenizer &amp; Chat Template                                   │</span><br><span class="line">│    P0  • SwiGLU/GLU + GQA/MQA 现代细节（追加到 Transformer.md）       │</span><br><span class="line">│    P0  • RoPE Scaling（YaRN/NTK/PI）                                 │</span><br><span class="line">│    P1  • MoE 架构（DeepSeek-V3、Mixtral）                            │</span><br><span class="line">│    P1  • MLA（Multi-head Latent Attention）                          │</span><br><span class="line">│    P2  • Mamba / SSM / Hybrid                                        │</span><br><span class="line">│    P2  • VLM 架构（投影方式、原生多模态）                            │</span><br><span class="line">│                                                                      │</span><br><span class="line">│  新建文件夹 Pretraining/:                                            │</span><br><span class="line">│    P1  • 数据 / Scaling Laws / WSD                                   │</span><br><span class="line">│    P1  • 优化器（AdamW/Lion/Muon）/ FP8 训练                         │</span><br><span class="line">│    P1  • 训练稳定性 / loss spike                                     │</span><br><span class="line">│                                                                      │</span><br><span class="line">│  LLM_Foundation/（在现有基础上加章）:                                │</span><br><span class="line">│    P0  • Ch9 评测体系                                                │</span><br><span class="line">│    P1  • Ch10 RAG 完整栈                                             │</span><br><span class="line">│    P1  • Ch11 安全 / Jailbreak                                       │</span><br><span class="line">│    P2  • Ch12 蒸馏 / 合成数据 / RFT                                  │</span><br><span class="line">│    P2  • Ch13 Reasoning 训练栈深化                                   │</span><br><span class="line">│                                                                      │</span><br><span class="line">│  新建文件夹 Agent/:                                                  │</span><br><span class="line">│    P2  • Function Calling / MCP / ReAct / Multi-Agent                │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="Part-5：补完优先级（按-ROI-排序）"><a href="#Part-5：补完优先级（按-ROI-排序）" class="headerlink" title="Part 5：补完优先级（按 ROI 排序）"></a>Part 5：补完优先级（按 ROI 排序）</h1><p>如果按”补完后立刻能上面试 / 工业实战”的回报排：</p>
+<h3 id="第一梯队（必补，2-3-周）"><a href="#第一梯队（必补，2-3-周）" class="headerlink" title="第一梯队（必补，2-3 周）"></a>第一梯队（必补，2-3 周）</h3><ol>
+<li><strong><code>AI_Model/Transformer.md</code> 补</strong>：SwiGLU、GQA/MQA → 1 天</li>
+<li><strong><code>AI_Model/Tokenizer.md</code> 新增</strong>：BPE/Chat Template/Template 漏洞 → 2 天</li>
+<li><strong><code>AI_Model/RoPEScaling.md</code> 新增</strong>：NTK/YaRN/LongRoPE → 2 天</li>
+<li><strong><code>AI_Infra/3.TensorParallel/</code></strong>（你已规划）：Megatron 切法、SP → 3 天</li>
+<li><strong><code>AI_Infra/5.Inference/</code></strong>（你已规划）：vLLM/PagedAttn/Continuous Batching/Speculative/GPTQ-AWQ → 1 周</li>
+<li><strong><code>LLM_Foundation/Ch9_Evaluation.md</code></strong>：评测体系全图 → 3 天</li>
+</ol>
+<h3 id="第二梯队（强烈推荐，3-4-周）"><a href="#第二梯队（强烈推荐，3-4-周）" class="headerlink" title="第二梯队（强烈推荐，3-4 周）"></a>第二梯队（强烈推荐，3-4 周）</h3><ol>
+<li><strong><code>AI_Model/MoE.md</code></strong>：MoE 架构 + DeepSeek-V3 / Mixtral 解析 → 3 天</li>
+<li><strong><code>AI_Model/MLA.md</code></strong>：DeepSeek-V2 MLA → 2 天</li>
+<li><strong><code>AI_Infra/Chapter0</code> 里 Ch4 Expert Parallel + Ch5 Context Parallel</strong>（你已规划）：MoE 训练 / Ring Attention → 1 周</li>
+<li><strong>新建 <code>Pretraining/</code></strong>：数据 / Scaling Laws / WSD / Lion-Muon / FP8 训练 → 1 周</li>
+<li><strong><code>LLM_Foundation/Ch10_RAG.md</code></strong>：完整 RAG 栈 → 1 周</li>
+</ol>
+<h3 id="第三梯队（应用层，2-3-周）"><a href="#第三梯队（应用层，2-3-周）" class="headerlink" title="第三梯队（应用层，2-3 周）"></a>第三梯队（应用层，2-3 周）</h3><ol>
+<li><strong><code>LLM_Foundation/Ch11_Safety.md</code></strong> → 3 天</li>
+<li><strong><code>LLM_Foundation/Ch12_Distillation.md</code></strong>（含 RFT / 合成数据）→ 3 天</li>
+<li><strong><code>AI_Model/VLM.md</code> + <code>LLM_Foundation</code> VLM 对齐</strong> → 1 周</li>
+<li><strong>新建 <code>Agent/</code></strong> → 1 周</li>
+</ol>
+<h3 id="暂可不写"><a href="#暂可不写" class="headerlink" title="暂可不写"></a>暂可不写</h3><ul>
+<li>Mamba / SSM / Hybrid（工业占比低）</li>
+<li>µP（小众，研究向）</li>
+<li>多机训练调度（Slurm/K8s 细节）</li>
+</ul>
+<hr>
+<h1 id="Part-6：现有-LLM-Foundation-内部整理建议"><a href="#Part-6：现有-LLM-Foundation-内部整理建议" class="headerlink" title="Part 6：现有 LLM_Foundation 内部整理建议"></a>Part 6：现有 LLM_Foundation 内部整理建议</h1><p>具体回到你最初问的——LLM_Foundation 文件夹内部要不要动？</p>
+<h3 id="删"><a href="#删" class="headerlink" title="删"></a>删</h3><ul>
+<li><code>tmp.md</code> —— Ch6 §A.3 已经写完整了，删</li>
+</ul>
+<h3 id="微调"><a href="#微调" class="headerlink" title="微调"></a>微调</h3><ul>
+<li><strong>Ch4 SimSiam EM 推导</strong>：保留 stop-grad + EMA 与 RLHF reference 的连接（§D 那段），EM 数学推导（§A.2）建议挪到附录或单独博客，因为它对 LLM 工程几乎没用</li>
+</ul>
+<h3 id="可以合并"><a href="#可以合并" class="headerlink" title="可以合并"></a>可以合并</h3><ul>
+<li>Ch2 + Ch3 + Ch4 三章对比学习内容，如果不想压缩，至少在 Ch0 全景导读里说清楚：”这三章是表示学习史，对 LLM 的真正贡献只是给 Ch6 RLHF 提供了’stop-grad + EMA’的思想来源 + Ch3 RAG retriever 训练知识”</li>
+</ul>
+<h3 id="加"><a href="#加" class="headerlink" title="加"></a>加</h3><ul>
+<li>Ch9 评测</li>
+<li>Ch10 RAG 完整栈</li>
+<li>Ch11 安全</li>
+<li>Ch12 蒸馏 / 合成数据 / RFT</li>
+<li>Ch13 Reasoning 训练栈深化（long CoT 训练细节、Self-Play、新 PG 变体）</li>
+</ul>
+<hr>
+<h1 id="Part-7：一句话总结"><a href="#Part-7：一句话总结" class="headerlink" title="Part 7：一句话总结"></a>Part 7：一句话总结</h1><p>你的现状是 <strong>“对齐算法（LLM_Foundation）+ 训练 Infra（AI_Infra）+ Transformer 本体（AI_Model）”</strong> 这三大支柱已经有了相当不错的底子。真正的高优先级缺口是：</p>
+<blockquote>
+<p><strong>Tokenizer + RoPE 外推 + 现代架构变体（MoE/MLA/GQA-SwiGLU）+ Tensor Parallel + Inference 服务栈 + 评测体系 + RAG 完整栈</strong></p>
+</blockquote>
+<p>这一波补完，你的整套笔记就能称得上”完整工业级 LLM Foundation”。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/LLM_Foundation/KnowledgeFramework/">https://SGDBS.github.io/LLM_Foundation/KnowledgeFramework/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                                <a href="/tags/LLM-Foundation/">
+                                    <span class="chip bg-color">LLM Foundation</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/LLM_Foundation/tmp/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="">
+                        
+                        <span class="card-title"></span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-06-04
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            YANG
+                            
+                        </span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/0.Introduction/Chapter0/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/5.jpg" class="responsive-img" alt="0.  AI Infra 知识框架">
+                        
+                        <span class="card-title">0.  AI Infra 知识框架</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-26
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

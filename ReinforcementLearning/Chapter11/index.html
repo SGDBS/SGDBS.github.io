@@ -1,0 +1,1714 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">学习笔记-强化学习</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="学习笔记-强化学习">学习笔记-强化学习</span>
+            <span class="sidebar-count">14</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter0/" title="RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1">
+                <span class="sidebar-label">RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter1/" title="RL Chapter1 MDP 与 Bellman 方程">
+                <span class="sidebar-label">RL Chapter1 MDP 与 Bellman 方程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter2/" title="RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代">
+                <span class="sidebar-label">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter3/" title="RL Chapter3 Monte Carlo 与 TD：从样本估计价值">
+                <span class="sidebar-label">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter4/" title="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                <span class="sidebar-label">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter5/" title="RL Chapter5 Policy Gradient：直接对策略求梯度">
+                <span class="sidebar-label">RL Chapter5 Policy Gradient：直接对策略求梯度</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter6/" title="RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化">
+                <span class="sidebar-label">RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter7/" title="RL Chapter7 DQN 家族：深度学习接入 Q-Learning">
+                <span class="sidebar-label">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter8/" title="RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化">
+                <span class="sidebar-label">RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter9/" title="RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑">
+                <span class="sidebar-label">RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter10/" title="RL Chapter10 探索：从 ε-greedy 到 Curiosity">
+                <span class="sidebar-label">RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/ReinforcementLearning/Chapter11/" title="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源">
+                <span class="sidebar-label">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter12/" title="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                <span class="sidebar-label">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter13/" title="RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角">
+                <span class="sidebar-label">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+        
+        <span>/</span>
+        <span>RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">强化学习</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                学习笔记-强化学习
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-10
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：和前面所有章节（online RL）正相反——<strong>完全不与环境交互，只用预先收集的固定数据集训练</strong>。这是医疗、自动驾驶、推荐系统的现实约束，也是 <strong>DPO 的数学根基</strong>。理解 offline RL，就理解了为什么 DPO 能存在。</p>
+<p><strong>承上</strong>：Ch4 Q-Learning + Ch9 DDPG/SAC（online 的对照组）。<br><strong>启下</strong>：Ch13 直接展开 DPO 与 GRPO。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-Offline-RL-问题设定"><a href="#1-Offline-RL-问题设定" class="headerlink" title="1. Offline RL 问题设定"></a>1. Offline RL 问题设定</h2><p>给定一个<strong>固定的数据集</strong> $\mathcal{D} = {(s<em>i, a_i, r_i, s’_i)}</em>{i=1}^N$（来自某个<strong>未知</strong>的 behavior policy $\pi<em>\beta$），目标：在不与环境交互的前提下，从 $\mathcal{D}$ 学一个尽量好的 $\pi</em>\theta$。</p>
+<blockquote>
+<p><strong>关键差异</strong>：</p>
+<ul>
+<li><strong>Online RL</strong>：策略可以采样新数据</li>
+<li><strong>Off-policy RL</strong>（DQN/SAC）：用 replay buffer 但仍 online 采样</li>
+<li><strong>Offline RL</strong>：<strong>永远不能采样新数据</strong></li>
+</ul>
+</blockquote>
+<h2 id="2-核心难题：分布外-OOD-动作高估"><a href="#2-核心难题：分布外-OOD-动作高估" class="headerlink" title="2. 核心难题：分布外 (OOD) 动作高估"></a>2. 核心难题：分布外 (OOD) 动作高估</h2><h3 id="2-1-问题诊断"><a href="#2-1-问题诊断" class="headerlink" title="2.1 问题诊断"></a>2.1 问题诊断</h3><p>朴素地用 Q-Learning（Ch4 §A.3）on offline data 会<strong>剧烈失败</strong>。原因：</p>
+<ul>
+<li>TD target 中 $\max_{a’} Q(s’, a’)$ 选了一个”分布外”的动作</li>
+<li>$Q(s’, a_{\text{OOD}})$ 是 Q 网络的”幻想估计”——没有数据支持</li>
+<li>这个 $Q_{\text{OOD}}$ 通常被显著<strong>高估</strong></li>
+<li>TD 把这个高估反馈到 $Q(s, a)$ → 越学越离谱</li>
+<li>没有 online 采样的”现实校正”，错误持续累积</li>
+</ul>
+<h3 id="2-2-BCQ-Batch-Constrained-Q-Learning-2019"><a href="#2-2-BCQ-Batch-Constrained-Q-Learning-2019" class="headerlink" title="2.2 BCQ (Batch-Constrained Q-Learning, 2019)"></a>2.2 BCQ (Batch-Constrained Q-Learning, 2019)</h3><p><strong>第一个 offline RL 算法</strong>。核心思想：<strong>只考虑数据集中出现过的动作</strong>。</p>
+<p>构造一个生成模型 $G<em>\omega(s)$ 拟合 $\pi</em>\beta$（VAE 或 GAN），TD target 改为：</p>
+<script type="math/tex; mode=display">y = r + \gamma \max_{a' \in G_\omega(s')} Q(s', a')</script><p>即只在”看似来自数据”的动作上取 max。强制 policy 不能太离谱。</p>
+<h2 id="3-CQL-Conservative-Q-Learning-2020"><a href="#3-CQL-Conservative-Q-Learning-2020" class="headerlink" title="3. CQL (Conservative Q-Learning, 2020)"></a>3. CQL (Conservative Q-Learning, 2020)</h2><h3 id="3-1-思想"><a href="#3-1-思想" class="headerlink" title="3.1 思想"></a>3.1 思想</h3><p>不是约束 policy，而是<strong>在 Q 函数训练时压低 OOD 动作的 Q 值</strong>。</p>
+<p>修改 Q 损失：</p>
+<script type="math/tex; mode=display">\mathcal{L}_Q = \underbrace{\mathbb{E}_{(s, a, r, s') \sim \mathcal{D}}\left[(Q(s, a) - y)^2\right]}_{\text{标准 TD}} + \alpha \underbrace{\left( \mathbb{E}_{s \sim \mathcal{D}, a \sim \mu}[Q(s, a)] - \mathbb{E}_{(s, a) \sim \mathcal{D}}[Q(s, a)] \right)}_{\text{保守正则}}</script><p><strong>直觉</strong>：</p>
+<ul>
+<li>第一项：标准 TD 损失（让 Q 准确）</li>
+<li>第二项：让”任意分布 $\mu$ 下”的 Q 比”数据中”的 Q 低</li>
+<li>实际中 $\mu$ 选 uniform 或 softmax(Q)，强制压低未见过动作的 Q</li>
+</ul>
+<h3 id="3-2-优势"><a href="#3-2-优势" class="headerlink" title="3.2 优势"></a>3.2 优势</h3><ul>
+<li>不需要训生成模型（比 BCQ 简单）</li>
+<li>理论保证：学到的 Q 是真 $Q^\pi$ 的下界</li>
+</ul>
+<h2 id="4-IQL-Implicit-Q-Learning-2021"><a href="#4-IQL-Implicit-Q-Learning-2021" class="headerlink" title="4. IQL (Implicit Q-Learning, 2021)"></a>4. IQL (Implicit Q-Learning, 2021)</h2><h3 id="4-1-一个革命性洞察"><a href="#4-1-一个革命性洞察" class="headerlink" title="4.1 一个革命性洞察"></a>4.1 一个革命性洞察</h3><p>CQL 和 BCQ 都还在用 $\max_a$ —— 只是想办法绕过它的危害。<strong>能否完全不用 max？</strong></p>
+<p>IQL 的答案：<strong>用 expectile 回归代替 max</strong>。</p>
+<h3 id="4-2-Expectile-回归"><a href="#4-2-Expectile-回归" class="headerlink" title="4.2 Expectile 回归"></a>4.2 Expectile 回归</h3><p>定义 expectile loss（$\tau \in (0, 1)$ 是分位）：</p>
+<script type="math/tex; mode=display">L^\tau(u) = \begin{cases} (1 - \tau) u^2 & u \leq 0 \\ \tau u^2 & u > 0 \end{cases}</script><ul>
+<li>$\tau = 0.5$：标准 MSE，回归均值</li>
+<li>$\tau \to 1$：回归”上分位数”，越接近 max</li>
+</ul>
+<h3 id="4-3-IQL-的三步"><a href="#4-3-IQL-的三步" class="headerlink" title="4.3 IQL 的三步"></a>4.3 IQL 的三步</h3><p><strong>Step 1</strong>：训练 V 网络拟合 Q 的高分位（替代 max）</p>
+<script type="math/tex; mode=display">\mathcal{L}_V = \mathbb{E}_{(s, a) \sim \mathcal{D}}\left[L^\tau\left(Q_{\hat\phi}(s, a) - V_\psi(s)\right)\right]</script><p>$\tau$ 通常取 0.7-0.9。</p>
+<p><strong>Step 2</strong>：训练 Q 网络（用 V 当 target）</p>
+<script type="math/tex; mode=display">\mathcal{L}_Q = \mathbb{E}\left[(Q_\phi(s, a) - (r + \gamma V_\psi(s')))^2\right]</script><p><strong>注意：完全没有 $\max$！</strong></p>
+<p><strong>Step 3</strong>：从 Q, V 提取 policy（advantage-weighted 行为克隆）</p>
+<script type="math/tex; mode=display">\mathcal{L}_\pi = -\mathbb{E}\left[\exp\left(\beta \cdot (Q(s, a) - V(s))\right) \log \pi_\theta(a \mid s)\right]</script><p>直觉：模仿数据中 $A = Q - V &gt; 0$ 的动作（advantage 高的）。</p>
+<h3 id="4-4-IQL-为什么这么强？"><a href="#4-4-IQL-为什么这么强？" class="headerlink" title="4.4 IQL 为什么这么强？"></a>4.4 IQL 为什么这么强？</h3><ul>
+<li>完全 in-sample（不查询任何 OOD action）</li>
+<li>训练稳定（无 max 的反馈循环）</li>
+<li>D4RL 上 SOTA</li>
+</ul>
+<blockquote>
+<p><strong>IQL 的精神</strong> 与 DPO 极其相似：<strong>直接从数据中学，不用 max 操作</strong>。下一节展开。</p>
+</blockquote>
+<h2 id="5-Offline-RL-与-DPO-的深层联系"><a href="#5-Offline-RL-与-DPO-的深层联系" class="headerlink" title="5. Offline RL 与 DPO 的深层联系"></a>5. Offline RL 与 DPO 的深层联系</h2><h3 id="5-1-KL-约束-RL-的闭式解（再次出现）"><a href="#5-1-KL-约束-RL-的闭式解（再次出现）" class="headerlink" title="5.1 KL-约束 RL 的闭式解（再次出现）"></a>5.1 KL-约束 RL 的闭式解（再次出现）</h3><p>回忆《学习笔记-大模型》Ch7 §A.2：KL-约束 RL 目标</p>
+<script type="math/tex; mode=display">\max_\pi \mathbb{E}[r] - \beta D_{KL}(\pi \| \pi_{\text{ref}})</script><p>有闭式解</p>
+<script type="math/tex; mode=display">\pi^*(a \mid s) \propto \pi_{\text{ref}}(a \mid s) \exp(r(s, a) / \beta)</script><h3 id="5-2-Advantage-Weighted-Regression-AWR"><a href="#5-2-Advantage-Weighted-Regression-AWR" class="headerlink" title="5.2 Advantage-Weighted Regression (AWR)"></a>5.2 Advantage-Weighted Regression (AWR)</h3><p>把闭式解写成”加权 BC”形式（用数据集中的 $a$）：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{AWR}} = -\mathbb{E}_{(s, a) \sim \mathcal{D}}\left[\exp(A(s, a) / \beta) \cdot \log \pi_\theta(a \mid s)\right]</script><p>这就是 IQL Step 3 的精神，也是 <strong>offline RL 的”标准最终步”</strong>。</p>
+<h3 id="5-3-DPO-的位置"><a href="#5-3-DPO-的位置" class="headerlink" title="5.3 DPO 的位置"></a>5.3 DPO 的位置</h3><p>DPO（《学习笔记-大模型》Ch7）的推导：</p>
+<ol>
+<li>写出 KL-约束 RL 闭式解 → ✓ AWR 也用了这一步</li>
+<li><strong>反解 reward 用 log-ratio 表达</strong></li>
+<li>代入 Bradley-Terry → DPO loss</li>
+</ol>
+<p><strong>关键差异</strong>：</p>
+<ul>
+<li>AWR：需要从数据估计 $A(s, a)$，再做加权 BC</li>
+<li>DPO：用偏好对 $(y_w, y_l)$ <strong>完全跳过 reward 估计</strong></li>
+</ul>
+<blockquote>
+<p><strong>本质</strong>：DPO = “KL-约束 RL 闭式解” + “从偏好对反解 reward” + “BT 模型”。它是 <strong>offline RL 在 LLM 偏好学习场景的特化</strong>。</p>
+</blockquote>
+<h3 id="5-4-为什么-DPO-在-LLM-上-work-而-offline-RL-在游戏上需要-CQL-IQL-这么麻烦？"><a href="#5-4-为什么-DPO-在-LLM-上-work-而-offline-RL-在游戏上需要-CQL-IQL-这么麻烦？" class="headerlink" title="5.4 为什么 DPO 在 LLM 上 work 而 offline RL 在游戏上需要 CQL/IQL 这么麻烦？"></a>5.4 为什么 DPO 在 LLM 上 work 而 offline RL 在游戏上需要 CQL/IQL 这么麻烦？</h3><ul>
+<li>LLM 的”动作空间”是 token，但<strong>reference policy</strong> $\pi_{\text{ref}}$ 是预训练好的、覆盖大部分合理动作 → 没有”OOD”问题</li>
+<li>经典 offline RL 的 behavior policy 通常很弱 → OOD 问题严重</li>
+<li>DPO 的”用 SFT 当 reference + KL 约束”自然规避了 OOD</li>
+</ul>
+<hr>
+<h1 id="§B-模型架构"><a href="#§B-模型架构" class="headerlink" title="§B 模型架构"></a>§B 模型架构</h1><h2 id="B-1-IQL-完整-PyTorch-实现"><a href="#B-1-IQL-完整-PyTorch-实现" class="headerlink" title="B.1 IQL 完整 PyTorch 实现"></a>B.1 IQL 完整 PyTorch 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> copy</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">QNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obs_dim, act_dim, hidden=<span class="number">256</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.net = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim + act_dim, hidden), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden, hidden), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden, <span class="number">1</span>),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, obs, act</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.net(torch.cat([obs, act], dim=-<span class="number">1</span>)).squeeze(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">VNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obs_dim, hidden=<span class="number">256</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.net = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, hidden), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden, hidden), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden, <span class="number">1</span>),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, obs</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.net(obs).squeeze(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Actor</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Gaussian Actor&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obs_dim, act_dim, hidden=<span class="number">256</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.shared = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, hidden), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden, hidden), nn.ReLU(),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.mu = nn.Linear(hidden, act_dim)</span><br><span class="line">        <span class="variable language_">self</span>.log_std = nn.Parameter(torch.zeros(act_dim))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, obs</span>):</span><br><span class="line">        h = <span class="variable language_">self</span>.shared(obs)</span><br><span class="line">        mu = <span class="variable language_">self</span>.mu(h)</span><br><span class="line">        std = <span class="variable language_">self</span>.log_std.exp().expand_as(mu)</span><br><span class="line">        <span class="keyword">return</span> torch.distributions.Normal(mu, std)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">expectile_loss</span>(<span class="params">diff, tau=<span class="number">0.7</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;⭐ Expectile 回归损失&quot;&quot;&quot;</span></span><br><span class="line">    weight = torch.where(diff &gt; <span class="number">0</span>, tau, <span class="number">1</span> - tau)</span><br><span class="line">    <span class="keyword">return</span> weight * diff.<span class="built_in">pow</span>(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train_iql</span>(<span class="params">dataset, n_steps=<span class="built_in">int</span>(<span class="params"><span class="number">1e6</span></span>), batch_size=<span class="number">256</span>,</span></span><br><span class="line"><span class="params">              gamma=<span class="number">0.99</span>, tau=<span class="number">0.7</span>, beta=<span class="number">3.0</span>, lr=<span class="number">3e-4</span>, polyak=<span class="number">0.005</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    dataset: D4RL 风格 dict &#123;observations, actions, rewards, next_observations, terminals&#125;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    obs_dim = dataset[<span class="string">&#x27;observations&#x27;</span>].shape[<span class="number">1</span>]</span><br><span class="line">    act_dim = dataset[<span class="string">&#x27;actions&#x27;</span>].shape[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">    actor = Actor(obs_dim, act_dim)</span><br><span class="line">    q1 = QNet(obs_dim, act_dim)</span><br><span class="line">    q2 = QNet(obs_dim, act_dim)</span><br><span class="line">    v = VNet(obs_dim)</span><br><span class="line">    q1_target = copy.deepcopy(q1)</span><br><span class="line">    q2_target = copy.deepcopy(q2)</span><br><span class="line"></span><br><span class="line">    actor_optim = torch.optim.Adam(actor.parameters(), lr=lr)</span><br><span class="line">    q1_optim = torch.optim.Adam(q1.parameters(), lr=lr)</span><br><span class="line">    q2_optim = torch.optim.Adam(q2.parameters(), lr=lr)</span><br><span class="line">    v_optim = torch.optim.Adam(v.parameters(), lr=lr)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(n_steps):</span><br><span class="line">        <span class="comment"># ============ 采样 batch ============</span></span><br><span class="line">        idx = np.random.choice(<span class="built_in">len</span>(dataset[<span class="string">&#x27;observations&#x27;</span>]), batch_size)</span><br><span class="line">        s = torch.tensor(dataset[<span class="string">&#x27;observations&#x27;</span>][idx], dtype=torch.float32)</span><br><span class="line">        a = torch.tensor(dataset[<span class="string">&#x27;actions&#x27;</span>][idx], dtype=torch.float32)</span><br><span class="line">        r = torch.tensor(dataset[<span class="string">&#x27;rewards&#x27;</span>][idx], dtype=torch.float32)</span><br><span class="line">        s_new = torch.tensor(dataset[<span class="string">&#x27;next_observations&#x27;</span>][idx], dtype=torch.float32)</span><br><span class="line">        done = torch.tensor(dataset[<span class="string">&#x27;terminals&#x27;</span>][idx], dtype=torch.float32)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ Step 1: V 网络（expectile 回归到 Q）============</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            q_target_val = torch.<span class="built_in">min</span>(q1_target(s, a), q2_target(s, a))</span><br><span class="line">        v_pred = v(s)</span><br><span class="line">        diff = q_target_val - v_pred</span><br><span class="line">        v_loss = expectile_loss(diff, tau).mean()</span><br><span class="line">        v_optim.zero_grad(); v_loss.backward(); v_optim.step()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ Step 2: Q 网络（TD with V，无 max！）============</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            q_target_y = r + gamma * (<span class="number">1</span> - done) * v(s_new)        <span class="comment"># ⭐ 没有 max</span></span><br><span class="line">        q1_loss = F.mse_loss(q1(s, a), q_target_y)</span><br><span class="line">        q2_loss = F.mse_loss(q2(s, a), q_target_y)</span><br><span class="line">        q1_optim.zero_grad(); q1_loss.backward(); q1_optim.step()</span><br><span class="line">        q2_optim.zero_grad(); q2_loss.backward(); q2_optim.step()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ Step 3: Actor（advantage-weighted BC）============</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            q_val = torch.<span class="built_in">min</span>(q1(s, a), q2(s, a))</span><br><span class="line">            advantage = q_val - v(s)</span><br><span class="line">            weight = torch.exp(beta * advantage).clamp(<span class="built_in">max</span>=<span class="number">100.0</span>)  <span class="comment"># ⭐ 防爆</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># log π(a|s)</span></span><br><span class="line">        dist = actor(s)</span><br><span class="line">        log_prob = dist.log_prob(a).<span class="built_in">sum</span>(dim=-<span class="number">1</span>)</span><br><span class="line">        actor_loss = -(weight * log_prob).mean()                   <span class="comment"># ⭐ 加权 BC</span></span><br><span class="line"></span><br><span class="line">        actor_optim.zero_grad(); actor_loss.backward(); actor_optim.step()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ============ 软更新 Target ============</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            <span class="keyword">for</span> p, p_tgt <span class="keyword">in</span> <span class="built_in">zip</span>(q1.parameters(), q1_target.parameters()):</span><br><span class="line">                p_tgt.data.mul_(<span class="number">1</span> - polyak).add_(p.data, alpha=polyak)</span><br><span class="line">            <span class="keyword">for</span> p, p_tgt <span class="keyword">in</span> <span class="built_in">zip</span>(q2.parameters(), q2_target.parameters()):</span><br><span class="line">                p_tgt.data.mul_(<span class="number">1</span> - polyak).add_(p.data, alpha=polyak)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> actor, q1, v</span><br></pre></td></tr></table></figure>
+<p><strong>理解 IQL 的关键三步</strong>：</p>
+<ol>
+<li><strong>V 用 expectile 回归到 Q</strong>（替代 $\max$）</li>
+<li><strong>Q 用 V 做 TD target</strong>（完全 in-sample）</li>
+<li><strong>Actor 做 advantage-weighted BC</strong>（KL-约束 RL 的闭式解）</li>
+</ol>
+<h2 id="B-2-与-DPO-的对照（呼应-LLM-笔记-Ch7）"><a href="#B-2-与-DPO-的对照（呼应-LLM-笔记-Ch7）" class="headerlink" title="B.2 与 DPO 的对照（呼应 LLM 笔记 Ch7）"></a>B.2 与 DPO 的对照（呼应 LLM 笔记 Ch7）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># IQL Actor loss</span></span><br><span class="line">actor_loss = -(exp(beta * advantage) * log_prob).mean()</span><br><span class="line"></span><br><span class="line"><span class="comment"># DPO Loss（LLM 笔记 Ch7）</span></span><br><span class="line">dpo_loss = -log_sigmoid(beta * (</span><br><span class="line">    log_pi_chosen - log_pi_ref_chosen</span><br><span class="line">    - log_pi_rejected + log_pi_ref_rejected</span><br><span class="line">)).mean()</span><br></pre></td></tr></table></figure>
+<p><strong>结构相似性</strong>：都是”基于偏好/优势的加权 NLL”。DPO 把”advantage”用偏好对的相对 log-ratio 表达，进一步省掉了 V 网络。</p>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-实验：D4RL-Benchmark"><a href="#C-1-实验：D4RL-Benchmark" class="headerlink" title="C.1 实验：D4RL Benchmark"></a>C.1 实验：D4RL Benchmark</h2><p>D4RL（Datasets for Deep Data-Driven Reinforcement Learning）是 offline RL 的标准 benchmark：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">数据集</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>halfcheetah-medium-v2</code></td>
+<td style="text-align:left">用半训练好的 SAC 收集的数据</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>halfcheetah-medium-replay-v2</code></td>
+<td style="text-align:left">medium 训练过程的所有 replay buffer</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>halfcheetah-medium-expert-v2</code></td>
+<td style="text-align:left">medium + expert 的混合</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>halfcheetah-expert-v2</code></td>
+<td style="text-align:left">完美 SAC 的 rollout</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>典型结果</strong>（normalized score，越大越好）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Algorithm</th>
+<th style="text-align:center">medium</th>
+<th style="text-align:center">medium-replay</th>
+<th style="text-align:center">medium-expert</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">BC</td>
+<td style="text-align:center">42</td>
+<td style="text-align:center">36</td>
+<td style="text-align:center">56</td>
+</tr>
+<tr>
+<td style="text-align:left">BCQ</td>
+<td style="text-align:center">47</td>
+<td style="text-align:center">41</td>
+<td style="text-align:center">81</td>
+</tr>
+<tr>
+<td style="text-align:left">CQL</td>
+<td style="text-align:center">49</td>
+<td style="text-align:center">47</td>
+<td style="text-align:center">91</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>IQL</strong></td>
+<td style="text-align:center"><strong>51</strong></td>
+<td style="text-align:center"><strong>48</strong></td>
+<td style="text-align:center"><strong>94</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">Online SAC（参考）</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">100</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>IQL 在大多数 task 上是 SOTA，且<strong>比 CQL 训练更稳</strong>。</p>
+</blockquote>
+<h2 id="C-2-推理视角"><a href="#C-2-推理视角" class="headerlink" title="C.2 推理视角"></a>C.2 推理视角</h2><p>Offline RL 训完后推理与 online 完全一样：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">inference</span>(<span class="params">actor, obs</span>):</span><br><span class="line">    obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        dist = actor(obs_t)</span><br><span class="line">        a = dist.mean                                     <span class="comment"># 取均值（确定性）</span></span><br><span class="line">    <span class="keyword">return</span> a.squeeze(<span class="number">0</span>).numpy()</span><br></pre></td></tr></table></figure></p>
+<p>但<strong>部署前必须充分评估</strong>——因为没有 online 反馈，offline 模型的失败模式可能很微妙。</p>
+<h2 id="C-3-何时用-Offline-RL？"><a href="#C-3-何时用-Offline-RL？" class="headerlink" title="C.3 何时用 Offline RL？"></a>C.3 何时用 Offline RL？</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">场景</th>
+<th style="text-align:center">适合</th>
+<th style="text-align:center">不适合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">真机训练成本极高（机器人、自动驾驶）</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:left">有大量历史数据（推荐、广告）</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:left">需要安全性保证（医疗）</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:left">Reward 稠密、环境便宜（Atari）</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">✓（直接 online）</td>
+</tr>
+<tr>
+<td style="text-align:left">数据非常少（&lt; 1万 transition）</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">✓（offline 学不出来）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="C-4-LLM-视角"><a href="#C-4-LLM-视角" class="headerlink" title="C.4 LLM 视角"></a>C.4 LLM 视角</h2><p>LLM 的对齐过程<strong>几乎全是 offline RL</strong>：</p>
+<ul>
+<li>SFT = Behavior Cloning</li>
+<li>DPO = AWR 风格的 offline RL</li>
+<li>即使 RLHF（PPO）的 reward 来自固定 RM，也带有强烈 offline 色彩</li>
+</ul>
+<p>理解了本章，再回头看《学习笔记-大模型》Ch7 的 DPO 推导，会有”原来 DPO 不是凭空冒出来的”的体悟。</p>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-主要算法对比"><a href="#D-1-主要算法对比" class="headerlink" title="D.1 主要算法对比"></a>D.1 主要算法对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法</th>
+<th style="text-align:left">核心</th>
+<th style="text-align:left">特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>BC</strong></td>
+<td style="text-align:left">直接模仿</td>
+<td style="text-align:left">最简单，分布偏移问题严重</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>BCQ</strong></td>
+<td style="text-align:left">限制 action 在数据分布内</td>
+<td style="text-align:left">需要训生成模型</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CQL</strong></td>
+<td style="text-align:left">在 Q 上加保守正则</td>
+<td style="text-align:left">简单，理论保证</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>IQL</strong></td>
+<td style="text-align:left">Expectile 回归 + AWR</td>
+<td style="text-align:left"><strong>完全 in-sample，最稳定</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DPO</strong></td>
+<td style="text-align:left">KL-约束 RL 闭式解 + BT</td>
+<td style="text-align:left">LLM 专用</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-2-关键公式"><a href="#D-2-关键公式" class="headerlink" title="D.2 关键公式"></a>D.2 关键公式</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">#</th>
+<th style="text-align:left">公式</th>
+<th style="text-align:left">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">$L^\tau(u) = \tau u^2 \cdot \mathbb{1}[u &gt; 0] + (1-\tau) u^2 \cdot \mathbb{1}[u \leq 0]$</td>
+<td style="text-align:left">Expectile loss</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">$\pi^*(a \mid s) \propto \pi_\beta(a \mid s) \exp(r/\beta)$</td>
+<td style="text-align:left">KL-RL 闭式解</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">$\mathcal{L}_{\text{AWR}} = -\mathbb{E}[\exp(A/\beta) \log \pi(a \mid s)]$</td>
+<td style="text-align:left">Advantage-weighted BC</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">$r(x, y) = \beta \log(\pi(y \mid x)/\pi_{\text{ref}}(y \mid x)) + \beta \log Z$</td>
+<td style="text-align:left">DPO 反解 reward</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-3-常见面试题"><a href="#D-3-常见面试题" class="headerlink" title="D.3 常见面试题"></a>D.3 常见面试题</h2><p><strong>Q1：Offline RL 的核心难题是什么？</strong></p>
+<ul>
+<li>OOD action 高估</li>
+<li>朴素 Q-Learning 会被 max 操作放大对未见过 action 的”幻想估计”</li>
+<li>解决思路有三：限制 policy（BCQ）、压低 OOD 的 Q（CQL）、不用 max（IQL）</li>
+</ul>
+<p><strong>Q2：IQL 的 expectile 回归在干什么？</strong></p>
+<ul>
+<li>用一个连续可导的”近似 max”</li>
+<li>$\tau \to 1$ 越接近 max，但损失曲面更平滑</li>
+<li>关键：<strong>只在 in-sample 数据上回归</strong>，不查询 OOD action</li>
+</ul>
+<p><strong>Q3：DPO 是 offline RL 吗？</strong></p>
+<ul>
+<li>是</li>
+<li>数学上等价于”用偏好对实现的 AWR”</li>
+<li>不需要 V 网络（用偏好对 $(y_w, y_l)$ 的相对 log-ratio 替代 advantage）</li>
+</ul>
+<p><strong>Q4：为什么 LLM 上 DPO 比 PPO 更工业化主流？</strong></p>
+<ul>
+<li>LLM 的 reference policy（SFT 模型）很强 → OOD 问题轻</li>
+<li>偏好对数据易收集（不需要 reward signal）</li>
+<li>不需要 4 个模型同时训（PPO 显存压力大）</li>
+<li>数据效率高（不需要 online 采样）</li>
+</ul>
+<p><strong>Q5：BC vs IQL vs DPO 的关系？</strong></p>
+<ul>
+<li>BC：纯模仿，所有数据等权</li>
+<li>IQL：advantage-weighted BC（数据中”好”的 action 权重高）</li>
+<li>DPO：用偏好对实现的 IQL（连 advantage 都不用算）</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>下一章 <strong>Ch12</strong> 走另一条 offline 路线：<strong>模仿学习</strong>。BC 是”无脑模仿”，DAgger 修复 BC 的”分布偏移”，GAIL 用对抗思想学 reward，IRL 反推 reward 函数。</p>
+<p>模仿学习的精神 = SFT 的精神。理解模仿学习，就理解了为什么 SFT 是 RLHF 的第一步、它的局限在哪、以及 GAIL 风格的”对抗式偏好学习”如何帮助理解 DPO。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/ReinforcementLearning/Chapter11/">https://SGDBS.github.io/ReinforcementLearning/Chapter11/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">强化学习</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter10/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/3.jpg" class="responsive-img" alt="RL Chapter10 探索：从 ε-greedy 到 Curiosity">
+                        
+                        <span class="card-title">RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter12/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                        
+                        <span class="card-title">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

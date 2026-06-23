@@ -1,0 +1,1478 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Factorization Meets the Neighborhood 阅读笔记, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Factorization Meets the Neighborhood 阅读笔记 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">学习笔记-推荐算法</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="论文阅读">论文阅读</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/Recommendation/Paper_Reading/2022-07-13-125756489/" title="Factorization Meets the Neighborhood 阅读笔记">
+                <span class="sidebar-label">Factorization Meets the Neighborhood 阅读笔记</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Recommendation/Paper_Reading/2022-07-14-125785527/" title="推荐算法: SVD协同过滤 代码实现">
+                <span class="sidebar-label">推荐算法: SVD协同过滤 代码实现</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Recommendation/Paper_Reading/2022-07-17-125837937/" title="推荐算法: SVD++ 协同过滤 代码实现">
+                <span class="sidebar-label">推荐算法: SVD++ 协同过滤 代码实现</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Recommendation/Paper_Reading/2022-07-17-125838049/" title="Factorization Machines 因式分解机 论文学习笔记">
+                <span class="sidebar-label">Factorization Machines 因式分解机 论文学习笔记</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Recommendation/Paper_Reading/2022-07-17-125838226/" title="SVD奇异式分解应用于图片压缩">
+                <span class="sidebar-label">SVD奇异式分解应用于图片压缩</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Recommendation/Paper_Reading/2023-01-25-bpr/" title="Bayesian Personalized Ranking from Implicit Feedback 阅读笔记">
+                <span class="sidebar-label">Bayesian Personalized Ranking from Implicit Feedback 阅读笔记</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Recommendation/Paper_Reading/2023-01-26-ncf/" title="neural collaborative filtering 阅读笔记">
+                <span class="sidebar-label">neural collaborative filtering 阅读笔记</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="学习笔记">学习笔记</span>
+            <span class="sidebar-count">4</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-1-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-1-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="Chapter1">Chapter1</span>
+                    <span class="sidebar-count">1</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/Recommendation/Study_Notes/Chapter1/Chapter1.1/" title="推荐算法Chapter1.1 数据预处理与特征工程">
+                        <span class="sidebar-label">推荐算法Chapter1.1 数据预处理与特征工程</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            <div class="sidebar-subgroup collapsed" id="sg-1-1">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-1-1')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="Chapter2">Chapter2</span>
+                    <span class="sidebar-count">3</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/Recommendation/Study_Notes/Chapter2/Chapter2.1/" title="推荐算法Chapter2.1 协同过滤基础与邻域方法">
+                        <span class="sidebar-label">推荐算法Chapter2.1 协同过滤基础与邻域方法</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/Recommendation/Study_Notes/Chapter2/Chapter2.2/" title="推荐算法Chapter2.2 矩阵分解模型">
+                        <span class="sidebar-label">推荐算法Chapter2.2 矩阵分解模型</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/Recommendation/Study_Notes/Chapter2/Chapter2.3/" title="推荐算法Chapter3.1 多阶段级联架构(漏斗模型)">
+                        <span class="sidebar-label">推荐算法Chapter3.1 多阶段级联架构(漏斗模型)</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a>
+        
+        <span>/</span>
+        <span>Factorization Meets the Neighborhood 阅读笔记</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Factorization Meets the Neighborhood 阅读笔记</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">
+                                <span class="chip bg-color">推荐系统</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/" class="post-category">
+                                推荐系统
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2022-07-13
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h3 id="0-奇异值分解-Singular-Value-Decomposition"><a href="#0-奇异值分解-Singular-Value-Decomposition" class="headerlink" title="0. 奇异值分解 Singular Value Decomposition"></a>0. 奇异值分解 Singular Value Decomposition</h3><p>SVD是将一个 $m \times n$ 的矩阵分解成三个矩阵的乘积，即 $A = U\Sigma V^T$。</p>
+<p>其中 $U, V$ 分别为 $m \times m$，$n \times n$ 的矩阵，$\Sigma$ 是一个 $m \times n$ 的对角矩阵。</p>
+<p>其中 $U$ 是<strong>左奇异矩阵</strong>，为 $AA^T$ 的所有特征向量组成的矩阵，$V$ 是<strong>右奇异矩阵</strong>，为 $A^TA$ 的所有特征向量组成的矩阵（<strong>按照特征值从大到小排序</strong>）。</p>
+<p>那么<strong>奇异值矩阵</strong> $\Sigma = U^{-1}AV$。</p>
+<p>对于奇异值，它跟我们特征分解中的特征值类似，在奇异值矩阵中也是按照从大到小排列，而且<strong>奇异值的减少特别的快，在很多情况下，前10%甚至1%的奇异值的和就占了全部的奇异值之和的99%以上的比例</strong>。也就是说，我们也可以用最大的k个的奇异值和对应的左右奇异向量来近似描述矩阵：</p>
+<script type="math/tex; mode=display">A_{m\times n} = U_{m\times m}\Sigma_{m\times n}V^T_{n\times n} \approx U_{m\times k}\Sigma_{k\times k}V^T_{k\times n}</script><p>这个性质使得它在推荐算法领域中有很多应用，因为它能够用少量数据来描绘用户、项目的特征。</p>
+<hr>
+<h3 id="1-ABSTRACT"><a href="#1-ABSTRACT" class="headerlink" title="1. ABSTRACT"></a>1. ABSTRACT</h3><p>推荐算法基于协同过滤（Collaborating Filtering），分析用户的交易记录，来建立产品和用户兴趣之间的联系。两种比较成功的模型分别是：</p>
+<ul>
+<li><strong>潜在因素模型</strong>（latent factor models）：直接描述用户和产品之间的关系</li>
+<li><strong>邻域模型</strong>（neighborhood models）：描述产品之间的相似性或者用户之间的相似性。</li>
+</ul>
+<p>此篇论文讲两种方法结合起来，形成了更为精确更高的联合模型，且可以通过利用用户的显性或隐性反馈来进一步提高精确度。<br>并且作者提出了一种新的评价指标，可以在top-K推荐任务中突出不同方法的差异性。</p>
+<p>另外作者提到，在Neflix的数据测试中，它的模型效果比之前这个数据集测试的结果要好。</p>
+<hr>
+<h3 id="2-INTRODUCTION"><a href="#2-INTRODUCTION" class="headerlink" title="2. INTRODUCTION"></a>2. INTRODUCTION</h3><p>推荐系统大多是基于协同过滤(CF)，它只利用用户过去的交易或者产品评级。因此它不需要更高维度的数据集，并且直接使用用户行为数据可以发现那些很难用已知数据直接发现的行为模式。</p>
+<p>CF系统主要分析两种完全不同的对象：<strong>产品</strong>和<strong>用户</strong>。而两种经典模型就是<strong>潜在因素模型</strong>和<strong>邻域模型</strong>。</p>
+<p>之前有论文提到将两种方法结合起来，但只是两种模型独立计算，然后把两种模型的结果进行加权。但作者的方法是，在建立模型的时候，就将两种模型给结合起来。</p>
+<h5 id="邻域模型-neighborhood-models"><a href="#邻域模型-neighborhood-models" class="headerlink" title="邻域模型 neighborhood models"></a>邻域模型 neighborhood models</h5><p>邻域模型重点聚焦于描述<strong>产品之间</strong>的关系（或者用户之间），它基于<strong>同一用户对相似项目的评分</strong>来评估用户对项目的偏好。这样就可以不用分析产品和用户之间的关系，而是直接分析产品之间的关系。它在<strong>检验小范围关系</strong>的时候非常有效，因为它依赖于一些明显的邻域关系，但它会忽略大部分用户中不那么明显的邻域关系。</p>
+<h5 id="潜在因素模型-latent-factor-models"><a href="#潜在因素模型-latent-factor-models" class="headerlink" title="潜在因素模型 latent factor models"></a>潜在因素模型 latent factor models</h5><p>潜在因素模型将<strong>产品和用户变换到同一潜在因素空间</strong>，然后直接进行比较。它根据用户的反馈，通过自动推断的因素来分析用户和产品之间的联系。它可以有效地估计与大多数项目同时相关的因素。但它在检测密切相关的项目方面表现较差。</p>
+<h4 id="以下的研究方法是为了根据已知用户-u-对项目-i-的打分-r-ui-，来预测未知的-r-ui"><a href="#以下的研究方法是为了根据已知用户-u-对项目-i-的打分-r-ui-，来预测未知的-r-ui" class="headerlink" title="以下的研究方法是为了根据已知用户 $u$ 对项目 $i$ 的打分 $r{ui}$，来预测未知的 $r{ui}$"></a>以下的研究方法是为了根据已知用户 $u$ 对项目 $i$ 的打分 $r<em>{ui}$，来预测未知的 $r</em>{ui}$</h4><hr>
+<h3 id="2-1-基线估计-Baseline-estimates"><a href="#2-1-基线估计-Baseline-estimates" class="headerlink" title="2.1 基线估计 Baseline estimates"></a>2.1 基线估计 Baseline estimates</h3><p>在实际中，有的人给出的分数平均会高于/低于其他人给的分数，而有的项目的收到的打分平均也会高于/低于其它项目，所以要考虑到这些影响。</p>
+<p>设所有项目的均分是 $\mu$，$b<em>i$ 表示项目 $i$ 与项目平均分的差值，$b_u$ 表示第 $u$ 个人的平均打分与项目均分的差距。那么第 $u$ 个人对 $i$ 的基线估计就是 $b</em>{ui} = \mu + b_u + b_i$。</p>
+<p>文中给了一个例子：</p>
+<blockquote>
+<p>假设我们想要用户 Joe 对电影泰坦尼克号的评分的基线估计。 设所有电影的平均评分 µ 是 3.7 颗星。 此外，泰坦尼克号比一般电影要好，因此它的评分往往比平均水平高 0.5 星。 另一方面，Joe 是一个挑剔的用户，他的评分往往比平均水平低 0.3 星。 因此，通过计算 3.7 − 0.3+0.5，Joe 对泰坦尼克号评级的基线估计将是 3.9 星。</p>
+</blockquote>
+<p>那么 $b_u, b_i$ 是可以通过最优化问题解决的，即:</p>
+<script type="math/tex; mode=display">\min_{b_*} \sum_{(u,i)\in K}(r_{ui} - \mu - b_u - b_i)^2 + \lambda_1\left(\sum_u b_u^2 + \sum b_i^2\right)</script><p>计算得出使上式值最小的 $b<em>u, b_i$。其中 $r</em>{ui}$ 是用户 $u$ 对项目 $i$ 的打分，而 $\lambda_1(\sum_u b_u^2 + \sum b_i^2)$ 是为了防止过拟合的。<del>(原理暂不清楚)</del></p>
+<hr>
+<h3 id="2-2-邻域模型-Neighborhood-models"><a href="#2-2-邻域模型-Neighborhood-models" class="headerlink" title="2.2 邻域模型 Neighborhood models"></a>2.2 邻域模型 Neighborhood models</h3><p>文中使用的邻域模型是<strong>项目导向型</strong>（item-oriented approaches），与之相对的是<strong>用户导向型</strong>（user-oriented methods）。项目导向型拥有更高的精准度和拓展性。作者的解释是”用户了解他们以前喜欢的项目，但不了解那些和TA兴趣相同的用户”。</p>
+<p>而作者介绍的此方法就是为了预测用户对相似物品打分，即<strong>相似性测量</strong>(similarity measure)。</p>
+<p>文中没有细讲皮尔逊相关系数(Pearson correlation coefficient)，维基百科上是这么描述的:<br><img src="https://i-blog.csdnimg.cn/blog_migrate/bb3534b209ea8ff05047e14244d58574.png" alt=""></p>
+<p>我们用 $s_{ij}$ 表示用户对项目 $i，j$ 打分的相似程度：</p>
+<script type="math/tex; mode=display">s_{i,j} = \frac{n_{i,j}}{n_{ij} + \lambda_2}\rho_{ij}</script><p>其中 $n_{ij}$ 表示<strong>都对项目 $i,j$ 进行打分</strong>的用户数量，$\lambda_2$ 是一个参数，通常为100。</p>
+<p>那么我们对 $r_{ui}$ 的预测值就是:</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = b_{ui} + \frac{\sum_{j \in S^k(i;u)}s_{ij}(r_{uj}-b_{uj})}{\sum_{j \in S^k(i;u)}s_{ij}}</script><p>但是上述方法有缺陷，比如，并非所有需要利用的数据都是已知的。并且这种方法计算的是两种物品之间相关性，而非物品和所有邻域关系中的相关性。<del>（这一段看的不是太明白）</del></p>
+<p>所以就引入了一个新的概念<strong>插值权重</strong>（interpolation weights）：${\theta_{ij}^u | j \in S^k(i;u)}$。</p>
+<p>经过修正后的结果预测算式就是：</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = b_{ui} + \sum_{j \in S^k(i;u)}\theta_{ij}^u s_{ij}(r_{uj}-b_{uj})</script><hr>
+<h3 id="2-3-潜在因素模型-Latent-factor-models"><a href="#2-3-潜在因素模型-Latent-factor-models" class="headerlink" title="2.3 潜在因素模型 Latent factor models"></a>2.3 潜在因素模型 Latent factor models</h3><p>作者使用的是由奇异值分解 (SVD) 在用户项目评分矩阵上计算的模型。它具有较高的精准度和可拓展性，因此获得了较高的人气。</p>
+<p>在该模型下，每个用户 $u$ 被赋予了一个特征向量 $p_u \in R^f$，每个项目 $i$ 也被赋予了一个特征向量 $q_i \in R^f$。预测值为:</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = b_{ui} + p_u^T q_i</script><p>但是，该方法在数据缺失较多时，效果不太好，使用插值的方法会使数据集变得庞大，且由于插值较多，会导致预测结果不准确。</p>
+<p>为了改进上述方法，文中直接对已知数据进行建模，并通过<strong>适当的正则化模型</strong>（adequate regularized model）来避免过拟合。</p>
+<script type="math/tex; mode=display">\min_{p_* q_* b_*} \sum_{(u,i)\in K}(r_{ui}-\mu-b_u-b_i-p_u^Tq_i) + \lambda_3(||p_u||^2+||q_i||^2+b_u^2+q_i^2)</script><hr>
+<h3 id="2-4-Netflix-数据集-The-Netflix-data"><a href="#2-4-Netflix-数据集-The-Netflix-data" class="headerlink" title="2.4 Netflix 数据集 The Netflix data"></a>2.4 Netflix 数据集 The Netflix data</h3><p>论文中使用的数据集是Netflix，大约有一亿条电影相关的数据。<br>模型的预测质量通过以下算式计算：</p>
+<script type="math/tex; mode=display">RMSE = \sqrt{\sum_{(u,i)\in TestSet}(r_{ui}-\hat{r}_{ui})/|TestSet|}</script><p>另外作者提到这是个Netflix举办的比赛，最高的模型的RMSE甚至达到了0.9514。</p>
+<h3 id="2-5-隐式反馈-Implicit-feedback"><a href="#2-5-隐式反馈-Implicit-feedback" class="headerlink" title="2.5 隐式反馈 Implicit feedback"></a>2.5 隐式反馈 Implicit feedback</h3><p>隐士反馈包含用户的看某个电影的时长，浏览记录等，但是这些私密数据是不会提供的。但是作者提到了一个新的理论，当一个用户给电影打分时，无论分数是多少，这个行为都告诉了我们<strong>用户会给哪些电影打分</strong>。</p>
+<hr>
+<h3 id="3-新的邻域模型-A-NEIGHBORHOOD-MODEL"><a href="#3-新的邻域模型-A-NEIGHBORHOOD-MODEL" class="headerlink" title="3. 新的邻域模型 A NEIGHBORHOOD MODEL"></a>3. 新的邻域模型 A NEIGHBORHOOD MODEL</h3><p>作者提出了一种<strong>全局用户评分相似度，而非基于单个用户</strong>，用 $w_{ij}$ 表示，意义为<strong>用户会给项目 $i,j$ 打相似分数的权重</strong>。从数据集进行计算从而得到它。那么预测方程就是：</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = b_{ui} + \sum_{j\in R(u)}(r_{uj}-b_{uj})w_{ij}</script><p>含义是，如果用户给 $j$ 项目打了比基线要高的分数，那么预测它会给项目 $i$ 打分会高于基线 $(r<em>{uj}-b</em>{uj})w<em>{ij}$ 分数。并且作者建议我们把 $(r</em>{uj}-b_{uj})$ 当作用户打分对基线估计的<strong>偏移量</strong>来看待。</p>
+<p>作者提到，可以利用隐式反馈，从而使得模型更精准：</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = b_{ui} + \sum_{j\in R(u)}(r_{uj}-b_{uj})w_{ij} + \sum_{j\in N(u)}c_{ij}</script><p>$c_{ij}$ 表示的是，通过隐式反馈获得到的权重。</p>
+<p>对于<strong>提供数据较多的用户</strong>，对其建模比较清楚，作者提到可以冒更多的风险去给用户推荐比较 <strong>“古怪”和曝光度较低</strong>的内容。而对于<strong>提供数据比较少</strong>的用户，我们对其的建模比较模糊，所以推荐内容应该是<strong>预测值在基线附近</strong>的。</p>
+<p>但是作者提到，当前的模型似乎过分强调了这种性质。(“However, our experience shows that the current model somewhat overemphasizes the dichotomy between heavy raters and those that rarely rate.”)。于是又给出了新的调整：</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = \mu + b_u + b_i + |R(u)|^{-\frac{1}{2}}\sum_{j\in R(u)}(r_{uj}-b_{uj})w_{ij} + |N(u)|^{-\frac{1}{2}}\sum_{j\in N(u)}c_{ij}</script><p>$R(u)$ 表示的是显式反馈，$N(u)$ 表示的是隐式反馈。</p>
+<p>为了剔除掉相关性不大的项目带来的对预测结果的影响，作者采用了只计算<strong>相关性最强的 $k$ 个项目</strong>。$S^k(i)$ 表示与 $i$ 相关性最强的 $k$ 个项目。同时定义：$R^k(i;u) = R(u) \cap S^k(i)$，$N^k(i;u) = N(u) \cap S^k(i)$，经过修改后的算法为:</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = \mu + b_u + b_i + |R^k(i;u)|^{-\frac{1}{2}}\sum_{j\in R^k(i;u)}(r_{uj}-b_{uj})w_{ij} + |N^k(i;u)|^{-\frac{1}{2}}\sum_{j\in N^k(i;u)}c_{ij}</script><p>可见当 $k=\infty$ 时，上式就与之前的式子一样。其中的参数可由求解下方的最优化问题获得:</p>
+<script type="math/tex; mode=display">\min_{b_*,w_*,c_*}\sum_{(u,i\in K)}\left(r_{ui}-\mu-b_u-b_i-|N^k(i;u)|^{-\frac{1}{2}}\sum_{j\in N^k(i;u)}c_{ij}-|R^k(i;u)|^{-\frac{1}{2}}\right)^2 + \lambda_4\left(b_u^2+b_i^2+\sum_{j\in N^k(i;u)}w_{ij}^2+\sum_{j\in N^k(i;u)}c_{ij}^2\right)</script><p>对于Netflix数据集，作者令 $\lambda_4 = 0.002$。</p>
+<hr>
+<h3 id="4-重新审视潜在因子模型-LATENT-FACTOR-MODELS-REVISITED"><a href="#4-重新审视潜在因子模型-LATENT-FACTOR-MODELS-REVISITED" class="headerlink" title="4.重新审视潜在因子模型 LATENT FACTOR MODELS REVISITED"></a>4.重新审视潜在因子模型 LATENT FACTOR MODELS REVISITED</h3><p>在原有的模型基础上，作者又加入了隐式反馈:</p>
+<script type="math/tex; mode=display">\hat{r}_{ui} = b_{ui} + q_i^T\left(|R(u)|^{-\frac{1}{2}}\sum_{j \in R(u)}(r_{uj}-b_{uj})x_j + |N(u)|^{-\frac{1}{2}}\sum_{j\in N(u)}y_j\right)</script><p>称之为<strong>非对称SVD</strong>（Asymmetric-SVD）。<br>它在原有的模型上有以下几种优势:</p>
+<ul>
+<li>更少的参数，用户的数量远大于产品的数量，所以用项目参数转化用户参数显著地降低了复杂度</li>
+<li>可以实时处理新用户，可以直接根据新用户的反馈，对其进行推荐，而不用对整个模型重新进行计算</li>
+<li>具有可解释性</li>
+<li>对隐式反馈的反应更快</li>
+</ul>
+<hr>
+<h3 id="5-联合模型-INTEGRATED-MODEL"><a href="#5-联合模型-INTEGRATED-MODEL" class="headerlink" title="5.联合模型 INTEGRATED MODEL"></a>5.联合模型 INTEGRATED MODEL</h3><p>联合模型就是将邻域模型，潜在因子模型，再加上隐式反馈。</p>
+<p>此模型依然具有<strong>可解释性</strong>,以及预测精准度有了很大提升。且依然可以根据新用户的反馈来推荐，而不需要重新建立模型。<del>（除了在第一次根据已知数据计算参数时花了很长时间）</del></p>
+<hr>
+<h3 id="6-EVALUATION-THROUGH-A-TOP-K-RECOMMENDER"><a href="#6-EVALUATION-THROUGH-A-TOP-K-RECOMMENDER" class="headerlink" title="6. EVALUATION THROUGH A TOP-K RECOMMENDER"></a>6. EVALUATION THROUGH A TOP-K RECOMMENDER</h3><p>作者简要介绍了在Netflix举办的大赛的情况。同时，他提出一个问题，RMSE值的减少(值越小，误差越小)，能给用户的体验带来多大的提升？</p>
+<p>采用的推荐算法是，对于用户评价5星的电影，我们随机找1000个(与之有相似性的)电影，然后进行评分估计，向用户推荐预测值最高的K个电影，然后通过验证集检验这K个电影是不是这1000个电影中最为感兴趣的电影。</p>
+<p>然后经过对不同模型的测试测试，得出作者的联合模型准确率最高(即RMSE最低) : )</p>
+<hr>
+<h3 id="7-DISCUSSION"><a href="#7-DISCUSSION" class="headerlink" title="7.DISCUSSION"></a>7.DISCUSSION</h3><p>作者简要总结了讲的内容。同时提出，衡量推荐算法的性能有很多指标：准确性、多样性、推荐让用户感到惊喜的内容、可解释性、适当的 topK 推荐和计算效率，其中一些是可以很容易检验的，而另外一些则难以被检验。</p>
+<p>此外，通过Top—K检验方法，可以更好地突出不同模型之间的精确度。</p>
+<p>最后作者又提到，多样的数据对提高模型的精准度来说很重要，尤其是隐式反馈。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">BY 水蓝</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/Recommendation/Paper_Reading/2022-07-13-125756489/">https://SGDBS.github.io/Recommendation/Paper_Reading/2022-07-13-125756489/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">BY 水蓝</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">
+                                    <span class="chip bg-color">推荐系统</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/Recommendation/Paper_Reading/2022-07-14-125785527/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="推荐算法: SVD协同过滤 代码实现">
+                        
+                        <span class="card-title">推荐算法: SVD协同过滤 代码实现</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-07-14
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/" class="post-category">
+                                    推荐系统
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">
+                        <span class="chip bg-color">推荐系统</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/Python/2022-06-03-tkinter/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="Python tkinter库">
+                        
+                        <span class="card-title">Python tkinter库</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-06-03
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Python/" class="post-category">
+                                    Python
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Python/">
+                        <span class="chip bg-color">Python</span>
+                    </a>
+                    
+                    <a href="/tags/tkinter/">
+                        <span class="chip bg-color">tkinter</span>
+                    </a>
+                    
+                    <a href="/tags/GUI/">
+                        <span class="chip bg-color">GUI</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

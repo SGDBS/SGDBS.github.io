@@ -1,0 +1,1716 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="6. 多机训练与 NCCL 工程, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>6. 多机训练与 NCCL 工程 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>6. 多机训练与 NCCL 工程</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">6. 多机训练与 NCCL 工程</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-09
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>前面 DDP / ZeRO / 异步计算 几篇都默认了一个很 naive 的设定:<strong><code>torchrun --nproc_per_node=4</code> 就跑起来了</strong>。这在单机调试时够用,但只要你打算上 16 卡以上的训练——也就是必须多机——那一行命令就会给你扔出一堆稀奇古怪的 NCCL 报错、卡死、超时,而错误信息几乎没有一个直接告诉你哪里错了。</p>
+<p>这一篇把多机训练绕不开的工程基础讲透:<strong>进程组怎么建立</strong>、<strong><code>RANK / LOCAL_RANK / WORLD_SIZE</code> 各自是什么</strong>、<strong>NCCL 用什么网卡</strong>、<strong>拓扑感知怎么设计</strong> 到<strong>容错和 elastic 训练</strong>。读完之后,8 卡到 1024 卡之间的调度、debug、性能调优,你心里都该有谱。</p>
+<h2 id="一、起因-单机不够之后"><a href="#一、起因-单机不够之后" class="headerlink" title="一、起因:单机不够之后"></a>一、起因:单机不够之后</h2><h3 id="1-1-一台机器有几张卡"><a href="#1-1-一台机器有几张卡" class="headerlink" title="1.1 一台机器有几张卡"></a>1.1 一台机器有几张卡</h3><p>主流的训练机器(通常叫 DGX node、HGX node 或 8-GPU 服务器)是 <strong>8 张 GPU 一台</strong>:H100、A100、H200 都是这个标配。这个数字不是巧合——它是<strong>主板 PCIe 通道 + NVSwitch 拓扑</strong>能支持的上限。NVIDIA 的 NVSwitch 让 8 张卡两两之间都有约 900 GB/s 的双向 NVLink 带宽,<strong>节点内全互连</strong>;9 张以上需要更复杂的硬件。</p>
+<p>所以”一台机器”在 AI Infra 的语境里几乎等于 8 张 GPU。再多就要靠<strong>节点间网络</strong>:InfiniBand(IB)或者 RDMA over Converged Ethernet(RoCE)。带宽通常是单卡 200-400 Gbps,看起来不小,但相比节点内 NVLink <strong>慢 10 倍以上</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">节点内(8 张 GPU):</span><br><span class="line">   GPU0 ━━━━━ NVSwitch ━━━━━ GPU1</span><br><span class="line">              ↕</span><br><span class="line">   GPU2 ━━━━━ NVSwitch ━━━━━ GPU3</span><br><span class="line">              ↕</span><br><span class="line">   GPU4 ━━━━━ NVSwitch ━━━━━ GPU5</span><br><span class="line">              ↕</span><br><span class="line">   GPU6 ━━━━━ NVSwitch ━━━━━ GPU7</span><br><span class="line">   </span><br><span class="line">   两两之间 ~900 GB/s 双向带宽</span><br><span class="line"></span><br><span class="line">跨节点:</span><br><span class="line">   Node 0 ─── IB switch ─── Node 1</span><br><span class="line">                ↕</span><br><span class="line">              Node 2</span><br><span class="line">                ↕</span><br><span class="line">              Node 3</span><br><span class="line">   </span><br><span class="line">   每节点对外 8×200 Gbps = 200 GB/s aggregate(理想情况)</span><br></pre></td></tr></table></figure>
+<p><strong>这条带宽差</strong>是后续所有”为什么要节点内 TP、节点间 DP”、”为什么 ZeRO-3 跨节点会瓶颈”、”为什么有 HYBRID_SHARD”的根本原因。整章讲的所有工程细节都是为了<strong>让通信尽可能贴节点内 NVLink、跨节点能少跑就少跑</strong>。</p>
+<h3 id="1-2-多机训练的三个基础问题"><a href="#1-2-多机训练的三个基础问题" class="headerlink" title="1.2 多机训练的三个基础问题"></a>1.2 多机训练的三个基础问题</h3><p>任何多机训练系统都要回答三个问题:</p>
+<ol>
+<li><strong>谁是谁</strong>——每个进程怎么知道自己是 N 个进程里的第几个,在哪台机器上?</li>
+<li><strong>怎么找到对方</strong>——所有进程怎么互相发现并建立通信通道?</li>
+<li><strong>网卡走哪根</strong>——一台多网卡的机器,NCCL 怎么知道用哪张做 GPU 间通信?</li>
+</ol>
+<p>这三问对应 PyTorch 的 RANK/WORLD_SIZE 体系、<code>init_process_group</code> 的 <code>init_method</code>、NCCL 的 <code>NCCL_SOCKET_IFNAME</code> 等环境变量。</p>
+<h2 id="二、进程组-谁是谁-以及怎么找到彼此"><a href="#二、进程组-谁是谁-以及怎么找到彼此" class="headerlink" title="二、进程组:谁是谁,以及怎么找到彼此"></a>二、进程组:谁是谁,以及怎么找到彼此</h2><h3 id="2-1-五个核心环境变量"><a href="#2-1-五个核心环境变量" class="headerlink" title="2.1 五个核心环境变量"></a>2.1 五个核心环境变量</h3><p>PyTorch 分布式训练全靠这五个环境变量串起来,<strong>没有人会显式 import 它们,但每行 NCCL 都依赖它们</strong>:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+<th>谁设的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RANK</code></td>
+<td>全局进程编号(0 ~ WORLD_SIZE-1)</td>
+<td>torchrun</td>
+</tr>
+<tr>
+<td><code>WORLD_SIZE</code></td>
+<td>总进程数 = 节点数 × 每节点进程数</td>
+<td>torchrun</td>
+</tr>
+<tr>
+<td><code>LOCAL_RANK</code></td>
+<td>本节点内的进程编号(0 ~ LOCAL_WORLD_SIZE-1)</td>
+<td>torchrun</td>
+</tr>
+<tr>
+<td><code>LOCAL_WORLD_SIZE</code></td>
+<td>本节点的进程数(= GPU 数)</td>
+<td>torchrun</td>
+</tr>
+<tr>
+<td><code>MASTER_ADDR</code> / <code>MASTER_PORT</code></td>
+<td>rendezvous 协调进程的地址</td>
+<td>你启动时填</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>举个例子:<strong>2 节点 × 8 卡</strong> 的训练,<code>WORLD_SIZE = 16</code>。Node 0 上的 GPU 5:<code>RANK = 5</code>、<code>LOCAL_RANK = 5</code>。Node 1 上的 GPU 5:<code>RANK = 13</code>(8 + 5)、<code>LOCAL_RANK = 5</code>。</p>
+<p><strong>关键准则</strong>:<code>LOCAL_RANK</code> 用来选 GPU(<code>torch.cuda.set_device(local_rank)</code>),<code>RANK</code> 用来逻辑分工(数据切分、rank 0 负责 logging 等)。<strong>永远不要用 <code>RANK</code> 选 GPU</strong>——多节点上不同 RANK 都可能映射到 GPU 0,会让两个进程抢同一张卡。</p>
+<h3 id="2-2-init-process-group-的三种-rendezvous"><a href="#2-2-init-process-group-的三种-rendezvous" class="headerlink" title="2.2 init_process_group 的三种 rendezvous"></a>2.2 <code>init_process_group</code> 的三种 rendezvous</h3><p>进程组建立的核心问题:N 个进程刚启动,<strong>互相不认识对方</strong>,必须有个”集合点”让它们交换 IP 和 rank,然后建立完整的 mesh 通信。这个过程叫 <strong>rendezvous</strong>(法语”集合”),PyTorch 提供三种实现:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.distributed <span class="keyword">as</span> dist</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式 1:env:// —— 现代主流,torchrun 默认</span></span><br><span class="line">dist.init_process_group(backend=<span class="string">&quot;nccl&quot;</span>, init_method=<span class="string">&quot;env://&quot;</span>)</span><br><span class="line"><span class="comment"># 从 MASTER_ADDR/MASTER_PORT/RANK/WORLD_SIZE 环境变量读</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式 2:tcp:// —— 显式 IP 和端口</span></span><br><span class="line">dist.init_process_group(</span><br><span class="line">    backend=<span class="string">&quot;nccl&quot;</span>,</span><br><span class="line">    init_method=<span class="string">&quot;tcp://192.168.1.100:29500&quot;</span>,</span><br><span class="line">    rank=rank, world_size=world_size,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式 3:file:// —— 共享文件系统协调,适合无网络的本地调试</span></span><br><span class="line">dist.init_process_group(</span><br><span class="line">    backend=<span class="string">&quot;nccl&quot;</span>,</span><br><span class="line">    init_method=<span class="string">&quot;file:///shared/init_file&quot;</span>,</span><br><span class="line">    rank=rank, world_size=world_size,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>实际工业部署里几乎只用 <code>env://</code> + <code>torchrun</code>。其他两种主要在调试或者老代码里。</p>
+<h3 id="2-3-torchrun-启动多机训练"><a href="#2-3-torchrun-启动多机训练" class="headerlink" title="2.3 torchrun 启动多机训练"></a>2.3 torchrun 启动多机训练</h3><p>单机 8 卡:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">torchrun --nproc_per_node=8 train.py</span><br></pre></td></tr></table></figure>
+<p>多机:<strong>每台机器各跑一次 <code>torchrun</code></strong>,但要告诉它”我是哪个节点、一共几个节点、master 在哪”:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Node 0 (master)</span></span><br><span class="line">torchrun \</span><br><span class="line">    --nnodes=4 \</span><br><span class="line">    --node_rank=0 \</span><br><span class="line">    --nproc_per_node=8 \</span><br><span class="line">    --master_addr=192.168.1.100 \</span><br><span class="line">    --master_port=29500 \</span><br><span class="line">    train.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># Node 1</span></span><br><span class="line">torchrun --nnodes=4 --node_rank=1 --nproc_per_node=8 \</span><br><span class="line">    --master_addr=192.168.1.100 --master_port=29500 \</span><br><span class="line">    train.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># Node 2/3 同理,只改 node_rank</span></span><br></pre></td></tr></table></figure>
+<p>注意:<code>master_addr</code> 必须是 <strong>Node 0 实际的 IP</strong>,所有节点能 ping 通的那个。<strong>初学者最大的坑是写成 <code>localhost</code> 或者 master 自己的 hostname</strong>,然后非 master 节点完全连不上,torchrun 卡 30 秒后超时退出,错误是 <code>[c10d] connect timeout</code>。</p>
+<h3 id="2-4-集群调度器场景-把-torchrun-包进-Slurm-K8s"><a href="#2-4-集群调度器场景-把-torchrun-包进-Slurm-K8s" class="headerlink" title="2.4 集群调度器场景:把 torchrun 包进 Slurm/K8s"></a>2.4 集群调度器场景:把 torchrun 包进 Slurm/K8s</h3><p>工业训练通常跑在 Slurm 或 K8s 上,你不会手动开 4 个 SSH 会话。Slurm 里典型脚本:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment">#SBATCH --nodes=4</span></span><br><span class="line"><span class="comment">#SBATCH --ntasks-per-node=1     # 一个 task 启 torchrun,torchrun 内部再 fork 8 进程</span></span><br><span class="line"><span class="comment">#SBATCH --gpus-per-task=8</span></span><br><span class="line"><span class="comment">#SBATCH --cpus-per-task=64</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Slurm 的环境变量可以推出 NODE_RANK / MASTER_ADDR</span></span><br><span class="line"><span class="built_in">export</span> MASTER_ADDR=$(scontrol show hostnames <span class="variable">$SLURM_JOB_NODELIST</span> | <span class="built_in">head</span> -n 1)</span><br><span class="line"><span class="built_in">export</span> MASTER_PORT=29500</span><br><span class="line"></span><br><span class="line">srun torchrun \</span><br><span class="line">    --nnodes=<span class="variable">$SLURM_NNODES</span> \</span><br><span class="line">    --node_rank=<span class="variable">$SLURM_NODEID</span> \</span><br><span class="line">    --nproc_per_node=8 \</span><br><span class="line">    --master_addr=<span class="variable">$MASTER_ADDR</span> \</span><br><span class="line">    --master_port=<span class="variable">$MASTER_PORT</span> \</span><br><span class="line">    train.py</span><br></pre></td></tr></table></figure>
+<p>K8s 通常用 KubeFlow 的 PyTorchJob CRD,框架会自动注入这些环境变量,你只管在容器里写 <code>torchrun</code> 命令。但底层逻辑完全一致——还是那五个变量。</p>
+<h3 id="2-5-旧-API-为什么不要再用-mp-spawn-launch"><a href="#2-5-旧-API-为什么不要再用-mp-spawn-launch" class="headerlink" title="2.5 旧 API:为什么不要再用 mp.spawn / launch"></a>2.5 旧 API:为什么不要再用 <code>mp.spawn</code> / <code>launch</code></h3><p>历史上 PyTorch 提供过两套启动方式:</p>
+<ul>
+<li><code>torch.multiprocessing.spawn(fn, nprocs=8)</code>:在 Python 里 fork 子进程。<strong>只能单机</strong>,跨节点没用</li>
+<li><code>python -m torch.distributed.launch</code>:torchrun 的前身,<strong>已 deprecated</strong>,两年前就不再推荐</li>
+</ul>
+<p>现代 PyTorch(1.12+)统一用 <code>torchrun</code>,它本身就是 <code>torch.distributed.run</code> 的快捷方式,后端是 c10d 的 elastic launcher,支持容错重启(后面 §6 会讲)。你看到老代码里这两套 API,直接换成 torchrun 就行。</p>
+<h2 id="三、NCCL-GPU-通信的实际承载者"><a href="#三、NCCL-GPU-通信的实际承载者" class="headerlink" title="三、NCCL:GPU 通信的实际承载者"></a>三、NCCL:GPU 通信的实际承载者</h2><h3 id="3-1-NCCL-是什么"><a href="#3-1-NCCL-是什么" class="headerlink" title="3.1 NCCL 是什么"></a>3.1 NCCL 是什么</h3><p>NCCL(NVIDIA Collective Communications Library,读作”nickel”)是 NVIDIA 为 GPU 优化的集合通信库。它实现了 Ring AllReduce、Tree AllReduce、Broadcast、ReduceScatter、AllGather 等所有原语,直接驱动 NVLink、PCIe 和 InfiniBand 的硬件通道,<strong>绕过 CPU 内存拷贝</strong>,延迟和带宽都比 MPI/Gloo 高一个数量级。</p>
+<p>PyTorch 的 <code>dist.all_reduce(...)</code> 在 GPU tensor 上的实现就是 NCCL,你只需要传 <code>backend=&quot;nccl&quot;</code>,后续所有调用都走它。</p>
+<h3 id="3-2-NCCL-关心的几件事"><a href="#3-2-NCCL-关心的几件事" class="headerlink" title="3.2 NCCL 关心的几件事"></a>3.2 NCCL 关心的几件事</h3><p>NCCL 跑起来要决定:</p>
+<ol>
+<li><strong>哪些 GPU 在一个 group 里</strong>(world_size)</li>
+<li><strong>每张 GPU 走哪条物理链路通信</strong>(NVLink? PCIe? IB? socket?)</li>
+<li><strong>是 Ring 拓扑还是 Tree 拓扑</strong>(取决于消息大小和卡数)</li>
+</ol>
+<p>第 1 件事 PyTorch 帮你做了。第 3 件事 NCCL 自己根据消息大小和拓扑探测决定,基本无脑。<strong>第 2 件事是多机训练的几乎所有 NCCL bug 的来源</strong>——下一节专门讲。</p>
+<h3 id="3-3-通信走错网卡-训练慢-100-倍"><a href="#3-3-通信走错网卡-训练慢-100-倍" class="headerlink" title="3.3 通信走错网卡 = 训练慢 100 倍"></a>3.3 通信走错网卡 = 训练慢 100 倍</h3><p>一台多机训练服务器通常有<strong>多张网卡</strong>:</p>
+<ul>
+<li><code>eth0</code> / <code>enpXsY</code>:管理网,1 Gbps,用来 SSH 和 K8s 控制</li>
+<li><code>ib0</code>、<code>ib1</code> … :InfiniBand 网卡,200-400 Gbps,<strong>真正用来 NCCL 跨节点通信</strong></li>
+<li><code>bond0</code>:多网卡 bonding 后的虚拟接口</li>
+</ul>
+<p>如果 NCCL 自动探测选错网卡——比如选了 <code>eth0</code> 跑 GPU 通信——你的训练速度直接下降 100 倍,从 200 GB/s 掉到 100 MB/s。<strong>最经典的 footgun</strong>。</p>
+<p>排查方法,加环境变量看 NCCL 实际选了什么:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> NCCL_DEBUG=INFO</span><br><span class="line">torchrun ... train.py 2&gt;&amp;1 | grep -i <span class="string">&quot;nccl&quot;</span></span><br></pre></td></tr></table></figure>
+<p>输出里会有这样的行:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">NCCL INFO NET/IB : Using [0]mlx5_0:1/IB ...</span><br><span class="line">NCCL INFO NET/Socket : Using [0]eth0:192.168.1.5&lt;0&gt; [1]ib0:10.0.0.5&lt;0&gt; ...</span><br><span class="line">NCCL INFO Selected interface: eth0   ← ⚠️ 选错了!应该选 ib0</span><br></pre></td></tr></table></figure>
+<p>强制指定:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 走 IB</span></span><br><span class="line"><span class="built_in">export</span> NCCL_IB_HCA=mlx5_0      <span class="comment"># 指定具体的 IB 网卡</span></span><br><span class="line"><span class="built_in">export</span> NCCL_IB_DISABLE=0       <span class="comment"># 0 = 启用 IB,1 = 禁用</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 或走特定的 socket 网卡</span></span><br><span class="line"><span class="built_in">export</span> NCCL_SOCKET_IFNAME=ib0  <span class="comment"># 强制走 ib0,不要走 eth0</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-4-必备的-NCCL-环境变量速查"><a href="#3-4-必备的-NCCL-环境变量速查" class="headerlink" title="3.4 必备的 NCCL 环境变量速查"></a>3.4 必备的 NCCL 环境变量速查</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>环境变量</th>
+<th>作用</th>
+<th>常用值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NCCL_DEBUG</code></td>
+<td>打印 NCCL 详细日志</td>
+<td><code>INFO</code>(调试)、<code>WARN</code>(默认)</td>
+</tr>
+<tr>
+<td><code>NCCL_DEBUG_SUBSYS</code></td>
+<td>控制 INFO 日志范围</td>
+<td><code>INIT,NET,GRAPH</code></td>
+</tr>
+<tr>
+<td><code>NCCL_SOCKET_IFNAME</code></td>
+<td>TCP fallback 时用哪张网卡</td>
+<td><code>ib0</code> 或 <code>^lo,docker</code></td>
+</tr>
+<tr>
+<td><code>NCCL_IB_HCA</code></td>
+<td>用哪张 InfiniBand HCA</td>
+<td><code>mlx5_0,mlx5_1</code></td>
+</tr>
+<tr>
+<td><code>NCCL_IB_DISABLE</code></td>
+<td>是否禁用 IB</td>
+<td><code>0</code>(用)或 <code>1</code>(禁)</td>
+</tr>
+<tr>
+<td><code>NCCL_P2P_DISABLE</code></td>
+<td>是否禁用节点内 P2P (NVLink)</td>
+<td><code>0</code>(默认开)、<code>1</code>(禁)</td>
+</tr>
+<tr>
+<td><code>NCCL_ALGO</code></td>
+<td>强制 AllReduce 算法</td>
+<td><code>Ring</code> / <code>Tree</code> / <code>CollnetDirect</code></td>
+</tr>
+<tr>
+<td><code>NCCL_PROTO</code></td>
+<td>选择数据包协议</td>
+<td><code>Simple</code> / <code>LL</code> / <code>LL128</code></td>
+</tr>
+<tr>
+<td><code>NCCL_NSOCKS_PERTHREAD</code></td>
+<td>单线程内 socket 数</td>
+<td>调优用,默认够</td>
+</tr>
+<tr>
+<td><code>NCCL_BUFFSIZE</code></td>
+<td>NCCL 内部环形 buffer 大小</td>
+<td>调优用,默认 4 MB</td>
+</tr>
+<tr>
+<td><code>NCCL_TIMEOUT</code></td>
+<td>集合通信超时(秒)</td>
+<td>默认 30 分钟,卡死时调小可早报错</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>实战配置例子(节点间走 IB,禁用错的网卡):</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> NCCL_IB_HCA=mlx5_0,mlx5_1,mlx5_4,mlx5_5    <span class="comment"># 这台机器实际有 4 个 IB 接口</span></span><br><span class="line"><span class="built_in">export</span> NCCL_SOCKET_IFNAME=ib0                       <span class="comment"># 实在退到 socket 时走 ib0</span></span><br><span class="line"><span class="built_in">export</span> NCCL_IB_GID_INDEX=3                          <span class="comment"># RoCE 专用,IB 不需要</span></span><br><span class="line"><span class="built_in">export</span> NCCL_DEBUG=WARN                              <span class="comment"># 只看异常</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-5-NCCL-与-NVLink-PCIe-IB-的关系"><a href="#3-5-NCCL-与-NVLink-PCIe-IB-的关系" class="headerlink" title="3.5 NCCL 与 NVLink / PCIe / IB 的关系"></a>3.5 NCCL 与 NVLink / PCIe / IB 的关系</h3><p>NCCL 在初始化时探测 GPU 之间的物理拓扑,决定每对 GPU 之间走哪条路。<strong>节点内</strong>:</p>
+<ul>
+<li>8 卡 NVSwitch 机型(DGX-A100 / DGX-H100 / HGX):任意两卡都直连 NVLink,~900 GB/s</li>
+<li>4 卡 + 4 卡 PCIe 桥接的廉价机型:跨 4 卡组要走 PCIe,带宽降到 ~50 GB/s</li>
+</ul>
+<p><strong>节点间</strong>:</p>
+<ul>
+<li>IB:NCCL 走 RDMA verbs,直接 GPU memory ↔ GPU memory,bypass CPU</li>
+<li>RoCE(IB over Ethernet):同样走 RDMA,但 fabric 是以太网</li>
+<li>TCP socket fallback:走主机网卡,GPU 数据要先 copy 到 CPU 内存再发,<strong>慢一个数量级</strong></li>
+</ul>
+<p>判断你的集群有没有走 RDMA,看 NCCL_DEBUG=INFO 输出里是 <code>NET/IB</code> 还是 <code>NET/Socket</code>。<strong>Socket 模式是性能毒药</strong>,确认无 RDMA 就别上规模训练。</p>
+<h3 id="3-6-跨节点带宽紧张时-用-BF16-做梯度通信"><a href="#3-6-跨节点带宽紧张时-用-BF16-做梯度通信" class="headerlink" title="3.6 跨节点带宽紧张时:用 BF16 做梯度通信"></a>3.6 跨节点带宽紧张时:用 BF16 做梯度通信</h3><p>§3.3-3.5 讲的都是<strong>硬件层</strong>的优化——走对网卡、走对 RDMA、走对 NVLink。但应用层还有一类常用优化:当跨节点带宽真的紧张(100Gbps Ethernet 而不是 200/400Gbps IB),即使硬件都对齐了,梯度 AllReduce 仍然可能盖不住反向计算,DDP §3.2 那张时间轴里”反向计算”和”NCCL stream”的两条线就会拉开差距。这时候<strong>用半精度做梯度通信</strong>(带宽减半,精度几乎无损)是最划算的解法。</p>
+<p>DDP 提供了 <code>register_comm_hook</code> 接口让你接管梯度通信策略,PyTorch 自带几个常用 hook 可以直接用。</p>
+<h4 id="最常用-bf16-compress-hook"><a href="#最常用-bf16-compress-hook" class="headerlink" title="最常用:bf16_compress_hook"></a>最常用:<code>bf16_compress_hook</code></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.distributed.algorithms.ddp_comm_hooks <span class="keyword">import</span> default_hooks</span><br><span class="line"></span><br><span class="line">model = DDP(model, device_ids=[local_rank], static_graph=<span class="literal">True</span>)</span><br><span class="line"><span class="comment"># BF16 做通信(范围广,LLM 推荐)</span></span><br><span class="line">model.register_comm_hook(state=<span class="literal">None</span>, hook=default_hooks.bf16_compress_hook)</span><br><span class="line"><span class="comment"># 或者 FP16(范围窄,需要小心数值范围)</span></span><br><span class="line"><span class="comment"># model.register_comm_hook(state=None, hook=default_hooks.fp16_compress_hook)</span></span><br></pre></td></tr></table></figure>
+<p>工作流程:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.grad (FP32) ──► cast to BF16 ──► AllReduce (BF16) ──► cast back FP32 ──► .grad</span><br><span class="line">                    ↓                                       ↓</span><br><span class="line">                通信量减半                              精度损失极小(LLM 几乎无影响)</span><br></pre></td></tr></table></figure>
+<p>注意这只影响<strong>通信中的 dtype</strong>,本地 <code>.grad</code> 和 master 参数仍然是 FP32——和《4. 混合精度训练》里讲的”训练用什么精度”是完全独立的设置。</p>
+<h4 id="register-comm-hook-的通用接口"><a href="#register-comm-hook-的通用接口" class="headerlink" title="register_comm_hook 的通用接口"></a><code>register_comm_hook</code> 的通用接口</h4><p>如果想自定义通信逻辑(自己实现压缩、quantization、跨节点协议替换),<code>register_comm_hook</code> 接受一个返回 <code>Future</code> 的回调:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">my_hook</span>(<span class="params">state, bucket: dist.GradBucket</span>) -&gt; torch.futures.Future:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    输入:bucket 内的梯度(flatten 成一个大 tensor)</span></span><br><span class="line"><span class="string">    输出:Future,resolve 后 .grad 应该是同步好的最终梯度</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    grad = bucket.buffer()</span><br><span class="line">    <span class="comment"># ...自定义通信逻辑...</span></span><br><span class="line">    fut = dist.all_reduce(grad, op=dist.ReduceOp.SUM, async_op=<span class="literal">True</span>).get_future()</span><br><span class="line">    <span class="keyword">return</span> fut.then(<span class="keyword">lambda</span> f: f.value()[<span class="number">0</span>] / dist.get_world_size())</span><br><span class="line"></span><br><span class="line">model.register_comm_hook(state=<span class="literal">None</span>, hook=my_hook)</span><br></pre></td></tr></table></figure>
+<p>DDP 内部不再自己做 AllReduce,而是 bucket 凑齐后调用 hook,等返回的 Future resolve 之后认为通信完成。只要 hook 返回的 <code>.grad</code> 在所有 rank 上语义一致,DDP 不做额外干预。</p>
+<h4 id="PowerSGD-更激进但-LLM-不用"><a href="#PowerSGD-更激进但-LLM-不用" class="headerlink" title="PowerSGD:更激进但 LLM 不用"></a>PowerSGD:更激进但 LLM 不用</h4><p>PyTorch 还内置一个基于低秩近似的更激进压缩,叫 <strong>PowerSGD</strong>——把每个 bucket 的梯度看成矩阵 $G \in \mathbb{R}^{m \times n}$,用 power iteration 找 $G \approx PQ^T$,只通信小得多的 $P, Q$,压缩比能到 50-100×。代价是精度——低秩近似会丢掉梯度的高频成分。</p>
+<p>实战经验:视觉、NLP 小模型上能用,精度损失 &lt; 1%;<strong>LLM 预训练上影响较大,生产里基本不用</strong>;但在<strong>带宽极差又必须分布式</strong>的场景(教育机构、跨地理区域 fine-tuning)能直接拉训练速度 5-10×,是救命稻草。本文不展开,有需要查 <code>torch.distributed.algorithms.ddp_comm_hooks.powerSGD_hook</code>。</p>
+<h4 id="什么时候开-BF16-压缩"><a href="#什么时候开-BF16-压缩" class="headerlink" title="什么时候开 BF16 压缩"></a>什么时候开 BF16 压缩</h4><p>简单决策:</p>
+<ul>
+<li><strong>单节点(≤ 8 卡 NVLink/NVSwitch)</strong>:节点内 ~900 GB/s,带宽极充足,<strong>不需要压缩</strong></li>
+<li><strong>多节点 + IB 200Gbps 或更好</strong>:大多数 LLM 训练通信能被反向计算盖住,先 profile 再决定</li>
+<li><strong>多节点 + 100Gbps Ethernet 或更差</strong>:几乎必开 <code>bf16_compress_hook</code></li>
+</ul>
+<p>判断带宽是否成为瓶颈最简单的办法是用 Nsight Systems / PyTorch Profiler 看一次 step 里 NCCL kernel 占的时间——如果 NCCL 时间 &gt; 反向计算时间,DDP 的 bucket 异步重叠就盖不住通信,这时压缩通信就有意义了。</p>
+<h2 id="四、网络拓扑感知-HYBRID-SHARD-与-3D-并行"><a href="#四、网络拓扑感知-HYBRID-SHARD-与-3D-并行" class="headerlink" title="四、网络拓扑感知:HYBRID_SHARD 与 3D 并行"></a>四、网络拓扑感知:HYBRID_SHARD 与 3D 并行</h2><h3 id="4-1-拓扑层级"><a href="#4-1-拓扑层级" class="headerlink" title="4.1 拓扑层级"></a>4.1 拓扑层级</h3><p>理解了节点内 NVLink 比节点间 IB 快十倍以上,<strong>所有大规模训练的并行策略设计都围绕”让最重的通信走 NVLink、最轻的通信走 IB”</strong>。</p>
+<p>具体在 ZeRO/FSDP 里,这就是 <code>HYBRID_SHARD</code> 的设计动因:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">拓扑感知的 ZeRO 分组:</span><br><span class="line"></span><br><span class="line">  ┌─────────────────────────────────────────────────────┐</span><br><span class="line">  │ Node 0 (8 GPU, NVLink)                              │</span><br><span class="line">  │   GPU0 ─ GPU1 ─ GPU2 ─ ... ─ GPU7                   │</span><br><span class="line">  │   ↑ 节点内做 ZeRO-3:每张卡只存 1/8 参数            │</span><br><span class="line">  │   AllGather 走 NVLink,飞快                         │</span><br><span class="line">  └─────────────────────────────────────────────────────┘</span><br><span class="line">              ↕ 跨节点做 DDP:广播完整梯度</span><br><span class="line">              ↕ AllReduce 走 IB,只在每个 step 末尾一次</span><br><span class="line">  ┌─────────────────────────────────────────────────────┐</span><br><span class="line">  │ Node 1 (8 GPU, NVLink)                              │</span><br><span class="line">  │   ZeRO-3 分组(独立的 1/8 切分)                    │</span><br><span class="line">  └─────────────────────────────────────────────────────┘</span><br><span class="line">              ↕</span><br><span class="line">            Node 2 ...</span><br></pre></td></tr></table></figure>
+<p>每个节点内部是一个独立的 ZeRO-3 分组,所有重通信(每层的 AllGather)走 NVLink;节点间只做 DDP 风格的梯度 AllReduce,频率低、容易藏在反向后面。这套拓扑感知配置在跨多机训练里普遍比 FULL_SHARD 快 30%-50%。</p>
+<h3 id="4-2-3D-并行的拓扑映射"><a href="#4-2-3D-并行的拓扑映射" class="headerlink" title="4.2 3D 并行的拓扑映射"></a>4.2 3D 并行的拓扑映射</h3><p>更激进的多机训练用 <strong>3D 并行 = TP × PP × DP</strong>:</p>
+<ul>
+<li><strong>Tensor Parallel</strong>:层内切分,通信非常重(每层都要 AllReduce),<strong>必须走 NVLink → 节点内</strong>。典型 TP rank 数 = 8(整个节点)</li>
+<li><strong>Pipeline Parallel</strong>:层间切分,通信只在 stage 边界(P2P send/recv),<strong>可以跨节点</strong>——不同 stage 在不同节点</li>
+<li><strong>Data Parallel</strong>:不同数据,通信频率最低(每 step 一次),<strong>可以最远——跨集群</strong></li>
+</ul>
+<p>实际拓扑:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">                 [DP group]</span><br><span class="line">           ┌───────────┴───────────┐</span><br><span class="line">           │                       │</span><br><span class="line">     [PP group]                [PP group]</span><br><span class="line">     ┌─────┴─────┐             ┌─────┴─────┐</span><br><span class="line">     │           │             │           │</span><br><span class="line">Node 0,1     Node 2,3      Node 4,5     Node 6,7</span><br><span class="line">(PP stage 0) (PP stage 1)  ...           ...</span><br><span class="line">     │           │             │           │</span><br><span class="line"> TP within    TP within    TP within    TP within</span><br><span class="line"> each node    each node    each node    each node</span><br><span class="line"> (8-way)      (8-way)      (8-way)      (8-way)</span><br></pre></td></tr></table></figure>
+<p>这就是 Megatron-LM、DeepSpeed 大规模训练的标准拓扑——256 卡 = 8(TP) × 4(PP) × 8(DP),每根线的通信负载和它要走的物理介质带宽匹配。</p>
+<h2 id="五、Elastic-训练与容错"><a href="#五、Elastic-训练与容错" class="headerlink" title="五、Elastic 训练与容错"></a>五、Elastic 训练与容错</h2><h3 id="5-1-长训练必须容错"><a href="#5-1-长训练必须容错" class="headerlink" title="5.1 长训练必须容错"></a>5.1 长训练必须容错</h3><p>训练 70B+ 模型要跑几周,1024 张 GPU 同时跑,任何一张挂掉、任何一根 IB 链路抽风,整个 job 都会卡死。<strong>MTBF 算下来一两天必坏一台</strong>。如果每次 fail 都从头开始训,你永远训不完。</p>
+<h3 id="5-2-torchrun-的-elastic-模式"><a href="#5-2-torchrun-的-elastic-模式" class="headerlink" title="5.2 torchrun 的 elastic 模式"></a>5.2 torchrun 的 elastic 模式</h3><p>torchrun 内置 <code>--max-restarts</code>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">torchrun \</span><br><span class="line">    --nnodes=4 \</span><br><span class="line">    --max-restarts=10 \</span><br><span class="line">    --rdzv-backend=c10d \</span><br><span class="line">    --rdzv-endpoint=192.168.1.100:29500 \</span><br><span class="line">    --rdzv-id=my_job_id \</span><br><span class="line">    train.py</span><br></pre></td></tr></table></figure>
+<p>工作流程:</p>
+<ol>
+<li>某个 worker 崩了 → torchrun 检测到 → 通知其他 worker 暂停</li>
+<li>重新做 rendezvous(可能 world_size 变小了)</li>
+<li>所有 worker 加载最新 checkpoint</li>
+<li>从上次保存的 step 继续训</li>
+</ol>
+<p>要让这套机制真正能用,你的训练脚本必须满足:</p>
+<ul>
+<li><strong>有定期 checkpoint</strong>(比如每 500 步)——后面 <code>Checkpoint.md</code> 会专门讲</li>
+<li><strong>dataloader 状态可恢复</strong>——<code>DistributedSampler.set_epoch</code> + 步数偏移</li>
+<li><strong>优化器和 scheduler 状态都在 checkpoint 里</strong>——光保存 model 是不够的</li>
+</ul>
+<h3 id="5-3-慢节点-straggler-问题"><a href="#5-3-慢节点-straggler-问题" class="headerlink" title="5.3 慢节点(straggler)问题"></a>5.3 慢节点(straggler)问题</h3><p>elastic 解决的是”挂了”的节点。<strong>更阴险的是”慢”的节点</strong>:某张 GPU 因为温度过高降频、某个 IB 链路丢包、某个磁盘 IO 卡——这台机器没坏,只是变慢了 10%。</p>
+<p>AllReduce 是同步集合操作,最慢的那台拖整个 group。1024 卡训练里,1 台慢 10% = 整个吞吐降 10%。</p>
+<p>排查方法:</p>
+<ul>
+<li><strong>NCCL_DEBUG=INFO</strong> 看每次 AllReduce 的耗时,有些节点显著比别的慢</li>
+<li><strong><code>torch.cuda.synchronize()</code> 后打 timestamp</strong>,定位每个 step 哪台先到</li>
+<li><strong>Slurm/K8s 的 GPU 利用率监控</strong>,找平均利用率显著低的节点</li>
+</ul>
+<p>发现 straggler 后通常的处理:把这台机器从 job 里踢掉(<code>scontrol</code>),让 elastic 重新 rendezvous,继续训练。生产集群通常有自动 straggler detection 系统。</p>
+<h2 id="六、生产化的几个细节"><a href="#六、生产化的几个细节" class="headerlink" title="六、生产化的几个细节"></a>六、生产化的几个细节</h2><h3 id="6-1-Logging-永远-rank-0-一份"><a href="#6-1-Logging-永远-rank-0-一份" class="headerlink" title="6.1 Logging 永远 rank 0 一份"></a>6.1 Logging 永远 rank 0 一份</h3><p>多机训练默认所有 rank 都 print,日志会乱套。统一规则:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">import</span> torch.distributed <span class="keyword">as</span> dist</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> dist.get_rank() == <span class="number">0</span>:</span><br><span class="line">    logging.basicConfig(level=logging.INFO)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    logging.basicConfig(level=logging.ERROR)  <span class="comment"># 其他 rank 只打 error</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">log</span>(<span class="params">msg</span>):</span><br><span class="line">    <span class="keyword">if</span> dist.get_rank() == <span class="number">0</span>:</span><br><span class="line">        logging.info(msg)</span><br></pre></td></tr></table></figure>
+<p>但<strong>异常仍然要让所有 rank 看到</strong>——某个非 0 rank 的 NCCL 报错如果被压住,你只能看到 rank 0 卡死,debug 困难。所以异常用 <code>print(f&quot;[rank {rank}] {e}&quot;)</code> 而非 <code>logger</code>。</p>
+<h3 id="6-2-时间不同步会让-NCCL-超时"><a href="#6-2-时间不同步会让-NCCL-超时" class="headerlink" title="6.2 时间不同步会让 NCCL 超时"></a>6.2 时间不同步会让 NCCL 超时</h3><p>NCCL 集合通信默认 30 分钟超时。如果你的 ckpt 保存只在 rank 0 做且耗时 25 分钟,其他 rank 在 AllReduce 等了 25 分钟,NCCL 监控线程觉得”差不多要超时了”开始打 watchdog 警告。再加个 10 分钟,直接 abort。</p>
+<p>解决:<strong>checkpoint 在 rank 0 写完之后必须 <code>dist.barrier()</code></strong>,让其他 rank 显式等;或者用异步 ckpt(后面 Checkpoint.md 讲)。</p>
+<h3 id="6-3-OS-层面的-ulimit"><a href="#6-3-OS-层面的-ulimit" class="headerlink" title="6.3 OS 层面的 ulimit"></a>6.3 OS 层面的 ulimit</h3><p>NCCL 需要打开很多 fd(每个对端通信连接一个),容器或者新装的机器默认 <code>ulimit -n</code> 可能只有 1024。1024 卡训练里这远远不够,会看到 <code>Too many open files</code> 或者神秘的 NCCL “channels” 报错。</p>
+<p><strong>生产环境标配</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ulimit</span> -n 1048576       <span class="comment"># file descriptors</span></span><br><span class="line"><span class="built_in">ulimit</span> -l unlimited     <span class="comment"># locked memory (RDMA 需要)</span></span><br><span class="line"><span class="built_in">ulimit</span> -s unlimited     <span class="comment"># stack</span></span><br></pre></td></tr></table></figure>
+<p>通常写到 <code>/etc/security/limits.conf</code> 或者容器启动时设置。</p>
+<h3 id="6-4-NCCL-死锁的常见模式"><a href="#6-4-NCCL-死锁的常见模式" class="headerlink" title="6.4 NCCL 死锁的常见模式"></a>6.4 NCCL 死锁的常见模式</h3><p>NCCL 卡死的两类原因:</p>
+<p><strong>模式 1:某个 rank 没参与集合通信</strong>。比如 forward 里有 <code>if rank == 0: do_something()</code>,某个步骤只有 rank 0 做了 AllReduce。其他 rank 不知道这次通信存在,就在下一个集合通信里等永远不会来的 rank 0,死锁。</p>
+<p><strong>模式 2:不同 rank 的集合通信顺序不一致</strong>。所有 rank 必须<strong>严格按相同顺序</strong>调用 AllReduce/AllGather/Broadcast。如果你写了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> loss &gt; threshold:</span><br><span class="line">    dist.all_reduce(metric_a)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    dist.all_reduce(metric_b)</span><br></pre></td></tr></table></figure>
+<p>不同 rank 的 loss 不一样,有的进 if 有的进 else,<strong>两边各自的 AllReduce 在等彼此,死锁</strong>。修法:把控制流改成所有 rank 一致,或者把 metric 通信都做。</p>
+<p>调试这两类问题的招:<code>NCCL_DEBUG=INFO</code> 看每个 rank 卡在哪一次 collective 上,通常一眼就看出谁少了或者顺序对不上。</p>
+<h2 id="七、最小可用的多机训练-checklist"><a href="#七、最小可用的多机训练-checklist" class="headerlink" title="七、最小可用的多机训练 checklist"></a>七、最小可用的多机训练 checklist</h2><p>把整章串起来,验证一个新集群能不能跑多机训练,按这个顺序检查:</p>
+<ol>
+<li><strong>网络连通</strong>:Node 0 能 ping 通其他所有 Node 的 IB 接口 IP(<code>ping ib0_ip</code>)</li>
+<li><strong><code>nvidia-smi topo -m</code></strong>:确认节点内 GPU 拓扑是 NV-link 全互连</li>
+<li><strong><code>ibstat</code></strong>:确认 IB 接口 active,LinkSpeed 在期望速率</li>
+<li><strong><code>NCCL_DEBUG=INFO</code> 跑 2-node × 2-GPU 的 hello world AllReduce</strong>:看到 <code>NET/IB</code> 而不是 <code>NET/Socket</code></li>
+<li><strong>测一次完整 step 的耗时</strong>,与单机 8 卡的吞吐量做对比,期望 multi-node 的 throughput 至少 80% × <code>nodes</code> × 单机吞吐</li>
+<li><strong>打开 <code>--max-restarts=N</code></strong>,人工 kill 一台 worker 验证 elastic 恢复</li>
+<li><strong>测 ckpt 保存 + 加载流程</strong>,验证从 ckpt resume 后 loss 曲线无跳变</li>
+</ol>
+<p>每个项目失败都对应一个具体的工程问题,没有跳过的捷径。<strong>多机训练 80% 的时间在调通信和配置,只有 20% 在跑实际训练</strong>——这是大模型工程师的日常。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/1.DataParallel/MultiNode/">https://SGDBS.github.io/AI_Infra/1.DataParallel/MultiNode/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/Checkpoint/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="7. Checkpoint 与训练恢复">
+                        
+                        <span class="card-title">7. Checkpoint 与训练恢复</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/MixedPrecision/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="4. 混合精度训练">
+                        
+                        <span class="card-title">4. 混合精度训练</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

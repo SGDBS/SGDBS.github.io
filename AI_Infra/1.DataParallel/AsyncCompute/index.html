@@ -1,0 +1,1656 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="3. GPU 异步计算, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>3. GPU 异步计算 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup collapsed" id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>3. GPU 异步计算</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">3. GPU 异步计算</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-08
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>写 PyTorch 训练代码时,你会发现一些奇怪的现象:<code>loss.backward()</code> 后面紧跟一行 <code>print(loss.item())</code>,这一行突然变得很慢;明明用了 <code>torch.cuda.synchronize()</code> 测时间,profiler 里看到的耗时却完全不一样;DDP 训练里通信看似在反向之后才发生,实际却和反向”同时”在跑。</p>
+<p>这些都是同一个东西的影子——<strong>异步计算 (asynchronous computation)</strong>。它不是某个高级 API,而是 GPU 编程模型的底层默认行为。理解它能解开很多”为什么训练比想象中快/慢”的谜团,也是看懂 DDP 计算-通信重叠、ZeRO-3 prefetch、Pipeline 调度这些大模型工程优化的前置知识。</p>
+<p>本文按这个顺序展开:先讲清楚同步 / 异步的本质区别,再讲 CUDA 的 stream 模型,然后用 PyTorch 代码看实际怎么用,最后看三个典型场景(DDP / ZeRO-3 / Pipeline)是怎么把异步玩到极致的。</p>
+<h2 id="一、为什么需要异步-硬件本来就是并发的"><a href="#一、为什么需要异步-硬件本来就是并发的" class="headerlink" title="一、为什么需要异步:硬件本来就是并发的"></a>一、为什么需要异步:硬件本来就是并发的</h2><h3 id="1-1-一台机器里有几个”工人”"><a href="#1-1-一台机器里有几个”工人”" class="headerlink" title="1.1 一台机器里有几个”工人”"></a>1.1 一台机器里有几个”工人”</h3><p>跑深度学习的服务器,<strong>至少</strong>有这些彼此独立的执行单元:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>工人</th>
+<th>干的事</th>
+<th>谁指挥它</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CPU 核心</strong></td>
+<td>Python 代码、数据预处理、kernel launch</td>
+<td>你写的 Python</td>
+</tr>
+<tr>
+<td><strong>GPU SM(流处理器)</strong></td>
+<td>矩阵乘、conv、激活函数等计算 kernel</td>
+<td>CUDA driver</td>
+</tr>
+<tr>
+<td><strong>GPU DMA / Copy 引擎</strong></td>
+<td>Host↔Device、Device↔Device 数据搬运</td>
+<td>CUDA stream</td>
+</tr>
+<tr>
+<td><strong>NVLink / PCIe / IB 网卡</strong></td>
+<td>跨 GPU、跨机通信</td>
+<td>NCCL</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键事实</strong>:这些工人<strong>物理上是并行的</strong>——CPU 在跑 Python 时 GPU 不一定闲,GPU 在算 kernel 时网卡完全可以同时传梯度,DMA 在搬数据时 SM 也能继续算别的。</p>
+<p>如果代码写得”全同步”(每一步都等上一步彻底干完才发下一条指令),就等于让其他工人都干等。<strong>异步就是为了让所有工人尽可能同时忙起来</strong>。</p>
+<h3 id="1-2-同步-vs-异步-一段代码看本质"><a href="#1-2-同步-vs-异步-一段代码看本质" class="headerlink" title="1.2 同步 vs 异步:一段代码看本质"></a>1.2 同步 vs 异步:一段代码看本质</h3><p>考虑这样一个流程:<strong>算梯度 → 把梯度传给其他卡 → 用平均梯度更新参数</strong>。</p>
+<p><strong>同步版本</strong>(每一步都阻塞):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">CPU/GPU :  [算梯度          ][        ][用平均梯度更新参数]</span><br><span class="line">网卡    :                    [传输/平均]</span><br><span class="line">                                 ↑ GPU 此时干等</span><br><span class="line">总耗时  :  T_compute + T_comm + T_update</span><br></pre></td></tr></table></figure>
+<p><strong>异步版本</strong>(算下一批的同时把上一批的梯度传出去):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">CPU/GPU :  [算梯度       ][算下一批梯度       ][用平均梯度更新]</span><br><span class="line">网卡    :                 [传输/平均上一批的梯度]</span><br><span class="line">                          ↑ 同时进行,互不阻塞</span><br><span class="line">总耗时  :  max(T_compute, T_comm) + T_update</span><br></pre></td></tr></table></figure>
+<p>如果 <code>T_compute ≈ T_comm</code>,异步版本几乎<strong>省掉一整段通信时间</strong>。这就是 DDP 跑得近似线性加速的根本原因——<strong>不是通信变快了,而是通信被计算掩盖了</strong>。</p>
+<h3 id="1-3-但异步不是免费的"><a href="#1-3-但异步不是免费的" class="headerlink" title="1.3 但异步不是免费的"></a>1.3 但异步不是免费的</h3><p>异步带来三个新问题,后面每一节都会反复碰到:</p>
+<ol>
+<li><strong>依赖管理</strong>:某个 kernel 需要前一个 kernel 的结果,异步发射时怎么保证顺序?</li>
+<li><strong>资源竞争</strong>:两个 stream 都在用同一份显存怎么办?</li>
+<li><strong>可观测性</strong>:CPU 早就跑过那行代码了,GPU 实际还没开始,你怎么测时间、怎么处理报错?</li>
+</ol>
+<p>CUDA 的 stream 模型就是为了解决这三件事而设计的。</p>
+<h2 id="二、CUDA-编程模型-Stream-与异步执行"><a href="#二、CUDA-编程模型-Stream-与异步执行" class="headerlink" title="二、CUDA 编程模型:Stream 与异步执行"></a>二、CUDA 编程模型:Stream 与异步执行</h2><h3 id="2-1-两个时间轴-Host-与-Device"><a href="#2-1-两个时间轴-Host-与-Device" class="headerlink" title="2.1 两个时间轴:Host 与 Device"></a>2.1 两个时间轴:Host 与 Device</h3><p>在 CUDA 里,CPU(host)和 GPU(device)有<strong>各自独立的指令队列</strong>。你在 Python 里调用一个 GPU 操作,实际上分两步:</p>
+<ol>
+<li><strong>Host 提交 (launch)</strong>:把”做什么”写一条指令丢进 GPU 的命令队列,<strong>立即返回</strong></li>
+<li><strong>Device 执行</strong>:GPU 在某个时刻按队列顺序实际做这件事</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">                    时间 →</span><br><span class="line">Host (CPU)  :  [launch K1][launch K2][launch K3][launch K4][... 继续 Python ...]</span><br><span class="line">Device (GPU):              ↓ 排队</span><br><span class="line">                          [    K1 执行    ][    K2 执行    ][    K3 执行    ][K4 ...]</span><br><span class="line">                            ↑ 这里 host 早跑过 launch K1 那行代码了</span><br></pre></td></tr></table></figure>
+<p><strong>Host 的时间和 Device 的时间是错开的</strong>——这是 CUDA 异步模型的最核心事实。</p>
+<p>代码层面看:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">x = torch.randn(<span class="number">4096</span>, <span class="number">4096</span>, device=<span class="string">&quot;cuda&quot;</span>)</span><br><span class="line">y = torch.randn(<span class="number">4096</span>, <span class="number">4096</span>, device=<span class="string">&quot;cuda&quot;</span>)</span><br><span class="line"></span><br><span class="line">t0 = time.time()</span><br><span class="line">z = x @ y                      <span class="comment"># ← 这一行立刻返回!GPU 还没算完</span></span><br><span class="line">t1 = time.time()</span><br><span class="line"><span class="built_in">print</span>(t1 - t0)                 <span class="comment"># 通常 &lt; 1ms,这是 launch 时间</span></span><br></pre></td></tr></table></figure>
+<p><code>x @ y</code> 看起来像在算矩阵乘,实际只是把矩阵乘<strong>任务</strong>提交给 GPU。如果你想测真实计算时间,必须强制等 GPU 干完:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">torch.cuda.synchronize()       <span class="comment"># 阻塞 host 直到 GPU 队列清空</span></span><br><span class="line">t0 = time.time()</span><br><span class="line">z = x @ y</span><br><span class="line">torch.cuda.synchronize()       <span class="comment"># 再阻塞一次,确保 z 算好</span></span><br><span class="line">t1 = time.time()</span><br><span class="line"><span class="built_in">print</span>(t1 - t0)                 <span class="comment"># 现在才是真实计算时间</span></span><br></pre></td></tr></table></figure>
+<p><strong>这是 99% 的”GPU 测时间错”的根源</strong>——很多人以为代码慢的地方,其实 host 早就跑过了,真实瓶颈在另一个地方。</p>
+<h3 id="2-2-Stream-GPU-的指令队列"><a href="#2-2-Stream-GPU-的指令队列" class="headerlink" title="2.2 Stream:GPU 的指令队列"></a>2.2 Stream:GPU 的指令队列</h3><p>每张 GPU 上不只有一条命令队列,而是有多个<strong>独立的队列</strong>,每个叫一个 <strong>stream</strong>。</p>
+<ul>
+<li><strong>同一个 stream 内</strong>:任务严格按提交顺序串行执行(有依赖关系)</li>
+<li><strong>不同 stream 之间</strong>:任务可以<strong>并发</strong>执行(相互独立)</li>
+</ul>
+<p>PyTorch 默认所有操作都跑在一个”默认 stream”上,所以你写的代码看起来是顺序的。但只要你把不同任务派到不同 stream,GPU 的硬件就能让它们并行起来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">默认 stream     :  [matmul][add ][relu][matmul][...]    ← 所有计算排成一队</span><br><span class="line">自定义 stream 1 :        [memcpy h2d][memcpy h2d]       ← 数据搬运并发进行</span><br><span class="line">自定义 stream 2 :              [NCCL AllReduce]         ← 通信并发进行</span><br><span class="line">                Time →</span><br></pre></td></tr></table></figure>
+<p>GPU 内部:SM 跑计算 kernel,Copy 引擎跑 memcpy,NVLink 引擎跑通信——三组硬件资源,三个 stream 各占一个,<strong>真的同时在跑</strong>。</p>
+<h3 id="2-3-不同-stream-之间的并发示意"><a href="#2-3-不同-stream-之间的并发示意" class="headerlink" title="2.3 不同 stream 之间的并发示意"></a>2.3 不同 stream 之间的并发示意</h3><p>举一个具体例子:数据搬运 + 计算重叠。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">时间轴      0    1    2    3    4    5    6    7</span><br><span class="line">默认 stream :           [matmul A    ][matmul B    ]</span><br><span class="line">copy stream :  [H2D x→A][H2D y→B   ]</span><br><span class="line">                   ↑ 这两件事在 GPU 上同时进行</span><br><span class="line">                   一个用 SM,一个用 DMA,不抢资源</span><br></pre></td></tr></table></figure>
+<p>如果你<strong>不开 copy stream</strong>,数据搬运和计算就会串行:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">时间轴      0    1    2    3    4    5    6    7    8    9</span><br><span class="line">默认 stream :  [H2D x→A][matmul A    ][H2D y→B][matmul B    ]</span><br><span class="line">                                        ↑ 此时 SM 闲着等 DMA</span><br></pre></td></tr></table></figure>
+<p>直观就能看到差距——多 stream 是在用<strong>已经存在但没被利用</strong>的硬件并行性。</p>
+<h3 id="2-4-同步原语-让乱序的世界保持正确"><a href="#2-4-同步原语-让乱序的世界保持正确" class="headerlink" title="2.4 同步原语:让乱序的世界保持正确"></a>2.4 同步原语:让乱序的世界保持正确</h3><p>有了多 stream,就要回答”怎么保证依赖顺序”。CUDA 提供几把锁:</p>
+<p><strong><code>torch.cuda.synchronize()</code></strong>:阻塞 host,直到 device 上<strong>所有</strong> stream 都干完。最暴力,主要用来测时间和 debug。</p>
+<p><strong><code>stream.synchronize()</code></strong>:阻塞 host,直到这一个 stream 干完。</p>
+<p><strong><code>stream.wait_stream(other)</code></strong>:让 <code>stream</code> 在 GPU 内部等 <code>other</code> 干完才继续——<strong>不阻塞 host</strong>,host 该干嘛干嘛。这是异步重叠的关键 API。</p>
+<p><strong><code>Event</code></strong>:更细粒度的标记。在某个 stream 上 <code>event.record()</code> 打个标记,另一个 stream <code>event.wait()</code> 等这个标记被达到。常用于建跨 stream 的依赖图。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">s1 = torch.cuda.Stream()</span><br><span class="line">s2 = torch.cuda.Stream()</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> torch.cuda.stream(s1):</span><br><span class="line">    a = compute_A()           <span class="comment"># 在 s1 上算</span></span><br><span class="line"></span><br><span class="line">ev = torch.cuda.Event()</span><br><span class="line">ev.record(s1)                  <span class="comment"># 在 s1 上打标记</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> torch.cuda.stream(s2):</span><br><span class="line">    ev.wait()                  <span class="comment"># s2 等 s1 的标记</span></span><br><span class="line">    b = use(a)                 <span class="comment"># 现在 s2 才用 a,保证 a 算完</span></span><br></pre></td></tr></table></figure>
+<p>整个过程<strong>host 不阻塞</strong>,只是在 GPU 那边建了”s2 的某个 kernel 必须等 s1 那个 event 才能跑”的依赖。这就是异步重叠的标准写法。</p>
+<h2 id="三、PyTorch-里怎么用异步"><a href="#三、PyTorch-里怎么用异步" class="headerlink" title="三、PyTorch 里怎么用异步"></a>三、PyTorch 里怎么用异步</h2><h3 id="3-1-你早就在用异步了"><a href="#3-1-你早就在用异步了" class="headerlink" title="3.1 你早就在用异步了"></a>3.1 你早就在用异步了</h3><p>只要你在 PyTorch 里跑 <code>.cuda()</code> 张量做运算,<strong>默认就是异步的</strong>。下面这段代码看起来”按顺序”运行:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">y = model(x)        <span class="comment"># forward</span></span><br><span class="line">loss = criterion(y, target)</span><br><span class="line">loss.backward()     <span class="comment"># backward</span></span><br><span class="line">optimizer.step()    <span class="comment"># update</span></span><br></pre></td></tr></table></figure>
+<p>实际上,这四行代码执行完时,GPU 上的工作可能<strong>一个都还没真正做完</strong>——它们都被排进了默认 stream 的队列里,host 已经跑到下一行了。直到你做”必须看到结果”的事(打印、保存、转 CPU),host 才会被迫等 GPU。</p>
+<h3 id="3-2-哪些操作会”强制同步”"><a href="#3-2-哪些操作会”强制同步”" class="headerlink" title="3.2 哪些操作会”强制同步”"></a>3.2 哪些操作会”强制同步”</h3><p>这些是 host 与 device 的同步点,会让 host 阻塞等 GPU:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>为什么阻塞</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tensor.item()</code></td>
+<td>必须把数取回 CPU 内存</td>
+</tr>
+<tr>
+<td><code>tensor.cpu()</code> / <code>.numpy()</code></td>
+<td>数据搬到 CPU,要等 GPU 写完</td>
+</tr>
+<tr>
+<td><code>print(tensor)</code></td>
+<td>打印要看到值</td>
+</tr>
+<tr>
+<td><code>tensor.tolist()</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>if tensor &gt; 0:</code></td>
+<td>条件判断需要值</td>
+</tr>
+<tr>
+<td><code>torch.cuda.synchronize()</code></td>
+<td>显式阻塞</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>最常见的 footgun</strong>:训练循环里手贱写一个 <code>print(loss.item())</code>,每个 iteration 都会逼 host 等 GPU 队列清空,本来异步重叠的计算-通信瞬间变同步。生产代码里这种打印要么定期(每 100 步)做,要么累积成 tensor 最后再 <code>.item()</code>。</p>
+<h3 id="3-3-数据搬运-non-blocking-True"><a href="#3-3-数据搬运-non-blocking-True" class="headerlink" title="3.3 数据搬运:non_blocking=True"></a>3.3 数据搬运:<code>non_blocking=True</code></h3><p>最容易拿到的”免费”异步收益是数据加载。默认情况下 <code>tensor.to(&#39;cuda&#39;)</code> 是同步的(host 等 H2D 拷贝完),但加一个参数就异步了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># DataLoader 用 pin_memory=True 才能开 non_blocking</span></span><br><span class="line">loader = DataLoader(dataset, ..., pin_memory=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> x, y <span class="keyword">in</span> loader:</span><br><span class="line">    x = x.to(device, non_blocking=<span class="literal">True</span>)   <span class="comment"># 异步 H2D</span></span><br><span class="line">    y = y.to(device, non_blocking=<span class="literal">True</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 此时 H2D 还在 copy stream 跑,但下面的 forward 在默认 stream</span></span><br><span class="line">    <span class="comment"># 默认 stream 看到 x,y 就会自动等 copy 完成(PyTorch 帮你管依赖)</span></span><br><span class="line">    pred = model(x)</span><br><span class="line">    loss = criterion(pred, y)</span><br></pre></td></tr></table></figure>
+<p>这样下个 batch 的搬运可以和当前 batch 的计算重叠,DataLoader 不再是瓶颈。</p>
+<h3 id="3-4-测时间的正确姿势"><a href="#3-4-测时间的正确姿势" class="headerlink" title="3.4 测时间的正确姿势"></a>3.4 测时间的正确姿势</h3><p>既然 <code>time.time()</code> 测的是 host 时间,不是 GPU 时间,那怎么准确测?三种方法:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方法 1:最简单,粗粒度</span></span><br><span class="line">torch.cuda.synchronize()</span><br><span class="line">t0 = time.time()</span><br><span class="line">heavy_gpu_work()</span><br><span class="line">torch.cuda.synchronize()</span><br><span class="line">t1 = time.time()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;t1 - t0:<span class="number">.3</span>f&#125;</span>s&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方法 2:CUDA Event,精度高,不阻塞 host</span></span><br><span class="line">start = torch.cuda.Event(enable_timing=<span class="literal">True</span>)</span><br><span class="line">end = torch.cuda.Event(enable_timing=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">start.record()</span><br><span class="line">heavy_gpu_work()</span><br><span class="line">end.record()</span><br><span class="line"></span><br><span class="line">end.synchronize()              <span class="comment"># 等 end 这个事件被达到</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;start.elapsed_time(end):<span class="number">.3</span>f&#125;</span> ms&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方法 3:torch.profiler,看清楚每个 kernel 在哪个 stream 跑多久</span></span><br><span class="line"><span class="keyword">with</span> torch.profiler.profile() <span class="keyword">as</span> prof:</span><br><span class="line">    heavy_gpu_work()</span><br><span class="line"><span class="built_in">print</span>(prof.key_averages().table())</span><br></pre></td></tr></table></figure>
+<p>第二种方法是 production 测速首选——它在 GPU 自己的时钟上打时间戳,不受 host 异步行为干扰。</p>
+<h2 id="四、典型场景一-DDP-的计算-通信重叠"><a href="#四、典型场景一-DDP-的计算-通信重叠" class="headerlink" title="四、典型场景一:DDP 的计算-通信重叠"></a>四、典型场景一:DDP 的计算-通信重叠</h2><p>把前面的概念套到一个实际场景。DDP 反向时要做的事:<strong>算各层的梯度 → AllReduce 跨卡同步 → 优化器更新</strong>。</p>
+<h3 id="4-1-同步版的反向-基线"><a href="#4-1-同步版的反向-基线" class="headerlink" title="4.1 同步版的反向(基线)"></a>4.1 同步版的反向(基线)</h3><p>如果直接写”反向算完→AllReduce→更新”:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">反向计算  :  [L_N][L_&#123;N-1&#125;][L_&#123;N-2&#125;]...[L_2][L_1]</span><br><span class="line">NCCL 流   :                                    [AR L1][AR L2]...[AR LN]</span><br><span class="line">更新      :                                                            [step]</span><br><span class="line"></span><br><span class="line">总时间    =  T_backward + T_allreduce + T_step</span><br></pre></td></tr></table></figure>
+<p>通信和计算完全串行——通信时间一秒不少地加在 wall-clock 上。</p>
+<h3 id="4-2-DDP-实际怎么做-异步重叠"><a href="#4-2-DDP-实际怎么做-异步重叠" class="headerlink" title="4.2 DDP 实际怎么做(异步重叠)"></a>4.2 DDP 实际怎么做(异步重叠)</h3><p>DDP 想做的事一句话:<strong>反向一边算梯度,一边把已经算好的梯度发出去同步,不要等所有梯度算完才动手</strong>。要做到这点需要回答五个问题——一个梯度算好了怎么知道?发太碎了怎么办?通信和反向都用 GPU 怎么不抢资源?怎么让通信尽量提前发射?最后怎么收尾?</p>
+<p>下面挨个拆。</p>
+<h4 id="1-Hook-梯度就绪的”通知机制”"><a href="#1-Hook-梯度就绪的”通知机制”" class="headerlink" title="1) Hook:梯度就绪的”通知机制”"></a>1) Hook:梯度就绪的”通知机制”</h4><p><code>backward()</code> 从 loss 出发沿计算图回溯,算完哪一层的 <code>dL/dW_i</code>,autograd 引擎就立刻往那个 <code>W_i.grad</code> 写值。<strong>写完那一刻</strong>就是 bucket 该被触发的时机。</p>
+<p>DDP 在每个参数的 grad accumulator 上挂了个 hook,语义如下(简化):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> p <span class="keyword">in</span> model.parameters():</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> p.requires_grad: <span class="keyword">continue</span></span><br><span class="line">    grad_acc = p.expand_as(p).grad_fn.next_functions[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    grad_acc.register_hook(<span class="keyword">lambda</span> *_: ddp.mark_param_ready(p))</span><br><span class="line"><span class="comment"># 真实 DDP 用的是 C++ 的 Reducer,语义完全一致</span></span><br></pre></td></tr></table></figure>
+<p>只要 autograd 写完 <code>p.grad</code>,<code>mark_param_ready(p)</code> 就会被同步调用——<strong>不需要等 backward 整体结束</strong>。这是后面所有异步动作的触发信号。</p>
+<h4 id="2-Bucket-把小梯度凑成大包再发"><a href="#2-Bucket-把小梯度凑成大包再发" class="headerlink" title="2) Bucket:把小梯度凑成大包再发"></a>2) Bucket:把小梯度凑成大包再发</h4><p>模型有几百万参数,如果一个梯度就发一次 AllReduce,会被 NCCL 的 launch overhead 和带宽爬坡淹没(小消息根本打不满 NVLink)。DDP 把参数预先分成若干个 <strong>bucket</strong>,默认 25MB 一个,每个 bucket 是一段<strong>连续显存</strong> + 一个待办计数器:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">参数到 bucket 的映射:</span><br><span class="line">  bucket 0 (25MB):  W_N, W_&#123;N-1&#125;, W_&#123;N-2&#125;, ... pending=3</span><br><span class="line">  bucket 1 (25MB):  W_&#123;N-3&#125;, W_&#123;N-4&#125;, ...     pending=2</span><br><span class="line">  bucket 2 (25MB):  ...                       pending=...</span><br></pre></td></tr></table></figure>
+<p><code>mark_param_ready</code> 干两件事:把 <code>p.grad</code> 拷进 bucket 的 flat buffer,pending 减 1。<strong>减到 0 的那一瞬间整个 bucket 立刻整体发出去</strong>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">mark_param_ready</span>(<span class="params">self, p</span>):</span><br><span class="line">    bk = <span class="variable language_">self</span>.param_to_bucket[p]</span><br><span class="line">    bk.flat_grad[bk.offset[p] : bk.offset[p]+p.numel()].copy_(p.grad.flatten())</span><br><span class="line">    bk.pending -= <span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> bk.pending == <span class="number">0</span>:</span><br><span class="line">        bk.handle = dist.all_reduce(           <span class="comment"># 异步发射</span></span><br><span class="line">            bk.flat_grad,</span><br><span class="line">            op=ReduceOp.SUM,</span><br><span class="line">            async_op=<span class="literal">True</span>,</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+<p><code>async_op=True</code> 的语义:把 NCCL 任务排进 NCCL stream 的队列,<strong>host 立刻返回</strong>继续 backward。返回的 <code>handle</code> 不是数据,是一张”将来再来收”的票。</p>
+<h4 id="3-NCCL-stream-通信走专属车道"><a href="#3-NCCL-stream-通信走专属车道" class="headerlink" title="3) NCCL stream:通信走专属车道"></a>3) NCCL stream:通信走专属车道</h4><p>NCCL 在每张卡上有自己的 CUDA stream。AllReduce 任务排进去之后:</p>
+<ul>
+<li><strong>NCCL stream</strong> 上,GPU 用 NVLink / IB 引擎搬数据、跑 ring/tree reduce,<strong>几乎不占 SM</strong></li>
+<li><strong>默认 stream</strong> 上,backward 的 matmul / conv 继续在 SM 上跑</li>
+</ul>
+<p>两条 stream 各用各的硬件资源(SM vs 通信引擎),硬件层面真的并发。”NCCL stream 读 bucket buffer 时默认 stream 不能正在改它”这种依赖,CUDA 通过 event 自动建——使用者不用手写。</p>
+<h4 id="4-反向”逆序”-bucket-反编号-让通信尽早开跑"><a href="#4-反向”逆序”-bucket-反编号-让通信尽早开跑" class="headerlink" title="4) 反向”逆序” + bucket 反编号:让通信尽早开跑"></a>4) 反向”逆序” + bucket 反编号:让通信尽早开跑</h4><p>backward 从最后一层往前算:<code>L_N → L_{N-1} → ... → L_1</code>。</p>
+<p>DDP 给 bucket 编号时<strong>故意反过来</strong>:bucket 0 装最后几层(<code>W_N</code> 附近)的参数,bucket K 装第一层(<code>W_1</code> 附近)的参数。这样反向才刚开始没多久,bucket 0 就能凑齐发出第一波 AllReduce——后面<strong>所有</strong> bucket 的通信都和正在进行的反向重叠。</p>
+<p>如果不反过来,反向跑了 95% 才凑齐第一个 bucket,根本没多少时间留给重叠。</p>
+<h4 id="5-把五件事拼起来的时序图"><a href="#5-把五件事拼起来的时序图" class="headerlink" title="5) 把五件事拼起来的时序图"></a>5) 把五件事拼起来的时序图</h4><p>设 4 层模型、3 个 bucket,反向耗时 4 个时间单元、单个 bucket 通信耗时 1.5 个:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">时间 →                  0       1       2       3       4       5</span><br><span class="line">默认 stream (反向)   :  [bk_L4 ][bk_L3 ][bk_L2 ][bk_L1 ]</span><br><span class="line">                              ↓ L4,L3 凑齐 bk0    ↓ L2 凑齐 bk1   ↓ L1 凑齐 bk2</span><br><span class="line">NCCL stream (通信)   :         [AR bk0   ]      [AR bk1   ]     [AR bk2   ]</span><br><span class="line">                                                                          ↑ tail,反向已结束</span><br><span class="line">host 在做啥          :  [launch L4 + hook fires, fire AR bk0]</span><br><span class="line">                                [launch L3 + hook]</span><br><span class="line">                                       [launch L2 + hook,fire AR bk1]</span><br><span class="line">                                              [launch L1 + hook,fire AR bk2]</span><br><span class="line">                                                     [wait_all][step]</span><br><span class="line">                          ↑ host 一路向前提交,完全不阻塞       ↑ 唯一的真同步点</span><br></pre></td></tr></table></figure>
+<p>读出来三件事:</p>
+<ul>
+<li><strong>AR bk0 在反向只跑了 25% 时就已经在 NCCL stream 上跑了</strong>——通信被尽早提前</li>
+<li><strong>反向计算和 NCCL 通信用不同硬件</strong>——同时跑、互不干扰</li>
+<li><strong>整个 backward 过程只有 wait_all 是真同步</strong>——前面所有 hook、launch、async_op 都不阻塞 host</li>
+</ul>
+<p>总耗时从 <code>T_backward + T_allreduce</code> 变成 <code>max(T_backward, T_allreduce) + T_tail</code>。<code>T_tail</code> 是最后一个 bucket 没法被反向覆盖掉的那一小段——它的长度等于”最后一个 bucket 的通信耗时”。如果反向比通信慢,tail 几乎为零(通信”白送”);如果通信比反向慢(模型小、跨节点带宽差、bucket 太大导致最后一个还在传),tail 就是 DDP 的真实瓶颈。</p>
+<h4 id="6-收尾-wait-和除以-world-size"><a href="#6-收尾-wait-和除以-world-size" class="headerlink" title="6) 收尾:wait 和除以 world_size"></a>6) 收尾:wait 和除以 world_size</h4><p>backward 末尾(autograd 的 final hook 里),DDP 把所有 bucket 同步掉、求平均、拆回各参数的 <code>.grad</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> bk <span class="keyword">in</span> <span class="variable language_">self</span>.buckets:</span><br><span class="line">    bk.handle.wait()                  <span class="comment"># 这里 host 阻塞等 NCCL 完成</span></span><br><span class="line">    bk.flat_grad.div_(<span class="variable language_">self</span>.world_size)</span><br><span class="line">    <span class="keyword">for</span> p <span class="keyword">in</span> bk.params:</span><br><span class="line">        p.grad.copy_(bk.flat_grad[bk.offset[p] : bk.offset[p]+p.numel()].view_as(p))</span><br><span class="line"></span><br><span class="line"><span class="comment"># optimizer.step() 看到的就是平均后的梯度</span></span><br></pre></td></tr></table></figure>
+<p><code>bk.handle.wait()</code> 是整个 backward 唯一的真同步点。前面 hook、launch、async_op 一路狂奔,通信和计算在 GPU 里疯狂重叠;到这里要做参数更新前,host 必须确认通信真的结束了——这是异步重叠的边界,也是 wall-clock 上 DDP 反向”剩下的那一小段时间”的来源。</p>
+<h2 id="五、典型场景二-ZeRO-3-FSDP-的参数预取"><a href="#五、典型场景二-ZeRO-3-FSDP-的参数预取" class="headerlink" title="五、典型场景二:ZeRO-3 / FSDP 的参数预取"></a>五、典型场景二:ZeRO-3 / FSDP 的参数预取</h2><p>ZeRO-3 把参数本身分片,每张卡只持有 1/N。前向时每用到一层都要先 AllGather 一下把这层参数凑齐。如果同步做:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">计算 :  [---等---][L1 fwd][---等---][L2 fwd][---等---][L3 fwd]</span><br><span class="line">通信 :  [AG L1  ]         [AG L2  ]         [AG L3  ]</span><br><span class="line">                ↑ GPU SM 干等</span><br></pre></td></tr></table></figure>
+<p>每次 AllGather 都让计算干等,<strong>相当于把通信完全暴露在 wall-clock 里</strong>,慢得离谱。</p>
+<p>FSDP 的解法是 <strong>prefetch</strong>:计算第 i 层的同时,在另一个 stream 上<strong>异步发起</strong>第 i+1 层的 AllGather:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">默认 stream (计算)  :  [L1 fwd][L2 fwd][L3 fwd][L4 fwd]</span><br><span class="line">NCCL stream (通信)  :  [AG L1]</span><br><span class="line">                            [AG L2]    ← 在 L1 计算时已发起</span><br><span class="line">                                  [AG L3]</span><br><span class="line">                                        [AG L4]</span><br><span class="line"></span><br><span class="line">整体时间 ≈ max(计算, 通信),通信被掩盖</span><br></pre></td></tr></table></figure>
+<p>实现关键:用 stream + event 把”L_{i+1} 的 AllGather 必须在 L_i 计算开始之后”这条依赖建好,然后让 NCCL stream 自己往前跑。FSDP 的 <code>forward_prefetch=True</code> 和 <code>backward_prefetch=BACKWARD_PRE</code> 就是开/关这个机制的开关。</p>
+<p><strong>这是异步重叠在 ZeRO-3 里的应用</strong>——和 DDP 的思路一样(把通信丢到独立 stream + 提前发射),只是触发时机从”反向梯度就绪”换成”前向到达某层之前”。</p>
+<h2 id="六、典型场景三-Pipeline-并行的-1F1B"><a href="#六、典型场景三-Pipeline-并行的-1F1B" class="headerlink" title="六、典型场景三:Pipeline 并行的 1F1B"></a>六、典型场景三:Pipeline 并行的 1F1B</h2><p>异步的另一种形态——不是计算和通信重叠,而是<strong>多个 micro-batch 在不同 stage 上同时流动</strong>。</p>
+<h3 id="6-1-朴素调度的”气泡”"><a href="#6-1-朴素调度的”气泡”" class="headerlink" title="6.1 朴素调度的”气泡”"></a>6.1 朴素调度的”气泡”</h3><p>设 4 个 stage、4 个 micro-batch。如果一个 micro-batch 跑完前向再跑反向才换下一个:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">Stage 0:  [F1][F2][F3][F4]                              [B4][B3][B2][B1]</span><br><span class="line">Stage 1:      [F1][F2][F3][F4]                      [B4][B3][B2][B1]</span><br><span class="line">Stage 2:          [F1][F2][F3][F4]              [B4][B3][B2][B1]</span><br><span class="line">Stage 3:              [F1][F2][F3][F4][B4][B3][B2][B1]</span><br><span class="line">          ←warmup→                              ←cooldown→</span><br><span class="line">            ↑ 大量 stage 干等              ↑ 大量 stage 干等</span><br></pre></td></tr></table></figure>
+<p>气泡时间正比于 stage 数,stage 越多浪费越大。</p>
+<h3 id="6-2-1F1B-One-Forward-One-Backward"><a href="#6-2-1F1B-One-Forward-One-Backward" class="headerlink" title="6.2 1F1B(One Forward One Backward)"></a>6.2 1F1B(One Forward One Backward)</h3><p>Megatron-LM 等用的调度:每个 stage 在 warmup 后,<strong>轮流交替</strong>跑一次前向和一次反向,把流水线塞满:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">时间 →</span><br><span class="line">Stage 0:  [F1][F2][F3][F4][B1][F5][B2][F6][B3][F7][B4][F8][B5][B6][B7][B8]</span><br><span class="line">Stage 1:      [F1][F2][F3][B1][F4][B2][F5][B3][F6][B4][F7][B5][F8][B6][B7][B8]</span><br><span class="line">Stage 2:          [F1][F2][B1][F3][B2][F4][B3][F5][B4][F6][B5][F7][B6][F8][B7][B8]</span><br><span class="line">Stage 3:              [F1][B1][F2][B2][F3][B3][F4][B4][F5][B5][F6][B6][F7][B7][F8][B8]</span><br><span class="line">                       ↑ warmup 后立刻交替 F/B,各 stage 几乎不空闲</span><br></pre></td></tr></table></figure>
+<p>气泡只剩下 warmup 和 cooldown 这两段,占比 (stage_count - 1) / num_microbatches,micro-batch 越多气泡越被稀释。</p>
+<p>底层用的还是同样的异步思想:<strong>stage 之间用通信传 activation/gradient,通信走独立 stream,计算和通信重叠</strong>。1F1B 调度只是规定了”每个 stage 该按什么顺序往队列塞 F 和 B kernel”,硬件层面的并发还是 stream 模型在管。</p>
+<h2 id="七、易踩的坑"><a href="#七、易踩的坑" class="headerlink" title="七、易踩的坑"></a>七、易踩的坑</h2><p>异步带来效率,也带来一堆”看起来不科学”的现象。常见几条:</p>
+<h3 id="7-1-用-time-time-测出来的-GPU-耗时是错的"><a href="#7-1-用-time-time-测出来的-GPU-耗时是错的" class="headerlink" title="7.1 用 time.time() 测出来的 GPU 耗时是错的"></a>7.1 用 <code>time.time()</code> 测出来的 GPU 耗时是错的</h3><p><code>time.time()</code> 测的是 host 走过那行代码的时间,kernel launch 本身只要几 μs。除非 host 撞到强制同步点,否则你测出来的是”提交时间”,不是”GPU 干完时间”。<strong>永远用 <code>torch.cuda.synchronize()</code> 包裹或 CUDA Event</strong>,前面 §3.4 讲过。</p>
+<h3 id="7-2-错误暴露得很晚"><a href="#7-2-错误暴露得很晚" class="headerlink" title="7.2 错误暴露得很晚"></a>7.2 错误暴露得很晚</h3><p>GPU kernel 执行错(比如越界、NaN 触发某些 assert),host 不会立刻收到——它已经跑过那行代码了。错误要等到下一次同步点(下一个 <code>.item()</code>、<code>synchronize()</code>、甚至下一个 iteration 才暴露。看到报错栈指向某行 PyTorch 代码,真凶可能在很多行之前。</p>
+<p>调试这种问题的招:加环境变量 <code>CUDA_LAUNCH_BLOCKING=1</code>,强制每次 kernel launch 都等 GPU 跑完,把异步关掉。错误就会指向真正出错的那行,代价是训练慢几倍——只用于调试。</p>
+<h3 id="7-3-OOM-也会延迟"><a href="#7-3-OOM-也会延迟" class="headerlink" title="7.3 OOM 也会延迟"></a>7.3 OOM 也会延迟</h3><p>显存不够爆 OOM 同样不一定在你期待的那行报。如果某次显存分配在另一个 stream 上 lazy 触发,栈可能完全是误导的。同样可以用 <code>CUDA_LAUNCH_BLOCKING=1</code> 看真实位置,或者用 <code>torch.cuda.memory._record_memory_history()</code> 抓显存事件回放。</p>
+<h3 id="7-4-多-stream-的依赖必须显式建"><a href="#7-4-多-stream-的依赖必须显式建" class="headerlink" title="7.4 多 stream 的依赖必须显式建"></a>7.4 多 stream 的依赖必须显式建</h3><p>PyTorch 默认 stream 上的操作彼此自动建依赖(因为是同一个队列)。但<strong>你自己开 stream 后,跨 stream 的依赖必须自己用 event 建</strong>。忘了建依赖就等于在程序里悄悄写了个 race condition,出来的数据可能是上一个 batch 的、可能是部分写好的。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 错的:s2 用 a,但 s1 还没算完</span></span><br><span class="line"><span class="keyword">with</span> torch.cuda.stream(s1):</span><br><span class="line">    a = compute()</span><br><span class="line"><span class="keyword">with</span> torch.cuda.stream(s2):</span><br><span class="line">    use(a)            <span class="comment"># ⚠️ undefined behavior</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 对的:用 event 建依赖</span></span><br><span class="line"><span class="keyword">with</span> torch.cuda.stream(s1):</span><br><span class="line">    a = compute()</span><br><span class="line">ev = torch.cuda.Event(); ev.record(s1)</span><br><span class="line"><span class="keyword">with</span> torch.cuda.stream(s2):</span><br><span class="line">    ev.wait()</span><br><span class="line">    use(a)</span><br></pre></td></tr></table></figure>
+<p>PyTorch 的 <code>tensor.record_stream(stream)</code> 还能告诉显存分配器”这块 tensor 还在被 stream 用着,别回收”,防止显存被提前释放。这些细节是手写多 stream 代码时绕不开的。</p>
+<h2 id="八、一句话总结"><a href="#八、一句话总结" class="headerlink" title="八、一句话总结"></a>八、一句话总结</h2><p>GPU 是个<strong>异步加速器</strong>——你写的每行 <code>.cuda()</code> 操作几乎都不阻塞 host,只是把任务提交到某个 stream 的队列。Stream 让多种硬件资源(SM / DMA / NVLink)同时忙起来,event 负责跨 stream 建依赖。DDP 的计算-通信重叠、ZeRO-3 的参数预取、Pipeline 的 1F1B,都是同一套”独立 stream + 提前发射 + 显式同步”思想的具体应用。会用异步,大模型训练的吞吐才能逼近硬件理论上限;不理解异步,测出来的时间和报错的位置都会让人摸不着头脑。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/1.DataParallel/AsyncCompute/">https://SGDBS.github.io/AI_Infra/1.DataParallel/AsyncCompute/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter1/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/18.jpg" class="responsive-img" alt="RL Chapter1 MDP 与 Bellman 方程">
+                        
+                        <span class="card-title">RL Chapter1 MDP 与 Bellman 方程</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-09
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/MemoryBudget/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/17.jpg" class="responsive-img" alt="1. 训练显存预算与激活优化">
+                        
+                        <span class="card-title">1. 训练显存预算与激活优化</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-08
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

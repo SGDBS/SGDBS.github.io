@@ -1,0 +1,2806 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter 6. DDPM, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter 6. DDPM | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">Diffusion Models</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="扩散模型从入门到入土">扩散模型从入门到入土</span>
+            <span class="sidebar-count">9</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter0/" title="Chapter 0. 数学知识">
+                <span class="sidebar-label">Chapter 0. 数学知识</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter1/" title="Chapter 1. 贝叶斯 &amp; 变分推断">
+                <span class="sidebar-label">Chapter 1. 贝叶斯 &amp; 变分推断</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter2/" title="Chapter 2. EM &amp; VAE">
+                <span class="sidebar-label">Chapter 2. EM &amp; VAE</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter3/" title="Chapter 3. Sohl-Dickstein Model">
+                <span class="sidebar-label">Chapter 3. Sohl-Dickstein Model</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter4/" title="Chapter 4. Score-based Models">
+                <span class="sidebar-label">Chapter 4. Score-based Models</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter5/" title="Chapter 5. NCSN Models">
+                <span class="sidebar-label">Chapter 5. NCSN Models</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/Diffusion/DiffusionDevelopment/Chapter6/" title="Chapter 6. DDPM">
+                <span class="sidebar-label">Chapter 6. DDPM</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter7/" title="Chapter 7. Score SDE">
+                <span class="sidebar-label">Chapter 7. Score SDE</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter8/" title="Chapter 8. DDIM">
+                <span class="sidebar-label">Chapter 8. DDIM</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/Diffusion-Models/">Diffusion Models</a>
+        
+        <span>/</span>
+        <span>Chapter 6. DDPM</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter 6. DDPM</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/Diffusion-Models/">
+                                <span class="chip bg-color">Diffusion Models</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                Diffusion Models
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-01
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>这一讲是整个 diffusion 系列里最关键、最优美的一讲——它把 Sohl-Dickstein 的”理论上正确但实际不好用”的框架,改造成了”现代 diffusion 的标准形式”。所有后续工作(Stable Diffusion、Imagen、SDXL、FLUX 等)都建立在 DDPM 之上。</p>
+<p>我会按这个顺序展开:</p>
+<ol>
+<li>DDPM 的贡献概览</li>
+<li>关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是高斯,有闭式</li>
+<li>用贝叶斯重写 ELBO,得到 KL 之和</li>
+<li>化简 KL,从 $\mu$-预测到 $\epsilon$-预测</li>
+<li>$L_{\text{simple}}$ 的诞生</li>
+<li>训练和采样算法</li>
+</ol>
+<hr>
+<h2 id="一、DDPM-的核心贡献"><a href="#一、DDPM-的核心贡献" class="headerlink" title="一、DDPM 的核心贡献"></a>一、DDPM 的核心贡献</h2><p>Ho et al. 2020 的论文(“Denoising Diffusion Probabilistic Models”)做了三件事:</p>
+<ol>
+<li><strong>数学改写</strong>:用贝叶斯把 ELBO 改成”两个高斯之间 KL”的求和——每一项都有闭式</li>
+<li><strong>重参数化</strong>:把网络的预测目标从均值 $\mu<em>\theta$ 换成噪声 $\epsilon</em>\theta$,损失变成简单的 MSE</li>
+<li><strong>工程突破</strong>:UNet 架构 + 时间嵌入,在 CIFAR-10 上首次达到 GAN 级别的质量</li>
+</ol>
+<p><strong>这一讲专注前两件事</strong>——它们是数学上的核心,理解了它们,后面的所有 diffusion 工作你都能秒懂。</p>
+<hr>
+<h2 id="二、关键引理-q-x-t-1-mid-x-t-x-0-是闭式高斯"><a href="#二、关键引理-q-x-t-1-mid-x-t-x-0-是闭式高斯" class="headerlink" title="二、关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是闭式高斯"></a>二、关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是闭式高斯</h2><p>这是整个 DDPM 推导的基石。让我们看它说什么、为什么重要、怎么算。</p>
+<h3 id="2-1-它是什么"><a href="#2-1-它是什么" class="headerlink" title="2.1 它是什么?"></a>2.1 它是什么?</h3><p>注意条件:<strong>给定 $x_t$ 和 $x_0$</strong>,求 $x_{t-1}$ 的分布。</p>
+<p>为什么要加 $x<em>0$?因为没有 $x_0$ 时,$q(x</em>{t-1} \mid x_t)$(真实的逆向条件分布)<strong>没有闭式</strong>——它要对所有可能的 $x_0$ 边际化,涉及对真实数据分布的积分。</p>
+<p>但<strong>条件</strong>在 $x_0$ 上之后,问题变得 tractable——这是因为给定 $x_0$,前向过程是一条已知的高斯链。</p>
+<h3 id="2-2-直观"><a href="#2-2-直观" class="headerlink" title="2.2 直观"></a>2.2 直观</h3><p>想象一个三角形:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">     x_0</span><br><span class="line">    /    \</span><br><span class="line">   /      \</span><br><span class="line">  ↓        ↓</span><br><span class="line">x_&#123;t-1&#125; → x_t</span><br></pre></td></tr></table></figure>
+<p>我们已经知道:</p>
+<ul>
+<li>$q(x<em>{t-1} \mid x_0)$:从 $x_0$ 一步跳到 $x</em>{t-1}$ 的高斯(用边际公式)</li>
+<li>$q(x<em>t \mid x</em>{t-1})$:前向一步的高斯</li>
+<li>$q(x_t \mid x_0)$:从 $x_0$ 跳到 $x_t$ 的高斯</li>
+</ul>
+<p>三者都是高斯,且都已知。<strong>用贝叶斯把它们组合</strong>,就能得到 $q(x_{t-1} \mid x_t, x_0)$。</p>
+<h3 id="2-3-推导"><a href="#2-3-推导" class="headerlink" title="2.3 推导"></a>2.3 推导</h3><p>贝叶斯公式(条件版本):</p>
+<script type="math/tex; mode=display">q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1}, x_0)\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}</script><p>注意 $q(x<em>t \mid x</em>{t-1}, x<em>0) = q(x_t \mid x</em>{t-1})$(因为前向是马尔可夫,$x<em>t$ 只依赖 $x</em>{t-1}$)。所以:</p>
+<script type="math/tex; mode=display">q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}</script><p>三个都是高斯:</p>
+<ul>
+<li>$q(x<em>t \mid x</em>{t-1}) = \mathcal{N}(x<em>t;\, \sqrt{\alpha_t} x</em>{t-1},\, \beta_t I)$,其中 $\alpha_t = 1 - \beta_t$</li>
+<li>$q(x<em>{t-1} \mid x_0) = \mathcal{N}(x</em>{t-1};\, \sqrt{\bar\alpha<em>{t-1}} x_0,\, (1-\bar\alpha</em>{t-1}) I)$</li>
+<li>$q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t} x_0,\, (1-\bar\alpha_t) I)$</li>
+</ul>
+<p>把高斯密度的表达式代入,展开 $\log$,合并 $x<em>{t-1}$ 的二次项和一次项——**结果一定还是个关于 $x</em>{t-1}$ 的高斯**(因为指数里是 $x_{t-1}$ 的二次型)。</p>
+<h3 id="2-4-闭式结果"><a href="#2-4-闭式结果" class="headerlink" title="2.4 闭式结果"></a>2.4 闭式结果</h3><p>整理后,$q(x<em>{t-1} \mid x_t, x_0) = \mathcal{N}(x</em>{t-1}; \tilde\mu_t(x_t, x_0), \tilde\beta_t I)$,其中:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\mu_t(x_t, x_0) = \frac{\sqrt{\bar\alpha_{t-1}} \beta_t}{1 - \bar\alpha_t}\, x_0 + \frac{\sqrt{\alpha_t} (1 - \bar\alpha_{t-1})}{1 - \bar\alpha_t}\, x_t}</script><script type="math/tex; mode=display">\boxed{\tilde\beta_t = \frac{1 - \bar\alpha_{t-1}}{1 - \bar\alpha_t}\, \beta_t}</script><p><strong>关键观察</strong>:</p>
+<ul>
+<li>均值 $\tilde\mu_t$ 是 $x_0$ 和 $x_t$ 的<strong>线性组合</strong>——非常干净</li>
+<li>方差 $\tilde\beta_t$ <strong>不依赖于 $x_0$ 或 $x_t$</strong>,只依赖于 $t$ 和预设的 $\beta_t$</li>
+<li>所有项都用 schedule 中已知的 $\alpha, \bar\alpha, \beta$ 算出,没有任何待估计的量</li>
+</ul>
+<p>这个公式是 DDPM 数学的<strong>核心引擎</strong>——后面的一切都建立在它上面。</p>
+<details><summary>怎么推导的</summary><div class="details-content"><p>好,这个推导是&quot;高斯运算&quot;的经典练习——纯代数,但每一步都要清楚。我会用<strong>配方法</strong>(completing the square)系统推完。这是 diffusion 推导里最技术性的一段,但理解了它,后面所有&quot;高斯之间的运算&quot;你都会做。</p>
+<hr>
+<h3 id="%E4%B8%80%E3%80%81%E8%B5%B7%E7%82%B9-%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%B1%95%E5%BC%80">一、起点:贝叶斯展开</h3>
+<p>我们要推:</p>
+<script type="math/tex; mode=display">q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}</script><p>三个高斯都已知:</p>
+<script type="math/tex; mode=display">q(x_t \mid x_{t-1}) = \mathcal{N}(x_t;\, \sqrt{\alpha_t} x_{t-1},\, \beta_t I)</script><script type="math/tex; mode=display">q(x_{t-1} \mid x_0) = \mathcal{N}(x_{t-1};\, \sqrt{\bar\alpha_{t-1}} x_0,\, (1-\bar\alpha_{t-1}) I)</script><script type="math/tex; mode=display">q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t} x_0,\, (1-\bar\alpha_t) I)</script><p>(其中 $\alpha<em>t = 1-\beta_t$,$\bar\alpha_t = \prod</em>{s=1}^t \alpha_s$)</p>
+<p><strong>总策略</strong>:取对数,只看依赖 $x<em>{t-1}$ 的项,把它整理成&quot;$x</em>{t-1}$ 的二次型 + 常数&quot;,对照高斯标准形式读出均值和方差。</p>
+<p>为什么这个策略行?因为:<strong>任何关于 $x<em>{t-1}$ 的表达,如果它的对数是 $x</em>{t-1}$ 的二次型,那它就是关于 $x_{t-1}$ 的高斯</strong>。高斯被均值和方差完全确定,所以读出二次型的系数就够了。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E5%86%99%E5%87%BA%E5%AF%B9%E6%95%B0">二、写出对数</h3>
+<p>取对数(乘除 → 加减):</p>
+<script type="math/tex; mode=display">\log q(x_{t-1} \mid x_t, x_0) = \log q(x_t \mid x_{t-1}) + \log q(x_{t-1} \mid x_0) - \log q(x_t \mid x_0)</script><p>第三项 $\log q(x<em>t \mid x_0)$ **不依赖 $x</em>{t-1}$**,作为常数处理(吸收到归一化里)。</p>
+<p>剩下两项,代入高斯密度公式 $\log \mathcal{N}(z; \mu, \sigma^2 I) = -\frac{1}{2\sigma^2}| z - \mu |^2 + \text{const}$(为了简洁我用了一维记号,多维各向同性同理):</p>
+<p><strong>第一项</strong>:</p>
+<script type="math/tex; mode=display">\log q(x_t \mid x_{t-1}) = -\frac{1}{2\beta_t}\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2 + \text{const}</script><p><strong>第二项</strong>:</p>
+<script type="math/tex; mode=display">\log q(x_{t-1} \mid x_0) = -\frac{1}{2(1-\bar\alpha_{t-1})}\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2 + \text{const}</script><p>合并:</p>
+<script type="math/tex; mode=display">\log q(x_{t-1} \mid x_t, x_0) = -\frac{1}{2}\left[\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} + \frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}}\right] + \text{const}</script><hr>
+<h3 id="%E4%B8%89%E3%80%81%E5%B1%95%E5%BC%80-x-t-1-%E7%9A%84%E4%BA%8C%E6%AC%A1%E5%9E%8B">三、展开 $x_{t-1}$ 的二次型</h3>
+<p>我们的目标是把方括号里的部分整理成关于 $x_{t-1}$ 的形式:</p>
+<script type="math/tex; mode=display">A \| x_{t-1} \|^2 - 2 B^\top x_{t-1} + (\text{不依赖 } x_{t-1} \text{ 的常数})</script><p>读出 $A$ 和 $B$ 后,均值方差就出来了。</p>
+<h3 id="%E7%AC%AC%E4%B8%80%E5%9D%97%E5%B1%95%E5%BC%80">第一块展开</h3>
+<script type="math/tex; mode=display">\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} = \frac{1}{\beta_t}\left(\| x_t \|^2 - 2\sqrt{\alpha_t}\, x_t^\top x_{t-1} + \alpha_t \| x_{t-1} \|^2\right)</script><p>只看依赖 $x_{t-1}$ 的项:</p>
+<script type="math/tex; mode=display">= \frac{\alpha_t}{\beta_t}\| x_{t-1} \|^2 - \frac{2\sqrt{\alpha_t}}{\beta_t}\, x_t^\top x_{t-1} + \text{const}</script><h3 id="%E7%AC%AC%E4%BA%8C%E5%9D%97%E5%B1%95%E5%BC%80">第二块展开</h3>
+<script type="math/tex; mode=display">\frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}} = \frac{1}{1-\bar\alpha_{t-1}}\left(\| x_{t-1} \|^2 - 2\sqrt{\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \bar\alpha_{t-1}\| x_0 \|^2\right)</script><p>只看依赖 $x_{t-1}$ 的项:</p>
+<script type="math/tex; mode=display">= \frac{1}{1-\bar\alpha_{t-1}}\| x_{t-1} \|^2 - \frac{2\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \text{const}</script><h3 id="%E5%90%88%E5%B9%B6%E4%B8%A4%E5%9D%97">合并两块</h3>
+<p>$x_{t-1}$ 的<strong>二次项系数 $A$</strong>:</p>
+<script type="math/tex; mode=display">A = \frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}</script><p>$x<em>{t-1}$ 的<strong>一次项系数 $B$</strong>(指 $-2 B^\top x</em>{t-1}$ 的 $B$):</p>
+<script type="math/tex; mode=display">B = \frac{\sqrt{\alpha_t}}{\beta_t}\, x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0</script><hr>
+<h3 id="%E5%9B%9B%E3%80%81%E9%85%8D%E6%96%B9%E6%B3%95%E8%AF%BB%E5%87%BA%E5%9D%87%E5%80%BC%E5%92%8C%E6%96%B9%E5%B7%AE">四、配方法读出均值和方差</h3>
+<p>回忆标准高斯的对数(忽略常数):</p>
+<script type="math/tex; mode=display">\log \mathcal{N}(x_{t-1}; \tilde\mu, \tilde\sigma^2 I) = -\frac{1}{2\tilde\sigma^2}\| x_{t-1} - \tilde\mu \|^2 = -\frac{1}{2\tilde\sigma^2}\left(\| x_{t-1} \|^2 - 2 \tilde\mu^\top x_{t-1}\right) + \text{const}</script><p>所以标准形式中的二次项系数和一次项 $B$ 满足:</p>
+<ul>
+<li>二次项系数 = $\frac{1}{\tilde\sigma^2}$</li>
+<li>一次项系数 $B$ = $\frac{\tilde\mu}{\tilde\sigma^2}$</li>
+</ul>
+<p>(注意我们的合并公式整体外面有一个 $-\frac{1}{2}$,所以提取的就是这个对应关系)</p>
+<p>对照得到:</p>
+<script type="math/tex; mode=display">\frac{1}{\tilde\sigma^2} = A,\quad \frac{\tilde\mu}{\tilde\sigma^2} = B</script><p>所以:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\sigma^2 = \frac{1}{A},\quad \tilde\mu = \frac{B}{A} = \tilde\sigma^2 \cdot B}</script><hr>
+<h3 id="%E4%BA%94%E3%80%81%E5%8C%96%E7%AE%80-tilde-sigma-2">五、化简 $\tilde\sigma^2$</h3>
+<script type="math/tex; mode=display">\tilde\sigma^2 = \frac{1}{\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}}</script><p>通分:</p>
+<script type="math/tex; mode=display">\tilde\sigma^2 = \frac{1}{\frac{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}{\beta_t (1-\bar\alpha_{t-1})}} = \frac{\beta_t (1-\bar\alpha_{t-1})}{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}</script><p>化简分母。用 $\beta_t = 1 - \alpha_t$:</p>
+<script type="math/tex; mode=display">\alpha_t (1-\bar\alpha_{t-1}) + \beta_t = \alpha_t - \alpha_t \bar\alpha_{t-1} + 1 - \alpha_t = 1 - \alpha_t \bar\alpha_{t-1}</script><p>而 $\alpha<em>t \bar\alpha</em>{t-1} = \bar\alpha<em>t$(因为 $\bar\alpha_t = \prod</em>{s=1}^t \alpha<em>s = \alpha_t \prod</em>{s=1}^{t-1} \alpha<em>s = \alpha_t \bar\alpha</em>{t-1}$),所以分母是 $1 - \bar\alpha_t$。</p>
+<p>得到:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\sigma^2 = \tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t}\, \beta_t}</script><p>完美——这就是 DDPM 公式里的方差。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E5%8C%96%E7%AE%80-tilde-mu-t">六、化简 $\tilde\mu_t$</h3>
+<script type="math/tex; mode=display">\tilde\mu_t = \tilde\sigma^2 \cdot B = \frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t}\left[\frac{\sqrt{\alpha_t}}{\beta_t} x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} x_0\right]</script><p>把 $\tilde\sigma^2$ 分配进去:</p>
+<p><strong>$x_t$ 的系数</strong>:</p>
+<script type="math/tex; mode=display">\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\alpha_t}}{\beta_t} = \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}</script><p><strong>$x_0$ 的系数</strong>:</p>
+<script type="math/tex; mode=display">\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}</script><p>合起来:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\mu_t(x_t, x_0) = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}\, x_0 + \frac{\sqrt{\alpha_t}\, (1-\bar\alpha_{t-1})}{1-\bar\alpha_t}\, x_t}</script><p>完美——这就是 DDPM 公式里的均值。✓</p>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E6%A3%80%E6%9F%A5%E4%B8%80%E8%87%B4%E6%80%A7-sanity-check">七、检查一致性(sanity check)</h3>
+<p>数学推导要会自检,看这个结果合不合理。</p>
+<p><strong>检查 1</strong>:$x_0$ 和 $x_t$ 的系数加起来应该接近什么?</p>
+<p>让我们看极端情况。当 $t = 1$ 时,$\bar\alpha_{t-1} = \bar\alpha_0 = 1$,$\bar\alpha_t = \alpha_1$:</p>
+<ul>
+<li>$x_0$ 系数:$\frac{\sqrt{1} \cdot \beta_1}{1-\alpha_1} = \frac{\beta_1}{\beta_1} = 1$</li>
+<li>$x_t$ 系数:$\frac{\sqrt{\alpha_1}(1-1)}{1-\alpha_1} = 0$</li>
+</ul>
+<p>所以 $\tilde\mu_1 = x_0$ —— 当 $t = 1$ 时,逆向后验完全集中在 $x_0$,<strong>没有不确定性</strong>(方差也应该是 0,我们检查:$\tilde\beta_1 = \frac{1-1}{1-\alpha_1}\beta_1 = 0$ ✓)。</p>
+<p><strong>直觉解释</strong>:已知 $x_0$ 和 $x_1$,要问 $x_0$ 是什么——当然就是 $x_0$ 本身,完全确定。</p>
+<p><strong>检查 2</strong>:当 $t$ 很大、$\bar\alpha_t \to 0$ 时:</p>
+<ul>
+<li>$x<em>0$ 系数 $\approx \sqrt{\bar\alpha</em>{t-1}} \beta_t \to 0$</li>
+<li>$x_t$ 系数 $\approx \sqrt{\alpha_t}$</li>
+</ul>
+<p>也就是 $\tilde\mu_t \approx \sqrt{\alpha_t}\, x_t$。当噪声非常大时,$x_0$ 信息被噪声完全淹没,逆向后验主要由 $x_t$ 决定——也合理。</p>
+<p><strong>检查 3</strong>:方差 $\tilde\beta_t &lt; \beta_t$ 吗?</p>
+<p>$\tilde\beta<em>t = \frac{1-\bar\alpha</em>{t-1}}{1-\bar\alpha<em>t} \beta_t$。因为 $\bar\alpha</em>{t-1} &gt; \bar\alpha<em>t$,有 $1-\bar\alpha</em>{t-1} &lt; 1-\bar\alpha_t$,所以 $\tilde\beta_t &lt; \beta_t$ ✓。</p>
+<p><strong>直觉</strong>:已知 $x<em>0$ 和 $x_t$ 之后,我们对 $x</em>{t-1}$ 的不确定性,比单纯看前向加噪 $\beta_t$ 要小——多了 $x_0$ 这个信息,后验就更窄。合理。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93-%E9%85%8D%E6%96%B9%E6%B3%95%E7%9A%84%E7%B2%BE%E9%AB%93">八、技巧总结:配方法的精髓</h3>
+<p>整个推导的核心是<strong>配方法</strong>——给一个二次型,读出均值方差。让我把这个&quot;模板&quot;提炼出来,因为它在 diffusion / VAE / 高斯过程里反复出现。</p>
+<p><strong>模板</strong>:如果一个分布的对数密度(忽略常数)长这样</p>
+<script type="math/tex; mode=display">-\frac{1}{2}\left(A \| z \|^2 - 2 B^\top z\right)</script><p>那这个分布就是高斯,均值 $\mu = B/A$,方差 $\sigma^2 = 1/A$。</p>
+<p><strong>实践三步</strong>:</p>
+<ol>
+<li>把所有&quot;高斯乘积/比值&quot;取对数,变成一堆二次型相加</li>
+<li>收集所有 $| z |^2$ 的系数得 $A$,所有 $z^\top$ 的系数得 $B$</li>
+<li>读出 $\mu = B/A$,$\sigma^2 = 1/A$,完成</li>
+</ol>
+<p>整个过程<strong>不需要任何创意</strong>,纯机械。学会这个,你以后看 diffusion 各种高斯运算都不会怕。</p>
+<h3 id="%E4%B8%80%E4%B8%AA%E6%9B%B4%E5%87%A0%E4%BD%95%E7%9A%84%E8%A7%86%E8%A7%92">一个更几何的视角</h3>
+<p>更深一层:这个推导本质是&quot;两个高斯的乘积还是高斯&quot;——更准确地说,<strong>两个关于 $x<em>{t-1}$ 的高斯的乘积,得到一个新的关于 $x</em>{t-1}$ 的高斯,新的精度(precision = 方差的倒数)是两个精度之和</strong>。</p>
+<p>具体到我们这里:</p>
+<ul>
+<li>$q(x<em>t \mid x</em>{t-1})$ 看作 $x_{t-1}$ 的函数,精度是 $\alpha_t / \beta_t$</li>
+<li>$q(x<em>{t-1} \mid x_0)$ 看作 $x</em>{t-1}$ 的函数,精度是 $1/(1-\bar\alpha_{t-1})$</li>
+<li>乘积后的精度 = 两者之和 = $A$</li>
+</ul>
+<p>这就是为什么贝叶斯推断里,<strong>精度具有&quot;可加性&quot;,而方差不具备</strong>——后验精度 = 先验精度 + 似然精度。这个原理在贝叶斯线性回归、卡尔曼滤波里都是同一回事。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>推导工具:<strong>配方法</strong>——把对数密度整理成关于变量的二次型,读出均值方差</li>
+<li>三个高斯(前向 1 步、前向 $t-1$ 步、前向 $t$ 步)通过贝叶斯组合</li>
+<li>第三个($q(x<em>t \mid x_0)$)不依赖 $x</em>{t-1}$,扔进常数</li>
+<li>二次项系数 $A$ 和一次项系数 $B$ 决定 $\tilde\mu = B/A$,$\tilde\sigma^2 = 1/A$</li>
+<li>关键化简:$1 - \alpha<em>t \bar\alpha</em>{t-1} = 1 - \bar\alpha_t$</li>
+<li>检查极端情况($t=1$、$t$ 很大)能验证公式合理</li>
+<li>几何视角:贝叶斯组合 = 精度相加</li>
+</ul>
+</div></details>
+<hr>
+<h2 id="三、用贝叶斯重写-ELBO"><a href="#三、用贝叶斯重写-ELBO" class="headerlink" title="三、用贝叶斯重写 ELBO"></a>三、用贝叶斯重写 ELBO</h2><p>回忆 Sohl-Dickstein 的 ELBO:</p>
+<script type="math/tex; mode=display">-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \sum_{t=1}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)}\right]</script><p>我们之前指出问题:每一项分子是前向 $q(x<em>t \mid x</em>{t-1})$,分母是逆向 $p<em>\theta(x</em>{t-1} \mid x_t)$,<strong>条件方向不一致</strong>,不是 KL 形式,无法用闭式。</p>
+<p><strong>DDPM 的修复</strong>:用贝叶斯把分子的方向翻过来。</p>
+<h3 id="3-1-贝叶斯翻转"><a href="#3-1-贝叶斯翻转" class="headerlink" title="3.1 贝叶斯翻转"></a>3.1 贝叶斯翻转</h3><p>由马尔可夫性,$q(x<em>t \mid x</em>{t-1}) = q(x<em>t \mid x</em>{t-1}, x_0)$(条件在 $x_0$ 上不影响)。再用贝叶斯:</p>
+<script type="math/tex; mode=display">q(x_t \mid x_{t-1}, x_0) = \frac{q(x_{t-1} \mid x_t, x_0)\, q(x_t \mid x_0)}{q(x_{t-1} \mid x_0)}</script><p>代回 ELBO 的求和项(对 $t \geq 2$ 做这件事,$t=1$ 单独处理):</p>
+<script type="math/tex; mode=display">\sum_{t=2}^T \log \frac{q(x_t \mid x_{t-1})}{p_\theta(x_{t-1} \mid x_t)} = \sum_{t=2}^T \log \frac{q(x_{t-1} \mid x_t, x_0)\, q(x_t \mid x_0)}{p_\theta(x_{t-1} \mid x_t)\, q(x_{t-1} \mid x_0)}</script><p>把 $\log$ 拆开:</p>
+<script type="math/tex; mode=display">= \sum_{t=2}^T \log \frac{q(x_{t-1} \mid x_t, x_0)}{p_\theta(x_{t-1} \mid x_t)} + \sum_{t=2}^T \log \frac{q(x_t \mid x_0)}{q(x_{t-1} \mid x_0)}</script><h3 id="3-2-第二个求和-望远镜求和-telescoping"><a href="#3-2-第二个求和-望远镜求和-telescoping" class="headerlink" title="3.2 第二个求和:望远镜求和(telescoping)"></a>3.2 第二个求和:望远镜求和(telescoping)</h3><p>第二个求和是个望远镜结构:</p>
+<script type="math/tex; mode=display">\sum_{t=2}^T \log \frac{q(x_t \mid x_0)}{q(x_{t-1} \mid x_0)} = \log q(x_T \mid x_0) - \log q(x_1 \mid x_0)</script><p>(中间所有项依次抵消,这就是望远镜求和的威力)</p>
+<h3 id="3-3-处理-t-1-项"><a href="#3-3-处理-t-1-项" class="headerlink" title="3.3 处理 $t=1$ 项"></a>3.3 处理 $t=1$ 项</h3><p>把 $t=1$ 的项 $\log \frac{q(x<em>1 \mid x_0)}{p</em>\theta(x_0 \mid x_1)}$ 拿出来,和望远镜结果合并:</p>
+<script type="math/tex; mode=display">\log \frac{q(x_1 \mid x_0)}{p_\theta(x_0 \mid x_1)} + \log q(x_T \mid x_0) - \log q(x_1 \mid x_0) = -\log p_\theta(x_0 \mid x_1) + \log q(x_T \mid x_0)</script><h3 id="3-4-整合"><a href="#3-4-整合" class="headerlink" title="3.4 整合"></a>3.4 整合</h3><p>把所有项放回 $-\mathcal{L}$:</p>
+<script type="math/tex; mode=display">-\mathcal{L} = \mathbb{E}_q\left[-\log p(x_T) + \log q(x_T \mid x_0) + \sum_{t=2}^T \log \frac{q(x_{t-1} \mid x_t, x_0)}{p_\theta(x_{t-1} \mid x_t)} - \log p_\theta(x_0 \mid x_1)\right]</script><p>把前两项合并成一个 KL:</p>
+<script type="math/tex; mode=display">-\log p(x_T) + \log q(x_T \mid x_0) = \log \frac{q(x_T \mid x_0)}{p(x_T)}</script><p>它的期望是 $D_{\text{KL}}(q(x_T \mid x_0) | p(x_T))$。</p>
+<p>中间求和的每一项 $\log \frac{q(x<em>{t-1} \mid x_t, x_0)}{p</em>\theta(x_{t-1} \mid x_t)}$ 在期望下也是 KL。所以最终:</p>
+<script type="math/tex; mode=display">\boxed{-\mathcal{L} = \mathbb{E}_q\left[\underbrace{D_{\text{KL}}(q(x_T \mid x_0) \,\|\, p(x_T))}_{L_T} + \sum_{t=2}^T \underbrace{D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \,\|\, p_\theta(x_{t-1} \mid x_t))}_{L_{t-1}} - \underbrace{\log p_\theta(x_0 \mid x_1)}_{-L_0}\right]}</script><p>这是 DDPM 论文里 Eq. (5) 的著名形式。</p>
+<h3 id="3-5-三项的物理意义"><a href="#3-5-三项的物理意义" class="headerlink" title="3.5 三项的物理意义"></a>3.5 三项的物理意义</h3><ul>
+<li><strong>$L_T$</strong>:最终噪声分布要接近先验 $p(x_T) = \mathcal{N}(0, I)$。<strong>不依赖 $\theta$</strong>(因为 $q$ 不学),训练时是常数,<strong>直接忽略</strong></li>
+<li><strong>$L_{t-1}$</strong>($t = 2, \ldots, T$):每一步的逆向匹配——<strong>这是训练的核心</strong></li>
+<li><strong>$L_0$</strong>:最后一步从 $x_1$ 重建 $x_0$,作为离散数据时的对数似然项</li>
+</ul>
+<p>所以<strong>实际训练时,我们最关心的就是中间这一项 $L_{t-1}$</strong>。</p>
+<hr>
+<h2 id="四、化简-L-t-1-核心一步"><a href="#四、化简-L-t-1-核心一步" class="headerlink" title="四、化简 $L_{t-1}$:核心一步"></a>四、化简 $L_{t-1}$:核心一步</h2><p>现在魔法发生。$L_{t-1}$ 是两个高斯之间的 KL:</p>
+<ul>
+<li>$q(x_{t-1} \mid x_t, x_0) = \mathcal{N}(\tilde\mu_t(x_t, x_0), \tilde\beta_t I)$ ← 闭式,刚才推过</li>
+<li>$p<em>\theta(x</em>{t-1} \mid x<em>t) = \mathcal{N}(\mu</em>\theta(x<em>t, t), \Sigma</em>\theta(x_t, t))$ ← 网络输出</li>
+</ul>
+<p>DDPM 做了一个简化:<strong>固定方差不学</strong>。设 $\Sigma_\theta = \sigma_t^2 I$,其中 $\sigma_t^2$ 是预设的(取 $\beta_t$ 或 $\tilde\beta_t$ 都行,论文实验两者效果相近，详细解释见附录2)。</p>
+<p>(为什么可以固定方差?因为 $\tilde\beta_t$ 已经是闭式且不依赖 $x_0, x_t$,网络再去学一个方差既冗余又不稳。Improved DDPM 后来证明学方差能略微提升似然,但 DDPM 原版坚持固定。)</p>
+<p>固定方差后,套用各向同性高斯 KL 闭式公式:</p>
+<script type="math/tex; mode=display">D_{\text{KL}}(\mathcal{N}(\mu_1, \sigma^2 I) \| \mathcal{N}(\mu_2, \sigma^2 I)) = \frac{\| \mu_1 - \mu_2 \|^2}{2\sigma^2}</script><p>得到:</p>
+<script type="math/tex; mode=display">L_{t-1} = \frac{1}{2\sigma_t^2}\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2 + C</script><p>其中 $C$ 不依赖于 $\theta$。<strong>训练目标变成了一个 MSE</strong>:让网络输出的 $\mu_\theta$ 逼近真实后验均值 $\tilde\mu_t$。</p>
+<p>这已经是巨大的进步——但 DDPM 还要再走一步。</p>
+<hr>
+<h2 id="五、从-mu-预测到-epsilon-预测"><a href="#五、从-mu-预测到-epsilon-预测" class="headerlink" title="五、从 $\mu$-预测到 $\epsilon$-预测"></a>五、从 $\mu$-预测到 $\epsilon$-预测</h2><h3 id="5-1-重写-tilde-mu-t"><a href="#5-1-重写-tilde-mu-t" class="headerlink" title="5.1 重写 $\tilde\mu_t$"></a>5.1 重写 $\tilde\mu_t$</h3><p>$\tilde\mu_t$ 的原始公式包含 $x_0$,但训练时网络看到的是 $x_t$,看不到 $x_0$。我们用重参数化把 $x_0$ 表达成 $x_t$ 和 $\epsilon$ 的函数。</p>
+<p>由 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$:</p>
+<script type="math/tex; mode=display">x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon}{\sqrt{\bar\alpha_t}}</script><p>代入 $\tilde\mu_t$ 的公式(代入后大量代数化简,这一步比较繁琐但纯机械):</p>
+<script type="math/tex; mode=display">\tilde\mu_t(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon\right)</script><p><strong>这个形式非常优美</strong>:$\tilde\mu_t$ 是 $x_t$ 减去”按比例缩放后的噪声”。</p>
+<h3 id="5-2-让-mu-theta-取相同的参数化形式"><a href="#5-2-让-mu-theta-取相同的参数化形式" class="headerlink" title="5.2 让 $\mu_\theta$ 取相同的参数化形式"></a>5.2 让 $\mu_\theta$ 取相同的参数化形式</h3><p>既然真实后验均值长这样,我们让模型输出也长这样:</p>
+<script type="math/tex; mode=display">\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon_\theta(x_t, t)\right)</script><p>这里的 $\epsilon<em>\theta(x_t, t)$ 是一个新网络——给定 $x_t$ 和 $t$,<strong>预测一个噪声</strong>。这是个<strong>重参数化选择</strong>——我们把”输出 $\mu</em>\theta$”换成等价地”输出 $\epsilon_\theta$”。</p>
+<h3 id="5-3-损失变成噪声-MSE"><a href="#5-3-损失变成噪声-MSE" class="headerlink" title="5.3 损失变成噪声 MSE"></a>5.3 损失变成噪声 MSE</h3><p>代入 $L_{t-1}$:</p>
+<script type="math/tex; mode=display">\| \tilde\mu_t - \mu_\theta \|^2 = \left\| \frac{\beta_t}{\sqrt{\alpha_t}\sqrt{1-\bar\alpha_t}}(\epsilon - \epsilon_\theta(x_t, t)) \right\|^2 = \frac{\beta_t^2}{\alpha_t (1-\bar\alpha_t)}\| \epsilon - \epsilon_\theta(x_t, t) \|^2</script><p>代回 $L_{t-1}$ 的完整表达:</p>
+<script type="math/tex; mode=display">L_{t-1} = \frac{\beta_t^2}{2\sigma_t^2 \alpha_t (1-\bar\alpha_t)}\, \| \epsilon - \epsilon_\theta(x_t, t) \|^2</script><p>这是一个加权 MSE——<strong>权重依赖于 $t$,但损失函数本身就是”预测噪声”的 MSE</strong>。</p>
+<hr>
+<h2 id="六、-L-text-simple-的诞生"><a href="#六、-L-text-simple-的诞生" class="headerlink" title="六、$L_{\text{simple}}$ 的诞生"></a>六、$L_{\text{simple}}$ 的诞生</h2><p>DDPM 论文做了最后一个决定性的简化:<strong>把权重扔掉</strong>,得到</p>
+<script type="math/tex; mode=display">\boxed{L_{\text{simple}}(\theta) = \mathbb{E}_{t, x_0, \epsilon}\left[\| \epsilon - \epsilon_\theta(x_t, t) \|^2\right]}</script><p>其中 $t \sim \text{Uniform}(1, T)$,$x<em>0 \sim p</em>{\text{data}}$,$\epsilon \sim \mathcal{N}(0, I)$,$x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t} \epsilon$。</p>
+<p>这是整个 diffusion 训练的”圣杯”——一个干净的、<strong>无权重</strong>的 MSE。</p>
+<h3 id="6-1-为什么扔权重"><a href="#6-1-为什么扔权重" class="headerlink" title="6.1 为什么扔权重?"></a>6.1 为什么扔权重?</h3><p>理论上原始权重 $\beta_t^2 / (2\sigma_t^2 \alpha_t (1-\bar\alpha_t))$ 是 ELBO 的一部分,扔了就不再是严格的最大似然。但 DDPM 实验发现:<strong>扔了之后效果反而更好</strong>。</p>
+<p>直觉:原始权重对小 $t$(噪声小)的项加很大权,而那些项的”信号”实际上很弱——网络在小噪声时容易学,学到的细节对生成质量影响不大。扔掉权重相当于让网络在所有 $t$ 上<strong>均匀重视</strong>,实际上这强化了大噪声时的学习,而大噪声时的去噪决定了生成图像的整体结构,更重要。</p>
+<p>后来研究者发现,$L_{\text{simple}}$ 等价于一种”去权重”的最大似然——不是严格的 ELBO,但仍然是个合理的 surrogate。</p>
+<h3 id="6-2-与-score-matching-的对应"><a href="#6-2-与-score-matching-的对应" class="headerlink" title="6.2 与 score matching 的对应"></a>6.2 与 score matching 的对应</h3><p>把 $\epsilon$-预测和 score 联系起来。从 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t} \epsilon$,我们有</p>
+<script type="math/tex; mode=display">\nabla_{x_t} \log q(x_t \mid x_0) = -\frac{x_t - \sqrt{\bar\alpha_t} x_0}{1-\bar\alpha_t} = -\frac{\epsilon}{\sqrt{1-\bar\alpha_t}}</script><p>所以”预测 $\epsilon$”和”预测 score”只差一个标量 $-1/\sqrt{1-\bar\alpha_t}$:</p>
+<script type="math/tex; mode=display">s_\theta(x_t, t) = -\frac{\epsilon_\theta(x_t, t)}{\sqrt{1-\bar\alpha_t}}</script><p><strong>两条线在这里完全对上了</strong>——DDPM 的 $\epsilon$-预测和 NCSN 的 score-预测在数学上是同一件事。这正是下一讲 Score SDE 要正式统一的内容。</p>
+<hr>
+<h2 id="七、训练算法"><a href="#七、训练算法" class="headerlink" title="七、训练算法"></a>七、训练算法</h2><p><strong>完整训练流程</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">for each iteration:</span><br><span class="line">    x_0 ~ p_data                              # 采一个数据点</span><br><span class="line">    t   ~ Uniform(&#123;1, ..., T&#125;)                # 采一个时刻</span><br><span class="line">    eps ~ N(0, I)                             # 采噪声</span><br><span class="line">    x_t = sqrt(α_bar[t]) * x_0 + sqrt(1 - α_bar[t]) * eps   # 一步加噪</span><br><span class="line">    loss = || eps - eps_θ(x_t, t) ||^2        # 噪声 MSE</span><br><span class="line">    update θ via SGD</span><br></pre></td></tr></table></figure>
+<p>仅仅 5 行——这就是 DDPM 训练的全部。回头看 Sohl-Dickstein 那种”整条链采样、逐项算对数比值”的复杂流程,简洁度天差地别。</p>
+<hr>
+<h2 id="八、采样算法"><a href="#八、采样算法" class="headerlink" title="八、采样算法"></a>八、采样算法</h2><p>训练完后,从纯噪声生成图像:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">x_T ~ N(0, I)                                 # 起点:纯噪声</span><br><span class="line">for t = T, T-1, ..., 1:</span><br><span class="line">    z = N(0, I) if t &gt; 1 else 0               # 最后一步不加噪声</span><br><span class="line">    μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))</span><br><span class="line">    x_&#123;t-1&#125; = μ + σ_t * z</span><br><span class="line">return x_0</span><br></pre></td></tr></table></figure>
+<p>每一步的核心:<strong>预测噪声 → 算后验均值 → 加一点新噪声</strong>,$T$ 次后得到一张图。</p>
+<p>注意采样要走 <strong>$T = 1000$ 步</strong>(DDPM 默认)——这慢,是 DDPM 最大的工程问题。后面 DDIM、DPM-Solver 等专门解决这个问题(下一讲后展开)。</p>
+<details><summary>采样算法怎么推的</summary><div class="details-content"><hr>
+<h3 id="%E4%B8%80%E3%80%81%E5%85%88%E6%8A%8A%E9%87%87%E6%A0%B7%E4%BB%A3%E7%A0%81%E8%B4%B4%E5%87%BA%E6%9D%A5">一、先把采样代码贴出来</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">x_T ~ N(0, I)                                 # 起点:纯噪声</span><br><span class="line">for t = T, T-1, ..., 1:</span><br><span class="line">    z = N(0, I) if t &gt; 1 else 0               # 最后一步不加噪声</span><br><span class="line">    μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))</span><br><span class="line">    x_&#123;t-1&#125; = μ + σ_t * z</span><br><span class="line">return x_0</span><br></pre></td></tr></table></figure>
+<p>四个值得问&quot;为什么&quot;的地方:</p>
+<ol>
+<li>为什么从 $\mathcal{N}(0, I)$ 出发?</li>
+<li>那个 $\mu$ 公式怎么来的?</li>
+<li>为什么再加一个 $\sigma_t z$ 噪声?</li>
+<li>为什么最后一步($t=1$)不加噪声?</li>
+</ol>
+<p>我们逐个拆。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BB%8E-mathcal-n-0-i-%E5%87%BA%E5%8F%91">二、为什么从 $\mathcal{N}(0, I)$ 出发?</h3>
+<p>回忆训练目标 $L_T$:</p>
+<script type="math/tex; mode=display">L_T = D_{\text{KL}}\big(q(x_T \mid x_0) \,\big\|\, p(x_T)\big)</script><p>当 $T$ 大、$\bar\alpha_T \to 0$ 时,$q(x_T \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_T} x_0, (1-\bar\alpha_T) I) \to \mathcal{N}(0, I)$。</p>
+<p>我们定义先验 $p(x_T) = \mathcal{N}(0, I)$。这两者几乎相同,所以 $L_T \approx 0$,我们不训练它。</p>
+<p><strong>采样时</strong>:既然真实的 $x_T$ 分布(无论 $x_0$ 是什么)都接近 $\mathcal{N}(0, I)$,那我们从 $\mathcal{N}(0, I)$ 采样作为起点,就是从训练分布采样——<strong>不是任意选的&quot;起点&quot;,而是数学上对应的那个分布</strong>。</p>
+<hr>
+<h3 id="%E4%B8%89%E3%80%81%E9%82%A3%E4%B8%AA-mu-%E7%9A%84%E5%85%AC%E5%BC%8F%E6%80%8E%E4%B9%88%E6%9D%A5%E7%9A%84">三、那个 $\mu$ 的公式怎么来的?</h3>
+<p>这是采样里最关键的一行。我们在训练时已经设计了:</p>
+<script type="math/tex; mode=display">p_\theta(x_{t-1} \mid x_t) = \mathcal{N}\big(\mu_\theta(x_t, t),\, \sigma_t^2 I\big)</script><p>所以采样时,从这个高斯采 $x<em>{t-1}$。**问题是 $\mu</em>\theta$ 等于什么?**</p>
+<p>回忆我们在训练阶段做了<strong>重参数化</strong>——让 $\mu_\theta$ 取以下形式:</p>
+<script type="math/tex; mode=display">\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon_\theta(x_t, t)\right)</script><p><strong>这个公式不是采样时凭空写出的——它是训练时网络的参数化定义本身</strong>。我们就是这样让网络的输出(通过 $\epsilon<em>\theta$ 间接)给出 $\mu</em>\theta$ 的。</p>
+<p>所以采样代码里那行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))</span><br></pre></td></tr></table></figure>
+<p>就是把训练时的参数化定义代入,<strong>给定网络预测的 $\epsilon<em>\theta$,算出 $\mu</em>\theta$</strong>。这一步纯粹是代数代入,没有新东西。</p>
+<h3 id="%E8%BF%99%E4%B8%AA%E5%85%AC%E5%BC%8F%E7%9A%84%E7%9B%B4%E8%A7%82">这个公式的直观</h3>
+<p>让我们看清楚它在做什么。回忆 $x<em>t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$。如果网络完美预测 $\epsilon</em>\theta = \epsilon$,那么:</p>
+<p><strong>第一步</strong>:从 $x_t$ 反推 $x_0$:</p>
+<script type="math/tex; mode=display">\hat x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta}{\sqrt{\bar\alpha_t}}</script><p>这是把&quot;加噪公式&quot;反过来用。</p>
+<p><strong>第二步</strong>:算逆向后验均值 $\tilde\mu_t(x_t, \hat x_0)$。直接套真实后验的公式:</p>
+<script type="math/tex; mode=display">\tilde\mu_t = \frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}\hat x_0 + \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t} x_t</script><p><strong>两步合并</strong>(代入 $\hat x_0$,化简——这就是 $\tilde\mu_t \to \epsilon$ 那步代数化简的逆向使用),得到那个 $\mu$ 公式。</p>
+<p><strong>所以采样的 $\mu$ 步可以理解为</strong>:</p>
+<blockquote>
+<p>&quot;用网络预测噪声 → 反推一个 $\hat x<em>0$ 估计 → 用真实后验公式算 $x</em>{t-1}$ 的均值&quot;</p>
+</blockquote>
+<p>每次去噪一步,<strong>间接地是在估计 $x_0$ 然后向 $x_0$ 走一步</strong>。</p>
+<hr>
+<h3 id="%E5%9B%9B%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E5%86%8D%E5%8A%A0-sigma-t-z-%E5%99%AA%E5%A3%B0">四、为什么还要再加 $\sigma_t z$ 噪声?</h3>
+<p>这是最容易让初学者疑惑的一步——既然要去噪,为什么还要加噪声?</p>
+<h3 id="4-1-%E6%95%B0%E5%AD%A6%E5%8E%9F%E5%9B%A0">4.1 数学原因</h3>
+<p>我们的逆向模型是</p>
+<script type="math/tex; mode=display">p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(\mu_\theta, \sigma_t^2 I)</script><p>——一个<strong>有方差的高斯</strong>,不是只输出均值。<strong>从这个分布采样</strong>就是&quot;均值 + 标准差 × 标准高斯&quot;,即:</p>
+<script type="math/tex; mode=display">x_{t-1} = \mu_\theta + \sigma_t z,\quad z \sim \mathcal{N}(0, I)</script><p>代码里的 <code>μ + σ_t * z</code> 就是这个采样。所以这个噪声<strong>本来就是逆向高斯分布的一部分</strong>,没加就不是从 $p_\theta$ 采样了。</p>
+<h3 id="4-2-%E7%9B%B4%E8%A7%89%E5%8E%9F%E5%9B%A0">4.2 直觉原因</h3>
+<p>为什么模型设计成有方差?因为<strong>真实的逆向后验 $q(x_{t-1} \mid x_t, x_0)$ 也是有方差的高斯</strong>($\tilde\beta_t I$)——不是确定性映射。</p>
+<p>直观看:已知 $x<em>t$ 和 $x_0$,$x</em>{t-1}$ <strong>不是唯一确定的</strong>——它有一个分布的可能值。$\tilde\beta_t$ 衡量了这种不确定性。</p>
+<p>更直观:前向加噪是随机过程,撤销它每一步也应该是随机的——给定 $x<em>t$,可能的&quot;上一步&quot; $x</em>{t-1}$ 有多种。如果逆向是确定的,我们就丢失了随机性,<strong>最终生成的 $x_0$ 永远只有一个</strong>(给定起点),失去多样性。</p>
+<h3 id="4-3-%E7%89%A9%E7%90%86%E7%B1%BB%E6%AF%94">4.3 物理类比</h3>
+<p>想象前向是&quot;墨水扩散到水里&quot;。如果你能逆转每个分子的运动,逆向也是确定的——但实际上,信息在扩散过程中<strong>以热力学方式丢失</strong>,逆向就必须有随机性来&quot;补偿&quot;丢失的信息。</p>
+<p>每一步采样加的 $\sigma_t z$,正是&quot;补偿&quot;前向那一步丢的信息。</p>
+<h3 id="4-4-%E4%B8%80%E4%B8%AA%E5%B8%B8%E8%A2%AB%E9%97%AE%E7%9A%84%E7%BB%86%E8%8A%82-sigma-t-%E5%BA%94%E8%AF%A5%E5%8F%96%E4%BB%80%E4%B9%88">4.4 一个常被问的细节:$\sigma_t$ 应该取什么?</h3>
+<p>DDPM 论文里实验了两种选择:</p>
+<ul>
+<li>$\sigma_t^2 = \beta_t$(前向方差)</li>
+<li>$\sigma<em>t^2 = \tilde\beta_t = \frac{1-\bar\alpha</em>{t-1}}{1-\bar\alpha_t}\beta_t$(真实后验方差)</li>
+</ul>
+<p>两者效果相近。前者对应&quot;假设 $x_0 \sim \mathcal{N}(0, I)$&quot;的逆向后验,后者对应&quot;假设 $x_0$ 是确定值&quot;的逆向后验。实践中默认用前者(更简单)。</p>
+<p>后来 DDIM(我们之后讲)发现:<strong>$\sigma_t$ 可以是任意值,甚至 $\sigma_t = 0$</strong>(完全确定性采样),仍然能生成正确分布的样本——这是个重要的发现,会让采样可以加速 10-50 倍。</p>
+<hr>
+<h3 id="%E4%BA%94%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%80%E5%90%8E%E4%B8%80%E6%AD%A5-t-1-%E4%B8%8D%E5%8A%A0%E5%99%AA%E5%A3%B0">五、为什么最后一步($t=1$)不加噪声?</h3>
+<p>代码里:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">z = N(0, I) if t &gt; 1 else 0</span><br></pre></td></tr></table></figure>
+<p>也就是当 $t = 1$ 时,$z = 0$,我们只取 $\mu$,不加噪声。</p>
+<h3 id="5-1-%E6%95%B0%E5%AD%A6%E5%8E%9F%E5%9B%A0">5.1 数学原因</h3>
+<p>最后一步是从 $x_1$ 生成 $x_0$。$x_0$ 是<strong>最终输出</strong>,我们希望它是图像本身,而不是&quot;图像 + 一点点噪声&quot;。</p>
+<p>更精确地,DDPM 里 $L<em>0 = -\log p</em>\theta(x<em>0 \mid x_1)$ 是单独处理的——它对应真实数据的对数似然。在最后一步,我们直接取<strong>最大似然估计</strong>,即 $\mu</em>\theta$ 本身,不再加噪声。</p>
+<h3 id="5-2-%E7%9B%B4%E8%A7%82%E5%8E%9F%E5%9B%A0">5.2 直观原因</h3>
+<p>如果最后一步加噪声 $\sigma_1 z$,你的图像就会带一个最后的小噪声。$\sigma_1$ 虽然小,但对生成图像的清晰度还是有影响。</p>
+<p>把这一步噪声去掉,相当于&quot;在最后做个 MAP(maximum a posteriori)估计&quot;——取分布的众数(高斯的众数就是均值),作为最佳点估计。</p>
+<h3 id="5-3-%E8%BF%99%E6%98%AF%E4%B8%AA%E5%B7%A5%E7%A8%8B%E9%80%89%E6%8B%A9">5.3 这是个工程选择</h3>
+<p>严格说,<strong>完全按 $p_\theta$ 采样应该最后一步也加噪声</strong>。&quot;$t=1$ 时不加&quot;是个<strong>实践上的优化</strong>——理论上稍微偏离了概率模型,但生成质量更好。</p>
+<p>后来 Improved DDPM、DDIM 等都采用了这个约定。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E6%8A%8A%E6%95%B4%E4%B8%AA%E9%87%87%E6%A0%B7%E8%BF%87%E7%A8%8B%E4%B8%B2%E8%B5%B7%E6%9D%A5">六、把整个采样过程串起来</h3>
+<p>让我把所有&quot;为什么&quot;放在一起,画出完整图景:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">起点 x_T = N(0, I)             ← 因为前向终点近似就是 N(0, I)</span><br><span class="line"></span><br><span class="line">for t = T, ..., 1:</span><br><span class="line">    </span><br><span class="line">    用网络预测 ε_θ(x_t, t)</span><br><span class="line">    </span><br><span class="line">    算 μ = ...                  ← 训练时的参数化定义,等价于</span><br><span class="line">                                  &quot;反推 x_0 估计 → 算逆向后验均值&quot;</span><br><span class="line">    </span><br><span class="line">    if t &gt; 1:</span><br><span class="line">        x_&#123;t-1&#125; = μ + σ_t z     ← 从 p_θ(x_&#123;t-1&#125;|x_t) 采样</span><br><span class="line">                                  (有方差是因为真实后验也有方差)</span><br><span class="line">    else:</span><br><span class="line">        x_0 = μ                 ← 最后一步取最大似然估计</span><br><span class="line"></span><br><span class="line">return x_0</span><br></pre></td></tr></table></figure>
+<p>每一步都不是&quot;魔法&quot;,而是训练阶段数学结构的直接对应:</p>
+<ul>
+<li>起点 ↔ $L_T$ 的训练目标</li>
+<li>$\mu$ 公式 ↔ 训练时的参数化设计</li>
+<li>加噪声 ↔ $p_\theta$ 是高斯分布</li>
+<li>最后不加噪 ↔ $L_0$ 的处理约定</li>
+</ul>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E9%87%87%E6%A0%B7%E5%88%B0%E5%BA%95%E5%9C%A8%E5%B9%B2%E4%BB%80%E4%B9%88-%E6%9B%B4%E9%AB%98%E5%B1%82%E7%90%86%E8%A7%A3">七、采样到底在干什么?(更高层理解)</h3>
+<p>最后一句话总结整个采样的&quot;灵魂&quot;:</p>
+<p><strong>采样是把训练时学到的&quot;逆向条件分布 $p<em>\theta(x</em>{t-1} \mid x_t)$&quot;按马尔可夫链</strong>反向运行<strong>,从 $\mathcal{N}(0, I)$ 一步步走到数据分布 $p_{\text{data}}$。</strong></p>
+<p>每一步本质上是:</p>
+<blockquote>
+<p>&quot;网络看着 $x_t$,猜里面的噪声 $\epsilon$,然后:</p>
+<ul>
+<li>大致知道&#39;清掉 $\epsilon$ 后应该长什么样&#39;</li>
+<li>但不完全清掉,只走一小步,留一点噪声给下一步处理</li>
+<li>这就是 $x_{t-1}$&quot;</li>
+</ul>
+</blockquote>
+<p>走 $T$ 步,最终噪声彻底清完,得到 $x_0$。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E5%87%A0%E4%B8%AA%E5%80%BC%E5%BE%97%E7%9F%A5%E9%81%93%E7%9A%84%E7%BB%86%E8%8A%82">八、几个值得知道的细节</h3>
+<h3 id="8-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB-t-%E6%AD%A5-%E8%83%BD%E4%B8%8D%E8%83%BD%E8%B7%B3%E6%AD%A5">8.1 为什么必须 $T$ 步?能不能跳步?</h3>
+<p>直接套这个采样过程,<strong>必须走完整的 $T$ 步</strong>——因为模型训练时假设了离散的 $t = 1, 2, \ldots, T$,逆向也按这个 schedule 走。</p>
+<p>跳步不行,因为:</p>
+<ul>
+<li>网络只在 $t \in {1, \ldots, T}$ 这些时刻&quot;见过&quot;</li>
+<li>跳步意味着用错误的方差/均值组合</li>
+</ul>
+<p>DDIM 后来重新设计了一个不依赖马尔可夫性的采样过程,<strong>可以跳步,10-50 步搞定</strong>。但那是另一个故事。</p>
+<h3 id="8-2-%E8%BF%99%E4%B8%AA%E9%87%87%E6%A0%B7%E6%96%B9%E6%B3%95%E5%8F%AB%E4%BB%80%E4%B9%88">8.2 这个采样方法叫什么?</h3>
+<p>正式名字叫 <strong>Ancestral Sampling</strong>(祖先采样)——按马尔可夫链定义的方向逐步采样。它是按字面意义&quot;从 $p_\theta$ 采样&quot;——所以是数学上&quot;原汁原味&quot;的方法。</p>
+<h3 id="8-3-%E5%92%8C-langevin-%E5%8A%A8%E5%8A%9B%E5%AD%A6%E7%9A%84%E5%AF%B9%E6%AF%94">8.3 和 Langevin 动力学的对比</h3>
+<p>回忆第二讲里 NCSN 的 Langevin 采样:</p>
+<script type="math/tex; mode=display">x_{k+1} = x_k + \frac{\eta}{2}\, s_\theta(x_k) + \sqrt{\eta}\, z_k</script><p>DDPM 采样的形式:</p>
+<script type="math/tex; mode=display">x_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\epsilon_\theta(x_t, t)\right) + \sigma_t z</script><p>把 $\epsilon<em>\theta = -\sqrt{1-\bar\alpha_t}\, s</em>\theta$ 代入,展开后……</p>
+<p><strong>两者形式上几乎一样!</strong> 都是&quot;当前点 + 学到的方向 + 一点噪声&quot;。这绝非巧合——下一讲 Score SDE 会证明它们其实是<strong>同一个 SDE 的不同离散化</strong>。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>起点 $\mathcal{N}(0, I)$:对应训练时 $L_T$ 的目标分布</li>
+<li>$\mu$ 公式:训练时的参数化定义,等价于&quot;反推 $\hat x_0$ 后算后验均值&quot;</li>
+<li>加噪声 $\sigma<em>t z$:$p</em>\theta$ 是有方差的高斯,采样必须加</li>
+<li>最后一步不加噪:工程优化,取 MAP</li>
+<li>整个采样 = 按马尔可夫链反向运行 $p_\theta$,从噪声走到数据</li>
+<li>每步直觉:<strong>预测噪声 → 部分清除 → 留下少量给下一步</strong></li>
+<li>形式上和 Langevin 动力学几乎一样——这预示了下一讲的统一框架</li>
+</ul>
+</div></details>
+<hr>
+<h2 id="九、完整-PyTorch-实现-从数据到生成"><a href="#九、完整-PyTorch-实现-从数据到生成" class="headerlink" title="九、完整 PyTorch 实现:从数据到生成"></a>九、完整 PyTorch 实现:从数据到生成</h2><p>数学讲完了,这一节落到代码上。我们以 <strong>CIFAR-10 / MNIST 上的图像生成</strong>为例,从数据预处理一路写到采样,<strong>每一步都标清楚输入、输出、形状、含义</strong>。完整可运行版本约 200 行。</p>
+<h3 id="9-1-数据预处理"><a href="#9-1-数据预处理" class="headerlink" title="9.1 数据预处理"></a>9.1 数据预处理</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>输入</th>
+<th>输出</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ToTensor</code></td>
+<td>PIL <code>Image</code></td>
+<td><code>Tensor</code> 形状 <code>(C, H, W)</code>,值 <code>[0, 1]</code></td>
+<td>像素归一到 <code>[0, 1]</code> 并加通道维</td>
+</tr>
+<tr>
+<td><code>Normalize((0.5,...), (0.5,...))</code></td>
+<td><code>[0, 1]</code></td>
+<td><code>[-1, 1]</code></td>
+<td>把数据中心化到 0,<strong>这一步对 diffusion 至关重要</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>为什么是 <code>[-1, 1]</code> 而不是 <code>[0, 1]</code>?因为前向 $q(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_t}\, x_0, (1-\bar\alpha_t) I)$ 假设噪声是 0 均值的高斯。如果 $x_0 \in [0, 1]$,加上 0 均值高斯后会”变黑”(均值往 0 偏);中心化到 <code>[-1, 1]</code> 让 $x_0$ 的均值约为 0,加噪后<strong>均值守恒为 0</strong>,和先验 $\mathcal{N}(0, I)$ 对得上。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch.utils.data <span class="keyword">import</span> DataLoader</span><br><span class="line"><span class="keyword">from</span> torchvision <span class="keyword">import</span> datasets, transforms</span><br><span class="line"></span><br><span class="line">transform = transforms.Compose([</span><br><span class="line">    transforms.ToTensor(),</span><br><span class="line">    transforms.Normalize((<span class="number">0.5</span>, <span class="number">0.5</span>, <span class="number">0.5</span>), (<span class="number">0.5</span>, <span class="number">0.5</span>, <span class="number">0.5</span>)),  <span class="comment"># → [-1, 1]</span></span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">train_set = datasets.CIFAR10(<span class="string">&#x27;./data&#x27;</span>, train=<span class="literal">True</span>, download=<span class="literal">True</span>, transform=transform)</span><br><span class="line">train_loader = DataLoader(train_set, batch_size=<span class="number">128</span>, shuffle=<span class="literal">True</span>, num_workers=<span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+<p>每个 batch 出来的 <code>x_0</code> 形状 <code>(128, 3, 32, 32)</code>,值在 <code>[-1, 1]</code>。</p>
+<h3 id="9-2-Noise-schedule-预先算好的常数表"><a href="#9-2-Noise-schedule-预先算好的常数表" class="headerlink" title="9.2 Noise schedule:预先算好的常数表"></a>9.2 Noise schedule:预先算好的常数表</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>形状</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>beta</code></td>
+<td><code>(T,)</code></td>
+<td>$\beta_1, \ldots, \beta_T$,每步的加噪强度,<strong>预设的非学习参数</strong></td>
+</tr>
+<tr>
+<td><code>alpha = 1 - beta</code></td>
+<td><code>(T,)</code></td>
+<td>$\alpha_t = 1 - \beta_t$,每步的”信号保留比例”</td>
+</tr>
+<tr>
+<td><code>alpha_bar</code></td>
+<td><code>(T,)</code></td>
+<td>$\bar\alpha<em>t = \prod</em>{s=1}^t \alpha_s$,从 $x_0$ 一步跳到 $x_t$ 的累积衰减</td>
+</tr>
+<tr>
+<td><code>sqrt_alpha_bar</code></td>
+<td><code>(T,)</code></td>
+<td>$\sqrt{\bar\alpha_t}$,$x_t$ 公式里 $x_0$ 的系数</td>
+</tr>
+<tr>
+<td><code>sqrt_one_minus_alpha_bar</code></td>
+<td><code>(T,)</code></td>
+<td>$\sqrt{1-\bar\alpha_t}$,$x_t$ 公式里 $\epsilon$ 的系数</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这些都<strong>只依赖 $t$</strong>,训练前一次性算出来存好,后面查表用。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">T = <span class="number">1000</span></span><br><span class="line">beta = torch.linspace(<span class="number">1e-4</span>, <span class="number">0.02</span>, T)               <span class="comment"># 线性 schedule</span></span><br><span class="line">alpha = <span class="number">1.0</span> - beta</span><br><span class="line">alpha_bar = torch.cumprod(alpha, dim=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练/采样要用的预计算量</span></span><br><span class="line">sqrt_alpha_bar = torch.sqrt(alpha_bar)</span><br><span class="line">sqrt_one_minus_alpha_bar = torch.sqrt(<span class="number">1.0</span> - alpha_bar)</span><br><span class="line">sqrt_recip_alpha = torch.sqrt(<span class="number">1.0</span> / alpha)         <span class="comment"># 采样里的 1/√α_t</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 后验方差 σ_t² (取 β_t 这种简化设定)</span></span><br><span class="line">posterior_var = beta.clone()</span><br></pre></td></tr></table></figure>
+<p>后来的工作发现 <strong>cosine schedule</strong> 更好(Improved DDPM),但线性 schedule 是最朴素也最稳的版本。</p>
+<h3 id="9-3-前向加噪-q-sample-核心一步公式"><a href="#9-3-前向加噪-q-sample-核心一步公式" class="headerlink" title="9.3 前向加噪 q_sample:核心一步公式"></a>9.3 前向加噪 <code>q_sample</code>:核心一步公式</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>输入</strong></td>
+<td>$x_0$ 形状 <code>(B, C, H, W)</code>、$t$ 形状 <code>(B,)</code>(每个样本独立采的 timestep)、$\epsilon$ 形状同 $x_0$(可选)</td>
+</tr>
+<tr>
+<td><strong>输出</strong></td>
+<td>$x_t$,形状 <code>(B, C, H, W)</code></td>
+</tr>
+<tr>
+<td><strong>意义</strong></td>
+<td>把”$T$ 步加噪”塌缩成<strong>一步公式</strong> $x_t = \sqrt{\bar\alpha_t}\, x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$,免去逐步采样</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">q_sample</span>(<span class="params">x_0, t, eps=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="keyword">if</span> eps <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        eps = torch.randn_like(x_0)</span><br><span class="line">    <span class="comment"># 取出对应 t 的系数,reshape 成 (B, 1, 1, 1) 以广播到 (B, C, H, W)</span></span><br><span class="line">    a = sqrt_alpha_bar[t].view(-<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">    b = sqrt_one_minus_alpha_bar[t].view(-<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> a * x_0 + b * eps</span><br></pre></td></tr></table></figure>
+<p>一行公式,<strong>没有任何网络</strong>,没有循环——这是高斯可加性带来的礼物。</p>
+<h3 id="9-4-时间嵌入-让网络知道当前是第几步"><a href="#9-4-时间嵌入-让网络知道当前是第几步" class="headerlink" title="9.4 时间嵌入:让网络知道当前是第几步"></a>9.4 时间嵌入:让网络知道当前是第几步</h3><p>DDPM 的网络要<strong>接受 $t$ 作为输入</strong>,因为不同时刻去噪强度不同。直接把整数 $t$ 喂进去太”low-level”,标准做法是<strong>正弦位置编码</strong>(和 Transformer 一样):</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>输入</strong></td>
+<td>$t$,形状 <code>(B,)</code>,整数</td>
+</tr>
+<tr>
+<td><strong>输出</strong></td>
+<td>嵌入向量,形状 <code>(B, dim)</code></td>
+</tr>
+<tr>
+<td><strong>意义</strong></td>
+<td>把离散的整数时间映射到一个连续、平滑、不同频率组成的向量,网络容易学</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SinusoidalTimeEmbedding</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, dim</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.dim = dim</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, t</span>):</span><br><span class="line">        <span class="comment"># t: (B,)  →  output: (B, dim)</span></span><br><span class="line">        half = <span class="variable language_">self</span>.dim // <span class="number">2</span></span><br><span class="line">        <span class="comment"># 生成 half 个递减频率</span></span><br><span class="line">        freqs = torch.exp(-math.log(<span class="number">10000</span>) * torch.arange(half, device=t.device) / half)</span><br><span class="line">        args = t[:, <span class="literal">None</span>].<span class="built_in">float</span>() * freqs[<span class="literal">None</span>, :]  <span class="comment"># (B, half)</span></span><br><span class="line">        <span class="keyword">return</span> torch.cat([torch.sin(args), torch.cos(args)], dim=-<span class="number">1</span>)  <span class="comment"># (B, dim)</span></span><br></pre></td></tr></table></figure>
+<p>实际使用时,通常再过两层 MLP:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">time_mlp = nn.Sequential(</span><br><span class="line">    SinusoidalTimeEmbedding(<span class="number">128</span>),</span><br><span class="line">    nn.Linear(<span class="number">128</span>, <span class="number">512</span>),</span><br><span class="line">    nn.SiLU(),</span><br><span class="line">    nn.Linear(<span class="number">512</span>, <span class="number">512</span>),</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 调用: t_emb = time_mlp(t)   →  (B, 512)</span></span><br></pre></td></tr></table></figure>
+<p>这个 <code>t_emb</code> 会被注入到 UNet 的<strong>每一层</strong>,告诉每层”现在我们在第几步”。</p>
+<h3 id="9-5-UNet-架构"><a href="#9-5-UNet-架构" class="headerlink" title="9.5 UNet 架构"></a>9.5 UNet 架构</h3><p>DDPM 的 noise predictor 是个 <strong>UNet</strong>:输入 <code>x_t</code> (加了噪的图)+ <code>t</code> (当前 timestep),输出 <code>ε_θ</code> (预测的噪声)——形状和输入一样。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>输入</strong></td>
+<td>$x_t$ 形状 <code>(B, C, H, W)</code> + $t$ 形状 <code>(B,)</code></td>
+</tr>
+<tr>
+<td><strong>输出</strong></td>
+<td>$\hat\epsilon$,形状 <code>(B, C, H, W)</code>,和输入完全一样</td>
+</tr>
+<tr>
+<td><strong>架构</strong></td>
+<td>encoder(下采样路径) → bottleneck → decoder(上采样路径),每层带 skip connection</td>
+</tr>
+<tr>
+<td><strong>关键设计</strong></td>
+<td>每个 ResBlock 都注入时间嵌入,让网络在不同 $t$ 下表现不同</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>最小可工作版的 UNet 模块:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ResBlock</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;带时间条件的残差块&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_ch, out_ch, t_dim</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.norm1 = nn.GroupNorm(<span class="number">8</span>, in_ch)</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = nn.Conv2d(in_ch, out_ch, <span class="number">3</span>, padding=<span class="number">1</span>)</span><br><span class="line">        <span class="variable language_">self</span>.t_proj = nn.Linear(t_dim, out_ch)</span><br><span class="line">        <span class="variable language_">self</span>.norm2 = nn.GroupNorm(<span class="number">8</span>, out_ch)</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = nn.Conv2d(out_ch, out_ch, <span class="number">3</span>, padding=<span class="number">1</span>)</span><br><span class="line">        <span class="variable language_">self</span>.skip = nn.Conv2d(in_ch, out_ch, <span class="number">1</span>) <span class="keyword">if</span> in_ch != out_ch <span class="keyword">else</span> nn.Identity()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, t_emb</span>):</span><br><span class="line">        h = <span class="variable language_">self</span>.conv1(F.silu(<span class="variable language_">self</span>.norm1(x)))           <span class="comment"># (B, out_ch, H, W)</span></span><br><span class="line">        h = h + <span class="variable language_">self</span>.t_proj(t_emb)[:, :, <span class="literal">None</span>, <span class="literal">None</span>]    <span class="comment"># 把时间信息加进 feature</span></span><br><span class="line">        h = <span class="variable language_">self</span>.conv2(F.silu(<span class="variable language_">self</span>.norm2(h)))</span><br><span class="line">        <span class="keyword">return</span> h + <span class="variable language_">self</span>.skip(x)                          <span class="comment"># 残差</span></span><br></pre></td></tr></table></figure>
+<p>时间条件<strong>怎么注入</strong>?把 <code>t_emb</code> 通过 <code>Linear</code> 投影到 <code>out_ch</code> 维,reshape 成 <code>(B, out_ch, 1, 1)</code>,加到 feature map 上(每个空间位置加同一个时间偏移)。这是最常见的做法。</p>
+<details><summary>完整 UNet 骨架代码</summary><div class="details-content"><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">UNet</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;简化版 UNet for 32×32 图像&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_ch=<span class="number">3</span>, base_ch=<span class="number">64</span>, t_dim=<span class="number">512</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.time_mlp = nn.Sequential(</span><br><span class="line">            SinusoidalTimeEmbedding(base_ch),</span><br><span class="line">            nn.Linear(base_ch, t_dim),</span><br><span class="line">            nn.SiLU(),</span><br><span class="line">            nn.Linear(t_dim, t_dim),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Encoder (下采样)</span></span><br><span class="line">        <span class="variable language_">self</span>.in_conv = nn.Conv2d(in_ch, base_ch, <span class="number">3</span>, padding=<span class="number">1</span>)</span><br><span class="line">        <span class="variable language_">self</span>.down1 = ResBlock(base_ch,     base_ch,     t_dim)   <span class="comment"># 32×32</span></span><br><span class="line">        <span class="variable language_">self</span>.down2 = ResBlock(base_ch,     base_ch * <span class="number">2</span>, t_dim)   <span class="comment"># 16×16(下采样后)</span></span><br><span class="line">        <span class="variable language_">self</span>.down3 = ResBlock(base_ch * <span class="number">2</span>, base_ch * <span class="number">4</span>, t_dim)   <span class="comment"># 8×8</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># Bottleneck</span></span><br><span class="line">        <span class="variable language_">self</span>.mid = ResBlock(base_ch * <span class="number">4</span>, base_ch * <span class="number">4</span>, t_dim)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Decoder (上采样,带 skip)</span></span><br><span class="line">        <span class="variable language_">self</span>.up3 = ResBlock(base_ch * <span class="number">4</span> + base_ch * <span class="number">4</span>, base_ch * <span class="number">2</span>, t_dim)</span><br><span class="line">        <span class="variable language_">self</span>.up2 = ResBlock(base_ch * <span class="number">2</span> + base_ch * <span class="number">2</span>, base_ch,     t_dim)</span><br><span class="line">        <span class="variable language_">self</span>.up1 = ResBlock(base_ch     + base_ch,     base_ch,     t_dim)</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.out_conv = nn.Sequential(</span><br><span class="line">            nn.GroupNorm(<span class="number">8</span>, base_ch),</span><br><span class="line">            nn.SiLU(),</span><br><span class="line">            nn.Conv2d(base_ch, in_ch, <span class="number">3</span>, padding=<span class="number">1</span>),  <span class="comment"># 输出和输入同形状</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, t</span>):</span><br><span class="line">        t_emb = <span class="variable language_">self</span>.time_mlp(t)                       <span class="comment"># (B, t_dim)</span></span><br><span class="line"></span><br><span class="line">        x0 = <span class="variable language_">self</span>.in_conv(x)                           <span class="comment"># (B, C, 32, 32)</span></span><br><span class="line">        x1 = <span class="variable language_">self</span>.down1(x0, t_emb)</span><br><span class="line">        x2 = <span class="variable language_">self</span>.down2(F.avg_pool2d(x1, <span class="number">2</span>), t_emb)    <span class="comment"># (B, 2C, 16, 16)</span></span><br><span class="line">        x3 = <span class="variable language_">self</span>.down3(F.avg_pool2d(x2, <span class="number">2</span>), t_emb)    <span class="comment"># (B, 4C, 8, 8)</span></span><br><span class="line"></span><br><span class="line">        m = <span class="variable language_">self</span>.mid(x3, t_emb)</span><br><span class="line"></span><br><span class="line">        u3 = <span class="variable language_">self</span>.up3(torch.cat([m, x3], dim=<span class="number">1</span>), t_emb)</span><br><span class="line">        u3 = F.interpolate(u3, scale_factor=<span class="number">2</span>)         <span class="comment"># (B, 2C, 16, 16)</span></span><br><span class="line">        u2 = <span class="variable language_">self</span>.up2(torch.cat([u3, x2], dim=<span class="number">1</span>), t_emb)</span><br><span class="line">        u2 = F.interpolate(u2, scale_factor=<span class="number">2</span>)         <span class="comment"># (B, C, 32, 32)</span></span><br><span class="line">        u1 = <span class="variable language_">self</span>.up1(torch.cat([u2, x1], dim=<span class="number">1</span>), t_emb)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.out_conv(u1)                        <span class="comment"># (B, in_ch, 32, 32)</span></span><br></pre></td></tr></table></figure>
+<p>实际生产级 UNet(Stable Diffusion、Imagen)还会加:</p>
+<ul>
+<li><strong>Self-Attention 块</strong>:在低分辨率层(8×8、4×4)插自注意力,捕捉全局结构</li>
+<li><strong>多个 ResBlock 串联</strong>:每个分辨率层放 2 个 ResBlock 而不是 1 个</li>
+<li><strong>EMA 模型权重</strong>:保存一份指数平滑的权重用于推理,生成质量更好</li>
+<li><strong>Dropout</strong>:在 ResBlock 里加一点(0.1)</li>
+</ul>
+<p>但骨架就是上面这个:<strong>编码下采样 → bottleneck → 解码上采样 + skip</strong>,带时间条件。</p>
+</div></details>
+<h3 id="9-6-训练循环-5-行核心逻辑"><a href="#9-6-训练循环-5-行核心逻辑" class="headerlink" title="9.6 训练循环:5 行核心逻辑"></a>9.6 训练循环:5 行核心逻辑</h3><p>整套 DDPM 训练就是把 $L_{\text{simple}}$ 实现出来:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">device = <span class="string">&#x27;cuda&#x27;</span></span><br><span class="line">model = UNet().to(device)</span><br><span class="line">optimizer = torch.optim.Adam(model.parameters(), lr=<span class="number">2e-4</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把所有 schedule tensor 搬到 GPU</span></span><br><span class="line">beta = beta.to(device); alpha = alpha.to(device)</span><br><span class="line">alpha_bar = alpha_bar.to(device)</span><br><span class="line">sqrt_alpha_bar = sqrt_alpha_bar.to(device)</span><br><span class="line">sqrt_one_minus_alpha_bar = sqrt_one_minus_alpha_bar.to(device)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">    <span class="keyword">for</span> x_0, _ <span class="keyword">in</span> train_loader:</span><br><span class="line">        x_0 = x_0.to(device)                                       <span class="comment"># (B, 3, 32, 32) ∈ [-1, 1]</span></span><br><span class="line">        B = x_0.size(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 1. 每个样本随机一个 timestep</span></span><br><span class="line">        t = torch.randint(<span class="number">0</span>, T, (B,), device=device)                <span class="comment"># (B,)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2. 采噪声</span></span><br><span class="line">        eps = torch.randn_like(x_0)                                 <span class="comment"># (B, 3, 32, 32)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3. 一步加噪到 x_t</span></span><br><span class="line">        x_t = q_sample(x_0, t, eps)                                 <span class="comment"># (B, 3, 32, 32)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 4. 网络预测噪声</span></span><br><span class="line">        eps_pred = model(x_t, t)                                    <span class="comment"># (B, 3, 32, 32)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 5. MSE 损失,一行</span></span><br><span class="line">        loss = F.mse_loss(eps_pred, eps)</span><br><span class="line"></span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br></pre></td></tr></table></figure>
+<p>回头看每一步在做什么:</p>
+<ol>
+<li><strong>采 $t$</strong>:不同样本独立采 timestep,等价于对 ELBO 的 $\sum_t$ 做蒙特卡洛</li>
+<li><strong>采 $\epsilon$</strong>:这是真实”标签”——网络要预测的就是它</li>
+<li><strong><code>q_sample</code></strong>:用闭式公式造出 $x_t$,避免一步步加噪</li>
+<li><strong><code>model(x_t, t)</code></strong>:UNet 看着 $x_t$ 和当前时刻,猜里面藏的噪声</li>
+<li><strong>MSE</strong>:$L<em>{\text{simple}} = |\epsilon - \epsilon</em>\theta|^2$,直接 <code>F.mse_loss</code></li>
+</ol>
+<h3 id="9-7-采样循环-逆向走-T-步"><a href="#9-7-采样循环-逆向走-T-步" class="headerlink" title="9.7 采样循环:逆向走 T 步"></a>9.7 采样循环:逆向走 T 步</h3><p>训练完后,从 $\mathcal{N}(0, I)$ 出发,逐步去噪到图:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>输入</strong></td>
+<td>形状 <code>shape = (n, 3, 32, 32)</code>,生成 n 张图</td>
+</tr>
+<tr>
+<td><strong>输出</strong></td>
+<td>$x_0$,形状 <code>(n, 3, 32, 32)</code>,值大致 <code>[-1, 1]</code></td>
+</tr>
+<tr>
+<td><strong>意义</strong></td>
+<td>把训练学到的 $p<em>\theta(x</em>{t-1}\mid x_t)$ 按马尔可夫链反向运行 $T$ 次</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@torch.no_grad()</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sample</span>(<span class="params">model, shape, device=<span class="string">&#x27;cuda&#x27;</span></span>):</span><br><span class="line">    model.<span class="built_in">eval</span>()</span><br><span class="line">    x = torch.randn(shape, device=device)                           <span class="comment"># x_T ~ N(0, I)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(T)):                                    <span class="comment"># t = T-1, ..., 0</span></span><br><span class="line">        t_batch = torch.full((shape[<span class="number">0</span>],), t, device=device, dtype=torch.long)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 1. 网络预测此刻的噪声</span></span><br><span class="line">        eps_pred = model(x, t_batch)                                <span class="comment"># (n, 3, 32, 32)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2. 算后验均值(训练时参数化的 μ_θ 公式)</span></span><br><span class="line">        coef1 = <span class="number">1.0</span> / torch.sqrt(alpha[t])</span><br><span class="line">        coef2 = beta[t] / torch.sqrt(<span class="number">1.0</span> - alpha_bar[t])</span><br><span class="line">        mean = coef1 * (x - coef2 * eps_pred)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3. 加一点新噪声(最后一步不加)</span></span><br><span class="line">        <span class="keyword">if</span> t &gt; <span class="number">0</span>:</span><br><span class="line">            sigma = torch.sqrt(beta[t])                              <span class="comment"># σ_t = √β_t</span></span><br><span class="line">            z = torch.randn_like(x)</span><br><span class="line">            x = mean + sigma * z</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            x = mean</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> x  <span class="comment"># x_0</span></span><br></pre></td></tr></table></figure>
+<p>每一步在做的事(对应”采样算法”那节的公式):</p>
+<ol>
+<li><strong><code>eps_pred = model(x, t_batch)</code></strong>:UNet 估一下当前 $x_t$ 里的噪声成分</li>
+<li><strong><code>mean = ...</code></strong>:用重参数化的 $\mu<em>\theta = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\epsilon</em>\theta)$ 公式算后验均值</li>
+<li><strong><code>x = mean + sigma * z</code></strong>:从高斯 $p<em>\theta(x</em>{t-1}\mid x<em>t) = \mathcal{N}(\mu</em>\theta, \sigma_t^2 I)$ 采样</li>
+<li><strong>最后一步 <code>t = 0</code></strong>:取 MAP(均值),不加噪——直接得到清晰图</li>
+</ol>
+<h3 id="9-8-把生成图变回去-反归一化"><a href="#9-8-把生成图变回去-反归一化" class="headerlink" title="9.8 把生成图变回去:反归一化"></a>9.8 把生成图变回去:反归一化</h3><p>采样得到的 <code>x</code> 在 <code>[-1, 1]</code>,显示前要还原到 <code>[0, 1]</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">to_image</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="comment"># x: (n, 3, 32, 32) ∈ [-1, 1]</span></span><br><span class="line">    x = (x + <span class="number">1</span>) / <span class="number">2</span>          <span class="comment"># → [0, 1]</span></span><br><span class="line">    x = x.clamp(<span class="number">0</span>, <span class="number">1</span>)        <span class="comment"># 防止越界</span></span><br><span class="line">    <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+<h3 id="9-9-整体流程图"><a href="#9-9-整体流程图" class="headerlink" title="9.9 整体流程图"></a>9.9 整体流程图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">训练:</span><br><span class="line">                      时间 t ──→ time_mlp ──→ t_emb</span><br><span class="line">                                                 │</span><br><span class="line">                                                 ↓</span><br><span class="line">  x_0 ──→ q_sample(t) ──→ x_t  ──UNet(x_t, t)──→ ε_θ</span><br><span class="line">                          │                       │</span><br><span class="line">                          └──→ ε  ───────MSE──────┘</span><br><span class="line">                                                 │</span><br><span class="line">                                                 ↓</span><br><span class="line">                                              更新 θ</span><br><span class="line"></span><br><span class="line">生成:</span><br><span class="line">  x_T ~ N(0, I)</span><br><span class="line">        │</span><br><span class="line">        ├──→ for t = T-1, ..., 0:</span><br><span class="line">        │        ε_θ = UNet(x_t, t)</span><br><span class="line">        │        μ   = (x_t - β_t/√(1-ᾱ_t) · ε_θ) / √α_t</span><br><span class="line">        │        x_&#123;t-1&#125; = μ + σ_t · z   (t=0 时不加噪)</span><br><span class="line">        │</span><br><span class="line">        ↓</span><br><span class="line">       x_0</span><br></pre></td></tr></table></figure>
+<p>整个 DDPM 工程量不大——核心代码大约:</p>
+<ul>
+<li>数据预处理 5 行</li>
+<li>noise schedule 10 行</li>
+<li><code>q_sample</code> 5 行</li>
+<li>时间嵌入 10 行</li>
+<li>UNet 80 行</li>
+<li>训练循环 15 行</li>
+<li>采样循环 20 行</li>
+</ul>
+<p>合计 <strong>不到 150 行</strong>,就能在 CIFAR-10 上训出能看的生成图。生产级 Stable Diffusion 的复杂度主要堆在 UNet 的精细架构、attention、EMA、混合精度训练等工程上,<strong>核心数学就是上面这些</strong>。</p>
+<details><summary>训练超参数参考(DDPM 原版)</summary><div class="details-content"><table>
+<thead>
+<tr>
+<th>项</th>
+<th>CIFAR-10 默认值</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>图像分辨率</td>
+<td>32×32</td>
+<td>也跑过 256×256 LSUN</td>
+</tr>
+<tr>
+<td>Batch size</td>
+<td>128</td>
+<td>跨 8 GPU 数据并行</td>
+</tr>
+<tr>
+<td>优化器</td>
+<td>Adam</td>
+<td>没换 AdamW,β1=0.9, β2=0.999</td>
+</tr>
+<tr>
+<td>学习率</td>
+<td>2e-4</td>
+<td>不用 warmup</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>0.1</td>
+<td>在 ResBlock 内部</td>
+</tr>
+<tr>
+<td>EMA decay</td>
+<td>0.9999</td>
+<td>推理用 EMA 权重而非原始权重</td>
+</tr>
+<tr>
+<td>训练步数</td>
+<td>800K</td>
+<td>32×32 大概 24 小时 8×V100</td>
+</tr>
+<tr>
+<td>$T$</td>
+<td>1000</td>
+<td>推理也走完整 1000 步</td>
+</tr>
+<tr>
+<td>schedule</td>
+<td>linear $\beta_t$ from 1e-4 to 0.02</td>
+<td>DDPM 原版</td>
+</tr>
+<tr>
+<td>UNet base channels</td>
+<td>128</td>
+<td>三层下采样,channel 倍率 [1, 2, 2, 2]</td>
+</tr>
+<tr>
+<td>Attention 分辨率</td>
+<td>16×16</td>
+<td>在这一层加 self-attention</td>
+</tr>
+</tbody>
+</table>
+<p>后来 Improved DDPM 改进了几处:</p>
+<ul>
+<li><strong>cosine schedule</strong> 替代 linear:训练更稳,FID 更好</li>
+<li><strong>学方差</strong> $\Sigma_\theta$ 而非固定:似然估计更准</li>
+<li><strong>Importance sampling 选 $t$</strong>:聚焦在高 loss 的 timestep</li>
+</ul>
+</div></details>
+<hr>
+<h2 id="十、复盘-为什么这一切如此优雅"><a href="#十、复盘-为什么这一切如此优雅" class="headerlink" title="十、复盘:为什么这一切如此优雅?"></a>十、复盘:为什么这一切如此优雅?</h2><p>让我们回头看,DDPM 究竟做了什么:</p>
+<ol>
+<li><strong>加了一个条件 $x_0$</strong>:$q(x<em>{t-1} \mid x_t)$ 不闭式 → $q(x</em>{t-1} \mid x_t, x_0)$ 闭式</li>
+<li><strong>用贝叶斯翻转方向</strong>:让 ELBO 的每一项变成两个高斯的 KL</li>
+<li><strong>套高斯 KL 闭式</strong>:KL → MSE</li>
+<li><strong>重参数化预测目标</strong>:$\mu<em>\theta \to \epsilon</em>\theta$</li>
+<li><strong>去掉权重</strong>:得到 $L_{\text{simple}}$</li>
+</ol>
+<p>每一步都是把”复杂、不闭式、方向不对”的形式替换成”简单、闭式、可训练”的形式。最终结果:</p>
+<ul>
+<li>训练 loss 一行 MSE</li>
+<li>训练 5 行代码</li>
+<li>完全消除蒙特卡洛的内层方差</li>
+<li>数值稳定、效果惊艳</li>
+</ul>
+<p><strong>这就是 DDPM 比 Sohl-Dickstein 好的本质</strong>——不是改了模型,而是<strong>改了表达方式</strong>。同一个模型,换个写法,从难训变成易训,从凑合到 SOTA。</p>
+<hr>
+<h2 id="十一、要点回顾"><a href="#十一、要点回顾" class="headerlink" title="十一、要点回顾"></a>十一、要点回顾</h2><ul>
+<li>DDPM 没有改 Sohl-Dickstein 的模型,只改了<strong>表达方式</strong></li>
+<li>关键引理:$q(x_{t-1} \mid x_t, x_0)$ 是闭式高斯,均值 $\tilde\mu_t$ 是 $x_0, x_t$ 的线性组合</li>
+<li>贝叶斯重写:把 ELBO 改成”$L<em>T + \sum L</em>{t-1} + L_0$”的形式</li>
+<li>$L<em>T$ 是常数,$L_0$ 单独处理,<strong>核心训练</strong>是 $L</em>{t-1}$</li>
+<li>$L<em>{t-1}$ 是两个高斯 KL → 闭式 MSE on $\mu</em>\theta$</li>
+<li>重参数化 $\mu<em>\theta \to \epsilon</em>\theta$,变成噪声预测</li>
+<li>$L_{\text{simple}}$ 去掉权重,纯 MSE</li>
+<li>$\epsilon$-预测和 score-预测只差一个标量,两条线在此对接</li>
+</ul>
+<details><summary>附录1：怎么用贝叶斯化简后验分布 q</summary><div class="details-content"><p>这个推导是&quot;高斯运算&quot;的经典练习——纯代数,但每一步都要清楚。我会用<strong>配方法</strong>(completing the square)系统推完。这是 diffusion 推导里最技术性的一段,但理解了它,后面所有&quot;高斯之间的运算&quot;你都会做。</p>
+<hr>
+<h3 id="%E4%B8%80%E3%80%81%E8%B5%B7%E7%82%B9-%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%B1%95%E5%BC%80">一、起点:贝叶斯展开</h3>
+<p>我们要推:</p>
+<script type="math/tex; mode=display">q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)}</script><p>三个高斯都已知:</p>
+<script type="math/tex; mode=display">q(x_t \mid x_{t-1}) = \mathcal{N}(x_t;\, \sqrt{\alpha_t} x_{t-1},\, \beta_t I)</script><script type="math/tex; mode=display">q(x_{t-1} \mid x_0) = \mathcal{N}(x_{t-1};\, \sqrt{\bar\alpha_{t-1}} x_0,\, (1-\bar\alpha_{t-1}) I)</script><script type="math/tex; mode=display">q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t} x_0,\, (1-\bar\alpha_t) I)</script><p>(其中 $\alpha<em>t = 1-\beta_t$,$\bar\alpha_t = \prod</em>{s=1}^t \alpha_s$)</p>
+<p><strong>总策略</strong>:取对数,只看依赖 $x<em>{t-1}$ 的项,把它整理成&quot;$x</em>{t-1}$ 的二次型 + 常数&quot;,对照高斯标准形式读出均值和方差。</p>
+<p>为什么这个策略行?因为:<strong>任何关于 $x<em>{t-1}$ 的表达,如果它的对数是 $x</em>{t-1}$ 的二次型,那它就是关于 $x_{t-1}$ 的高斯</strong>。高斯被均值和方差完全确定,所以读出二次型的系数就够了。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E5%86%99%E5%87%BA%E5%AF%B9%E6%95%B0">二、写出对数</h3>
+<p>取对数(乘除 → 加减):</p>
+<script type="math/tex; mode=display">\log q(x_{t-1} \mid x_t, x_0) = \log q(x_t \mid x_{t-1}) + \log q(x_{t-1} \mid x_0) - \log q(x_t \mid x_0)</script><p>第三项 $\log q(x<em>t \mid x_0)$ **不依赖 $x</em>{t-1}$**,作为常数处理(吸收到归一化里)。</p>
+<p>剩下两项,代入高斯密度公式 $\log \mathcal{N}(z; \mu, \sigma^2 I) = -\frac{1}{2\sigma^2}| z - \mu |^2 + \text{const}$(为了简洁我用了一维记号,多维各向同性同理):</p>
+<p><strong>第一项</strong>:</p>
+<script type="math/tex; mode=display">\log q(x_t \mid x_{t-1}) = -\frac{1}{2\beta_t}\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2 + \text{const}</script><p><strong>第二项</strong>:</p>
+<script type="math/tex; mode=display">\log q(x_{t-1} \mid x_0) = -\frac{1}{2(1-\bar\alpha_{t-1})}\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2 + \text{const}</script><p>合并:</p>
+<script type="math/tex; mode=display">\log q(x_{t-1} \mid x_t, x_0) = -\frac{1}{2}\left[\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} + \frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}}\right] + \text{const}</script><hr>
+<h3 id="%E4%B8%89%E3%80%81%E5%B1%95%E5%BC%80-x-t-1-%E7%9A%84%E4%BA%8C%E6%AC%A1%E5%9E%8B">三、展开 $x_{t-1}$ 的二次型</h3>
+<p>我们的目标是把方括号里的部分整理成关于 $x_{t-1}$ 的形式:</p>
+<script type="math/tex; mode=display">A \| x_{t-1} \|^2 - 2 B^\top x_{t-1} + (\text{不依赖 } x_{t-1} \text{ 的常数})</script><p>读出 $A$ 和 $B$ 后,均值方差就出来了。</p>
+<h3 id="%E7%AC%AC%E4%B8%80%E5%9D%97%E5%B1%95%E5%BC%80">第一块展开</h3>
+<script type="math/tex; mode=display">\frac{\| x_t - \sqrt{\alpha_t} x_{t-1} \|^2}{\beta_t} = \frac{1}{\beta_t}\left(\| x_t \|^2 - 2\sqrt{\alpha_t}\, x_t^\top x_{t-1} + \alpha_t \| x_{t-1} \|^2\right)</script><p>只看依赖 $x_{t-1}$ 的项:</p>
+<script type="math/tex; mode=display">= \frac{\alpha_t}{\beta_t}\| x_{t-1} \|^2 - \frac{2\sqrt{\alpha_t}}{\beta_t}\, x_t^\top x_{t-1} + \text{const}</script><h3 id="%E7%AC%AC%E4%BA%8C%E5%9D%97%E5%B1%95%E5%BC%80">第二块展开</h3>
+<script type="math/tex; mode=display">\frac{\| x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0 \|^2}{1-\bar\alpha_{t-1}} = \frac{1}{1-\bar\alpha_{t-1}}\left(\| x_{t-1} \|^2 - 2\sqrt{\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \bar\alpha_{t-1}\| x_0 \|^2\right)</script><p>只看依赖 $x_{t-1}$ 的项:</p>
+<script type="math/tex; mode=display">= \frac{1}{1-\bar\alpha_{t-1}}\| x_{t-1} \|^2 - \frac{2\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0^\top x_{t-1} + \text{const}</script><h3 id="%E5%90%88%E5%B9%B6%E4%B8%A4%E5%9D%97">合并两块</h3>
+<p>$x_{t-1}$ 的<strong>二次项系数 $A$</strong>:</p>
+<script type="math/tex; mode=display">A = \frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}</script><p>$x<em>{t-1}$ 的<strong>一次项系数 $B$</strong>(指 $-2 B^\top x</em>{t-1}$ 的 $B$):</p>
+<script type="math/tex; mode=display">B = \frac{\sqrt{\alpha_t}}{\beta_t}\, x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}\, x_0</script><hr>
+<h3 id="%E5%9B%9B%E3%80%81%E9%85%8D%E6%96%B9%E6%B3%95%E8%AF%BB%E5%87%BA%E5%9D%87%E5%80%BC%E5%92%8C%E6%96%B9%E5%B7%AE">四、配方法读出均值和方差</h3>
+<p>回忆标准高斯的对数(忽略常数):</p>
+<script type="math/tex; mode=display">\log \mathcal{N}(x_{t-1}; \tilde\mu, \tilde\sigma^2 I) = -\frac{1}{2\tilde\sigma^2}\| x_{t-1} - \tilde\mu \|^2 = -\frac{1}{2\tilde\sigma^2}\left(\| x_{t-1} \|^2 - 2 \tilde\mu^\top x_{t-1}\right) + \text{const}</script><p>所以标准形式中的二次项系数和一次项 $B$ 满足:</p>
+<ul>
+<li>二次项系数 = $\frac{1}{\tilde\sigma^2}$</li>
+<li>一次项系数 $B$ = $\frac{\tilde\mu}{\tilde\sigma^2}$</li>
+</ul>
+<p>(注意我们的合并公式整体外面有一个 $-\frac{1}{2}$,所以提取的就是这个对应关系)</p>
+<p>对照得到:</p>
+<script type="math/tex; mode=display">\frac{1}{\tilde\sigma^2} = A,\quad \frac{\tilde\mu}{\tilde\sigma^2} = B</script><p>所以:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\sigma^2 = \frac{1}{A},\quad \tilde\mu = \frac{B}{A} = \tilde\sigma^2 \cdot B}</script><hr>
+<h3 id="%E4%BA%94%E3%80%81%E5%8C%96%E7%AE%80-tilde-sigma-2">五、化简 $\tilde\sigma^2$</h3>
+<script type="math/tex; mode=display">\tilde\sigma^2 = \frac{1}{\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}}</script><p>通分:</p>
+<script type="math/tex; mode=display">\tilde\sigma^2 = \frac{1}{\frac{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}{\beta_t (1-\bar\alpha_{t-1})}} = \frac{\beta_t (1-\bar\alpha_{t-1})}{\alpha_t (1-\bar\alpha_{t-1}) + \beta_t}</script><p>化简分母。用 $\beta_t = 1 - \alpha_t$:</p>
+<script type="math/tex; mode=display">\alpha_t (1-\bar\alpha_{t-1}) + \beta_t = \alpha_t - \alpha_t \bar\alpha_{t-1} + 1 - \alpha_t = 1 - \alpha_t \bar\alpha_{t-1}</script><p>而 $\alpha<em>t \bar\alpha</em>{t-1} = \bar\alpha<em>t$(因为 $\bar\alpha_t = \prod</em>{s=1}^t \alpha<em>s = \alpha_t \prod</em>{s=1}^{t-1} \alpha<em>s = \alpha_t \bar\alpha</em>{t-1}$),所以分母是 $1 - \bar\alpha_t$。</p>
+<p>得到:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\sigma^2 = \tilde\beta_t = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t}\, \beta_t}</script><p>完美——这就是 DDPM 公式里的方差。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E5%8C%96%E7%AE%80-tilde-mu-t">六、化简 $\tilde\mu_t$</h3>
+<script type="math/tex; mode=display">\tilde\mu_t = \tilde\sigma^2 \cdot B = \frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t}\left[\frac{\sqrt{\alpha_t}}{\beta_t} x_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} x_0\right]</script><p>把 $\tilde\sigma^2$ 分配进去:</p>
+<p><strong>$x_t$ 的系数</strong>:</p>
+<script type="math/tex; mode=display">\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\alpha_t}}{\beta_t} = \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}</script><p><strong>$x_0$ 的系数</strong>:</p>
+<script type="math/tex; mode=display">\frac{\beta_t (1-\bar\alpha_{t-1})}{1 - \bar\alpha_t} \cdot \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}} = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}</script><p>合起来:</p>
+<script type="math/tex; mode=display">\boxed{\tilde\mu_t(x_t, x_0) = \frac{\sqrt{\bar\alpha_{t-1}}\, \beta_t}{1-\bar\alpha_t}\, x_0 + \frac{\sqrt{\alpha_t}\, (1-\bar\alpha_{t-1})}{1-\bar\alpha_t}\, x_t}</script><p>完美——这就是 DDPM 公式里的均值。✓</p>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E6%A3%80%E6%9F%A5%E4%B8%80%E8%87%B4%E6%80%A7-sanity-check">七、检查一致性(sanity check)</h3>
+<p>数学推导要会自检,看这个结果合不合理。</p>
+<p><strong>检查 1</strong>:$x_0$ 和 $x_t$ 的系数加起来应该接近什么?</p>
+<p>让我们看极端情况。当 $t = 1$ 时,$\bar\alpha_{t-1} = \bar\alpha_0 = 1$,$\bar\alpha_t = \alpha_1$:</p>
+<ul>
+<li>$x_0$ 系数:$\frac{\sqrt{1} \cdot \beta_1}{1-\alpha_1} = \frac{\beta_1}{\beta_1} = 1$</li>
+<li>$x_t$ 系数:$\frac{\sqrt{\alpha_1}(1-1)}{1-\alpha_1} = 0$</li>
+</ul>
+<p>所以 $\tilde\mu_1 = x_0$ —— 当 $t = 1$ 时,逆向后验完全集中在 $x_0$,<strong>没有不确定性</strong>(方差也应该是 0,我们检查:$\tilde\beta_1 = \frac{1-1}{1-\alpha_1}\beta_1 = 0$ ✓)。</p>
+<p><strong>直觉解释</strong>:已知 $x_0$ 和 $x_1$,要问 $x_0$ 是什么——当然就是 $x_0$ 本身,完全确定。</p>
+<p><strong>检查 2</strong>:当 $t$ 很大、$\bar\alpha_t \to 0$ 时:</p>
+<ul>
+<li>$x<em>0$ 系数 $\approx \sqrt{\bar\alpha</em>{t-1}} \beta_t \to 0$</li>
+<li>$x_t$ 系数 $\approx \sqrt{\alpha_t}$</li>
+</ul>
+<p>也就是 $\tilde\mu_t \approx \sqrt{\alpha_t}\, x_t$。当噪声非常大时,$x_0$ 信息被噪声完全淹没,逆向后验主要由 $x_t$ 决定——也合理。</p>
+<p><strong>检查 3</strong>:方差 $\tilde\beta_t &lt; \beta_t$ 吗?</p>
+<p>$\tilde\beta<em>t = \frac{1-\bar\alpha</em>{t-1}}{1-\bar\alpha<em>t} \beta_t$。因为 $\bar\alpha</em>{t-1} &gt; \bar\alpha<em>t$,有 $1-\bar\alpha</em>{t-1} &lt; 1-\bar\alpha_t$,所以 $\tilde\beta_t &lt; \beta_t$ ✓。</p>
+<p><strong>直觉</strong>:已知 $x<em>0$ 和 $x_t$ 之后,我们对 $x</em>{t-1}$ 的不确定性,比单纯看前向加噪 $\beta_t$ 要小——多了 $x_0$ 这个信息,后验就更窄。合理。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93-%E9%85%8D%E6%96%B9%E6%B3%95%E7%9A%84%E7%B2%BE%E9%AB%93">八、技巧总结:配方法的精髓</h3>
+<p>整个推导的核心是<strong>配方法</strong>——给一个二次型,读出均值方差。让我把这个&quot;模板&quot;提炼出来,因为它在 diffusion / VAE / 高斯过程里反复出现。</p>
+<p><strong>模板</strong>:如果一个分布的对数密度(忽略常数)长这样</p>
+<script type="math/tex; mode=display">-\frac{1}{2}\left(A \| z \|^2 - 2 B^\top z\right)</script><p>那这个分布就是高斯,均值 $\mu = B/A$,方差 $\sigma^2 = 1/A$。</p>
+<p><strong>实践三步</strong>:</p>
+<ol>
+<li>把所有&quot;高斯乘积/比值&quot;取对数,变成一堆二次型相加</li>
+<li>收集所有 $| z |^2$ 的系数得 $A$,所有 $z^\top$ 的系数得 $B$</li>
+<li>读出 $\mu = B/A$,$\sigma^2 = 1/A$,完成</li>
+</ol>
+<p>整个过程<strong>不需要任何创意</strong>,纯机械。学会这个,你以后看 diffusion 各种高斯运算都不会怕。</p>
+<h3 id="%E4%B8%80%E4%B8%AA%E6%9B%B4%E5%87%A0%E4%BD%95%E7%9A%84%E8%A7%86%E8%A7%92">一个更几何的视角</h3>
+<p>更深一层:这个推导本质是&quot;两个高斯的乘积还是高斯&quot;——更准确地说,<strong>两个关于 $x<em>{t-1}$ 的高斯的乘积,得到一个新的关于 $x</em>{t-1}$ 的高斯,新的精度(precision = 方差的倒数)是两个精度之和</strong>。</p>
+<p>具体到我们这里:</p>
+<ul>
+<li>$q(x<em>t \mid x</em>{t-1})$ 看作 $x_{t-1}$ 的函数,精度是 $\alpha_t / \beta_t$</li>
+<li>$q(x<em>{t-1} \mid x_0)$ 看作 $x</em>{t-1}$ 的函数,精度是 $1/(1-\bar\alpha_{t-1})$</li>
+<li>乘积后的精度 = 两者之和 = $A$</li>
+</ul>
+<p>这就是为什么贝叶斯推断里,<strong>精度具有&quot;可加性&quot;,而方差不具备</strong>——后验精度 = 先验精度 + 似然精度。这个原理在贝叶斯线性回归、卡尔曼滤波里都是同一回事。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>推导工具:<strong>配方法</strong>——把对数密度整理成关于变量的二次型,读出均值方差</li>
+<li>三个高斯(前向 1 步、前向 $t-1$ 步、前向 $t$ 步)通过贝叶斯组合</li>
+<li>第三个($q(x<em>t \mid x_0)$)不依赖 $x</em>{t-1}$,扔进常数</li>
+<li>二次项系数 $A$ 和一次项系数 $B$ 决定 $\tilde\mu = B/A$,$\tilde\sigma^2 = 1/A$</li>
+<li>关键化简:$1 - \alpha<em>t \bar\alpha</em>{t-1} = 1 - \bar\alpha_t$</li>
+<li>检查极端情况($t=1$、$t$ 很大)能验证公式合理</li>
+<li>几何视角:贝叶斯组合 = 精度相加</li>
+</ul>
+</div></details>
+<details><summary>附录2：怎么化简单步的 KL 散度</summary><div class="details-content"><h3 id="%E4%B8%80%E3%80%81%E5%85%88%E5%9B%9E%E9%A1%BE%E6%88%91%E4%BB%AC%E5%9C%A8%E5%93%AA">一、先回顾我们在哪</h3>
+<p>DDPM 把负 ELBO 改写成:</p>
+<script type="math/tex; mode=display">-\mathcal{L} = \mathbb{E}_q\left[L_T + \sum_{t=2}^T L_{t-1} + L_0\right]</script><p>其中核心训练项是</p>
+<script type="math/tex; mode=display">L_{t-1} = D_{\text{KL}}\big(q(x_{t-1} \mid x_t, x_0) \,\big\|\, p_\theta(x_{t-1} \mid x_t)\big)</script><p>我们已经知道两个分布是什么:</p>
+<ul>
+<li>$q(x_{t-1} \mid x_t, x_0) = \mathcal{N}(\tilde\mu_t(x_t, x_0),\, \tilde\beta_t I)$ ← 闭式高斯,刚推过</li>
+<li>$p<em>\theta(x</em>{t-1} \mid x<em>t) = \mathcal{N}(\mu</em>\theta(x<em>t, t),\, \Sigma</em>\theta(x_t, t))$ ← 网络输出</li>
+</ul>
+<p><strong>问题</strong>:怎么计算两个高斯之间的 KL?</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E4%B8%A4%E4%B8%AA%E9%AB%98%E6%96%AF%E7%9A%84-kl-%E9%97%AD%E5%BC%8F%E5%85%AC%E5%BC%8F">二、两个高斯的 KL 闭式公式</h3>
+<p>我们之前提过这个公式,但没真正用过。现在用最简化的版本:<strong>两个各向同性、方差相同的高斯</strong>。</p>
+<p>设 $p = \mathcal{N}(\mu_1, \sigma^2 I)$,$q = \mathcal{N}(\mu_2, \sigma^2 I)$,都是 $d$ 维。则:</p>
+<script type="math/tex; mode=display">D_{\text{KL}}(p \| q) = \frac{\| \mu_1 - \mu_2 \|^2}{2\sigma^2}</script><p><strong>这是个奇迹般简洁的公式</strong>——两个相同方差的高斯之间的 KL,<strong>就是均值之差的平方,除以 $2\sigma^2$</strong>。</p>
+<p>为什么这么简单?因为方差相同时,KL 公式里的 $\log(\sigma_2/\sigma_1)$ 项和 $\sigma_1^2/(2\sigma_2^2) - 1/2$ 项都消掉了,只剩均值差。</p>
+<hr>
+<h3 id="%E4%B8%89%E3%80%81ddpm-%E7%9A%84%E7%AE%80%E5%8C%96-%E5%9B%BA%E5%AE%9A%E6%96%B9%E5%B7%AE">三、DDPM 的简化:固定方差</h3>
+<p>要套用这个简洁公式,<strong>两个高斯必须有相同的方差</strong>。但:</p>
+<ul>
+<li>$q(x_{t-1} \mid x_t, x_0)$ 的方差是 $\tilde\beta_t I$(已知,闭式)</li>
+<li>$p<em>\theta(x</em>{t-1} \mid x<em>t)$ 的方差是 $\Sigma</em>\theta(x_t, t)$(网络输出)</li>
+</ul>
+<p>DDPM 做了一个<strong>简化设计</strong>:<strong>让 $p_\theta$ 的方差也固定</strong>,不学,直接设成</p>
+<script type="math/tex; mode=display">\Sigma_\theta(x_t, t) = \sigma_t^2 I</script><p>其中 $\sigma_t^2$ 是预设的常数(论文实验了 $\sigma_t^2 = \beta_t$ 和 $\sigma_t^2 = \tilde\beta_t$,效果差不多)。</p>
+<h3 id="%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E4%BB%A5%E8%BF%99%E6%A0%B7%E7%AE%80%E5%8C%96">为什么可以这样简化?</h3>
+<ul>
+<li>$\tilde\beta_t$ 已经是个<strong>完全闭式</strong>且<strong>不依赖 $x_0, x_t$</strong> 的量——它只依赖 $t$ 和 noise schedule</li>
+<li>既然方差已经&quot;事先知道&quot;,网络再去学一个就是浪费</li>
+<li>理论上稍微损失一点表达力,但实践中效果反而更好(更稳定)</li>
+</ul>
+<p><strong>简化之后</strong>,两个高斯方差都是 $\sigma_t^2 I$(假设取 $\sigma_t^2 = \tilde\beta_t$),套上面的简洁公式:</p>
+<script type="math/tex; mode=display">L_{t-1} = D_{\text{KL}}\big(q \,\big\|\, p_\theta\big) = \frac{\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2}{2\sigma_t^2}</script><p>如果两边方差不完全相等(比如 $\sigma_t^2 = \beta_t$ 但 $q$ 的方差是 $\tilde\beta_t$),会多出一些常数项,但<strong>不依赖 $\theta$</strong>,可以塞进 const:</p>
+<script type="math/tex; mode=display">L_{t-1} = \frac{1}{2\sigma_t^2}\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2 + C</script><hr>
+<h3 id="%E5%9B%9B%E3%80%81%E5%85%B3%E9%94%AE%E8%BD%AC%E6%8A%98-kl-%E5%8F%98%E6%88%90%E4%BA%86-mse">四、关键转折:KL 变成了 MSE</h3>
+<p>让我们停下来,欣赏这个时刻。</p>
+<p><strong>之前</strong>:训练 loss 是 $D<em>{\text{KL}}(q | p</em>\theta)$,听起来是个抽象的&quot;分布之间的距离&quot;。</p>
+<p><strong>现在</strong>:训练 loss 是 $| \tilde\mu<em>t - \mu</em>\theta |^2$,<strong>就是两个向量之间的均方误差</strong>——和回归问题完全一样!</p>
+<p>具体说,网络要做的事变成了:<strong>给定 $x<em>t$ 和 $t$,输出一个向量 $\mu</em>\theta(x_t, t)$,让它逼近真实后验均值 $\tilde\mu_t(x_t, x_0)$</strong>。</p>
+<p>这就是为什么我说这一步是&quot;魔法&quot;——一个看起来很复杂的概率论目标,化成了最朴素的 MSE 回归。</p>
+<hr>
+<h3 id="%E4%BA%94%E3%80%81-tilde-mu-t-%E6%98%AF%E4%BB%80%E4%B9%88-vs-mu-theta-%E6%98%AF%E4%BB%80%E4%B9%88">五、$\tilde\mu<em>t$ 是什么 vs $\mu</em>\theta$ 是什么</h3>
+<p>为了让这一步更具体,我们看清楚两边到底是什么:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>表达式</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\tilde\mu_t(x_t, x_0)$</td>
+<td>$\frac{\sqrt{\bar\alpha<em>{t-1}}\beta_t}{1-\bar\alpha_t} x_0 + \frac{\sqrt{\alpha_t}(1-\bar\alpha</em>{t-1})}{1-\bar\alpha_t} x_t$</td>
+<td>闭式公式,用 $x_0, x_t$ 算出</td>
+</tr>
+<tr>
+<td>$\mu_\theta(x_t, t)$</td>
+<td>由神经网络输出</td>
+<td>给定 $(x_t, t)$,网络预测</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>:训练 $\mu_\theta$,让它在所有 $(x_0, x_t)$ 组合下都接近 $\tilde\mu_t(x_t, x_0)$。</p>
+<p>注意一个关键事实:<strong>$\tilde\mu<em>t$ 依赖 $x_0$,而 $\mu</em>\theta$ 只能看到 $x_t$</strong>。所以 $\mu_\theta$ 必须<strong>从 $x_t$ 反推 $x_0$ 的信息</strong>——这就是去噪。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E8%AE%AD%E7%BB%83%E8%BF%99%E4%B8%AA-mse-%E6%80%8E%E4%B9%88%E6%93%8D%E4%BD%9C">六、训练这个 MSE 怎么操作?</h3>
+<p>来一遍完整的训练步骤,落实到代码层面:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 一次训练迭代</span></span><br><span class="line">x_0 = sample_data()                                           <span class="comment"># 从数据集采</span></span><br><span class="line">t   = uniform(<span class="number">2</span>, T)                                           <span class="comment"># 采时刻</span></span><br><span class="line">eps = randn_like(x_0)                                         <span class="comment"># 采噪声</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 用一步公式造出 x_t(重参数化)</span></span><br><span class="line">x_t = sqrt(α_bar[t]) * x_0 + sqrt(<span class="number">1</span> - α_bar[t]) * eps</span><br><span class="line"></span><br><span class="line"><span class="comment"># 算真实后验均值 μ̃_t(用闭式)</span></span><br><span class="line">target_mu = (sqrt(α_bar[t-<span class="number">1</span>]) * β[t]) / (<span class="number">1</span> - α_bar[t]) * x_0 \</span><br><span class="line">          + (sqrt(α[t]) * (<span class="number">1</span> - α_bar[t-<span class="number">1</span>])) / (<span class="number">1</span> - α_bar[t]) * x_t</span><br><span class="line"></span><br><span class="line"><span class="comment"># 网络输出 μ_θ</span></span><br><span class="line">pred_mu = network(x_t, t)</span><br><span class="line"></span><br><span class="line"><span class="comment"># MSE loss</span></span><br><span class="line">loss = ||target_mu - pred_mu||^<span class="number">2</span> / (<span class="number">2</span> * σ_t^<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">loss.backward()</span><br></pre></td></tr></table></figure>
+<p>这就是把 $L_{t-1}$ 落实到训练里的<strong>全部内容</strong>——一个标准的回归任务。</p>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-ddpm-%E8%BF%98%E8%A6%81%E5%86%8D%E8%B5%B0%E4%B8%80%E6%AD%A5">七、为什么 DDPM 还要再走一步?</h3>
+<p>到这里其实已经能训练了,而且原则上和最终的 DDPM 是等价的。但<strong>实践中&quot;预测 $\mu$&quot;比&quot;预测 $\epsilon$&quot;差</strong>,原因是:</p>
+<h3 id="%E5%8E%9F%E5%9B%A0-1-%E6%95%B0%E5%80%BC%E5%B0%BA%E5%BA%A6%E9%97%AE%E9%A2%98">原因 1:数值尺度问题</h3>
+<p>$\tilde\mu_t$ 是 $x_0$ 和 $x_t$ 的加权和,<strong>它的数值范围接近 $x_t$ 本身</strong>——也就是说,大部分输出就是&quot;把 $x_t$ 输出回去&quot;。网络要做的&quot;修正&quot;只是一个小偏移。</p>
+<p>让网络输出&quot;几乎是输入本身 + 小修正&quot; 是低效的——网络的大部分容量被花在&quot;复刻输入&quot;上。</p>
+<h3 id="%E5%8E%9F%E5%9B%A0-2-epsilon-%E7%9A%84%E5%B0%BA%E5%BA%A6%E6%9B%B4-%E6%A0%87%E5%87%86%E5%8C%96">原因 2:$\epsilon$ 的尺度更&quot;标准化&quot;</h3>
+<p>对比一下,如果让网络预测 $\epsilon$:</p>
+<script type="math/tex; mode=display">\epsilon \sim \mathcal{N}(0, I)</script><p>——它的尺度永远是 0 均值、单位方差,<strong>不依赖 $t$</strong>。所有时刻 $t$ 的目标分布尺度统一,网络更好训练。</p>
+<h3 id="%E5%8E%9F%E5%9B%A0-3-%E6%AE%8B%E5%B7%AE%E7%BB%93%E6%9E%84">原因 3:残差结构</h3>
+<p>预测 $\epsilon$ 在数学上等价于&quot;网络预测残差&quot;——即&quot;$x_t$ 里的噪声成分是什么&quot;,然后从 $x_t$ 减掉。这是经典的残差学习思想,普遍比&quot;直接学输入到输出的映射&quot;更稳定。</p>
+<p>所以 DDPM 做了<strong>重参数化</strong>:把网络的预测目标从 $\mu<em>\theta$ 换成 $\epsilon</em>\theta$,数学等价,但训练效果好得多。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E6%89%80%E4%BB%A5%E8%BF%99%E4%B8%80%E6%AD%A5%E7%9A%84%E6%9C%AC%E8%B4%A8%E6%98%AF%E4%BB%80%E4%B9%88">八、所以这一步的本质是什么?</h3>
+<p>回到你问的:&quot;$L_{t-1}$ 化简核心一步&quot;到底在做什么?</p>
+<p><strong>它做了三件事</strong>:</p>
+<ol>
+<li><strong>认识到 $L_{t-1}$ 是两个高斯的 KL</strong>——两边都已经被设计成高斯了</li>
+<li><strong>简化模型</strong>:固定 $p_\theta$ 的方差为 $\sigma_t^2 I$,让两边方差相同</li>
+<li><strong>套用&quot;相同方差高斯 KL = 均值差平方&quot;的闭式公式</strong>——把 KL 变成 MSE</li>
+</ol>
+<p><strong>结果</strong>:训练 loss 从抽象的&quot;两个分布的距离&quot;变成了具体的&quot;两个向量的 MSE&quot;。</p>
+<p>这是 DDPM 让训练变简单的<strong>最关键一步</strong>——但其实它的本质就是&quot;利用我们之前讲过的&#39;高斯 KL 有闭式&#39;,把分布问题降维成回归问题&quot;。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E5%92%8C%E6%88%91%E4%BB%AC%E4%B9%8B%E5%89%8D%E8%AE%A8%E8%AE%BA%E7%9A%84%E4%B8%B2%E8%B5%B7%E6%9D%A5">九、和我们之前讨论的串起来</h3>
+<p>回头看,这一切都是之前讨论的&quot;闭式 vs 蒙特卡洛&quot;故事的最终兑现:</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>loss 的形式</th>
+<th>怎么算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sohl-Dickstein</td>
+<td>$\log \frac{q(x<em>t \mid x</em>{t-1})}{p<em>\theta(x</em>{t-1} \mid x_t)}$</td>
+<td>蒙特卡洛(方向不一致,无法 KL)</td>
+</tr>
+<tr>
+<td>DDPM 改写后</td>
+<td>$D<em>{\text{KL}}(q(x</em>{t-1} \mid x<em>t, x_0) \,\Vert\, p</em>\theta(x_{t-1} \mid x_t))$</td>
+<td>闭式 KL(都是高斯,方差还相同)</td>
+</tr>
+<tr>
+<td>DDPM 化简后</td>
+<td>$\Vert \tilde\mu - \mu_\theta \Vert^2$</td>
+<td>MSE,直接回归</td>
+</tr>
+</tbody>
+</table>
+<p>每一步都在<strong>降低 loss 的计算复杂度</strong>:从需要采样估计,到闭式 KL,到 MSE 回归。</p>
+<hr>
+<h3 id="%E5%8D%81%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">十、要点回顾</h3>
+<ul>
+<li><strong>KL 变 MSE 的魔法</strong>:两个相同方差高斯的 KL 公式只剩均值差平方,$D_{\text{KL}} = | \mu_1 - \mu_2 |^2 / (2\sigma^2)$</li>
+<li>DDPM 简化:<strong>固定 $p_\theta$ 的方差</strong>为 $\sigma_t^2 I$,让两边方差相同(代价小,收益大)</li>
+<li>简化后,$L<em>{t-1}$ 变成 $| \tilde\mu_t - \mu</em>\theta |^2$ 的 MSE</li>
+<li>训练目标:网络从 $x_t$ 出发,预测真实后验均值 $\tilde\mu_t$</li>
+<li>但这还不是最终形式——$\mu$-预测有数值尺度问题,后面用重参数化换成 $\epsilon$-预测会更好</li>
+</ul>
+</div></details>
+<details><summary>附录3：采样公式的推导</summary><div class="details-content"><p>这是个非常好的问题——采样这一步看起来&quot;显然就该这样写&quot;,但每一行背后其实都有具体的数学依据。我们一行一行拆解,你会看到它<strong>根本不是凭空设计的,而是每一步都从训练时的数学严格推出来的</strong>。</p>
+<hr>
+<h3 id="%E4%B8%80%E3%80%81%E5%85%88%E6%8A%8A%E9%87%87%E6%A0%B7%E4%BB%A3%E7%A0%81%E8%B4%B4%E5%87%BA%E6%9D%A5">一、先把采样代码贴出来</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">x_T ~ N(0, I)                                 # 起点:纯噪声</span><br><span class="line">for t = T, T-1, ..., 1:</span><br><span class="line">    z = N(0, I) if t &gt; 1 else 0               # 最后一步不加噪声</span><br><span class="line">    μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))</span><br><span class="line">    x_&#123;t-1&#125; = μ + σ_t * z</span><br><span class="line">return x_0</span><br></pre></td></tr></table></figure>
+<p>四个值得问&quot;为什么&quot;的地方:</p>
+<ol>
+<li>为什么从 $\mathcal{N}(0, I)$ 出发?</li>
+<li>那个 $\mu$ 公式怎么来的?</li>
+<li>为什么再加一个 $\sigma_t z$ 噪声?</li>
+<li>为什么最后一步($t=1$)不加噪声?</li>
+</ol>
+<p>我们逐个拆。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BB%8E-mathcal-n-0-i-%E5%87%BA%E5%8F%91">二、为什么从 $\mathcal{N}(0, I)$ 出发?</h3>
+<p>回忆训练目标 $L_T$:</p>
+<script type="math/tex; mode=display">L_T = D_{\text{KL}}\big(q(x_T \mid x_0) \,\big\|\, p(x_T)\big)</script><p>当 $T$ 大、$\bar\alpha_T \to 0$ 时,$q(x_T \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_T} x_0, (1-\bar\alpha_T) I) \to \mathcal{N}(0, I)$。</p>
+<p>我们定义先验 $p(x_T) = \mathcal{N}(0, I)$。这两者几乎相同,所以 $L_T \approx 0$,我们不训练它。</p>
+<p><strong>采样时</strong>:既然真实的 $x_T$ 分布(无论 $x_0$ 是什么)都接近 $\mathcal{N}(0, I)$,那我们从 $\mathcal{N}(0, I)$ 采样作为起点,就是从训练分布采样——<strong>不是任意选的&quot;起点&quot;,而是数学上对应的那个分布</strong>。</p>
+<hr>
+<h3 id="%E4%B8%89%E3%80%81%E9%82%A3%E4%B8%AA-mu-%E7%9A%84%E5%85%AC%E5%BC%8F%E6%80%8E%E4%B9%88%E6%9D%A5%E7%9A%84">三、那个 $\mu$ 的公式怎么来的?</h3>
+<p>这是采样里最关键的一行。我们在训练时已经设计了:</p>
+<script type="math/tex; mode=display">p_\theta(x_{t-1} \mid x_t) = \mathcal{N}\big(\mu_\theta(x_t, t),\, \sigma_t^2 I\big)</script><p>所以采样时,从这个高斯采 $x<em>{t-1}$。**问题是 $\mu</em>\theta$ 等于什么?**</p>
+<p>回忆我们在训练阶段做了<strong>重参数化</strong>——让 $\mu_\theta$ 取以下形式:</p>
+<script type="math/tex; mode=display">\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\, \epsilon_\theta(x_t, t)\right)</script><p><strong>这个公式不是采样时凭空写出的——它是训练时网络的参数化定义本身</strong>。我们就是这样让网络的输出(通过 $\epsilon<em>\theta$ 间接)给出 $\mu</em>\theta$ 的。</p>
+<p>所以采样代码里那行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">μ = (1/sqrt(α_t)) * (x_t - β_t/sqrt(1-α_bar_t) * eps_θ(x_t, t))</span><br></pre></td></tr></table></figure>
+<p>就是把训练时的参数化定义代入,<strong>给定网络预测的 $\epsilon<em>\theta$,算出 $\mu</em>\theta$</strong>。这一步纯粹是代数代入,没有新东西。</p>
+<h3 id="%E8%BF%99%E4%B8%AA%E5%85%AC%E5%BC%8F%E7%9A%84%E7%9B%B4%E8%A7%82">这个公式的直观</h3>
+<p>让我们看清楚它在做什么。回忆 $x<em>t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon$。如果网络完美预测 $\epsilon</em>\theta = \epsilon$,那么:</p>
+<p><strong>第一步</strong>:从 $x_t$ 反推 $x_0$:</p>
+<script type="math/tex; mode=display">\hat x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta}{\sqrt{\bar\alpha_t}}</script><p>这是把&quot;加噪公式&quot;反过来用。</p>
+<p><strong>第二步</strong>:算逆向后验均值 $\tilde\mu_t(x_t, \hat x_0)$。直接套真实后验的公式:</p>
+<script type="math/tex; mode=display">\tilde\mu_t = \frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}\hat x_0 + \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t} x_t</script><p><strong>两步合并</strong>(代入 $\hat x_0$,化简——这就是 $\tilde\mu_t \to \epsilon$ 那步代数化简的逆向使用),得到那个 $\mu$ 公式。</p>
+<p><strong>所以采样的 $\mu$ 步可以理解为</strong>:</p>
+<blockquote>
+<p>&quot;用网络预测噪声 → 反推一个 $\hat x<em>0$ 估计 → 用真实后验公式算 $x</em>{t-1}$ 的均值&quot;</p>
+</blockquote>
+<p>每次去噪一步,<strong>间接地是在估计 $x_0$ 然后向 $x_0$ 走一步</strong>。</p>
+<hr>
+<h3 id="%E5%9B%9B%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E5%86%8D%E5%8A%A0-sigma-t-z-%E5%99%AA%E5%A3%B0">四、为什么还要再加 $\sigma_t z$ 噪声?</h3>
+<p>这是最容易让初学者疑惑的一步——既然要去噪,为什么还要加噪声?</p>
+<h3 id="4-1-%E6%95%B0%E5%AD%A6%E5%8E%9F%E5%9B%A0">4.1 数学原因</h3>
+<p>我们的逆向模型是</p>
+<script type="math/tex; mode=display">p_\theta(x_{t-1} \mid x_t) = \mathcal{N}(\mu_\theta, \sigma_t^2 I)</script><p>——一个<strong>有方差的高斯</strong>,不是只输出均值。<strong>从这个分布采样</strong>就是&quot;均值 + 标准差 × 标准高斯&quot;,即:</p>
+<script type="math/tex; mode=display">x_{t-1} = \mu_\theta + \sigma_t z,\quad z \sim \mathcal{N}(0, I)</script><p>代码里的 <code>μ + σ_t * z</code> 就是这个采样。所以这个噪声<strong>本来就是逆向高斯分布的一部分</strong>,没加就不是从 $p_\theta$ 采样了。</p>
+<h3 id="4-2-%E7%9B%B4%E8%A7%89%E5%8E%9F%E5%9B%A0">4.2 直觉原因</h3>
+<p>为什么模型设计成有方差?因为<strong>真实的逆向后验 $q(x_{t-1} \mid x_t, x_0)$ 也是有方差的高斯</strong>($\tilde\beta_t I$)——不是确定性映射。</p>
+<p>直观看:已知 $x<em>t$ 和 $x_0$,$x</em>{t-1}$ <strong>不是唯一确定的</strong>——它有一个分布的可能值。$\tilde\beta_t$ 衡量了这种不确定性。</p>
+<p>更直观:前向加噪是随机过程,撤销它每一步也应该是随机的——给定 $x<em>t$,可能的&quot;上一步&quot; $x</em>{t-1}$ 有多种。如果逆向是确定的,我们就丢失了随机性,<strong>最终生成的 $x_0$ 永远只有一个</strong>(给定起点),失去多样性。</p>
+<h3 id="4-3-%E7%89%A9%E7%90%86%E7%B1%BB%E6%AF%94">4.3 物理类比</h3>
+<p>想象前向是&quot;墨水扩散到水里&quot;。如果你能逆转每个分子的运动,逆向也是确定的——但实际上,信息在扩散过程中<strong>以热力学方式丢失</strong>,逆向就必须有随机性来&quot;补偿&quot;丢失的信息。</p>
+<p>每一步采样加的 $\sigma_t z$,正是&quot;补偿&quot;前向那一步丢的信息。</p>
+<h3 id="4-4-%E4%B8%80%E4%B8%AA%E5%B8%B8%E8%A2%AB%E9%97%AE%E7%9A%84%E7%BB%86%E8%8A%82-sigma-t-%E5%BA%94%E8%AF%A5%E5%8F%96%E4%BB%80%E4%B9%88">4.4 一个常被问的细节:$\sigma_t$ 应该取什么?</h3>
+<p>DDPM 论文里实验了两种选择:</p>
+<ul>
+<li>$\sigma_t^2 = \beta_t$(前向方差)</li>
+<li>$\sigma<em>t^2 = \tilde\beta_t = \frac{1-\bar\alpha</em>{t-1}}{1-\bar\alpha_t}\beta_t$(真实后验方差)</li>
+</ul>
+<p>两者效果相近。前者对应&quot;假设 $x_0 \sim \mathcal{N}(0, I)$&quot;的逆向后验,后者对应&quot;假设 $x_0$ 是确定值&quot;的逆向后验。实践中默认用前者(更简单)。</p>
+<p>后来 DDIM(我们之后讲)发现:<strong>$\sigma_t$ 可以是任意值,甚至 $\sigma_t = 0$</strong>(完全确定性采样),仍然能生成正确分布的样本——这是个重要的发现,会让采样可以加速 10-50 倍。</p>
+<hr>
+<h3 id="%E4%BA%94%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%80%E5%90%8E%E4%B8%80%E6%AD%A5-t-1-%E4%B8%8D%E5%8A%A0%E5%99%AA%E5%A3%B0">五、为什么最后一步($t=1$)不加噪声?</h3>
+<p>代码里:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">z = N(0, I) if t &gt; 1 else 0</span><br></pre></td></tr></table></figure>
+<p>也就是当 $t = 1$ 时,$z = 0$,我们只取 $\mu$,不加噪声。</p>
+<h3 id="5-1-%E6%95%B0%E5%AD%A6%E5%8E%9F%E5%9B%A0">5.1 数学原因</h3>
+<p>最后一步是从 $x_1$ 生成 $x_0$。$x_0$ 是<strong>最终输出</strong>,我们希望它是图像本身,而不是&quot;图像 + 一点点噪声&quot;。</p>
+<p>更精确地,DDPM 里 $L<em>0 = -\log p</em>\theta(x<em>0 \mid x_1)$ 是单独处理的——它对应真实数据的对数似然。在最后一步,我们直接取<strong>最大似然估计</strong>,即 $\mu</em>\theta$ 本身,不再加噪声。</p>
+<h3 id="5-2-%E7%9B%B4%E8%A7%82%E5%8E%9F%E5%9B%A0">5.2 直观原因</h3>
+<p>如果最后一步加噪声 $\sigma_1 z$,你的图像就会带一个最后的小噪声。$\sigma_1$ 虽然小,但对生成图像的清晰度还是有影响。</p>
+<p>把这一步噪声去掉,相当于&quot;在最后做个 MAP(maximum a posteriori)估计&quot;——取分布的众数(高斯的众数就是均值),作为最佳点估计。</p>
+<h3 id="5-3-%E8%BF%99%E6%98%AF%E4%B8%AA%E5%B7%A5%E7%A8%8B%E9%80%89%E6%8B%A9">5.3 这是个工程选择</h3>
+<p>严格说,<strong>完全按 $p_\theta$ 采样应该最后一步也加噪声</strong>。&quot;$t=1$ 时不加&quot;是个<strong>实践上的优化</strong>——理论上稍微偏离了概率模型,但生成质量更好。</p>
+<p>后来 Improved DDPM、DDIM 等都采用了这个约定。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E6%8A%8A%E6%95%B4%E4%B8%AA%E9%87%87%E6%A0%B7%E8%BF%87%E7%A8%8B%E4%B8%B2%E8%B5%B7%E6%9D%A5">六、把整个采样过程串起来</h3>
+<p>让我把所有&quot;为什么&quot;放在一起,画出完整图景:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">起点 x_T = N(0, I)             ← 因为前向终点近似就是 N(0, I)</span><br><span class="line"></span><br><span class="line">for t = T, ..., 1:</span><br><span class="line">    </span><br><span class="line">    用网络预测 ε_θ(x_t, t)</span><br><span class="line">    </span><br><span class="line">    算 μ = ...                  ← 训练时的参数化定义,等价于</span><br><span class="line">                                  &quot;反推 x_0 估计 → 算逆向后验均值&quot;</span><br><span class="line">    </span><br><span class="line">    if t &gt; 1:</span><br><span class="line">        x_&#123;t-1&#125; = μ + σ_t z     ← 从 p_θ(x_&#123;t-1&#125;|x_t) 采样</span><br><span class="line">                                  (有方差是因为真实后验也有方差)</span><br><span class="line">    else:</span><br><span class="line">        x_0 = μ                 ← 最后一步取最大似然估计</span><br><span class="line"></span><br><span class="line">return x_0</span><br></pre></td></tr></table></figure>
+<p>每一步都不是&quot;魔法&quot;,而是训练阶段数学结构的直接对应:</p>
+<ul>
+<li>起点 ↔ $L_T$ 的训练目标</li>
+<li>$\mu$ 公式 ↔ 训练时的参数化设计</li>
+<li>加噪声 ↔ $p_\theta$ 是高斯分布</li>
+<li>最后不加噪 ↔ $L_0$ 的处理约定</li>
+</ul>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E9%87%87%E6%A0%B7%E5%88%B0%E5%BA%95%E5%9C%A8%E5%B9%B2%E4%BB%80%E4%B9%88-%E6%9B%B4%E9%AB%98%E5%B1%82%E7%90%86%E8%A7%A3">七、采样到底在干什么?(更高层理解)</h3>
+<p>最后一句话总结整个采样的&quot;灵魂&quot;:</p>
+<p><strong>采样是把训练时学到的&quot;逆向条件分布 $p<em>\theta(x</em>{t-1} \mid x_t)$&quot;按马尔可夫链</strong>反向运行<strong>,从 $\mathcal{N}(0, I)$ 一步步走到数据分布 $p_{\text{data}}$。</strong></p>
+<p>每一步本质上是:</p>
+<blockquote>
+<p>&quot;网络看着 $x_t$,猜里面的噪声 $\epsilon$,然后:</p>
+<ul>
+<li>大致知道&#39;清掉 $\epsilon$ 后应该长什么样&#39;</li>
+<li>但不完全清掉,只走一小步,留一点噪声给下一步处理</li>
+<li>这就是 $x_{t-1}$&quot;</li>
+</ul>
+</blockquote>
+<p>走 $T$ 步,最终噪声彻底清完,得到 $x_0$。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E5%87%A0%E4%B8%AA%E5%80%BC%E5%BE%97%E7%9F%A5%E9%81%93%E7%9A%84%E7%BB%86%E8%8A%82">八、几个值得知道的细节</h3>
+<h3 id="8-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB-t-%E6%AD%A5-%E8%83%BD%E4%B8%8D%E8%83%BD%E8%B7%B3%E6%AD%A5">8.1 为什么必须 $T$ 步?能不能跳步?</h3>
+<p>直接套这个采样过程,<strong>必须走完整的 $T$ 步</strong>——因为模型训练时假设了离散的 $t = 1, 2, \ldots, T$,逆向也按这个 schedule 走。</p>
+<p>跳步不行,因为:</p>
+<ul>
+<li>网络只在 $t \in {1, \ldots, T}$ 这些时刻&quot;见过&quot;</li>
+<li>跳步意味着用错误的方差/均值组合</li>
+</ul>
+<p>DDIM 后来重新设计了一个不依赖马尔可夫性的采样过程,<strong>可以跳步,10-50 步搞定</strong>。但那是另一个故事。</p>
+<h3 id="8-2-%E8%BF%99%E4%B8%AA%E9%87%87%E6%A0%B7%E6%96%B9%E6%B3%95%E5%8F%AB%E4%BB%80%E4%B9%88">8.2 这个采样方法叫什么?</h3>
+<p>正式名字叫 <strong>Ancestral Sampling</strong>(祖先采样)——按马尔可夫链定义的方向逐步采样。它是按字面意义&quot;从 $p_\theta$ 采样&quot;——所以是数学上&quot;原汁原味&quot;的方法。</p>
+<h3 id="8-3-%E5%92%8C-langevin-%E5%8A%A8%E5%8A%9B%E5%AD%A6%E7%9A%84%E5%AF%B9%E6%AF%94">8.3 和 Langevin 动力学的对比</h3>
+<p>回忆第二讲里 NCSN 的 Langevin 采样:</p>
+<script type="math/tex; mode=display">x_{k+1} = x_k + \frac{\eta}{2}\, s_\theta(x_k) + \sqrt{\eta}\, z_k</script><p>DDPM 采样的形式:</p>
+<script type="math/tex; mode=display">x_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\epsilon_\theta(x_t, t)\right) + \sigma_t z</script><p>把 $\epsilon<em>\theta = -\sqrt{1-\bar\alpha_t}\, s</em>\theta$ 代入,展开后……</p>
+<p><strong>两者形式上几乎一样!</strong> 都是&quot;当前点 + 学到的方向 + 一点噪声&quot;。这绝非巧合——下一讲 Score SDE 会证明它们其实是<strong>同一个 SDE 的不同离散化</strong>。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>起点 $\mathcal{N}(0, I)$:对应训练时 $L_T$ 的目标分布</li>
+<li>$\mu$ 公式:训练时的参数化定义,等价于&quot;反推 $\hat x_0$ 后算后验均值&quot;</li>
+<li>加噪声 $\sigma<em>t z$:$p</em>\theta$ 是有方差的高斯,采样必须加</li>
+<li>最后一步不加噪:工程优化,取 MAP</li>
+<li>整个采样 = 按马尔可夫链反向运行 $p_\theta$,从噪声走到数据</li>
+<li>每步直觉:<strong>预测噪声 → 部分清除 → 留下少量给下一步</strong></li>
+<li>形式上和 Langevin 动力学几乎一样——这预示了下一讲的统一框架</li>
+</ul>
+</div></details>
+<details><summary>附录4：为什么不直接一步预测 x_0</summary><div class="details-content"><p>这是个非常深刻的问题——你的直觉其实抓到了一个真实的&quot;路径选择&quot;。答案是:<strong>确实可以这么做,而且这就是 DDIM 的核心思想</strong>!但 DDPM 故意没这么做,原因值得仔细讲清楚。</p>
+<hr>
+<h3 id="%E4%B8%80%E3%80%81%E5%85%88%E6%8A%8A%E4%BD%A0%E7%9A%84%E6%83%B3%E6%B3%95%E7%B2%BE%E7%A1%AE%E5%8C%96">一、先把你的想法精确化</h3>
+<p>你的直觉是:既然网络预测了 $\epsilon$,而且 $x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon$,那直接反解就能拿到 $x_0$:</p>
+<script type="math/tex; mode=display">\hat x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}</script><h3 id="%E4%B8%80%E6%AD%A5%E5%88%B0-x-0-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E8%B5%B0-t-%E6%AD%A5">一步到 $x_0$,为什么还要走 $T$ 步?</h3>
+<p>这个想法完全对——而且实践中是可行的。但有微妙的问题。让我们看清楚。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E7%AC%AC%E4%B8%80%E7%A7%8D-%E7%9B%B4%E6%8E%A5-%E9%87%87%E6%A0%B7-%E4%B8%80%E6%AD%A5%E5%BC%8F">二、第一种&quot;直接&quot;采样:一步式</h3>
+<h3 id="2-1-%E7%9B%B4%E6%8E%A5%E5%85%AC%E5%BC%8F">2.1 直接公式</h3>
+<script type="math/tex; mode=display">\hat x_0 = \frac{x_T - \sqrt{1-\bar\alpha_T}\, \epsilon_\theta(x_T, T)}{\sqrt{\bar\alpha_T}}</script><h3 id="2-2-%E5%AE%83%E8%83%BD-work-%E5%90%97">2.2 它能 work 吗?</h3>
+<p>理论上,如果 $\epsilon_\theta$ 完美预测了 $\epsilon$,<strong>这就是真实的 $x_0$</strong>。</p>
+<p>实际上,<strong>几乎完全不能用</strong>。原因如下。</p>
+<h3 id="2-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%A1%8C-%E8%BF%99%E6%98%AF%E5%85%B3%E9%94%AE">2.3 为什么不行?(这是关键)</h3>
+<p>回想训练时的损失:</p>
+<script type="math/tex; mode=display">L = \mathbb{E}_{x_0, t, \epsilon}\left[\| \epsilon - \epsilon_\theta(x_t, t) \|^2\right]</script><p>这个损失训练出的 $\epsilon_\theta$ 是 $\epsilon$ 的<strong>条件均值估计</strong>,即:</p>
+<script type="math/tex; mode=display">\epsilon_\theta(x_t, t) \approx \mathbb{E}[\epsilon \mid x_t]</script><p>(MSE 损失的最优解永远是条件均值——这是统计学的基本结论)</p>
+<p>注意 $x_t$ 是<strong>多个不同 $x_0$ 都能到达</strong>的。给定一个 $x_t$,真实生成它的 $x_0$ <strong>不唯一</strong>——可能有许多个 $x_0$ 都&quot;恰好&quot;通过某个 $\epsilon$ 到达这个 $x_t$。$\epsilon$ 在这些可能性上<strong>有一个分布</strong>。</p>
+<p>网络只能学这个分布的<strong>均值</strong>——也就是&quot;在所有可能的 $\epsilon$ 中取平均&quot;。</p>
+<p><strong>当 $t$ 很大时,$x_t$ 和 $x_0$ 的关系几乎完全被噪声主导</strong>——给定一个 $x_T \sim \mathcal{N}(0, I)$,<strong>几乎任何 $x_0$ 都有可能生成它</strong>(只是概率不同)。所以 $\mathbb{E}[\epsilon \mid x_T]$ 几乎不带 $x_0$ 的信息。</p>
+<p><strong>结果</strong>:从 $x_T$ 直接反推的 $\hat x_0$ ≈ &quot;所有数据的平均&quot;——一张模糊的、所有图像取平均的灰图。</p>
+<p>这是个具体的、可观察的现象,Tweedie 公式给出了精确解释。我们看一下。</p>
+<hr>
+<h3 id="%E4%B8%89%E3%80%81tweedie-%E5%85%AC%E5%BC%8F%E8%A7%86%E8%A7%92">三、Tweedie 公式视角</h3>
+<p>Tweedie 公式说:</p>
+<script type="math/tex; mode=display">\mathbb{E}[x_0 \mid x_t] = \frac{1}{\sqrt{\bar\alpha_t}}\left(x_t + (1-\bar\alpha_t)\nabla_{x_t} \log q(x_t)\right)</script><p>把 score 和 $\epsilon$ 的关系 $\epsilon<em>\theta = -\sqrt{1-\bar\alpha_t}\, s</em>\theta$ 代入:</p>
+<script type="math/tex; mode=display">\mathbb{E}[x_0 \mid x_t] = \frac{x_t - \sqrt{1-\bar\alpha_t}\, \epsilon_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}</script><p><strong>这正是你想&quot;直接减&quot;得到的 $\hat x_0$</strong>!</p>
+<p>所以<strong>这个 $\hat x_0$ 不是真实的 $x_0$,而是 $x_0$ 在给定 $x_t$ 下的条件均值</strong>——即&quot;所有可能的 $x_0$ 的加权平均&quot;。</p>
+<table>
+<thead>
+<tr>
+<th>$t$ 时刻</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$t$ 小($x_t$ 接近 $x_0$)</td>
+<td>$\mathbb{E}[x_0 \mid x_t] \approx x_0$,反推几乎精确</td>
+</tr>
+<tr>
+<td>$t$ 大($x_t$ 接近噪声)</td>
+<td>$\mathbb{E}[x_0 \mid x_t] \approx \mathbb{E}[x_0]$,得到&quot;平均图像&quot;——一团模糊</td>
+</tr>
+</tbody>
+</table>
+<p><strong>所以从纯噪声 $x_T$ 一步反推不行,因为 $\mathbb{E}[x_0 \mid x_T]$ 没有信息</strong>,只能给你&quot;训练集的平均长相&quot;。</p>
+<hr>
+<h3 id="%E5%9B%9B%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%B5%B0-t-%E6%AD%A5%E5%B0%B1-work">四、为什么走 $T$ 步就 work?</h3>
+<p>关键洞察:<strong>每一步只走一小步,$\epsilon_\theta$ 的预测就足够好用了</strong>。</p>
+<p>具体看:从 $x<em>t$ 走到 $x</em>{t-1}$,而不是直接到 $x_0$。</p>
+<p>$\mathbb{E}[\epsilon \mid x<em>t]$ 仍然是条件均值——但这一步的&quot;目标&quot;是从 $x_t$ 走到 $x</em>{t-1}$,只前进 $\beta_t$ 那么一点点。在这一小步内:</p>
+<ul>
+<li>即使条件均值&quot;模糊&quot;,对应的&quot;平均&quot;也只是一小步范围内的平均</li>
+<li>留下大量信息给后续步骤来精修</li>
+</ul>
+<p><strong>多步走的物理直觉</strong>:从 $x<em>T$ 想猜 $x_0$ 完全不可能,但猜&quot;$x_T$ 上一步是什么样&quot;是可行的——只要走得足够小。然后基于新的 $x</em>{T-1}$ 继续猜下一步,信息逐步注入。</p>
+<p>每一步都是局部的、合理的预测,$T$ 步累积下来,把&quot;完全没信息&quot;的 $x_T$ 逐步变成&quot;完全有信息&quot;的 $x_0$。</p>
+<hr>
+<h3 id="%E4%BA%94%E3%80%81%E4%B8%80%E4%B8%AA%E6%9B%B4%E7%B2%BE%E7%A1%AE%E7%9A%84%E5%9B%BE%E6%99%AF">五、一个更精确的图景</h3>
+<p>让我用一个比喻。设想你要画一只猫,但只能闭着眼&quot;扫&quot;一遍画布。</p>
+<p><strong>方法 1(一步式)</strong>:闭眼一次,猜整张画的所有像素。结果:平均起来&quot;像猫&quot;的概率密度——一团灰雾。</p>
+<p><strong>方法 2(多步式)</strong>:每次只扫一小块,基于已经画好的部分推下一块。每一步只决定一点点,但每一点都基于充分的局部信息。最终整张画连贯。</p>
+<p>DDPM 是方法 2。每一步的&quot;预测目标&quot;很小,网络可以做出合理判断;$T$ 步累积出一张连贯的图像。</p>
+<p><strong>核心数学事实</strong>:从噪声分布到数据分布,<strong>直接的概率映射</strong>是高度非线性、多模态的——一个 $x<em>T$ 对应所有可能的 $x_0$,<strong>不是函数</strong>。但<strong>逐步</strong>的概率映射 $x_t \to x</em>{t-1}$ 几乎是线性的(高斯之间),网络容易学。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E6%89%80%E4%BB%A5-%E7%9B%B4%E6%8E%A5%E5%87%8F-%E5%AE%8C%E5%85%A8%E4%B8%8D%E8%83%BD%E7%94%A8%E5%90%97">六、所以&quot;直接减&quot;完全不能用吗?</h3>
+<p>不是。让我们看几个<strong>部分采用了你的想法</strong>的方法。</p>
+<h3 id="6-1-ddim-denoising-diffusion-implicit-models-2020">6.1 DDIM(Denoising Diffusion Implicit Models, 2020)</h3>
+<p>DDIM 的核心思想就是:<strong>确实利用 $\hat x_0$,但不直接跳到 $x_0$</strong>。</p>
+<p>DDIM 的更新规则:</p>
+<script type="math/tex; mode=display">x_{t-1} = \sqrt{\bar\alpha_{t-1}}\, \hat x_0(x_t) + \sqrt{1-\bar\alpha_{t-1}}\, \epsilon_\theta(x_t, t)</script><p><strong>含义</strong>:</p>
+<ul>
+<li>用网络反推一个 $\hat x_0$ 估计</li>
+<li>然后<strong>重新加噪</strong>到 $t-1$ 时刻——用同一个 $\epsilon_\theta$</li>
+<li>得到 $x_{t-1}$</li>
+</ul>
+<p>这看起来很奇怪——估出 $\hat x_0$ 后又加回噪声?但这有两个好处:</p>
+<ol>
+<li><strong>可以跳步</strong>:不依赖马尔可夫性,$x<em>t$ 和 $x</em>{t-k}$ 之间可以直接跳</li>
+<li><strong>确定性</strong>:没有随机噪声 $z$(对比 DDPM 的 $\sigma_t z$),完全可逆</li>
+</ol>
+<p>DDIM 让采样从 1000 步降到 20-50 步,质量几乎不变。</p>
+<h3 id="6-2-%E4%B8%80%E6%AD%A5%E7%94%9F%E6%88%90-consistency-models-2023">6.2 一步生成:Consistency Models(2023)</h3>
+<p>Yang Song 等人的 <strong>Consistency Models</strong> 真的实现了&quot;直接一步从 $x_T$ 跳到 $x_0$&quot;——但代价是要<strong>重新训练</strong>一个网络,让它<strong>学会</strong>这个一步映射。</p>
+<p>他们的训练目标是:让网络在所有 $t$ 上,直接预测一个固定的 $x_0$(而不是预测 $\epsilon$):</p>
+<script type="math/tex; mode=display">f_\theta(x_t, t) \approx x_0\quad \forall t</script><p>这绕开了&quot;一步反推不准&quot;的问题——网络从训练时就被强迫学这个一步映射,而不是从一个本来不擅长的目标(预测 $\epsilon$)拿来&quot;硬反推&quot;。</p>
+<p>效果:CIFAR-10 上单步生成质量接近 DDPM 1000 步。</p>
+<h3 id="6-3-%E5%85%B6%E4%BB%96">6.3 其他</h3>
+<ul>
+<li><strong>DPM-Solver</strong>(2022):用高阶 ODE 数值求解器,4-10 步生成</li>
+<li><strong>Distillation 方法</strong>:把 DDPM 1000 步的&quot;教师&quot;知识蒸馏到 1-4 步的&quot;学生&quot;</li>
+</ul>
+<p>所有这些方法的共同点:<strong>$\hat x_0$ 这个量是核心工具</strong>,只是用法不同。</p>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E5%9B%9E%E5%88%B0%E4%BD%A0%E6%9C%80%E5%88%9D%E7%9A%84%E7%96%91%E9%97%AE-ddpm-%E4%B8%BA%E4%BB%80%E4%B9%88-%E7%BB%95%E4%B8%80%E5%9C%88">七、回到你最初的疑问:DDPM 为什么&quot;绕一圈&quot;?</h3>
+<p>现在你应该看清楚了:</p>
+<ol>
+<li><strong>直接减一步反推</strong>确实是个自然想法——$\hat x_0$ 这个量是真实存在的,而且有 Tweedie 公式的精确意义</li>
+<li><strong>但它只是 $x_0$ 的&quot;条件均值&quot;</strong>,不是真正的 $x_0$——所以一步直接到 $x_0$ 得到的是模糊的均值图像</li>
+<li><strong>DDPM 选择走 $T$ 步</strong>,每步只前进一点点,让&quot;条件均值&quot;足够准</li>
+<li><strong>每一步内部</strong>确实可以理解为&quot;先反推 $\hat x<em>0$ 再算 $x</em>{t-1}$&quot;——这就是 DDPM 公式的等价解读</li>
+<li><strong>DDIM/Consistency</strong> 用更聪明的方式利用 $\hat x_0$,大幅减少步数</li>
+</ol>
+<p>所以你的直觉抓到的事:<strong>$\hat x_0$ 是 diffusion 采样的核心量</strong>——只是 DDPM 选择&quot;间接使用&quot;它来获得稳定性,DDIM 等改进在使用方式上做了文章。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E4%B8%80%E4%B8%AA%E7%9B%B4%E8%A7%82%E6%BC%94%E7%A4%BA">八、一个直观演示</h3>
+<p>让我们想象一个具体的实验。设 $T = 1000$,你训练好了一个 DDPM。</p>
+<p><strong>实验 1</strong>:对一张测试图像 $x<em>0$,做前向到 $x</em>{500}$。然后:</p>
+<ul>
+<li><strong>直接反推</strong>:$\hat x<em>0^{(500)} = \frac{x</em>{500} - \sqrt{1-\bar\alpha<em>{500}}\,\epsilon</em>\theta}{\sqrt{\bar\alpha_{500}}}$</li>
+<li>结果:$\hat x_0^{(500)}$ 是个<strong>比较模糊但能看出大致内容</strong>的图像</li>
+</ul>
+<p><strong>实验 2</strong>:对 $x_{999}$(几乎纯噪声)做同样反推:</p>
+<ul>
+<li>结果:$\hat x_0^{(999)}$ 是一团<strong>几乎看不出任何具体内容</strong>的雾</li>
+</ul>
+<p><strong>实验 3</strong>:从 $x_T \sim \mathcal{N}(0, I)$(任意噪声)直接反推:</p>
+<ul>
+<li>结果:<strong>所有 $x_T$ 反推都给出几乎一样的雾</strong>——因为 $\mathbb{E}[x_0 \mid x_T] \approx \mathbb{E}[x_0]$ 不依赖 $x_T$</li>
+</ul>
+<p>这就是为什么 DDPM 不能一步采样——但<strong>它的多步采样里,每一步都隐含地包含了这个反推</strong>。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>&quot;直接减预测的噪声&quot;得到的是 $\mathbb{E}[x_0 \mid x_t]$,<strong>不是 $x_0$</strong>(Tweedie 公式)</li>
+<li>这个量在 $t$ 大时几乎没有 $x_t$ 的信息——是&quot;训练集的平均图像&quot;</li>
+<li>DDPM 的多步采样:每步只前进一点点,让条件均值足够准</li>
+<li><strong>每步内部确实在做&quot;反推 $\hat x_0$&quot;</strong> ——只是这个 $\hat x_0$ 是临时估计,不直接输出</li>
+<li>DDIM、Consistency Models 等改进:更聪明地利用 $\hat x_0$,大幅减少步数</li>
+<li>你的直觉抓到了 diffusion 加速研究的<strong>核心入口</strong></li>
+</ul>
+</div></details>
+<details><summary>附录5：x_0 估计不准也可以用</summary><div class="details-content"><p><strong>是的,而且这正是为什么 diffusion 能 work 的根本原因</strong>。让我把这个机制彻底讲清楚。</p>
+<h3 id="%E4%B8%80%E3%80%81%E5%85%88%E7%B2%BE%E7%A1%AE%E8%A1%A8%E8%BF%B0%E4%BD%A0%E7%9A%84%E6%B4%9E%E5%AF%9F">一、先精确表述你的洞察</h3>
+<p>你的问题翻译成数学:</p>
+<blockquote>
+<p>即使 $\hat x<em>0(x_t) := \mathbb{E}[x_0 \mid x_t]$ 是个&quot;模糊的、不准确的&quot;估计,我们仍然把它代入 $\tilde\mu_t$ 的公式来算 $x</em>{t-1}$。这居然能 work?</p>
+</blockquote>
+<p><strong>答案:能,而且这不是巧合,是数学上必然的</strong>。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-%E4%B8%8D%E5%87%86%E7%A1%AE%E7%9A%84-hat-x-0-%E5%9C%A8%E6%A6%82%E7%8E%87%E6%84%8F%E4%B9%89%E4%B8%8B%E6%98%AF%E5%AF%B9%E7%9A%84">二、为什么&quot;不准确的 $\hat x_0$&quot;在概率意义下是对的</h3>
+<p>关键事实:<strong>我们不需要 $\hat x<em>0$ 等于真实的 $x_0$,我们只需要 $p</em>\theta(x<em>{t-1} \mid x_t)$ 等于真实的 $q(x</em>{t-1} \mid x_t)$</strong>。</p>
+<p>这两件事是不同的!让我们分开看。</p>
+<h3 id="2-1-%E6%88%91%E4%BB%AC%E6%83%B3%E8%A6%81%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88">2.1 我们想要的是什么?</h3>
+<p>我们想让模型分布 $p<em>\theta(x</em>{0:T})$ 等于真实分布 $q(x_{0:T})$,这等价于让每个<strong>条件分布</strong>都对:</p>
+<script type="math/tex; mode=display">p_\theta(x_{t-1} \mid x_t) = q(x_{t-1} \mid x_t)\quad \forall t</script><p><strong>注意是 $q(x<em>{t-1} \mid x_t)$,不是 $q(x</em>{t-1} \mid x_t, x_0)$</strong>。前者是真实的逆向过程(没有 $x_0$ 信息),后者是我们推出闭式的那个。</p>
+<h3 id="2-2-%E7%9C%9F%E5%AE%9E%E7%9A%84-q-x-t-1-mid-x-t-%E6%98%AF%E4%BB%80%E4%B9%88">2.2 真实的 $q(x_{t-1} \mid x_t)$ 是什么?</h3>
+<p>它是对所有 $x_0$ 边际化:</p>
+<script type="math/tex; mode=display">q(x_{t-1} \mid x_t) = \int q(x_{t-1} \mid x_t, x_0)\, q(x_0 \mid x_t)\, dx_0</script><p>这是个<strong>混合高斯</strong>——以 $q(x<em>0 \mid x_t)$ 为权重,把所有 $q(x</em>{t-1} \mid x_t, x_0)$ 平均起来。</p>
+<p>通常<strong>不是高斯</strong>——因为 $q(x_0 \mid x_t)$ 是一个复杂分布(后验数据分布)。</p>
+<h3 id="2-3-%E4%BD%86-ddpm-%E7%94%A8%E5%8D%95%E4%B8%AA%E9%AB%98%E6%96%AF%E9%80%BC%E8%BF%91%E5%AE%83">2.3 但 DDPM 用单个高斯逼近它!</h3>
+<p>这正是 Sohl-Dickstein 那个 Feller 定理保证的事:<strong>当 $\beta<em>t$ 足够小时,$q(x</em>{t-1} \mid x_t)$ 近似为高斯</strong>。</p>
+<p>具体地,可以证明:</p>
+<script type="math/tex; mode=display">q(x_{t-1} \mid x_t) \approx \mathcal{N}\left(\tilde\mu_t(x_t,\, \mathbb{E}[x_0 \mid x_t]),\, \tilde\beta_t I\right)</script><p><strong>这是核心</strong>!真实的逆向后验,<strong>用 $\mathbb{E}[x_0 \mid x_t]$(即条件均值,即&quot;模糊的 $\hat x_0$&quot;)代入 $\tilde\mu_t$ 公式,得到的高斯就是它的最佳高斯逼近</strong>。</p>
+<p>也就是说:</p>
+<blockquote>
+<p><strong>&quot;模糊的 $\hat x_0$&quot;代入 $\tilde\mu_t$ 公式,得到的 $\mu$ 不是某个具体 $x_0$ 对应的逆向均值——它是真实逆向分布的均值,本身就是混合高斯的均值。</strong></p>
+</blockquote>
+<hr>
+<h3 id="%E4%B8%89%E3%80%81%E5%85%B3%E9%94%AE%E6%B4%9E%E5%AF%9F-%E8%AE%AD%E7%BB%83%E7%9B%AE%E6%A0%87%E5%AE%9E%E9%99%85%E4%B8%8A-%E8%87%AA%E5%8A%A8%E8%BF%BD%E8%B8%AA-%E8%BF%99%E4%B8%AA%E6%9C%80%E4%BD%B3%E9%80%BC%E8%BF%91">三、关键洞察:训练目标实际上&quot;自动追踪&quot;这个最佳逼近</h3>
+<p>让我们看 DDPM 的训练目标究竟在做什么。</p>
+<h3 id="3-1-%E8%AE%AD%E7%BB%83%E7%9B%AE%E6%A0%87%E7%9A%84%E7%AD%89%E4%BB%B7%E5%BD%A2%E5%BC%8F">3.1 训练目标的等价形式</h3>
+<p>我们之前推过:</p>
+<script type="math/tex; mode=display">L_{t-1} = \mathbb{E}_{x_0, x_t}\left[\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2\right] / (2\sigma_t^2)</script><p>注意这是<strong>对 $x_0$ 求期望</strong>——不同的 $x_0$ 给出不同的 $\tilde\mu_t$ 目标,网络要学的是这些目标的&quot;平均&quot;。</p>
+<p>MSE 损失的最优解永远是条件均值:</p>
+<script type="math/tex; mode=display">\mu_\theta^*(x_t, t) = \mathbb{E}_{x_0 \mid x_t}[\tilde\mu_t(x_t, x_0)]</script><p>(给定 $x_t$,在所有可能的 $x_0$ 上,$\tilde\mu_t$ 的平均)</p>
+<h3 id="3-2-%E8%BF%99%E4%B8%AA%E6%9D%A1%E4%BB%B6%E5%9D%87%E5%80%BC%E7%AD%89%E4%BA%8E%E4%BB%80%E4%B9%88">3.2 这个条件均值等于什么?</h3>
+<p>由于 $\tilde\mu_t$ 是 $x_0$ 的<strong>线性函数</strong>(回忆公式:$\tilde\mu_t = c_1 x_0 + c_2 x_t$,$c_1, c_2$ 不依赖 $x_0$),<strong>期望可以&quot;穿过&quot;</strong>:</p>
+<script type="math/tex; mode=display">\mathbb{E}_{x_0 \mid x_t}[\tilde\mu_t(x_t, x_0)] = c_1\, \mathbb{E}[x_0 \mid x_t] + c_2 x_t = \tilde\mu_t(x_t, \mathbb{E}[x_0 \mid x_t])</script><p><strong>所以最优网络输出</strong>:</p>
+<script type="math/tex; mode=display">\boxed{\mu_\theta^*(x_t, t) = \tilde\mu_t(x_t,\, \mathbb{E}[x_0 \mid x_t])}</script><p>——<strong>正是把&quot;模糊的条件均值 $\hat x_0$&quot;代入 $\tilde\mu_t$ 公式得到的结果</strong>。</p>
+<h3 id="3-3-%E8%BF%99%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88">3.3 这意味着什么?</h3>
+<p>我们从来没有<strong>显式</strong>让网络学条件均值。我们只是让 $\mu_\theta$ 去回归各种 $\tilde\mu_t(x_t, x_0)$ 目标。但因为 MSE 损失的性质,<strong>最优解自动等于&quot;代入条件均值&quot;的形式</strong>。</p>
+<p>这是 diffusion 数学最优雅的事实之一——<strong>用 $\hat x_0 = \mathbb{E}[x_0 \mid x_t]$ 作为 $x_0$ 的&quot;代理&quot;不是近似,而是 ELBO 优化的精确闭式解</strong>。</p>
+<hr>
+<h3 id="%E5%9B%9B%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E8%83%BD-work-%E7%94%A8%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8C%96%E4%BE%8B%E5%AD%90">四、为什么这能 work?用一个简化例子</h3>
+<p>让我用一个极端简化的例子说清楚。</p>
+<h3 id="4-1-%E8%AE%BE%E5%AE%9A">4.1 设定</h3>
+<p>假设数据只有两个点:$x_0 = +1$ 或 $x_0 = -1$,各占一半。前向加噪到 $x_t$。</p>
+<h3 id="4-2-%E4%B8%80%E4%B8%AA%E5%85%B7%E4%BD%93%E7%9A%84-x-t">4.2 一个具体的 $x_t$</h3>
+<p>假设我们采到 $x_t = 0$(正中间)。这个 $x_t$ 既可能来自 $x_0 = +1$,也可能来自 $x_0 = -1$,<strong>几率各半</strong>。</p>
+<h3 id="4-3-%E7%9C%9F%E5%AE%9E%E7%9A%84%E9%80%86%E5%90%91%E5%90%8E%E9%AA%8C-q-x-t-1-mid-x-t-0">4.3 真实的逆向后验 $q(x_{t-1} \mid x_t = 0)$</h3>
+<p>它是两个高斯的混合:</p>
+<ul>
+<li>以概率 1/2 来自&quot;$x<em>0 = +1$ 的链&quot;,对应 $q(x</em>{t-1} \mid x_t=0, x_0=+1)$</li>
+<li>以概率 1/2 来自&quot;$x<em>0 = -1$ 的链&quot;,对应 $q(x</em>{t-1} \mid x_t=0, x_0=-1)$</li>
+</ul>
+<p>$q(x_{t-1} \mid x_t = 0)$ 是个<strong>双峰分布</strong>——不是单一高斯。</p>
+<h3 id="4-4-ddpm-%E7%9A%84%E8%BF%91%E4%BC%BC-%E7%94%A8%E5%8D%95%E4%B8%AA%E9%AB%98%E6%96%AF">4.4 DDPM 的近似:用单个高斯</h3>
+<p>DDPM 用 $p<em>\theta(x</em>{t-1} \mid x<em>t = 0) = \mathcal{N}(\mu</em>\theta, \sigma^2)$ ——单个高斯。它当然<strong>不能完美匹配</strong>双峰分布。</p>
+<p>但 MSE 训练让 $\mu_\theta$ 最优地落在<strong>两个峰的中点</strong>——也就是</p>
+<script type="math/tex; mode=display">\mu_\theta^* = \mathbb{E}[x_{t-1} \mid x_t = 0] = \tilde\mu_t(0, \mathbb{E}[x_0 \mid x_t=0]) = \tilde\mu_t(0, 0)</script><p>(因为 $\mathbb{E}[x_0 \mid x_t=0] = 0$,正中间)</p>
+<h3 id="4-5-%E8%BF%99%E5%A4%9F%E5%A5%BD%E5%90%97">4.5 这够好吗?</h3>
+<p>对于<strong>单步</strong>:不够——$p<em>\theta$ 是单峰高斯,而真实 $q$ 是双峰。如果直接从这个 $p</em>\theta$ 一步采样,得到的样本是均值 0 附近的高斯——<strong>不是 $\pm 1$</strong>。</p>
+<p><strong>但走多步之后</strong>:</p>
+<p>随着 $t$ 减小($x_t$ 离真实数据越来越近),$\hat x_0(x_t) = \mathbb{E}[x_0 \mid x_t]$ 会<strong>逐渐倾向于某一边</strong>——如果当前的 $x_t$ 偏向 +1,$\hat x_0$ 就接近 +1;偏向 -1 类似。</p>
+<p>具体说,逆向链每走一步,$x_t$ 会因为随机噪声 $\sigma_t z$ <strong>稍微偏移</strong>;偏移后 $\hat x_0$ 的&quot;偏向&quot;被放大;再下一步 $\hat x_0$ 更偏;以此类推。</p>
+<p><strong>多步累积下来,初始的随机性会逐步把 $x_t$ 推向其中一个真实的 $x_0$</strong>——形成&quot;对称破缺&quot;。</p>
+<p>最终采样到的 $x_0$ 就在 $\pm 1$ 上,<strong>符合真实的双峰分布</strong>——尽管每一步都用单峰高斯逼近!</p>
+<hr>
+<h3 id="%E4%BA%94%E3%80%81%E8%BF%99%E5%B0%B1%E6%98%AF-diffusion-%E5%A4%9A%E6%AD%A5%E9%87%87%E6%A0%B7%E7%9A%84%E7%B2%BE%E9%AB%93">五、这就是 diffusion 多步采样的精髓</h3>
+<p>把上面这件事提炼成原则:</p>
+<h3 id="%E5%8D%95%E5%B3%B0%E9%AB%98%E6%96%AF%E4%B8%8D%E8%83%BD%E4%B8%80%E6%AD%A5%E8%A1%A8%E8%BE%BE%E5%A4%9A%E5%B3%B0%E5%88%86%E5%B8%83-%E4%BD%86%E5%A4%9A%E6%AD%A5%E9%80%90%E6%B8%90-%E7%A0%B4%E7%BC%BA-%E5%8F%AF%E4%BB%A5%E3%80%82">单峰高斯不能一步表达多峰分布,但多步逐渐&quot;破缺&quot;可以。</h3>
+<p>每一步:</p>
+<ul>
+<li>用 $p<em>\theta = \mathcal{N}(\mu, \sigma^2)$ 单峰逼近真实的 $q(x</em>{t-1} \mid x_t)$</li>
+<li>$\mu$ 是在当前 $x_t$ 下&quot;所有可能 $x_0$ 的平均&quot;</li>
+<li>每一步加的 $\sigma_t z$ 噪声把 $x_t$ 推向其中一个具体的 $x_0$ 的分支</li>
+<li>下一步基于新 $x_t$ 重新算&quot;平均&quot;,这个平均逐步偏向某一支</li>
+</ul>
+<p><strong>$T$ 步累积下来,从一个对所有 $x_0$ 都&quot;模糊兼容&quot;的 $x_T$,逐步分化到具体的某个 $x_0$</strong>。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E5%9B%9E%E5%88%B0%E4%BD%A0%E7%9A%84%E9%97%AE%E9%A2%98-%E4%B8%BA%E4%BB%80%E4%B9%88-%E4%B8%8D%E5%87%86%E7%A1%AE-%E4%B9%9F%E8%83%BD%E7%94%A8">六、回到你的问题:为什么&quot;不准确&quot;也能用?</h3>
+<p>现在最直接地回答:</p>
+<blockquote>
+<p><strong>$\hat x_0$ 不准确,但它是无偏的最佳估计</strong>——具体地,它是<strong>所有可能 $x_0$ 的概率加权平均</strong>。</p>
+<p><strong>代入 $\tilde\mu<em>t$ 公式得到的 $\mu</em>\theta$,正是真实逆向后验的均值</strong>——这是混合分布的均值,而不是某个具体分支的均值。</p>
+<p><strong>每一步用这个均值 + 一点随机噪声采样,等价于&quot;平均地&quot;探索所有可能的逆向路径</strong>。</p>
+<p><strong>多步累积后,具体某条路径胜出</strong>(被随机性放大),最终生成的 $x_0$ 是真实分布中的具体一个样本。</p>
+</blockquote>
+<p><strong>关键不是 $\hat x_0$ 准不准,而是它在数学上是 ELBO 的最优解,这就够了</strong>。</p>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E7%94%A8%E4%B8%80%E4%B8%AA%E6%9B%B4%E6%B7%B1%E7%9A%84%E8%A7%86%E8%A7%92-score-%E8%A7%86%E8%A7%92">七、用一个更深的视角:Score 视角</h3>
+<p>回忆 $\hat x_0$ 和 score 的关系(Tweedie):</p>
+<script type="math/tex; mode=display">\hat x_0 = \frac{x_t + (1-\bar\alpha_t)\, s_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}</script><p>也就是 $\hat x_0$ 本质上<strong>就是 score 的一个等价表达</strong>。</p>
+<p>而 score $\nabla_{x_t} \log q(x_t)$ 的几何意义是&quot;指向数据流形的方向&quot;——它不是&quot;指向某个具体的 $x_0$&quot;,而是&quot;指向密度增大的整体方向&quot;。</p>
+<p>所以:</p>
+<ul>
+<li>在大噪声时($x_t$ 离数据远),score &quot;指向整团数据&quot;——具体到不了某一个 $x_0$</li>
+<li>在小噪声时($x_t$ 接近数据),score &quot;指向局部具体的高密度区域&quot;——逐渐锁定某个 $x_0$</li>
+<li>多步采样 = 沿着 score 指引的方向逐步走 + 噪声扰动来&quot;选择分支&quot;</li>
+</ul>
+<p>这是 score-based 视角,Score SDE 会让这件事更精确。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E5%92%8C%E4%BD%A0%E4%B9%8B%E5%89%8D%E9%97%AE%E9%A2%98%E7%9A%84%E4%B8%B2%E8%81%94">八、和你之前问题的串联</h3>
+<p>我们一路问下来的几个问题,在这里全部串起来了:</p>
+<table>
+<thead>
+<tr>
+<th>之前的问题</th>
+<th>现在的答案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&quot;为什么改写 ELBO?&quot;</td>
+<td>改写后 loss 变成 MSE,<strong>MSE 最优解是条件均值</strong>——这正是我们想要的</td>
+</tr>
+<tr>
+<td>&quot;为什么 KL 要闭式?&quot;</td>
+<td>闭式让 MSE 形式干净,自动追踪条件均值</td>
+</tr>
+<tr>
+<td>&quot;$\hat x_0$ 不是 $x_0$,为什么用它?&quot;</td>
+<td><strong>$\hat x<em>0$ 在数学上就是 ELBO 最优 $\mu</em>\theta$ 的来源</strong>——它是&quot;模糊&quot;的,但模糊正确</td>
+</tr>
+<tr>
+<td>&quot;为什么走 $T$ 步?&quot;</td>
+<td>单步无法表达多峰分布,多步用随机性破缺,逐步从模糊到具体</td>
+</tr>
+<tr>
+<td>&quot;采样为什么加 $\sigma_t z$?&quot;</td>
+<td>这个噪声驱动&quot;对称破缺&quot;,让 $x_t$ 逐步偏向一个具体分支</td>
+</tr>
+</tbody>
+</table>
+<p><strong>所有这些选择都不是孤立的,它们共同构成一个自洽的概率框架</strong>——MSE 损失逼着网络学条件均值,条件均值给出最优单步逼近,多步采样用随机性把&quot;模糊&quot;分解成&quot;具体&quot;,最终得到真实数据分布的样本。</p>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>$\hat x_0$ 是 $\mathbb{E}[x_0 \mid x_t]$,<strong>不是真实 $x_0$</strong>——是所有可能 $x_0$ 的概率加权平均</li>
+<li>但代入 $\tilde\mu<em>t$ 公式后,得到的 $\mu</em>\theta^<em>$ <em>*正是真实逆向后验 $q(x_{t-1} \mid x_t)$ 的均值</em></em>——这是 MSE 损失的最优解性质保证的</li>
+<li>单步 $p_\theta$ 是单峰高斯,<strong>不能精确表达多峰真实后验</strong>——但 ELBO 让它成为最优的单峰逼近</li>
+<li>多步采样用随机噪声 $\sigma_t z$ <strong>驱动对称破缺</strong>——把&quot;对所有 $x_0$ 模糊兼容&quot;的状态逐步分化到具体某个 $x_0$</li>
+<li>$T$ 步累积后,采到的样本符合真实数据分布——尽管每一步都只是单峰高斯</li>
+<li>这就是为什么 diffusion 能 work:<strong>每步不准确不重要,$T$ 步联合起来精确</strong></li>
+</ul>
+</div></details>
+<details><summary>附录6：为什么要求KL散度有闭式解？</summary><div class="details-content"><hr>
+<p><strong>一、问题的核心:有</strong>两个<strong>KL,你混淆了</strong></p>
+<p>让我先把问题挑明。在 diffusion 数学里出现的 KL <strong>不是同一个</strong>——有两个层次,作用完全不同。一个<strong>不需要</strong>闭式,一个<strong>需要</strong>闭式。</p>
+<h3 id="kl-%E7%B1%BB%E5%9E%8B-a-%E5%A4%96%E5%B1%82-kl-%E5%9C%A8%E6%81%92%E7%AD%89%E5%BC%8F%E9%87%8C">KL 类型 A:外层 KL(在恒等式里)</h3>
+<script type="math/tex; mode=display">\log p_\theta(x_0) = \text{ELBO} + D_{\text{KL}}(q(x_{1:T} \mid x_0) \,\|\, p_\theta(x_{1:T} \mid x_0))</script><p>这个 KL 出现在&quot;似然 = ELBO + KL&quot;这个<strong>恒等式</strong>里。它的角色是:</p>
+<ul>
+<li><strong>理论分析</strong>:解释 ELBO 是下界、解释下界的间隙是什么</li>
+<li><strong>不需要计算</strong>:训练时我们<strong>根本不算它</strong>,只算 ELBO</li>
+</ul>
+<p>所以这个 KL <strong>不需要闭式</strong>——它只是个理论概念,告诉我们 ELBO 优化的本质。我们无需关心它具体值多少。</p>
+<h3 id="kl-%E7%B1%BB%E5%9E%8B-b-%E5%86%85%E5%B1%82-kl-elbo-%E5%8C%96%E7%AE%80%E5%90%8E%E5%87%BA%E7%8E%B0">KL 类型 B:内层 KL(ELBO 化简后出现)</h3>
+<p>DDPM 把 ELBO 重写成:</p>
+<script type="math/tex; mode=display">-\text{ELBO} = \mathbb{E}_q\left[\sum_{t=2}^T \underbrace{D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \,\|\, p_\theta(x_{t-1} \mid x_t))}_{\text{KL 类型 B}} + \cdots\right]</script><p>这个 KL 出现在 <strong>ELBO 的内部</strong>——是 ELBO 化简后的求和项。它的角色是:</p>
+<ul>
+<li><strong>每次训练都要算它</strong>(因为它是 loss 的一部分)</li>
+<li><strong>必须能高效计算</strong></li>
+</ul>
+<p>这个 KL <strong>需要闭式</strong>——闭式才能算得快、梯度精确。</p>
+<hr>
+<h3 id="%E4%BA%8C%E3%80%81%E6%89%80%E4%BB%A5%E4%B8%A4%E8%80%85%E7%9A%84%E5%85%B3%E7%B3%BB%E6%98%AF">二、所以两者的关系是</h3>
+<p>让我用一张图表示清楚:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">log p(x_0)  =  ELBO  +  D_KL(q‖p)   ← 外层 KL(类型 A,理论用,不算)</span><br><span class="line">              ↓</span><br><span class="line">            ELBO 内部 = Σ E[ D_KL(...) ] + ...   ← 内层 KL(类型 B,训练算,要闭式)</span><br><span class="line">                          ↑</span><br><span class="line">                    这里的 KL 才需要闭式</span><br></pre></td></tr></table></figure>
+<p><strong>关键区分</strong>:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>外层 KL(类型 A)</th>
+<th>内层 KL(类型 B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>出现位置</td>
+<td>恒等式 $\log p = \text{ELBO} + \text{KL}$</td>
+<td>ELBO 化简后的求和项</td>
+</tr>
+<tr>
+<td>是 谁 vs 谁 的 KL</td>
+<td>完整变分分布 $q(x<em>{1:T}\mid x_0)$ vs 真实后验 $p</em>\theta(x_{1:T}\mid x_0)$</td>
+<td>单步前向后验 $q(x<em>{t-1}\mid x_t,x_0)$ vs 单步逆向 $p</em>\theta(x_{t-1}\mid x_t)$</td>
+</tr>
+<tr>
+<td>是否需要计算</td>
+<td>不需要</td>
+<td>每次训练都要</td>
+</tr>
+<tr>
+<td>是否需要闭式</td>
+<td>不需要</td>
+<td>需要(否则训练慢/方差大)</td>
+</tr>
+<tr>
+<td>性质</td>
+<td>高维($T$ 维联合分布之间)</td>
+<td>低维($d$ 维单步分布之间)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="%E4%B8%89%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E5%86%85%E5%B1%82-kl-%E5%BF%85%E9%A1%BB%E9%AB%98%E6%95%88%E8%AE%A1%E7%AE%97">三、为什么内层 KL 必须高效计算?</h3>
+<p>回到训练流程。每次训练一步:</p>
+<ol>
+<li>采一个数据点 $x_0$</li>
+<li>采一个时刻 $t$</li>
+<li>采一个噪声 $\epsilon$,得到 $x_t$</li>
+<li><strong>计算 loss</strong>(就是某个 $t$ 的内层 KL 项)</li>
+<li>反向传播</li>
+</ol>
+<p>第 4 步每次迭代都要做几百万次(整个训练过程)。如果它不闭式:</p>
+<ul>
+<li>要嵌套蒙特卡洛(里面再采样估计)→ 慢</li>
+<li>估计有方差 → 训练不稳</li>
+<li>梯度不精确 → 收敛慢</li>
+</ul>
+<p><strong>所以内层 KL 必须闭式</strong>——这是工程必需。</p>
+<hr>
+<h3 id="%E5%9B%9B%E3%80%81%E9%82%A3-%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E4%BC%B0%E8%AE%A1-elbo-%E5%88%B0%E5%BA%95%E4%BC%B0%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88">四、那&quot;蒙特卡洛估计 ELBO&quot;到底估的是什么?</h3>
+<p>回到你的疑问:既然要蒙特卡洛估 ELBO,为什么还要闭式?</p>
+<p>答案是:<strong>蒙特卡洛和闭式估的是不同维度的随机性</strong>。我们<strong>两者都在用</strong>——把它们组合起来才得到最终的训练 loss。</p>
+<h3 id="elbo-%E7%9A%84%E5%AE%8C%E6%95%B4%E7%BB%93%E6%9E%84">ELBO 的完整结构</h3>
+<p>DDPM 改写后:</p>
+<script type="math/tex; mode=display">\text{ELBO} = -\mathbb{E}_{q}\left[\sum_{t=2}^T D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \| p_\theta(x_{t-1} \mid x_t)) + \cdots\right]</script><p>注意有<strong>两层结构</strong>:</p>
+<ul>
+<li><strong>外层</strong>:对 $q$ 的期望 $\mathbb{E}_q[\cdots]$ —— 这层用蒙特卡洛</li>
+<li><strong>内层</strong>:每个 KL —— 这层用闭式</li>
+</ul>
+<h3 id="%E8%AE%AD%E7%BB%83%E6%97%B6%E6%80%8E%E4%B9%88%E7%AE%97">训练时怎么算?</h3>
+<p><strong>外层(蒙特卡洛)</strong>:从 $q$ 采样 $x_t$、随机选 $t$,得到一个具体的 KL 项。这是单样本 MC 估计。</p>
+<p><strong>内层(闭式)</strong>:对这个具体的 $(x_t, x_0, t)$,直接用高斯 KL 闭式公式算出 KL 的精确值——不需要再采样。</p>
+<p>具体地,对一个 batch 里的样本 $(x_0, t, \epsilon)$:</p>
+<script type="math/tex; mode=display">\text{loss} = \underbrace{\frac{\| \tilde\mu_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2}{2\sigma_t^2}}_{\text{KL 闭式公式,无需采样}}</script><p>整个 loss 对<strong>这一组</strong> $(x_0, t, \epsilon)$ 而言是个<strong>确定性的、可微的、精确的</strong>值。多个样本平均就是对外层期望的 MC 估计。</p>
+<hr>
+<h3 id="%E4%BA%94%E3%80%81%E5%AF%B9%E6%AF%94-sohl-dickstein-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%86%85%E5%B1%82%E9%97%AD%E5%BC%8F-%E6%98%AF%E5%85%B3%E9%94%AE">五、对比 Sohl-Dickstein:为什么&quot;内层闭式&quot;是关键</h3>
+<p>现在你能精确看懂 Sohl-Dickstein 和 DDPM 的差异了:</p>
+<h3 id="sohl-dickstein-%E7%9A%84%E5%BD%A2%E5%BC%8F">Sohl-Dickstein 的形式</h3>
+<script type="math/tex; mode=display">\text{ELBO} = \mathbb{E}_q\left[\sum_t \log \frac{p_\theta(x_{t-1} \mid x_t)}{q(x_t \mid x_{t-1})}\right]</script><p>每一项 $\log \frac{p<em>\theta}{q}$ <strong>依赖于</strong> $x</em>{t-1}$ 和 $x_t$ <strong>的具体值</strong>——它本身就是个随机变量。</p>
+<p><strong>没有&quot;内层闭式&quot;——每一项都是采样得到的随机数</strong>。</p>
+<p>外层蒙特卡洛要估这个随机变量的期望,但它方差大,估计困难。</p>
+<h3 id="ddpm-%E7%9A%84%E5%BD%A2%E5%BC%8F">DDPM 的形式</h3>
+<script type="math/tex; mode=display">\text{ELBO} = \mathbb{E}_q\left[\sum_t D_{\text{KL}}(q(x_{t-1} \mid x_t, x_0) \| p_\theta(x_{t-1} \mid x_t))\right]</script><p>每一项是个 <strong>KL</strong>,不依赖于具体的 $x_{t-1}$ 取值——它只依赖 $x_t, x_0$,且<strong>有闭式</strong>。</p>
+<p><strong>有&quot;内层闭式&quot;——每一项是确定性的精确值</strong>(给定 $x_t, x_0$)。</p>
+<p>外层蒙特卡洛只对 $x_t$ 的随机性估,因为内层已经被解析积掉了——方差大幅降低。</p>
+<hr>
+<h3 id="%E5%85%AD%E3%80%81%E7%94%A8%E4%B8%80%E4%B8%AA%E5%85%B7%E4%BD%93%E7%B1%BB%E6%AF%94%E8%AE%B2%E6%B8%85%E6%A5%9A">六、用一个具体类比讲清楚</h3>
+<p>想象你要估这个嵌套期望:</p>
+<script type="math/tex; mode=display">J = \mathbb{E}_X\left[\mathbb{E}_Y[f(X, Y) \mid X]\right]</script><p><strong>方法 1</strong>:不用闭式,纯蒙特卡洛。采 $X<em>i$、再采 $Y</em>{i,j}$,平均所有 $f(X<em>i, Y</em>{i,j})$。两层采样,方差大。</p>
+<p><strong>方法 2</strong>:如果内层期望 $g(X) := \mathbb{E}_Y[f(X, Y) \mid X]$ <strong>有闭式</strong>,直接采 $X_i$,平均 $g(X_i)$。一层采样,方差小。</p>
+<p>这就是 <strong>Rao-Blackwell 化</strong>——能解析积的就解析积,不要乱采样。</p>
+<p><strong>回到 diffusion</strong>:外层期望(对 $x<em>0, x_t$ 的随机性)用蒙特卡洛——这没办法,只能采;内层期望(每个 KL 项中&quot;对 $x</em>{t-1}$ 的随机性&quot;)<strong>用闭式直接算</strong>——这是降方差的关键。</p>
+<hr>
+<h3 id="%E4%B8%83%E3%80%81%E5%86%8D%E7%94%A8%E4%BB%A3%E7%A0%81%E7%9C%8B%E4%B8%80%E7%9C%BC">七、再用代码看一眼</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 训练一步</span></span><br><span class="line">x_0 = sample_data()</span><br><span class="line">t   = uniform(<span class="number">1</span>, T)</span><br><span class="line">eps = randn_like(x_0)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 第一层随机性 → 蒙特卡洛(就这一组采样)</span></span><br><span class="line">x_t = sqrt(alpha_bar[t]) * x_0 + sqrt(<span class="number">1</span> - alpha_bar[t]) * eps</span><br><span class="line"></span><br><span class="line"><span class="comment"># 第二层&quot;随机性&quot;原本要积掉 → 用闭式 KL 公式直接算</span></span><br><span class="line">mu_q     = posterior_mean(x_0, x_t, t)    <span class="comment"># 真实后验均值,闭式</span></span><br><span class="line">mu_theta = network(x_t, t)                 <span class="comment"># 网络输出</span></span><br><span class="line">loss     = <span class="number">0.5</span> * ||mu_q - mu_theta||^<span class="number">2</span> / sigma**<span class="number">2</span>   <span class="comment"># 高斯 KL 闭式</span></span><br><span class="line"></span><br><span class="line">loss.backward()</span><br></pre></td></tr></table></figure>
+<p>看到了吗?</p>
+<ul>
+<li>外层(<code>x_0, t, eps</code>):蒙特卡洛</li>
+<li>内层(<code>loss</code>):闭式公式,<strong>不需要再采样估计</strong></li>
+</ul>
+<p>如果内层不闭式,这行 <code>loss = ...</code> 就要变成&quot;再做一次蒙特卡洛估计&quot;,训练会慢得多、噪声大得多。</p>
+<hr>
+<h3 id="%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93-%E4%BD%A0%E7%9A%84%E6%B7%B7%E6%B7%86%E6%98%AF%E6%80%8E%E4%B9%88%E8%A7%A3%E5%BC%80%E7%9A%84">八、总结:你的混淆是怎么解开的</h3>
+<p>回到你最初的问题:</p>
+<blockquote>
+<p>&quot;我们不是用蒙特卡洛估计去估计 ELBO 的吗?为什么要求 KL 有闭式解?&quot;</p>
+</blockquote>
+<p><strong>答案</strong>:</p>
+<ol>
+<li>ELBO 里<strong>有两层结构</strong>:外层期望 + 内层每项</li>
+<li><strong>外层</strong>:用蒙特卡洛估(对 $x_0, t, x_t$ 的随机性)</li>
+<li><strong>内层每项</strong>:<strong>最好是闭式</strong>,这样不用再嵌套一层蒙特卡洛</li>
+<li>闭式 + 蒙特卡洛是<strong>配合关系,不是二选一</strong>——把外层的&quot;无法避免的随机性&quot;留给 MC,把内层的&quot;能算的部分&quot;用闭式精确算掉</li>
+<li>&quot;$\log p = \text{ELBO} + \text{KL}$&quot;中的 KL(<strong>外层 KL</strong>)只是理论恒等式,不计算,不需要闭式</li>
+<li>ELBO 化简后出现的 KL(<strong>内层 KL</strong>)才是训练时真正算的,<strong>必须闭式</strong></li>
+</ol>
+<hr>
+<h3 id="%E4%B9%9D%E3%80%81%E8%A6%81%E7%82%B9%E5%9B%9E%E9%A1%BE">九、要点回顾</h3>
+<ul>
+<li>diffusion 数学里<strong>有两个 KL</strong>,一定要分清:外层(理论用)和内层(训练算)</li>
+<li>蒙特卡洛 ≠ 闭式的对立面,<strong>两者是配合关系</strong></li>
+<li>Rao-Blackwell 化:能闭式就闭式,降方差靠这个</li>
+<li>DDPM 比 Sohl-Dickstein 强的本质:<strong>让内层有闭式</strong>,把&quot;两层蒙特卡洛&quot;减少到&quot;一层蒙特卡洛&quot;</li>
+<li>训练 loss 对单个样本而言是<strong>确定性、精确、可微</strong>的——多样本平均才是 MC 估计</li>
+</ul>
+<hr>
+<p>清楚了吗?这个区分非常微妙,但理解了它你就抓到了 diffusion 数学优雅性的真正命门。</p>
+</div></details>
+<p>继续推进的话,正好可以看一下 DDPM 的贝叶斯改写——你会<strong>亲眼看到</strong>“外层 KL”如何在等式中出现,”内层 KL”如何被造出来,以及高斯 KL 闭式如何把内层化简成 MSE。要不要现在就推这一段?</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/Diffusion/DiffusionDevelopment/Chapter6/">https://SGDBS.github.io/Diffusion/DiffusionDevelopment/Chapter6/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/Diffusion-Models/">
+                                    <span class="chip bg-color">Diffusion Models</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/Diffusion/DiffusionDevelopment/Chapter3/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Chapter 3. Sohl-Dickstein Model">
+                        
+                        <span class="card-title">Chapter 3. Sohl-Dickstein Model</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-01
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                    Diffusion Models
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/Diffusion-Models/">
+                        <span class="chip bg-color">Diffusion Models</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/1.DataParallel/DDP/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="2. Distributed Data Parallel">
+                        
+                        <span class="card-title">2. Distributed Data Parallel</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-04-28
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

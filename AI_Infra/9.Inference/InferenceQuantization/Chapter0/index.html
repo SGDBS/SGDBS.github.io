@@ -1,0 +1,1725 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter0 LLM 量化总览, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter0 LLM 量化总览 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">AI Infra 从入门到入土</div>
+    
+    <div class="sidebar-group collapsed" id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="0. 总览">0. 总览</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/Chapter0/" title="0.  AI Infra 知识框架">
+                <span class="sidebar-label">0.  AI Infra 知识框架</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/0.Introduction/KernelRoadmap/" title="0.5 GPU Kernel 学习路线图">
+                <span class="sidebar-label">0.5 GPU Kernel 学习路线图</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-1">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-1')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="1. Data Parallel">1. Data Parallel</span>
+            <span class="sidebar-count">7</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MemoryBudget/" title="1. 训练显存预算与激活优化">
+                <span class="sidebar-label">1. 训练显存预算与激活优化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/DDP/" title="2. Distributed Data Parallel">
+                <span class="sidebar-label">2. Distributed Data Parallel</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/AsyncCompute/" title="3. GPU 异步计算">
+                <span class="sidebar-label">3. GPU 异步计算</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MixedPrecision/" title="4. 混合精度训练">
+                <span class="sidebar-label">4. 混合精度训练</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/ZeRO/" title="5. ZeRO 与 FSDP">
+                <span class="sidebar-label">5. ZeRO 与 FSDP</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/MultiNode/" title="6. 多机训练与 NCCL 工程">
+                <span class="sidebar-label">6. 多机训练与 NCCL 工程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/1.DataParallel/Checkpoint/" title="7. Checkpoint 与训练恢复">
+                <span class="sidebar-label">7. Checkpoint 与训练恢复</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-2">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-2')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="2. Pipeline Parallel">2. Pipeline Parallel</span>
+            <span class="sidebar-count">3</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/GPipe/" title="1. GPipe:朴素流水线与 micro-batch">
+                <span class="sidebar-label">1. GPipe:朴素流水线与 micro-batch</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/OneF1B/" title="2. 1F1B">
+                <span class="sidebar-label">2. 1F1B</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/" title="3. Interleaved 1F1B">
+                <span class="sidebar-label">3. Interleaved 1F1B</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group collapsed" id="sg-3">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-3')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="4. GPU Kernel 优化">4. GPU Kernel 优化</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/FlashAttention/" title="1. Flash Attention">
+                <span class="sidebar-label">1. Flash Attention</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/AI_Infra/4.GPUKernel/KVCache/" title="0. KV Cache">
+                <span class="sidebar-label">0. KV Cache</span>
+            </a>
+            
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+    </div>
+    
+    <div class="sidebar-group " id="sg-4">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-4')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="9. Inference Infrastructure">9. Inference Infrastructure</span>
+            <span class="sidebar-count">2</span>
+        </div>
+        <div class="sidebar-items">
+            
+            <div class="sidebar-subgroup " id="sg-4-0">
+                <div class="sidebar-subgroup-title" onclick="toggleGroup('sg-4-0')">
+                    <span class="sidebar-arrow">▼</span>
+                    <span class="sidebar-label" title="1. 推理量化">1. 推理量化</span>
+                    <span class="sidebar-count">2</span>
+                </div>
+                <div class="sidebar-subitems">
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2 sidebar-item--active"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/" title="Chapter0 LLM 量化总览">
+                        <span class="sidebar-label">Chapter0 LLM 量化总览</span>
+                    </a>
+                    
+                    
+                    <a class="sidebar-item sidebar-item--l2"
+                       href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/" title="Chapter1 Linear 量化全景">
+                        <span class="sidebar-label">Chapter1 Linear 量化全景</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+        
+        <span>/</span>
+        <span>Chapter0 LLM 量化总览</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-22 17:56</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter0 LLM 量化总览</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI-Infra/">
+                                <span class="chip bg-color">AI Infra</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/">
+                                <span class="chip bg-color">模型量化</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                学习笔记- AI Infra
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-06-17
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p><strong>LLM 量化要把推理系统里最贵的显存、HBM 带宽和矩阵计算，转化成一套可控的数值近似问题。</strong></p>
+<p>在大模型推理里，参数要从 HBM 读，activation 要在层之间流动，decode 阶段还要持续维护 KV cache。模型越大、上下文越长、batch 越高，瓶颈越不像“算不过来”，而更像“数据搬不动、显存放不下”。量化的价值就在这里：用更低 bit 的数近似原来的 FP16/BF16/FP32 权重和中间结果，从而降低显存、带宽和部分计算成本，同时尽量保持模型质量。</p>
+<p>但量化不是免费午餐。它的核心矛盾是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">更低 bit</span><br><span class="line">  -&gt; 更省显存 / 更低带宽 / 更适合推理硬件</span><br><span class="line">  -&gt; 数值表示更粗糙</span><br><span class="line">  -&gt; rounding error 和 clipping error 变大</span><br><span class="line">  -&gt; 可能导致困惑度上升、输出变差、长上下文不稳定</span><br></pre></td></tr></table></figure>
+<p>所以量化不是一个孤立 dtype 选择，而是一套系统工程判断：哪些 tensor 可以低精度，哪些层必须保留高精度，scale 用什么粒度，activation outlier 怎么处理，kernel 和硬件收益能不能覆盖精度损失。</p>
+<h2 id="一、起因：为什么-LLM-推理需要量化"><a href="#一、起因：为什么-LLM-推理需要量化" class="headerlink" title="一、起因：为什么 LLM 推理需要量化"></a>一、起因：为什么 LLM 推理需要量化</h2><h3 id="1-1-第一层压力是显存和带宽"><a href="#1-1-第一层压力是显存和带宽" class="headerlink" title="1.1 第一层压力是显存和带宽"></a>1.1 第一层压力是显存和带宽</h3><p>如果只从模型代码看，量化像是在改数据类型；但从推理系统看，量化首先是在改成本结构。</p>
+<p>Transformer block 里真正反复消耗显存带宽和算力的，是一层层 Linear：attention 里的 <code>q_proj</code>、<code>k_proj</code>、<code>v_proj</code>、<code>o_proj</code>，MLP 里的 <code>gate_proj</code>、<code>up_proj</code>、<code>down_proj</code>，以及最后的 <code>lm_head</code>。</p>
+<p>这些矩阵权重在推理时是固定的，但每次 forward 都要被读取。权重越大，HBM 读带宽压力越大；batch 越高，KV cache 和 activation 也会进一步吃显存。对于 serving 系统来说，显存不是只影响“能不能放下模型”，还会影响：</p>
+<ul>
+<li>能不能开更大的 batch。</li>
+<li>能不能支持更长上下文。</li>
+<li>能不能减少 HBM traffic。</li>
+<li>能不能让 Tensor Core / INT 矩阵单元真正吃满。</li>
+</ul>
+<p>这也是为什么 LLM 推理里最常见的第一步通常是 weight-only quantization：先把静态权重压下去，收益稳定，风险相对可控。</p>
+<h3 id="1-2-量化改变的是精度预算"><a href="#1-2-量化改变的是精度预算" class="headerlink" title="1.2 量化改变的是精度预算"></a>1.2 量化改变的是精度预算</h3><p>真实系统里很少把所有 tensor 一刀切成低精度，更常见的是 mixed precision：</p>
+<ul>
+<li>weight 可以是 INT8 / INT4。</li>
+<li>activation 可能保留 FP16/BF16，也可能在 W8A8 里动态量化。</li>
+<li>KV cache 可能使用 INT8 / INT4 / FP8。</li>
+<li>softmax、norm、部分累加仍然保留高精度。</li>
+</ul>
+<p>背后的判断是：不同 tensor 对误差的敏感度不同。weight 是静态的，可以离线分析和校准；activation 和输入相关，运行时动态变化，更容易遇到 outlier；KV cache 会贯穿整个 decode 过程，误差可能随生成长度累积。</p>
+<p>量化真正要做的是分配精度预算，而不是机械地把所有 FP16 都换成 INT8。</p>
+<h2 id="二、主线：量化系统由哪些维度组成"><a href="#二、主线：量化系统由哪些维度组成" class="headerlink" title="二、主线：量化系统由哪些维度组成"></a>二、主线：量化系统由哪些维度组成</h2><h3 id="2-1-数值格式：用什么数表示"><a href="#2-1-数值格式：用什么数表示" class="headerlink" title="2.1 数值格式：用什么数表示"></a>2.1 数值格式：用什么数表示</h3><p>浮点格式更擅长表达动态范围，整数格式更依赖显式 scale。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>常见位置</th>
+<th>工程特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP32</td>
+<td>训练、参考精度、敏感累加</td>
+<td>精度高，动态范围大，成本最高</td>
+</tr>
+<tr>
+<td>BF16</td>
+<td>LLM 训练和部分推理</td>
+<td>动态范围接近 FP32，训练稳定</td>
+</tr>
+<tr>
+<td>FP16</td>
+<td>GPU 推理/训练常用</td>
+<td>硬件友好，范围比 BF16 小</td>
+</tr>
+<tr>
+<td>FP8</td>
+<td>新硬件上的训练/推理加速</td>
+<td>省带宽，但依赖 scaling 策略</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>成熟推理量化</td>
+<td>精度和速度平衡较好</td>
+</tr>
+<tr>
+<td>INT4</td>
+<td>LLM weight-only 常用</td>
+<td>极省显存，但更依赖算法和 kernel</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>如果只记一个判断：<strong>浮点低精度更像保留范围、牺牲部分精度；整数低精度更像用 scale 重新定义数轴。</strong></p>
+<h3 id="2-2-映射公式：整数如何还原浮点"><a href="#2-2-映射公式：整数如何还原浮点" class="headerlink" title="2.2 映射公式：整数如何还原浮点"></a>2.2 映射公式：整数如何还原浮点</h3><p>整数没有指数位，所以 INT8 / INT4 必须依赖 <code>scale / zero_point</code> 来表达真实浮点值。</p>
+<p>最基础的公式是：</p>
+<script type="math/tex; mode=display">
+x_{\mathrm{float}} \approx scale \cdot (x_{\mathrm{int}} - zero\_point)</script><p>其中 <code>scale</code> 决定一个整数步长代表多大的真实值，<code>zero_point</code> 决定浮点 0 在整数空间里的位置。</p>
+<p>量化误差主要来自两类：</p>
+<ul>
+<li>rounding error：浮点数映射到整数时要四舍五入。</li>
+<li>clipping error：超过表示范围的值会被截断。</li>
+</ul>
+<p>前者来自步长不够细，后者来自范围不够大。几乎所有量化方法，本质上都在这两个误差之间重新分配预算。</p>
+<h3 id="2-3-映射方式：symmetric-还是-asymmetric"><a href="#2-3-映射方式：symmetric-还是-asymmetric" class="headerlink" title="2.3 映射方式：symmetric 还是 asymmetric"></a>2.3 映射方式：symmetric 还是 asymmetric</h3><p>symmetric quantization 把 0 放在整数中心：</p>
+<script type="math/tex; mode=display">
+x_{\mathrm{float}} \approx scale \cdot x_{\mathrm{int}},\quad zero\_point = 0</script><p>它计算简单、硬件友好，常用于 weight quantization，尤其是 Linear 权重。</p>
+<p>asymmetric quantization 允许 <code>zero_point != 0</code>：</p>
+<script type="math/tex; mode=display">
+x_{\mathrm{float}} \approx scale \cdot (x_{\mathrm{int}} - zero\_point)</script><p>它更适合非对称分布，比如 ReLU 后的非负 activation，但 zero_point 会给 GEMM 带来额外修正项，kernel 实现更复杂。</p>
+<h3 id="2-4-scale-粒度：一个-scale-管多少数"><a href="#2-4-scale-粒度：一个-scale-管多少数" class="headerlink" title="2.4 scale 粒度：一个 scale 管多少数"></a>2.4 scale 粒度：一个 scale 管多少数</h3><p>scale 不是越多越好，因为 scale metadata 本身也有存储和带宽开销；但 scale 太粗，又容易被 outlier 拉大。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>粒度</th>
+<th>常见对象</th>
+<th>优点</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>per-tensor</td>
+<td>简单 activation / 传统 PTQ</td>
+<td>最简单，metadata 最少</td>
+<td>最怕 outlier</td>
+</tr>
+<tr>
+<td>per-channel</td>
+<td>Linear / Conv weight</td>
+<td>精度和成本平衡好</td>
+<td>kernel 需要按列/通道读 scale</td>
+</tr>
+<tr>
+<td>group-wise</td>
+<td>INT4 weight-only</td>
+<td>适合 GPTQ/AWQ/W4A16</td>
+<td>scale 更多，解包和 dequant 更复杂</td>
+</tr>
+<tr>
+<td>per-token</td>
+<td>LLM activation</td>
+<td>更适应动态输入</td>
+<td>runtime 要算 scale，kernel 更复杂</td>
+</tr>
+<tr>
+<td>per-head</td>
+<td>KV cache</td>
+<td>适配 attention head 分布</td>
+<td>长上下文质量和开销要权衡</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>scale 粒度是量化里最容易被低估的一层：同样是 INT8，per-tensor static activation INT8 和 per-token dynamic activation INT8 可能完全不是一个东西。</p>
+<h3 id="2-5-scale-来源：static、dynamic-和-calibration"><a href="#2-5-scale-来源：static、dynamic-和-calibration" class="headerlink" title="2.5 scale 来源：static、dynamic 和 calibration"></a>2.5 scale 来源：static、dynamic 和 calibration</h3><p><code>scale / zero_point</code> 并不是模型自动“学出来”的，它们要么离线估计，要么运行时计算。</p>
+<ul>
+<li>static quantization：用 calibration 数据提前统计 <code>scale / zero_point</code>，部署时固定使用。</li>
+<li>dynamic quantization：运行时根据当前输入动态计算 scale。</li>
+</ul>
+<p>weight 几乎都是 static，因为权重固定、可离线统计、可离线打包。activation 可以 static，也可以 dynamic，取决于精度目标、kernel 能力和输入分布变化。KV cache 介于两者之间，因为它随 decode 长度增长，也随 token 分布变化。</p>
+<p>calibration 的本质是：用一小批代表性数据，统计每一层 activation 的分布范围，从而确定 <code>scale / zero_point</code>。常见方法包括 <code>min / max</code>、<code>absmax</code>、<code>percentile</code>、<code>histogram</code>、<code>KL divergence</code> 和 <code>MSE search</code>。</p>
+<p>calibration 真正难的地方不是跑一遍 forward，而是数据是否代表真实推理分布。短 prompt 校准出来的范围，不一定适合长上下文；通用文本校准出来的范围，也不一定适合代码、数学或特定业务输入。</p>
+<h2 id="三、和-LLM-模块的关系"><a href="#三、和-LLM-模块的关系" class="headerlink" title="三、和 LLM 模块的关系"></a>三、和 LLM 模块的关系</h2><h3 id="3-1-Linear：量化的主战场"><a href="#3-1-Linear：量化的主战场" class="headerlink" title="3.1 Linear：量化的主战场"></a>3.1 Linear：量化的主战场</h3><p>Linear 是：</p>
+<script type="math/tex; mode=display">
+Y = XW + b</script><p>LLM 里大量计算都落在 Linear 上：attention projection、MLP projection 和 <code>lm_head</code>。它同时占参数量、计算量和权重读取带宽的大头，所以绝大多数权重量化方法最终都要落到 Linear kernel 上。</p>
+<p>常见组合：</p>
+<ul>
+<li>W8A16：weight INT8，activation FP16/BF16。</li>
+<li>W8A8：weight INT8，activation INT8。</li>
+<li>W4A16：weight INT4，activation FP16/BF16。</li>
+</ul>
+<p>这些名字只描述 bit 数，不描述 scale 粒度、scale 来源、zero_point 策略和 kernel 路径。真实工程里必须继续问：weight 是 per-channel 还是 group-wise？activation 是 static 还是 dynamic？dequant 是否融合进 GEMM？</p>
+<h3 id="3-2-Attention：误差最容易扩散"><a href="#3-2-Attention：误差最容易扩散" class="headerlink" title="3.2 Attention：误差最容易扩散"></a>3.2 Attention：误差最容易扩散</h3><p>Attention 结构可以概括为：</p>
+<script type="math/tex; mode=display">
+Q = XW_q,\quad K = XW_k,\quad V = XW_v</script><script type="math/tex; mode=display">
+P = \mathrm{softmax}(QK^T / \sqrt{d}),\quad O = PV</script><p>可以量化的位置很多：<code>Wq / Wk / Wv / Wo</code> 权重、<code>Q / K / V</code> activation、KV cache、attention score、softmax 输入输出。</p>
+<p>但工程上通常比较谨慎：QKV projection 可以量化，KV cache 可以量化，softmax 通常保留 FP16/BF16，attention score 一般不轻易低比特整数化。原因是 softmax 对数值误差敏感，<code>QK^T</code> 的误差会改变 attention 分布，而 attention 分布一变，后面的 V 加权求和也会跟着变。</p>
+<h3 id="3-3-MLP：收益大，但-outlier-常见"><a href="#3-3-MLP：收益大，但-outlier-常见" class="headerlink" title="3.3 MLP：收益大，但 outlier 常见"></a>3.3 MLP：收益大，但 outlier 常见</h3><p>LLaMA/Qwen 类 MLP 常见形式是：</p>
+<script type="math/tex; mode=display">
+\mathrm{MLP}(x) = down\_proj(\mathrm{SiLU}(gate\_proj(x)) \cdot up\_proj(x))</script><p>MLP 计算量很大，非常值得量化。但它也容易出现 activation outlier，尤其是 <code>gate_proj / up_proj</code> 后的激活，以及 SiLU / GELU 后的中间值。</p>
+<p>所以 MLP 量化经常需要 per-channel weight quant、per-token activation quant、SmoothQuant 或 outlier-aware method。</p>
+<h3 id="3-4-KV-cache：decode-阶段的显存账"><a href="#3-4-KV-cache：decode-阶段的显存账" class="headerlink" title="3.4 KV cache：decode 阶段的显存账"></a>3.4 KV cache：decode 阶段的显存账</h3><p>LLM 推理分两阶段：prefill 一次性处理 prompt，decode 一个 token 一个 token 生成。decode 阶段会保存每层的 K/V cache，形状大致是：</p>
+<script type="math/tex; mode=display">
+[num\_layers,\ batch,\ num\_kv\_heads,\ seq\_len,\ head\_dim]</script><p>上下文越长，KV cache 越大。KV cache quantization 就是把 K/V 从 FP16/BF16 压到 INT8、INT4 或 FP8。</p>
+<p>收益很直接：减少显存、降低显存带宽、支持更长上下文、提升 batch size。难点也明确：K 影响 attention score，V 影响加权求和结果，误差会随生成长度积累，长上下文下更敏感。</p>
+<h2 id="四、LLM-量化真正难在哪里"><a href="#四、LLM-量化真正难在哪里" class="headerlink" title="四、LLM 量化真正难在哪里"></a>四、LLM 量化真正难在哪里</h2><h3 id="4-1-activation-outlier"><a href="#4-1-activation-outlier" class="headerlink" title="4.1 activation outlier"></a>4.1 activation outlier</h3><p>LLM activation 经常是“大部分值很小，少数 channel 或 token 特别大”。例如：</p>
+<p><code>[0.1, -0.2, 0.05, 0.3, 73.0]</code></p>
+<p>如果用 per-tensor INT8，scale 会被 <code>73.0</code> 拉大。结果是 <code>73.0</code> 可以表示，但 <code>0.1</code>、<code>0.2</code>、<code>0.3</code> 这些普通值会变得非常粗糙。</p>
+<p>这就是为什么 LLM 里经常说：<strong>weight quantization 容易，activation quantization 难。</strong> weight 可以离线观察，可以 per-channel，可以搜索 scale；activation 是运行时出现的，输入一变分布就可能变。</p>
+<h3 id="4-2-static-分布不等于线上分布"><a href="#4-2-static-分布不等于线上分布" class="headerlink" title="4.2 static 分布不等于线上分布"></a>4.2 static 分布不等于线上分布</h3><p>static quantization 的本质是用 calibration 的固定分布去近似未来线上动态分布。calibration 数据如果不代表真实输入，scale 就会偏。</p>
+<p>这类风险在 LLM 里尤其明显：聊天、代码、数学、长上下文的 activation 分布可能差异很大；同一个模型不同层的敏感度也不同。</p>
+<h3 id="4-3-低-bit-不等于更快"><a href="#4-3-低-bit-不等于更快" class="headerlink" title="4.3 低 bit 不等于更快"></a>4.3 低 bit 不等于更快</h3><p>很多人以为 FP16 变成 INT8 一定更快，实际不一定。量化引入了额外操作：quantize activation、dequantize output、乘 scale、处理 zero_point、读取 scale metadata、layout conversion。</p>
+<p>量化是否更快取决于：</p>
+<script type="math/tex; mode=display">
+\mathrm{saved\ compute/bandwidth}
+>
+\mathrm{quant/dequant/layout/scale\ overhead}</script><p>这也是为什么某些 ONNX 量化后反而更慢：图上 dtype 变低了，但后端没有把低比特计算、scale、layout、dequant 融合成一条高效路径。</p>
+<h2 id="五、系统地图"><a href="#五、系统地图" class="headerlink" title="五、系统地图"></a>五、系统地图</h2><p>量化的概念很多，但不要背成散点。更好的方式是按系统维度归类：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>对应概念</th>
+<th>关注问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数值格式</td>
+<td>FP32, FP16, BF16, FP8, INT8, INT4</td>
+<td>用什么数表示</td>
+</tr>
+<tr>
+<td>量化对象</td>
+<td>weight, activation, KV cache</td>
+<td>量化谁</td>
+</tr>
+<tr>
+<td>量化组合</td>
+<td>W8A16, W8A8, W4A16</td>
+<td>权重和激活分别几 bit</td>
+</tr>
+<tr>
+<td>映射公式</td>
+<td>scale, zero_point</td>
+<td>整数如何还原浮点</td>
+</tr>
+<tr>
+<td>映射方式</td>
+<td>symmetric, asymmetric</td>
+<td>0 点怎么放</td>
+</tr>
+<tr>
+<td>粒度</td>
+<td>per-tensor, per-channel, per-token, group-wise</td>
+<td>一个 scale 管多少数</td>
+</tr>
+<tr>
+<td>scale 来源</td>
+<td>static, dynamic, calibration</td>
+<td>scale 从哪里来</td>
+</tr>
+<tr>
+<td>LLM 难点</td>
+<td>activation outlier, long-context error, KV cache error</td>
+<td>误差在哪里放大</td>
+</tr>
+<tr>
+<td>解决方法</td>
+<td>SmoothQuant, AWQ, GPTQ, mixed precision</td>
+<td>如何补偿误差</td>
+</tr>
+<tr>
+<td>工程后端</td>
+<td>TensorRT-LLM, vLLM, SGLang, kernel, NPU backend</td>
+<td>如何真正跑快</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="六、学习路线"><a href="#六、学习路线" class="headerlink" title="六、学习路线"></a>六、学习路线</h2><p>这条线最适合按下面顺序走：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1. 数值格式</span><br><span class="line">   FP32 / FP16 / BF16 / FP8 / INT8 / INT4</span><br><span class="line"></span><br><span class="line">2. 量化映射</span><br><span class="line">   scale / zero_point / symmetric / asymmetric</span><br><span class="line"></span><br><span class="line">3. 量化对象与组合</span><br><span class="line">   weight / activation / KV cache</span><br><span class="line">   W8A16 / W8A8 / W4A16</span><br><span class="line"></span><br><span class="line">4. scale 粒度与来源</span><br><span class="line">   per-tensor / per-channel / group-wise / per-token</span><br><span class="line">   static / dynamic / calibration</span><br><span class="line"></span><br><span class="line">5. LLM 特有难点</span><br><span class="line">   activation outlier / SmoothQuant / AWQ / GPTQ</span><br><span class="line"></span><br><span class="line">6. 工程落地</span><br><span class="line">   TensorRT-LLM / vLLM / SGLang / quantized kernel / dequant fusion</span><br></pre></td></tr></table></figure>
+<h2 id="七、一句话总结"><a href="#七、一句话总结" class="headerlink" title="七、一句话总结"></a>七、一句话总结</h2><p>量化不是 dtype 替换，而是在 <strong>数值误差、scale 设计、kernel 路径、显存带宽和模型质量</strong> 之间做系统权衡。</p>
+<p>读完这一章，应该先建立一个总心智模型：</p>
+<script type="math/tex; mode=display">
+X_{\mathrm{fp16}}W_{\mathrm{fp16}}
+\quad\rightarrow\quad
+Q(X)Q(W)
+\quad\rightarrow\quad
+\mathrm{scale\ restore}</script><p>后面真正要细讲的是 Linear 量化，因为 W8A16 / W8A8 可以把 <code>scale</code>、<code>zero_point</code>、activation、weight、kernel、精度损失和性能收益全部串起来。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/AI_Infra/9.Inference/InferenceQuantization/Chapter0/">https://SGDBS.github.io/AI_Infra/9.Inference/InferenceQuantization/Chapter0/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI-Infra/">
+                                    <span class="chip bg-color">AI Infra</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/">
+                                    <span class="chip bg-color">模型量化</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="Chapter0 LLM 量化总览">
+                        
+                        <span class="card-title">Chapter0 LLM 量化总览</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-06-17
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/">
+                        <span class="chip bg-color">模型量化</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="Chapter1 Linear 量化全景">
+                        
+                        <span class="card-title">Chapter1 Linear 量化全景</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-06-17
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/">
+                        <span class="chip bg-color">模型量化</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

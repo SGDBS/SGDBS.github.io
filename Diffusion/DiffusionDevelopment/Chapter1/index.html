@@ -1,0 +1,1544 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter 1. 贝叶斯 &amp; 变分推断, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter 1. 贝叶斯 &amp; 变分推断 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">Diffusion Models</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="扩散模型从入门到入土">扩散模型从入门到入土</span>
+            <span class="sidebar-count">9</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter0/" title="Chapter 0. 数学知识">
+                <span class="sidebar-label">Chapter 0. 数学知识</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/Diffusion/DiffusionDevelopment/Chapter1/" title="Chapter 1. 贝叶斯 &amp; 变分推断">
+                <span class="sidebar-label">Chapter 1. 贝叶斯 &amp; 变分推断</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter2/" title="Chapter 2. EM &amp; VAE">
+                <span class="sidebar-label">Chapter 2. EM &amp; VAE</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter3/" title="Chapter 3. Sohl-Dickstein Model">
+                <span class="sidebar-label">Chapter 3. Sohl-Dickstein Model</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter4/" title="Chapter 4. Score-based Models">
+                <span class="sidebar-label">Chapter 4. Score-based Models</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter5/" title="Chapter 5. NCSN Models">
+                <span class="sidebar-label">Chapter 5. NCSN Models</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter6/" title="Chapter 6. DDPM">
+                <span class="sidebar-label">Chapter 6. DDPM</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter7/" title="Chapter 7. Score SDE">
+                <span class="sidebar-label">Chapter 7. Score SDE</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/Diffusion/DiffusionDevelopment/Chapter8/" title="Chapter 8. DDIM">
+                <span class="sidebar-label">Chapter 8. DDIM</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/Diffusion-Models/">Diffusion Models</a>
+        
+        <span>/</span>
+        <span>Chapter 1. 贝叶斯 & 变分推断</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter 1. 贝叶斯 &amp; 变分推断</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/Diffusion-Models/">
+                                <span class="chip bg-color">Diffusion Models</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                Diffusion Models
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-01
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <p>数学知识打底之后,我们要把”为什么 diffusion 长这个样子”的根本数学骨架讲清楚:<strong>贝叶斯推断 → 隐变量框架 → 变分推断 → ELBO</strong>。后续 DDPM、Score SDE、VAE 全部都站在这条逻辑链上。</p>
+<h2 id="1-一切的源头-贝叶斯推断算不动"><a href="#1-一切的源头-贝叶斯推断算不动" class="headerlink" title="1. 一切的源头:贝叶斯推断算不动"></a>1. 一切的源头:贝叶斯推断算不动</h2><h3 id="1-1-贝叶斯推断的基本设定"><a href="#1-1-贝叶斯推断的基本设定" class="headerlink" title="1.1 贝叶斯推断的基本设定"></a>1.1 贝叶斯推断的基本设定</h3><p>我们有:</p>
+<ul>
+<li><strong>先验</strong> $p(z)$:我们对隐变量 $z$ 的初始信念</li>
+<li><strong>似然</strong> $p(x \mid z)$:给定 $z$,数据 $x$ 怎么生成</li>
+<li><strong>证据</strong>(数据) $x$:观测到的东西</li>
+</ul>
+<p>我们想要的是 <strong>后验</strong> $p(z \mid x)$:看到数据后,$z$ 的更新信念。</p>
+<p>由贝叶斯公式:</p>
+<script type="math/tex; mode=display">p(z \mid x) = \frac{p(x \mid z)\, p(z)}{p(x)}</script><p><strong>这看起来很简单</strong>,但分母</p>
+<script type="math/tex; mode=display">p(x) = \int p(x \mid z)\, p(z)\, dz</script><p>——<strong>这个积分通常算不出来</strong>。</p>
+<h3 id="1-2-为什么算不出来-几个例子"><a href="#1-2-为什么算不出来-几个例子" class="headerlink" title="1.2 为什么算不出来?几个例子"></a>1.2 为什么算不出来?几个例子</h3><p>具体看几个例子,你会感受到这个问题的普遍性:</p>
+<p><strong>例 1:贝叶斯线性回归(简单情形)</strong> $z = w$(权重),先验 $p(w) = \mathcal{N}(0, \sigma^2 I)$,似然 $p(x \mid w) = \mathcal{N}(Xw, \tau^2 I)$。这里<strong>有闭式</strong>——后验也是高斯。但这是少数运气好的情形。</p>
+<p><strong>例 2:贝叶斯神经网络</strong> $z$ 是网络的所有权重(几百万维)。$\int p(x \mid z) p(z)\, dz$ 是几百万维的积分,<strong>绝无闭式</strong>。</p>
+<p><strong>例 3:主题模型(LDA)</strong> 后验依赖于复杂的离散+连续混合,<strong>没有闭式</strong>。</p>
+<p><strong>例 4:生成模型(VAE, diffusion)</strong> $z$ 是隐变量(VAE 的潜码,diffusion 的 $x_{1:T}$)。给定 $z$ 我们能生成 $x$,但反过来”给定 $x$,$z$ 是什么”——后验复杂,<strong>算不出来</strong>。</p>
+<h3 id="1-3-问题的本质"><a href="#1-3-问题的本质" class="headerlink" title="1.3 问题的本质"></a>1.3 问题的本质</h3><p><strong>贝叶斯推断的核心障碍</strong>:<strong>后验 $p(z \mid x)$ 几乎总是算不出来</strong>,因为:</p>
+<ul>
+<li>分子 $p(x \mid z) p(z)$ <strong>可以算</strong>(模型定义里给出)</li>
+<li>分母 $p(x) = \int p(x \mid z) p(z)\, dz$ <strong>算不出来</strong></li>
+</ul>
+<p><strong>比值”算不出来”——但分子可以算</strong>。整个变分推断的故事,就是怎么利用这个”分子可算”的事实,绕开分母。</p>
+<details><summary>传统方案为什么失败:解析解 / MCMC / 拉普拉斯</summary><div class="details-content"><p>在变分推断之前,人们怎么处理这个问题?</p>
+<p><strong>解析解</strong>:如果先验和似然是<strong>共轭对</strong>,后验有闭式。比如高斯-高斯、Beta-二项、Dirichlet-多项。模型一复杂(神经网络、深度模型),共轭性消失,这条路堵死。</p>
+<p><strong>蒙特卡洛(MCMC)</strong>:不算后验的解析形式,而是<strong>从后验采样</strong>。Metropolis-Hastings、Gibbs sampling、HMC 等。</p>
+<ul>
+<li>优点:理论上渐近精确——样本足够多就接近真实后验</li>
+<li>缺点:<strong>慢</strong>(高维下要采几百万步)、<strong>不可微</strong>(没法和深度学习配合)、<strong>难诊断</strong>(不知道链有没有真的混合好)</li>
+</ul>
+<p>MCMC 在统计学里是主流,但<strong>在大规模深度学习里几乎不可用</strong>——太慢,而且不能放进 SGD。</p>
+<p><strong>拉普拉斯近似</strong>:用一个高斯近似后验,中心是后验的众数,方差是 Hessian 的逆。只在后验&quot;接近高斯&quot;时准——多模态、复杂分布全废。</p>
+</div></details>
+<hr>
+<h2 id="2-为什么生成模型必然走向”隐变量-贝叶斯”"><a href="#2-为什么生成模型必然走向”隐变量-贝叶斯”" class="headerlink" title="2. 为什么生成模型必然走向”隐变量 + 贝叶斯”?"></a>2. 为什么生成模型必然走向”隐变量 + 贝叶斯”?</h2><p>回到生成模型最根本的目标:<strong>学一个分布 $p(x)$,使得能从中采样,生成新数据</strong>。听起来简单,但仔细想:这个 $p(x)$ 怎么”参数化”?</p>
+<h3 id="2-1-路线一-直接参数化-p-theta-x"><a href="#2-1-路线一-直接参数化-p-theta-x" class="headerlink" title="2.1 路线一:直接参数化 $p_\theta(x)$"></a>2.1 路线一:直接参数化 $p_\theta(x)$</h3><p>最朴素的想法:让 $p_\theta(x)$ 是个直接由 $\theta$ 决定的密度函数。</p>
+<ul>
+<li><strong>混合高斯</strong>:$p_\theta(x) = \sum_k \pi_k \mathcal{N}(x; \mu_k, \Sigma_k)$</li>
+<li><strong>指数族</strong>:$p_\theta(x) = h(x) \exp(\theta^\top T(x) - A(\theta))$</li>
+<li><strong>能量模型</strong>:$p<em>\theta(x) = \exp(-E</em>\theta(x)) / Z(\theta)$</li>
+</ul>
+<p><strong>问题</strong>:简单分布(混合高斯)<strong>表达力弱</strong>——拟合不了复杂的图像分布;复杂分布(神经网络作为能量函数)<strong>归一化常数 $Z$ 算不出来</strong>。直接参数化的路在简单时太弱、在复杂时太难。</p>
+<h3 id="2-2-路线二-把复杂分布”拆”成简单部件"><a href="#2-2-路线二-把复杂分布”拆”成简单部件" class="headerlink" title="2.2 路线二:把复杂分布”拆”成简单部件"></a>2.2 路线二:把复杂分布”拆”成简单部件</h3><p>复杂分布很难直接表达,但一个普遍的数学策略是:<strong>把复杂的东西分解成简单部件的组合</strong>。</p>
+<p><strong>链式分解(自回归)</strong>:$p(x_1, \ldots, x_d) = p(x_1)\, p(x_2 \mid x_1) \cdots$。每个条件分布简单,但连乘表达力强。这是 PixelRNN、PixelCNN、GPT 的路。优点:精确似然;缺点:必须串行。</p>
+<p><strong>可逆变换(Normalizing Flow)</strong>:$x = f_\theta(z)$,$z \sim p(z)$。要求 $f$ 可逆,精确算 $\log p(x)$ 通过雅可比公式。优点:精确似然;缺点:可逆要求严重限制网络架构。</p>
+<p><strong>隐变量分解</strong> ★:</p>
+<script type="math/tex; mode=display">p(x) = \int p(x, z)\, dz = \int p(x \mid z)\, p(z)\, dz</script><p>引入一个<strong>未观测的隐变量 $z$</strong>,通过它把 $p(x)$ 变成”对 $z$ 的边际化”。<strong>这就是隐变量模型——VAE、diffusion、GMM 都是这条路</strong>。</p>
+<h3 id="2-3-隐变量框架为什么这么自然"><a href="#2-3-隐变量框架为什么这么自然" class="headerlink" title="2.3 隐变量框架为什么这么自然?"></a>2.3 隐变量框架为什么这么自然?</h3><p><strong>表达力理由</strong>:任何分布都可以写成”简单分布 + 简单变换”的隐变量形式。如果 $p(z)$ 是标准高斯,$p(x \mid z)$ 是高斯(均值是 $z$ 的函数),那么 $p(x) = \int p(x \mid z) p(z) dz$ 可以是<strong>任意复杂的分布</strong>。</p>
+<p><strong>物理/认知理由</strong>:<strong>真实数据的复杂性</strong>通常<strong>确实</strong>来自隐变量。图像不是任意像素组合,而是来自”真实 3D 物体的投影”——物体有形状、纹理、姿态、光照,这些是<strong>隐藏的因子</strong>。</p>
+<p><strong>推断理由</strong>:学到隐变量 $z$ 的好处不只是生成数据,还在于 $z$ 本身<strong>就是数据的有用表示</strong>——可以做插值、操控属性。<strong>生成 + 表示一举两得</strong>。</p>
+<p><strong>历史理由</strong>:隐变量框架在统计学里<strong>有 100 多年历史</strong>——Spearman 1904 因子分析、HMM 1950s、EM 1977、图模型 1980s-90s、LDA 2000s、VAE 2013。</p>
+<h3 id="2-4-引入隐变量后-贝叶斯推断必然出现"><a href="#2-4-引入隐变量后-贝叶斯推断必然出现" class="headerlink" title="2.4 引入隐变量后,贝叶斯推断必然出现"></a>2.4 引入隐变量后,贝叶斯推断必然出现</h3><p>定义了 $p(x, z)$ 之后,有两件事要做:</p>
+<p><strong>学习</strong>:估计 $\theta$,使 $p<em>\theta(x) = \int p</em>\theta(x, z) dz$ 最大化数据似然。<br><strong>推断</strong>:给定观测 $x$,<strong>$z$ 是什么?</strong>——也就是 $p(z \mid x)$。</p>
+<p>这两件事<strong>不能分开</strong>——这是关键。EM 算法就是教科书式的例子:E 步做推断,M 步用推断结果更新 $\theta$,交替进行。</p>
+<p>为什么必须耦合?因为最大似然里 $\log p<em>\theta(x) = \log \int p</em>\theta(x, z) dz$,这个积分 = “对隐变量边际化”——而<strong>边际化和推断是同一件事的两面</strong>:</p>
+<ul>
+<li>边际化 = 平均所有可能的 $z$ 来算 $p(x)$</li>
+<li>推断 = 给定 $x$,算每个 $z$ 的概率</li>
+</ul>
+<p>所以<strong>只要用了隐变量,就避不开贝叶斯推断</strong>。</p>
+<hr>
+<h2 id="3-变分推断-把积分问题变成优化问题"><a href="#3-变分推断-把积分问题变成优化问题" class="headerlink" title="3. 变分推断:把积分问题变成优化问题"></a>3. 变分推断:把积分问题变成优化问题</h2><h3 id="3-1-关键转变"><a href="#3-1-关键转变" class="headerlink" title="3.1 关键转变"></a>3.1 关键转变</h3><p>变分推断的核心想法,用一句话:</p>
+<blockquote>
+<p><strong>不要试图精确算后验 $p(z \mid x)$,而是从一族”容易处理的分布”里找一个,让它最接近后验。</strong></p>
+</blockquote>
+<p>数学上:</p>
+<ul>
+<li>选一个分布族 $\mathcal{Q}$(比如所有对角高斯)</li>
+<li>在 $\mathcal{Q}$ 中找 $q^{*}(z)$ 使得 $q^{*}(z)$ 最接近 $p(z \mid x)$</li>
+</ul>
+<p>“最接近”用 KL 散度衡量:</p>
+<script type="math/tex; mode=display">q^*(z) = \arg\min_{q \in \mathcal{Q}}\, D_{\text{KL}}(q(z) \| p(z \mid x))</script><p><strong>这是个优化问题,不是积分问题</strong>——这就是变分推断的精髓。</p>
+<blockquote>
+<p>“变分(variational)”来自变分法(calculus of variations)——研究”在函数空间里优化”的数学分支。我们在函数 $q$ 上优化,而不是在数(参数)上优化,所以叫”变分”。</p>
+</blockquote>
+<h3 id="3-2-但-D-text-KL-q-p-z-mid-x-也算不出来啊"><a href="#3-2-但-D-text-KL-q-p-z-mid-x-也算不出来啊" class="headerlink" title="3.2 但 $D_{\text{KL}}(q | p(z \mid x))$ 也算不出来啊!"></a>3.2 但 $D_{\text{KL}}(q | p(z \mid x))$ 也算不出来啊!</h3><p>这是关键的”卡点”。展开 KL:</p>
+<script type="math/tex; mode=display">D_{\text{KL}}(q(z) \| p(z \mid x)) = \mathbb{E}_q[\log q(z)] - \mathbb{E}_q[\log p(z \mid x)]</script><p>第二项需要 $\log p(z \mid x)$,而 $p(z \mid x) = p(x, z)/p(x)$,<strong>还是要算 $p(x)$</strong>——绕了一圈又回到原点!</p>
+<h3 id="3-3-关键代数变换"><a href="#3-3-关键代数变换" class="headerlink" title="3.3 关键代数变换"></a>3.3 关键代数变换</h3><p>但这里有个救命的代数变换。继续展开第二项:</p>
+<script type="math/tex; mode=display">\log p(z \mid x) = \log p(x, z) - \log p(x)</script><p>代入:</p>
+<script type="math/tex; mode=display">D_{\text{KL}}(q \| p(z \mid x)) = \mathbb{E}_q[\log q(z)] - \mathbb{E}_q[\log p(x, z)] + \log p(x)</script><p>(注意 $\log p(x)$ 不依赖 $z$,可以从期望里提出来)</p>
+<p>整理:</p>
+<script type="math/tex; mode=display">\boxed{\log p(x) = \underbrace{\mathbb{E}_q[\log p(x, z)] - \mathbb{E}_q[\log q(z)]}_{=: \text{ELBO}(q)} + D_{\text{KL}}(q \| p(z \mid x))}</script><p>这就是著名的 <strong>ELBO 等式</strong>。</p>
+<h3 id="3-4-关键魔法"><a href="#3-4-关键魔法" class="headerlink" title="3.4 关键魔法"></a>3.4 关键魔法</h3><p>注意:</p>
+<ul>
+<li>$\log p(x)$ 是<strong>固定的</strong>(不依赖 $q$)</li>
+<li>$D_{\text{KL}} \geq 0$,且依赖 $q$</li>
+<li>ELBO 也依赖 $q$</li>
+</ul>
+<p>由等式:<strong>最小化 KL 等价于最大化 ELBO</strong>(因为它们之和是常数)!</p>
+<p>而 ELBO 里<strong>只用 $\log p(x, z)$ 和 $\log q(z)$</strong>——<strong>两者都能算</strong>!</p>
+<ul>
+<li>$\log p(x, z) = \log p(x \mid z) + \log p(z)$ 是模型定义,直接给出</li>
+<li>$\log q(z)$ 是我们自选的近似,知道它的形式</li>
+</ul>
+<p><strong>变分推断的”魔法时刻”</strong>:</p>
+<blockquote>
+<p><strong>我们想优化”$q$ 接近 $p(z \mid x)$”——但 $p(z \mid x)$ 不知道。</strong></p>
+<p><strong>代数变换发现:这等价于优化 ELBO——而 ELBO 只用已知量。</strong></p>
+</blockquote>
+<hr>
+<h2 id="4-ELBO-三种推导视角"><a href="#4-ELBO-三种推导视角" class="headerlink" title="4. ELBO 三种推导视角"></a>4. ELBO 三种推导视角</h2><p>ELBO 至少有三种推导,看似不同,实际等价。每种视角揭示一个本质。</p>
+<h3 id="4-1-推导一-Jensen-不等式视角-最直接"><a href="#4-1-推导一-Jensen-不等式视角-最直接" class="headerlink" title="4.1 推导一:Jensen 不等式视角(最直接)"></a>4.1 推导一:Jensen 不等式视角(最直接)</h3><p><strong>Jensen 不等式</strong>:对凹函数 $f$ 和随机变量 $X$,$f(\mathbb{E}[X]) \geq \mathbb{E}[f(X)]$。$\log$ 是凹函数,所以 $\log \mathbb{E}[X] \geq \mathbb{E}[\log X]$。</p>
+<p>引入任意一个分布 $q(z \mid x)$(称为<strong>变分分布</strong>),做”乘 1 除 1”的技巧:</p>
+<script type="math/tex; mode=display">\log p_\theta(x) = \log \int p_\theta(x, z)\, dz = \log \int q(z \mid x) \cdot \frac{p_\theta(x, z)}{q(z \mid x)}\, dz</script><p>注意中间那部分就是期望:</p>
+<script type="math/tex; mode=display">= \log \mathbb{E}_{z \sim q(z \mid x)}\left[\frac{p_\theta(x, z)}{q(z \mid x)}\right]</script><p>用 Jensen 把 $\log$ 移进期望:</p>
+<script type="math/tex; mode=display">\geq \mathbb{E}_{z \sim q(z \mid x)}\left[\log \frac{p_\theta(x, z)}{q(z \mid x)}\right] =: \mathcal{L}(\theta, q; x)</script><p>它的精妙之处:</p>
+<ul>
+<li>我们有了一个<strong>期望形式</strong>——可以用蒙特卡洛采样估计</li>
+<li>$q(z \mid x)$ 是我们自己选的——可以选一个采样和计算都方便的形式</li>
+<li>它是 $\log p_\theta(x)$ 的下界——最大化它<strong>至少不会让似然变差</strong></li>
+</ul>
+<h3 id="4-2-推导二-KL-散度视角-最深刻"><a href="#4-2-推导二-KL-散度视角-最深刻" class="headerlink" title="4.2 推导二:KL 散度视角(最深刻)"></a>4.2 推导二:KL 散度视角(最深刻)</h3><p>这个推导更优美,能直接告诉你<strong>下界有多紧</strong>。</p>
+<p>从 KL 散度的定义出发:</p>
+<script type="math/tex; mode=display">D_{\text{KL}}(q(z \mid x) \,\|\, p_\theta(z \mid x)) = \mathbb{E}_q\left[\log \frac{q(z \mid x)}{p_\theta(z \mid x)}\right]</script><p>用贝叶斯公式 $p<em>\theta(z \mid x) = \frac{p</em>\theta(x, z)}{p_\theta(x)}$:</p>
+<script type="math/tex; mode=display">= \mathbb{E}_q\left[\log q(z \mid x) - \log p_\theta(x, z) + \log p_\theta(x)\right]</script><p>注意 $\log p_\theta(x)$ 不依赖 $z$,可以从期望里提出来:</p>
+<script type="math/tex; mode=display">= \mathbb{E}_q[\log q(z \mid x)] - \mathbb{E}_q[\log p_\theta(x, z)] + \log p_\theta(x)</script><p>整理一下,把 $\log p_\theta(x)$ 单独放一边:</p>
+<script type="math/tex; mode=display">\log p_\theta(x) = \underbrace{\mathbb{E}_q\left[\log \frac{p_\theta(x, z)}{q(z \mid x)}\right]}_{\mathcal{L}(\theta, q; x) \text{ = ELBO}} + \underbrace{D_{\text{KL}}(q(z \mid x) \,\|\, p_\theta(z \mid x))}_{\geq 0}</script><p><strong>这是一个等式!</strong> 不是不等式!它告诉我们三件极其重要的事:</p>
+<ol>
+<li>$\log p<em>\theta(x) = \text{ELBO} + \text{KL}$,因为 KL ≥ 0,所以 $\log p</em>\theta(x) \geq \text{ELBO}$ —— 重新得到了下界</li>
+<li><strong>下界的”间隙”恰好是</strong> $D<em>{\text{KL}}(q(z \mid x) \,|\, p</em>\theta(z \mid x))$。也就是说,$q$ 越接近真实后验 $p_\theta(z \mid x)$,下界越紧</li>
+<li>当 $q(z \mid x) = p_\theta(z \mid x)$ 时,KL = 0,<strong>ELBO 等于真实对数似然</strong></li>
+</ol>
+<p>最大化 ELBO 同时在做两件事——拉高 $\log p_\theta(x)$,以及让 $q$ 逼近真实后验。</p>
+<h3 id="4-3-推导三-能量分解视角-最实用"><a href="#4-3-推导三-能量分解视角-最实用" class="headerlink" title="4.3 推导三:能量分解视角(最实用)"></a>4.3 推导三:能量分解视角(最实用)</h3><p>把 ELBO 重新整理一下:</p>
+<script type="math/tex; mode=display">\mathcal{L} = \mathbb{E}_q[\log p_\theta(x, z)] - \mathbb{E}_q[\log q(z \mid x)]</script><p>用 $p<em>\theta(x, z) = p</em>\theta(x \mid z) p(z)$:</p>
+<script type="math/tex; mode=display">\mathcal{L} = \mathbb{E}_q[\log p_\theta(x \mid z)] + \mathbb{E}_q[\log p(z)] - \mathbb{E}_q[\log q(z \mid x)]</script><p>后两项合并成 KL:</p>
+<script type="math/tex; mode=display">\boxed{\mathcal{L} = \underbrace{\mathbb{E}_{q(z \mid x)}[\log p_\theta(x \mid z)]}_{\text{重建项}} - \underbrace{D_{\text{KL}}(q(z \mid x) \,\|\, p(z))}_{\text{先验匹配项}}}</script><p>这就是 <strong>VAE 论文里的经典 ELBO 形式</strong>。两项的含义:</p>
+<ul>
+<li><strong>重建项</strong>:从 $q$ 采样 $z$,用 $z$ 重建 $x$ 的对数似然要高 —— 即”信息要保留”</li>
+<li><strong>先验匹配项</strong>:$q(z \mid x)$ 不能离先验 $p(z)$ 太远 —— 即”潜空间要规整”</li>
+</ul>
+<p>最大化 ELBO = 重建好 + 潜空间规整。</p>
+<hr>
+<h2 id="5-应用到-diffusion"><a href="#5-应用到-diffusion" class="headerlink" title="5. 应用到 diffusion"></a>5. 应用到 diffusion</h2><p>在 diffusion 里:</p>
+<ul>
+<li>$x = x_0$(数据)</li>
+<li>$z = x_{1:T}$(所有加噪后的隐变量)</li>
+<li>$q(z \mid x) = q(x<em>{1:T} \mid x_0) = \prod</em>{t=1}^T q(x<em>t \mid x</em>{t-1})$ —— <strong>固定的</strong>前向过程,不需要学</li>
+<li>$p<em>\theta(x, z) = p</em>\theta(x<em>{0:T}) = p(x_T) \prod</em>{t=1}^T p<em>\theta(x</em>{t-1} \mid x_t)$ —— <strong>要学的</strong>逆向过程</li>
+</ul>
+<p>直接套推导一的结果:</p>
+<script type="math/tex; mode=display">\log p_\theta(x_0) \geq \mathbb{E}_{q(x_{1:T} \mid x_0)}\left[\log \frac{p_\theta(x_{0:T})}{q(x_{1:T} \mid x_0)}\right]</script><p>把分子分母展开:</p>
+<script type="math/tex; mode=display">= \mathbb{E}_q\left[\log p(x_T) + \sum_{t=1}^T \log \frac{p_\theta(x_{t-1} \mid x_t)}{q(x_t \mid x_{t-1})}\right]</script><p>这就是 Sohl-Dickstein 2015 用的 ELBO 形式,我们下一讲会从这里出发。</p>
+<p>但这个形式<strong>训练效果不好</strong>——分子是逆向 $p<em>\theta(x</em>{t-1} \mid x<em>t)$,分母是前向 $q(x_t \mid x</em>{t-1})$,方向不一致,梯度方差大。</p>
+<p>DDPM 的关键贡献之一就是用<strong>贝叶斯公式重写这个 ELBO</strong>,让每一项都变成两个高斯之间的 KL,从而:</p>
+<ul>
+<li>有闭式解,不需要采样估计</li>
+<li>方差大幅降低</li>
+<li>最终化简为漂亮的 $| \epsilon - \epsilon_\theta |^2$ 形式</li>
+</ul>
+<p>这部分留到 DDPM 那一讲详细推。</p>
+<details><summary>几个常见困惑点</summary><div class="details-content"><h3 id="q1-%E4%B8%BA%E4%BB%80%E4%B9%88-q-%E5%8F%AF%E4%BB%A5-%E4%BB%BB%E6%84%8F%E9%80%89-%E9%80%89%E9%94%99%E4%BA%86%E4%BC%9A%E6%80%8E%E6%A0%B7">Q1:为什么 $q$ 可以&quot;任意选&quot;?选错了会怎样?</h3>
+<p>ELBO 对<strong>任何</strong> $q$ 都成立(Jensen 不等式不要求 $q$ 是什么具体形式)。但选得不好,下界很松,优化下界相当于在优化一个跟 $\log p_\theta(x)$ 关系很弱的东西。</p>
+<p>在 VAE 里,$q_\phi(z \mid x)$ 是用神经网络参数化、和 $\theta$ 一起学的。在 diffusion 里更聪明:$q$ 是<strong>预先固定的扩散过程</strong>——简单到不需要学,但又因为 $T$ 大、每步小,使得 $q$ 自动接近真实后验。这是 diffusion 比 VAE 强的一个本质原因。</p>
+<h3 id="q2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E6%9C%80%E5%A4%A7%E5%8C%96-log-p-theta-x">Q2:为什么不直接最大化 $\log p_\theta(x)$?</h3>
+<p>算不出来。即使能用蒙特卡洛 $p<em>\theta(x) \approx \frac{1}{N}\sum_i \frac{p</em>\theta(x, z_i)}{q(z_i \mid x)}$,这是有偏估计(因为 $\log$ 套外面),而且方差极大,实际不可行。</p>
+<h3 id="q3-jensen-%E4%B8%8D%E7%AD%89%E5%BC%8F%E6%8D%9F%E5%A4%B1%E4%BA%86%E5%A4%9A%E5%B0%91">Q3:Jensen 不等式损失了多少?</h3>
+<p>正好是 $D<em>{\text{KL}}(q | p</em>\theta(z \mid x))$。这就是为什么推导二比推导一更深刻——它精确量化了&quot;损失&quot;。</p>
+</div></details>
+<hr>
+<h2 id="6-为什么-KL-散度-为什么是-D-text-KL-q-p-而不是反过来"><a href="#6-为什么-KL-散度-为什么是-D-text-KL-q-p-而不是反过来" class="headerlink" title="6. 为什么 KL 散度?为什么是 $D_{\text{KL}}(q | p)$ 而不是反过来?"></a>6. 为什么 KL 散度?为什么是 $D_{\text{KL}}(q | p)$ 而不是反过来?</h2><p>值得回答这个常被问的问题。</p>
+<h3 id="6-1-为什么用-KL-而不是其他距离"><a href="#6-1-为什么用-KL-而不是其他距离" class="headerlink" title="6.1 为什么用 KL 而不是其他距离"></a>6.1 为什么用 KL 而不是其他距离</h3><p>KL 散度是衡量分布距离的诸多方法之一,还有总变差距离、Wasserstein 距离、JS 散度、Hellinger 距离。<strong>为什么 ML 偏爱 KL?</strong> 几个原因:</p>
+<ol>
+<li><strong>可拆分</strong>:$\log$ 让乘积变求和,样本独立时似然加项变成 KL 项加项</li>
+<li><strong>和最大似然天然对应</strong>:$\arg\max<em>\theta \mathbb{E}</em>{p<em>{\text{data}}}[\log p</em>\theta] = \arg\min<em>\theta D</em>{\text{KL}}(p<em>{\text{data}} | p</em>\theta)$</li>
+<li><strong>和信息论挂钩</strong>:KL = 多用 $\log p$ 编码 $q$ 样本时的额外比特数</li>
+<li><strong>数学上易处理</strong>:对很多分布族(指数族)有闭式</li>
+</ol>
+<h3 id="6-2-D-text-KL-q-p-vs-D-text-KL-p-q-不对称"><a href="#6-2-D-text-KL-q-p-vs-D-text-KL-p-q-不对称" class="headerlink" title="6.2 $D{\text{KL}}(q | p)$ vs $D{\text{KL}}(p | q)$:不对称!"></a>6.2 $D<em>{\text{KL}}(q | p)$ vs $D</em>{\text{KL}}(p | q)$:不对称!</h3><p>KL 不对称——选哪个方向有实际差别。</p>
+<p><strong>变分推断用 $D_{\text{KL}}(q | p(z \mid x))$</strong>(forward KL,从 $q$ 到真实后验)。</p>
+<ul>
+<li>$D_{\text{KL}}(q | p) = \mathbb{E}_q[\log q - \log p]$:对 $q$ 求期望——<strong>我们能从 $q$ 采样</strong>(因为 $q$ 是我们自选的)</li>
+<li>$D_{\text{KL}}(p | q) = \mathbb{E}_p[\log p - \log q]$:对 $p$ 求期望——<strong>我们不能从 $p$ 采样</strong>(因为 $p$ 是真实后验,本来就算不出来)</li>
+</ul>
+<p><strong>所以方向选择不是设计选择,是必然的</strong>——只有 $D_{\text{KL}}(q | p)$ 能算,反方向算不了。</p>
+<p>特性上:$D_{\text{KL}}(q | p)$ 是”mode-seeking”,$q$ 倾向于覆盖真实后验的某个模式;反方向是”mode-covering”,会让 $q$ 覆盖整个真实后验(更平展)。</p>
+<hr>
+<h2 id="7-一条完整逻辑链"><a href="#7-一条完整逻辑链" class="headerlink" title="7. 一条完整逻辑链"></a>7. 一条完整逻辑链</h2><p>让我把这一讲的内容串成一条完整逻辑链:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">我想学 p(x)(生成模型目标)</span><br><span class="line">        ↓</span><br><span class="line">直接表达 p(x) 的方法都有问题</span><br><span class="line">(简单的太弱,复杂的归一化算不动)</span><br><span class="line">        ↓</span><br><span class="line">策略:用&quot;简单分布 + 隐变量边际化&quot;表达</span><br><span class="line">        ↓</span><br><span class="line">得到 p(x) = ∫ p(x, z) dz</span><br><span class="line">        ↓</span><br><span class="line">最大似然要算这个积分——通常算不动</span><br><span class="line">        ↓</span><br><span class="line">等价问题:推断 p(z | x)——也算不动</span><br><span class="line">(因为分母还是 ∫ p(x, z) dz)</span><br><span class="line">        ↓</span><br><span class="line">变分推断:用优化代替积分</span><br><span class="line">找一个 q(z) ≈ p(z | x),最大化 ELBO</span><br><span class="line">        ↓</span><br><span class="line">ELBO 只用 p(x, z) 和 q(z),都能算</span><br><span class="line">        ↓</span><br><span class="line">完成训练</span><br></pre></td></tr></table></figure>
+<p><strong>每一步都是被前一步逼出来的</strong>。没有”凭空想到”的环节,全是”上一步堵了,这一步怎么走”的自然推导。</p>
+<hr>
+<h2 id="8-多视角汇聚"><a href="#8-多视角汇聚" class="headerlink" title="8. 多视角汇聚"></a>8. 多视角汇聚</h2><p>为什么这么多不同的研究路径(物理直觉、信息论、神经网络)最终都汇聚到隐变量 + 贝叶斯 + 变分推断?</p>
+<p><strong>这反映了一个深刻的事实——任何想严肃处理”复杂分布”的方法,最终都要面对”边际化算不动”这个核心障碍</strong>。绕开它的工具有限,变分推断是其中最通用的。</p>
+<p>不同路径只是”从哪里进入”这个框架:</p>
+<ul>
+<li><strong>统计学家</strong>(1990s):从贝叶斯推断进来</li>
+<li><strong>物理学家</strong>(平均场近似):从统计力学进来,得到等价数学</li>
+<li><strong>信息论家</strong>(MDL,信源编码):从最优编码进来,ELBO 等价于压缩理论</li>
+<li><strong>神经网络派</strong>(VAE):从 autoencoder 加上概率视角进来</li>
+<li><strong>Diffusion 派</strong>:从 SDE/score 进来,但本质还是变分</li>
+</ul>
+<p><strong>这种”多视角汇聚”是数学结构深刻性的标志</strong>——你触到了真正普适的东西。</p>
+<hr>
+<h2 id="9-要点回顾"><a href="#9-要点回顾" class="headerlink" title="9. 要点回顾"></a>9. 要点回顾</h2><ul>
+<li><strong>变分推断的根本动机</strong>:贝叶斯后验 $p(z \mid x)$ 几乎总是算不出来(分母 $\int p(x, z) dz$ 算不动)</li>
+<li><strong>核心技巧</strong>:把”算后验”变成”找一个最接近后验的简单分布”——积分问题变优化问题</li>
+<li><strong>关键代数</strong>:$\log p(x) = \text{ELBO}(q) + D_{\text{KL}}(q | p(z \mid x))$,优化 ELBO 等价于让 $q$ 逼近后验</li>
+<li><strong>ELBO 三视角</strong>:Jensen 不等式 / KL 等式 / 能量分解</li>
+<li><strong>方向 $D_{\text{KL}}(q | p)$ 的必然性</strong>:只有这个方向才计算可行($q$ 是我们能采样的)</li>
+<li><strong>diffusion 的特殊性</strong>:把 $q$ 做成固定但精心设计的扩散过程,让 ELBO 变得几乎紧</li>
+<li><strong>更深的视角</strong>:变分推断是”用近似换可计算性”的通用方法论,在物理、数学、ML 里到处出现</li>
+</ul>
+<p>下一讲我们用变分推断 + 隐变量这个框架,具体看 EM 算法和 VAE——它们是 diffusion 在精神上的两个直接前辈。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/Diffusion/DiffusionDevelopment/Chapter1/">https://SGDBS.github.io/Diffusion/DiffusionDevelopment/Chapter1/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/Diffusion-Models/">
+                                    <span class="chip bg-color">Diffusion Models</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/Diary/2026/2026_05/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="2026年5月 日记">
+                        
+                        <span class="card-title">2026年5月 日记</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-01
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%97%A5%E8%AE%B0/" class="post-category">
+                                    日记
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%97%A5%E8%AE%B0/">
+                        <span class="chip bg-color">日记</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/Diffusion/DiffusionDevelopment/Chapter0/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Chapter 0. 数学知识">
+                        
+                        <span class="card-title">Chapter 0. 数学知识</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-01
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Diffusion-Models/" class="post-category">
+                                    Diffusion Models
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/Diffusion-Models/">
+                        <span class="chip bg-color">Diffusion Models</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

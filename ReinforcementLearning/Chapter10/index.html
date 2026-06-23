@@ -1,0 +1,1661 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="RL Chapter10 探索：从 ε-greedy 到 Curiosity, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>RL Chapter10 探索：从 ε-greedy 到 Curiosity | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">学习笔记-强化学习</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="学习笔记-强化学习">学习笔记-强化学习</span>
+            <span class="sidebar-count">14</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter0/" title="RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1">
+                <span class="sidebar-label">RL Chapter0 全景与起源：从 Thorndike 的猫到 DeepSeek-R1</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter1/" title="RL Chapter1 MDP 与 Bellman 方程">
+                <span class="sidebar-label">RL Chapter1 MDP 与 Bellman 方程</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter2/" title="RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代">
+                <span class="sidebar-label">RL Chapter2 动态规划 (DP)：策略评估、策略迭代、价值迭代</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter3/" title="RL Chapter3 Monte Carlo 与 TD：从样本估计价值">
+                <span class="sidebar-label">RL Chapter3 Monte Carlo 与 TD：从样本估计价值</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter4/" title="RL Chapter4 Q-Learning 与 SARSA：从评估到控制">
+                <span class="sidebar-label">RL Chapter4 Q-Learning 与 SARSA：从评估到控制</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter5/" title="RL Chapter5 Policy Gradient：直接对策略求梯度">
+                <span class="sidebar-label">RL Chapter5 Policy Gradient：直接对策略求梯度</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter6/" title="RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化">
+                <span class="sidebar-label">RL Chapter6 Actor-Critic 与 GAE：Policy Gradient 的工业化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter7/" title="RL Chapter7 DQN 家族：深度学习接入 Q-Learning">
+                <span class="sidebar-label">RL Chapter7 DQN 家族：深度学习接入 Q-Learning</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter8/" title="RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化">
+                <span class="sidebar-label">RL Chapter8 TRPO 与 PPO：信赖域与策略梯度的工程化</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter9/" title="RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑">
+                <span class="sidebar-label">RL Chapter9 DDPG 与 SAC：连续控制的两个里程碑</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/ReinforcementLearning/Chapter10/" title="RL Chapter10 探索：从 ε-greedy 到 Curiosity">
+                <span class="sidebar-label">RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter11/" title="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源">
+                <span class="sidebar-label">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter12/" title="RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL">
+                <span class="sidebar-label">RL Chapter12 模仿学习与逆 RL：BC、DAgger、GAIL、IRL</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/ReinforcementLearning/Chapter13/" title="RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角">
+                <span class="sidebar-label">RL Chapter13 RL × LLM 综述：PPO、DPO、GRPO 的统一视角</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">学习笔记-强化学习</a>
+        
+        <span>/</span>
+        <span>RL Chapter10 探索：从 ε-greedy 到 Curiosity</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">RL Chapter10 探索：从 ε-greedy 到 Curiosity</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">强化学习</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                学习笔记-强化学习
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-05-10
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：所有 RL 算法都隐式依赖”探索”才能成立——没有探索，agent 永远学不到更好的策略。本章系统讲解从经典多臂老虎机到现代 deep RL 的探索方法。</p>
+<p><strong>承上</strong>：Ch4 ε-greedy + Ch9 高斯噪声 + Ch5/8 熵正则。<br><strong>启下</strong>：Ch11 offline RL（不需要探索的极端案例）+ Ch13 LLM 中的探索（temperature/top-p）。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-探索-利用窘境-Exploration-Exploitation-Dilemma"><a href="#1-探索-利用窘境-Exploration-Exploitation-Dilemma" class="headerlink" title="1. 探索-利用窘境 (Exploration-Exploitation Dilemma)"></a>1. 探索-利用窘境 (Exploration-Exploitation Dilemma)</h2><h3 id="1-1-多臂老虎机-Multi-Armed-Bandit"><a href="#1-1-多臂老虎机-Multi-Armed-Bandit" class="headerlink" title="1.1 多臂老虎机 (Multi-Armed Bandit)"></a>1.1 多臂老虎机 (Multi-Armed Bandit)</h3><p>最简单的 RL 设置：$K$ 个老虎机臂，每个臂有未知奖励分布 $\mathcal{N}(\mu_k, \sigma_k^2)$。每次拉一个臂，获得 reward。</p>
+<p><strong>目标</strong>：$T$ 步内最大化总 reward。</p>
+<p><strong>窘境</strong>：</p>
+<ul>
+<li><strong>利用</strong>（Exploitation）：选当前 $\hat{\mu}_k$ 最大的臂</li>
+<li><strong>探索</strong>（Exploration）：选还不确定的臂，试试它真实的 $\mu$</li>
+</ul>
+<blockquote>
+<p>这是 RL 最根本的张力。每个算法都在”如何平衡 E/E”上做不同选择。</p>
+</blockquote>
+<h3 id="1-2-Regret（懊悔）：评估指标"><a href="#1-2-Regret（懊悔）：评估指标" class="headerlink" title="1.2 Regret（懊悔）：评估指标"></a>1.2 Regret（懊悔）：评估指标</h3><script type="math/tex; mode=display">R(T) = T \mu^* - \mathbb{E}\left[\sum_{t=1}^T r_t\right]</script><p>即”如果一直选最优臂能得多少 reward” 减去 “实际得了多少”。好算法应有 <strong>次线性 regret</strong>：$R(T) = o(T)$。</p>
+<h2 id="2-多臂老虎机的经典策略"><a href="#2-多臂老虎机的经典策略" class="headerlink" title="2. 多臂老虎机的经典策略"></a>2. 多臂老虎机的经典策略</h2><h3 id="2-1-ε-greedy"><a href="#2-1-ε-greedy" class="headerlink" title="2.1 ε-greedy"></a>2.1 ε-greedy</h3><script type="math/tex; mode=display">\pi(a) = \begin{cases} \arg\max_k \hat{\mu}_k & \text{w.p. } 1 - \epsilon \\ \text{uniform} & \text{w.p. } \epsilon \end{cases}</script><p><strong>Regret</strong>：$O(T)$（线性！— 因为 ε 永远在浪费）。除非 ε 衰减。</p>
+<h3 id="2-2-UCB-Upper-Confidence-Bound"><a href="#2-2-UCB-Upper-Confidence-Bound" class="headerlink" title="2.2 UCB (Upper Confidence Bound)"></a>2.2 UCB (Upper Confidence Bound)</h3><p><strong>核心思想</strong>：<strong>乐观面对不确定性 (Optimism in the Face of Uncertainty)</strong>。给每个臂一个”上置信界”：</p>
+<script type="math/tex; mode=display">\text{UCB}_k(t) = \hat{\mu}_k + c \sqrt{\frac{\log t}{N_k(t)}}</script><p>其中 $N_k(t)$ 是臂 $k$ 被拉的次数。<strong>总是选 UCB 最大的臂</strong>。</p>
+<p><strong>直觉</strong>：</p>
+<ul>
+<li>$\hat{\mu}_k$ 大 → 利用</li>
+<li>$N_k$ 小（不确定性大）→ 探索</li>
+<li>$c$ 是探索系数（通常 $c = \sqrt{2}$）</li>
+</ul>
+<p><strong>Regret</strong>：$O(\log T)$ —— <strong>次线性</strong>，理论最优级别。</p>
+<h3 id="2-3-Thompson-Sampling"><a href="#2-3-Thompson-Sampling" class="headerlink" title="2.3 Thompson Sampling"></a>2.3 Thompson Sampling</h3><p>贝叶斯版：维护每个臂奖励的后验分布，每次<strong>从后验采样</strong>一个 $\mu_k$，选最大的拉。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Beta 后验（Bernoulli reward）</span></span><br><span class="line"><span class="keyword">for</span> arm <span class="keyword">in</span> arms:</span><br><span class="line">    sample[arm] = Beta(alpha[arm], beta[arm]).sample()</span><br><span class="line">chosen = argmax(sample)</span><br><span class="line"><span class="comment"># 观察 reward r ∈ &#123;0, 1&#125;</span></span><br><span class="line">alpha[chosen] += r</span><br><span class="line">beta[chosen] += <span class="number">1</span> - r</span><br></pre></td></tr></table></figure>
+<p><strong>优势</strong>：实证表现往往优于 UCB，尤其在大规模推荐场景（Yahoo!、Microsoft 用过）。</p>
+<h2 id="3-RL-中的探索（远比老虎机难）"><a href="#3-RL-中的探索（远比老虎机难）" class="headerlink" title="3. RL 中的探索（远比老虎机难）"></a>3. RL 中的探索（远比老虎机难）</h2><p>老虎机是无状态的。RL 中状态是序列演化的，”探索”变得复杂得多：</p>
+<ul>
+<li><strong>稀疏奖励</strong>：Montezuma’s Revenge 中走几百步才能拿到 reward</li>
+<li><strong>deep exploration</strong>：需要”提前规划”才能到达远处状态</li>
+<li><strong>大状态空间</strong>：UCB 风格”看每个状态的访问次数”不可行（状态太多）</li>
+</ul>
+<p>下面介绍现代 deep RL 中的探索方法。</p>
+<h2 id="4-Count-Based-探索"><a href="#4-Count-Based-探索" class="headerlink" title="4. Count-Based 探索"></a>4. Count-Based 探索</h2><h3 id="4-1-思想"><a href="#4-1-思想" class="headerlink" title="4.1 思想"></a>4.1 思想</h3><p>把 UCB 的”访问次数”扩展到状态：在 reward 上加一个<strong>探索奖励</strong> (intrinsic reward)：</p>
+<script type="math/tex; mode=display">r_t^+ = r_t + \beta \cdot \frac{1}{\sqrt{N(s_t)}}</script><p>新颖状态访问次数少，奖励高 → 鼓励 agent 去新地方。</p>
+<h3 id="4-2-大状态空间下的”近似计数”"><a href="#4-2-大状态空间下的”近似计数”" class="headerlink" title="4.2 大状态空间下的”近似计数”"></a>4.2 大状态空间下的”近似计数”</h3><p>直接计数不可行（状态太多）。两个工程做法：</p>
+<p><strong>Pseudo-counts</strong> (Bellemare 2016)：用密度模型 $\rho(s)$ 估计访问频率：</p>
+<script type="math/tex; mode=display">\hat{N}(s) = \frac{\rho(s)(1 - \rho'(s))}{\rho'(s) - \rho(s)}</script><p><strong>Hash-based</strong>：把状态哈希到离散桶，按桶计数。</p>
+<h2 id="5-Curiosity-Driven-探索"><a href="#5-Curiosity-Driven-探索" class="headerlink" title="5. Curiosity-Driven 探索"></a>5. Curiosity-Driven 探索</h2><h3 id="5-1-ICM-Intrinsic-Curiosity-Module-2017"><a href="#5-1-ICM-Intrinsic-Curiosity-Module-2017" class="headerlink" title="5.1 ICM (Intrinsic Curiosity Module, 2017)"></a>5.1 ICM (Intrinsic Curiosity Module, 2017)</h3><p><strong>思想</strong>：让 agent 对”模型预测错误”的状态感兴趣。</p>
+<p>构造一个<strong>前向模型</strong> $\hat{f}(s<em>t, a_t) \to \hat{s}</em>{t+1}$。如果 $\hat{s}<em>{t+1}$ 与真实 $s</em>{t+1}$ 差很多 → 这个状态”难以预测”→ 给 intrinsic reward。</p>
+<script type="math/tex; mode=display">r^+_t = r_t + \beta \|\hat{f}(s_t, a_t) - s_{t+1}\|^2</script><p>但直接在像素空间预测有问题——agent 可能”造电视雪花”骗模型说”我不知道”。ICM 用一个<strong>编码器</strong>把状态压到特征空间预测，避免低层噪声干扰。</p>
+<h3 id="5-2-RND-Random-Network-Distillation-2018"><a href="#5-2-RND-Random-Network-Distillation-2018" class="headerlink" title="5.2 RND (Random Network Distillation, 2018)"></a>5.2 RND (Random Network Distillation, 2018)</h3><p><strong>更巧妙的方案</strong>：训练一个网络去预测<strong>另一个固定的随机网络</strong>的输出。</p>
+<ul>
+<li>$f^*$：随机初始化、永远不动</li>
+<li>$\hat{f}_\theta$：训练去预测 $f^*$</li>
+<li>预测误差 $|\hat{f}_\theta(s) - f^*(s)|^2$ 就是新颖度</li>
+</ul>
+<p><strong>关键洞察</strong>：</p>
+<ul>
+<li>已访问过的状态：$\hat{f}_\theta$ 训得好 → 预测误差低</li>
+<li>新状态：$\hat{f}_\theta$ 没见过 → 预测误差高</li>
+</ul>
+<p>RND 工程上极简单，效果惊人——OpenAI 用 RND 第一次在 Montezuma’s Revenge 上达到人类水平。</p>
+<h2 id="6-噪声扰动探索"><a href="#6-噪声扰动探索" class="headerlink" title="6. 噪声扰动探索"></a>6. 噪声扰动探索</h2><h3 id="6-1-Action-space-noise"><a href="#6-1-Action-space-noise" class="headerlink" title="6.1 Action-space noise"></a>6.1 Action-space noise</h3><p>DDPG 的高斯噪声、ε-greedy 都是这类。简单但效果有限。</p>
+<h3 id="6-2-Parameter-space-noise-NoisyNet"><a href="#6-2-Parameter-space-noise-NoisyNet" class="headerlink" title="6.2 Parameter-space noise (NoisyNet)"></a>6.2 Parameter-space noise (NoisyNet)</h3><p>直接给<strong>参数</strong>加噪声：</p>
+<script type="math/tex; mode=display">\theta = \mu + \sigma \odot \epsilon, \quad \epsilon \sim \mathcal{N}(0, 1)</script><p>$\mu, \sigma$ 都是可训练参数。$\sigma$ 大 → 探索强。</p>
+<p><strong>优势</strong>：策略的随机性是”结构性”的（连续多步保持一致），比随机抖动更有效率。</p>
+<h3 id="6-3-Bootstrapped-DQN"><a href="#6-3-Bootstrapped-DQN" class="headerlink" title="6.3 Bootstrapped DQN"></a>6.3 Bootstrapped DQN</h3><p>维护 $K$ 个独立 Q 网络头，每个 episode 随机选一个用。$K$ 个网络初始化不同 → 不同的”假说”，agent 在不同假说下行动 → <strong>结构化探索</strong>。</p>
+<hr>
+<h1 id="§B-模型架构"><a href="#§B-模型架构" class="headerlink" title="§B 模型架构"></a>§B 模型架构</h1><h2 id="B-1-RND-的实现（最简洁的现代探索方法）"><a href="#B-1-RND-的实现（最简洁的现代探索方法）" class="headerlink" title="B.1 RND 的实现（最简洁的现代探索方法）"></a>B.1 RND 的实现（最简洁的现代探索方法）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RNDModule</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obs_dim, feat_dim=<span class="number">128</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="comment"># ⭐ 固定的随机网络（不训练）</span></span><br><span class="line">        <span class="variable language_">self</span>.target_net = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, <span class="number">256</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">256</span>, <span class="number">256</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">256</span>, feat_dim),</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> <span class="variable language_">self</span>.target_net.parameters():</span><br><span class="line">            p.requires_grad = <span class="literal">False</span>                       <span class="comment"># ⭐ 永远冻结</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 可训练的预测网络</span></span><br><span class="line">        <span class="variable language_">self</span>.predictor_net = nn.Sequential(</span><br><span class="line">            nn.Linear(obs_dim, <span class="number">256</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">256</span>, <span class="number">256</span>), nn.ReLU(),</span><br><span class="line">            nn.Linear(<span class="number">256</span>, feat_dim),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, obs</span>):</span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            target_feat = <span class="variable language_">self</span>.target_net(obs)            <span class="comment"># 不参与训练</span></span><br><span class="line">        pred_feat = <span class="variable language_">self</span>.predictor_net(obs)</span><br><span class="line">        <span class="keyword">return</span> pred_feat, target_feat</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">intrinsic_reward</span>(<span class="params">self, obs</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;计算 RND 探索奖励&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            pred, target = <span class="variable language_">self</span>.forward(obs)</span><br><span class="line">            <span class="keyword">return</span> ((pred - target) ** <span class="number">2</span>).<span class="built_in">sum</span>(dim=-<span class="number">1</span>)     <span class="comment"># [B]</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">update</span>(<span class="params">self, obs, optimizer</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;训练 predictor&quot;&quot;&quot;</span></span><br><span class="line">        pred, target = <span class="variable language_">self</span>.forward(obs)</span><br><span class="line">        loss = F.mse_loss(pred, target)</span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        <span class="keyword">return</span> loss.item()</span><br></pre></td></tr></table></figure>
+<h2 id="B-2-RND-PPO-的组合"><a href="#B-2-RND-PPO-的组合" class="headerlink" title="B.2 RND + PPO 的组合"></a>B.2 RND + PPO 的组合</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 PPO（Ch8）的 reward 计算中加入 RND</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">compute_combined_reward</span>(<span class="params">rewards, obs, rnd, beta=<span class="number">0.5</span></span>):</span><br><span class="line">    intrinsic = rnd.intrinsic_reward(obs).cpu().numpy()</span><br><span class="line">    <span class="keyword">return</span> rewards + beta * intrinsic</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练循环（修改 Ch8 的 PPO）</span></span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(...):</span><br><span class="line">    <span class="comment"># ... 原 PPO 流程</span></span><br><span class="line">    extrinsic = env.step(a)</span><br><span class="line">    intrinsic = rnd.intrinsic_reward(obs)</span><br><span class="line">    total_reward = extrinsic + <span class="number">0.5</span> * intrinsic            <span class="comment"># ⭐ 合并</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 同时更新 RND predictor</span></span><br><span class="line">    rnd.update(obs, rnd_optim)</span><br></pre></td></tr></table></figure>
+<h2 id="B-3-NoisyNet-实现"><a href="#B-3-NoisyNet-实现" class="headerlink" title="B.3 NoisyNet 实现"></a>B.3 NoisyNet 实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">NoisyLinear</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;参数空间噪声层&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_features, out_features, sigma_init=<span class="number">0.5</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.in_features = in_features</span><br><span class="line">        <span class="variable language_">self</span>.out_features = out_features</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ⭐ μ + σ⊙ε，μ 和 σ 都可训练</span></span><br><span class="line">        <span class="variable language_">self</span>.weight_mu = nn.Parameter(torch.zeros(out_features, in_features))</span><br><span class="line">        <span class="variable language_">self</span>.weight_sigma = nn.Parameter(torch.full((out_features, in_features), sigma_init))</span><br><span class="line">        <span class="variable language_">self</span>.bias_mu = nn.Parameter(torch.zeros(out_features))</span><br><span class="line">        <span class="variable language_">self</span>.bias_sigma = nn.Parameter(torch.full((out_features,), sigma_init))</span><br><span class="line"></span><br><span class="line">        nn.init.uniform_(<span class="variable language_">self</span>.weight_mu, -<span class="number">1</span>/in_features**<span class="number">0.5</span>, <span class="number">1</span>/in_features**<span class="number">0.5</span>)</span><br><span class="line">        nn.init.uniform_(<span class="variable language_">self</span>.bias_mu, -<span class="number">1</span>/in_features**<span class="number">0.5</span>, <span class="number">1</span>/in_features**<span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.training:</span><br><span class="line">            <span class="comment"># ⭐ 训练时加噪声</span></span><br><span class="line">            weight_eps = torch.randn_like(<span class="variable language_">self</span>.weight_mu)</span><br><span class="line">            bias_eps = torch.randn_like(<span class="variable language_">self</span>.bias_mu)</span><br><span class="line">            weight = <span class="variable language_">self</span>.weight_mu + <span class="variable language_">self</span>.weight_sigma * weight_eps</span><br><span class="line">            bias = <span class="variable language_">self</span>.bias_mu + <span class="variable language_">self</span>.bias_sigma * bias_eps</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            weight = <span class="variable language_">self</span>.weight_mu</span><br><span class="line">            bias = <span class="variable language_">self</span>.bias_mu</span><br><span class="line">        <span class="keyword">return</span> F.linear(x, weight, bias)</span><br></pre></td></tr></table></figure>
+<p>把 DQN 中的 <code>nn.Linear</code> 替换为 <code>NoisyLinear</code> 即可——<strong>不再需要 ε-greedy</strong>。</p>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-实验：Montezuma’s-Revenge"><a href="#C-1-实验：Montezuma’s-Revenge" class="headerlink" title="C.1 实验：Montezuma’s Revenge"></a>C.1 实验：Montezuma’s Revenge</h2><p>经典稀疏奖励难题。Vanilla DQN: reward ≈ 0；DQN + RND: reward &gt; 8000。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gymnasium <span class="keyword">as</span> gym</span><br><span class="line">env = gym.make(<span class="string">&quot;MontezumaRevengeNoFrameskip-v4&quot;</span>)</span><br><span class="line"><span class="comment"># ... PPO + RND 训练</span></span><br></pre></td></tr></table></figure>
+<p>实测 RND 的”探索曲线”（房间数量随时间变化）：</p>
+<ul>
+<li>不加 RND：永远停在第 1 间房</li>
+<li>加 RND：1 千万步后探索到 14+ 间房</li>
+</ul>
+<h2 id="C-2-各种探索方法的性能对比"><a href="#C-2-各种探索方法的性能对比" class="headerlink" title="C.2 各种探索方法的性能对比"></a>C.2 各种探索方法的性能对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:center">复杂度</th>
+<th style="text-align:center">稀疏 reward</th>
+<th style="text-align:center">Atari 稠密 reward</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">ε-greedy</td>
+<td style="text-align:center">★</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">★★</td>
+</tr>
+<tr>
+<td style="text-align:left">高斯噪声 (DDPG)</td>
+<td style="text-align:center">★</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">★★</td>
+</tr>
+<tr>
+<td style="text-align:left">熵正则 (PPO/SAC)</td>
+<td style="text-align:center">★★</td>
+<td style="text-align:center">★</td>
+<td style="text-align:center">★★★</td>
+</tr>
+<tr>
+<td style="text-align:left">Count-based</td>
+<td style="text-align:center">★★</td>
+<td style="text-align:center">★★</td>
+<td style="text-align:center">★★</td>
+</tr>
+<tr>
+<td style="text-align:left">ICM</td>
+<td style="text-align:center">★★★</td>
+<td style="text-align:center">★★★</td>
+<td style="text-align:center">★★★</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>RND</strong></td>
+<td style="text-align:center">★★</td>
+<td style="text-align:center">★★★★</td>
+<td style="text-align:center">★★★</td>
+</tr>
+<tr>
+<td style="text-align:left">NoisyNet</td>
+<td style="text-align:center">★★★</td>
+<td style="text-align:center">★★</td>
+<td style="text-align:center">★★★</td>
+</tr>
+<tr>
+<td style="text-align:left">Bootstrapped DQN</td>
+<td style="text-align:center">★★★</td>
+<td style="text-align:center">★★★</td>
+<td style="text-align:center">★★★</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>2026 实践</strong>：RND 是稀疏 reward 任务的默认探索方法（实现简单 + 效果好）。</p>
+</blockquote>
+<h2 id="C-3-推理视角：探索是否还需要？"><a href="#C-3-推理视角：探索是否还需要？" class="headerlink" title="C.3 推理视角：探索是否还需要？"></a>C.3 推理视角：探索是否还需要？</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">阶段</th>
+<th style="text-align:left">是否需要探索</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>训练</strong></td>
+<td style="text-align:left"><strong>必须</strong>（否则学不到更好策略）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理</strong></td>
+<td style="text-align:left"><strong>不需要</strong>（已学好，直接利用）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>部署时把所有探索机制关掉：</p>
+<ul>
+<li>DQN: ε = 0</li>
+<li>SAC: 用均值（不采样）</li>
+<li>NoisyNet: <code>model.eval()</code> 自动关闭噪声</li>
+</ul>
+<h2 id="C-4-LLM-中的探索"><a href="#C-4-LLM-中的探索" class="headerlink" title="C.4 LLM 中的探索"></a>C.4 LLM 中的探索</h2><p>LLM 推理时也要”探索”——但完全是另一种语境：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">LLM 中的探索</th>
+<th style="text-align:left">RL 类比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>temperature</strong></td>
+<td style="text-align:left">DDPG 的高斯噪声幅度</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>top-p / top-k</strong></td>
+<td style="text-align:left">截断分布的探索</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>best-of-N</strong></td>
+<td style="text-align:left">UCB 的采样多次取最优</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MCTS（如 o1/R1）</strong></td>
+<td style="text-align:left">RL 中的 model-based 搜索</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>详见 Ch13 RL × LLM。</p>
+<hr>
+<h1 id="§D-章末速查"><a href="#§D-章末速查" class="headerlink" title="§D 章末速查"></a>§D 章末速查</h1><h2 id="D-1-主要方法速记"><a href="#D-1-主要方法速记" class="headerlink" title="D.1 主要方法速记"></a>D.1 主要方法速记</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">类别</th>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">核心</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>多臂老虎机</strong></td>
+<td style="text-align:left">UCB / Thompson Sampling</td>
+<td style="text-align:left">次线性 regret</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>结构噪声</strong></td>
+<td style="text-align:left">NoisyNet / Bootstrapped DQN</td>
+<td style="text-align:left">给参数 / 多个头加噪声</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>新颖度</strong></td>
+<td style="text-align:left">Count-based / RND / ICM</td>
+<td style="text-align:left">“去没去过的地方”</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>熵正则</strong></td>
+<td style="text-align:left">SAC / PPO entropy bonus</td>
+<td style="text-align:left">鼓励策略保持随机性</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>思路全局</strong></td>
+<td style="text-align:left">MCTS / planning</td>
+<td style="text-align:left">提前规划</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="D-2-常见面试题"><a href="#D-2-常见面试题" class="headerlink" title="D.2 常见面试题"></a>D.2 常见面试题</h2><p><strong>Q1：UCB 为什么是次线性 regret？</strong></p>
+<ul>
+<li>关键：探索项 $\sqrt{\log t / N_k}$ 让”被冷落的臂”逐渐被试到</li>
+<li>一旦试出真值低，就不再选它（探索奖励降不下来 → 让位）</li>
+<li>数学上严格证明 regret = $O(\log T)$（Auer 2002）</li>
+</ul>
+<p><strong>Q2：RND 为什么能避免 ICM 的”造电视雪花”问题？</strong></p>
+<ul>
+<li>ICM 直接预测下一帧 → agent 可以创造”无法预测的噪声”骗模型</li>
+<li>RND 预测的是<strong>固定随机网络的输出</strong>，agent 改变环境也无法改变”预测目标”</li>
+<li>因此预测误差只反映”该状态被访问的次数”，不会被骗</li>
+</ul>
+<p><strong>Q3：熵正则与 RND 探索的差异？</strong></p>
+<ul>
+<li>熵正则：让策略保持<strong>局部</strong>随机性（每步抖一抖）</li>
+<li>RND：让策略追求<strong>全局</strong>新颖性（去没去过的地方）</li>
+<li>互补使用：SAC + RND 在多个 benchmark 上是 SOTA</li>
+</ul>
+<p><strong>Q4：探索-利用 trade-off 在 LLM 时代有什么新形式？</strong></p>
+<ul>
+<li>推理时：temperature、top-p</li>
+<li>训练时：RLHF 的 KL penalty 限制策略 vs 探索 reward</li>
+<li>Best-of-N + reranker：批量探索 + 选最优</li>
+<li>MCTS（o1/R1）：树搜索式的结构化探索</li>
+</ul>
+<p><strong>Q5：NoisyNet 与 ε-greedy 的关键差异？</strong></p>
+<ul>
+<li>ε-greedy：每步独立随机 → “白噪声”</li>
+<li>NoisyNet：参数级噪声 → 多步策略保持一致 → “结构化”</li>
+<li>NoisyNet 在 Atari 上 + 50% 提升</li>
+</ul>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>探索是 RL 的”水下冰山”——所有算法都隐式依赖它。下一章 <strong>Ch11 离线 RL</strong> 走完全相反的路：<strong>完全不探索</strong>，只用预先收集的固定数据集训练。</p>
+<p>这看似奇怪，但其实是 LLM 时代最重要的范式：</p>
+<ul>
+<li><strong>DPO</strong> 本质就是离线 RL</li>
+<li><strong>RLAIF</strong> 用 AI 生成的固定偏好数据训练</li>
+<li><strong>数据效率第一</strong> 才是工业落地的关键</li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/ReinforcementLearning/Chapter10/">https://SGDBS.github.io/ReinforcementLearning/Chapter10/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">强化学习</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/AI_Infra/2.PipelineParallel/Interleaved1F1B/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="3. Interleaved 1F1B">
+                        
+                        <span class="card-title">3. Interleaved 1F1B</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/" class="post-category">
+                                    学习笔记- AI Infra
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI-Infra/">
+                        <span class="chip bg-color">AI Infra</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/ReinforcementLearning/Chapter11/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源">
+                        
+                        <span class="card-title">RL Chapter11 离线强化学习：BCQ、CQL、IQL 与 DPO 的渊源</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-05-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="post-category">
+                                    学习笔记-强化学习
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">强化学习</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

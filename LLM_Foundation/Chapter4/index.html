@@ -1,0 +1,1650 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角, YANG&#39;s Blog">
+    <meta name="description" content="Cogito, ergo sum">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角 | YANG&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery.min.js"></script>
+
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="YANG's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body class="feishu-doc-body">
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">YANG&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">YANG&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            Cogito, ergo sum
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="feishu-doc-page">
+
+
+<nav class="category-sidebar">
+    <div class="sidebar-title">大语言模型</div>
+    
+    <div class="sidebar-group " id="sg-0">
+        <div class="sidebar-group-title" onclick="toggleGroup('sg-0')">
+            <span class="sidebar-arrow">▼</span>
+            <span class="sidebar-label" title="大语言模型">大语言模型</span>
+            <span class="sidebar-count">10</span>
+        </div>
+        <div class="sidebar-items">
+            
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter0/" title="Chapter0 全景导读：LLM 训练全链路学习路径">
+                <span class="sidebar-label">Chapter0 全景导读：LLM 训练全链路学习路径</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter1/" title="Chapter1 数学工具箱：相似度、散度与 LLM 损失基础">
+                <span class="sidebar-label">Chapter1 数学工具箱：相似度、散度与 LLM 损失基础</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter2/" title="Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo">
+                <span class="sidebar-label">Chapter2 视觉对比学习：InfoNCE 与 SimCLR/MoCo</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter3/" title="Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器">
+                <span class="sidebar-label">Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</span>
+            </a>
+            
+            
+            <a class="sidebar-item sidebar-item--active"
+               href="/LLM_Foundation/Chapter4/" title="Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角">
+                <span class="sidebar-label">Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter5/" title="Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA">
+                <span class="sidebar-label">Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter6/" title="Chapter6 经典 RLHF：奖励模型 RM + PPO">
+                <span class="sidebar-label">Chapter6 经典 RLHF：奖励模型 RM + PPO</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter7/" title="Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）">
+                <span class="sidebar-label">Chapter7 离线对齐：DPO 家族（IPO/KTO/ORPO/SimPO）</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/Chapter8/" title="Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI">
+                <span class="sidebar-label">Chapter8 推理时代与 AI Feedback：GRPO、PRM、RLAIF、Constitutional AI</span>
+            </a>
+            
+            
+            <a class="sidebar-item"
+               href="/LLM_Foundation/KnowledgeFramework/" title="工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版">
+                <span class="sidebar-label">工业界 LLM 完整知识框架清单（2025–2026）—— 跨 AI_Model / AI_Infra / LLM_Foundation 全景版</span>
+            </a>
+            
+        </div>
+        
+    </div>
+    
+</nav>
+
+<script>
+function toggleGroup(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<header class="feishu-doc-topbar">
+    <div class="feishu-doc-breadcrumb">
+        <a href="/">YANG's Blog</a>
+        
+        <span>/</span>
+        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/">学习笔记-大模型</a>
+        
+        <span>/</span>
+        <span>Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</span>
+    </div>
+    <div class="feishu-doc-updated">最近修改：2026-06-04 14:11</div>
+</header>
+
+<main class="feishu-doc-main post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="doc-title-block">
+            <h1 class="doc-post-title">Chapter4 自监督新范式：BYOL、SimSiam、DINO 与 EM 视角</h1>
+        </div>
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/AI/">
+                                <span class="chip bg-color">AI</span>
+                            </a>
+                        
+                            <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                <span class="chip bg-color">AI面试知识</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                学习笔记-大模型
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2026-03-29
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p><strong>本章定位</strong>：完全不同于 Ch2/Ch3 的”有负样本”路线，本章探讨<strong>完全不需要负样本</strong>的自监督方法。BYOL/SimSiam/DINO 给出的答案：<strong>只要打破对称性（Stop-gradient + Predictor），模型就不会塌缩</strong>。这套机制是 Ch6 RLHF Reference Policy 设计的精神来源。</p>
+<p><strong>承上</strong>：Ch2 §D.2 提到的”路线 C：不对称结构”和”路线 D：特征去相关”。<br><strong>启下</strong>：Ch6 的 Reference Policy = 本章的 Target Network。</p>
+</blockquote>
+<hr>
+<h1 id="§A-数学原理"><a href="#§A-数学原理" class="headerlink" title="§A 数学原理"></a>§A 数学原理</h1><h2 id="1-BYOL-的非对称设计"><a href="#1-BYOL-的非对称设计" class="headerlink" title="1. BYOL 的非对称设计"></a>1. BYOL 的非对称设计</h2><p>BYOL（Bootstrap Your Own Latent，DeepMind 2020）首次证明：<strong>在没有负样本的情况下也能训出 SOTA 表征</strong>。</p>
+<blockquote>
+<p><strong>关键实验数字</strong>：BYOL 用 ResNet-50 在 ImageNet linear probe 达 <strong>74.3%</strong>，首次实现”无负样本 &gt; SimCLR”。</p>
+</blockquote>
+<h3 id="1-1-网络架构"><a href="#1-1-网络架构" class="headerlink" title="1.1 网络架构"></a>1.1 网络架构</h3><ul>
+<li><strong>Online Network</strong>（参数 $\theta$）：Encoder $f<em>\theta$ + Projector $g</em>\theta$ + <strong>Predictor $q_\theta$</strong>（核心）</li>
+<li><strong>Target Network</strong>（参数 $\xi$）：Encoder $f<em>\xi$ + Projector $g</em>\xi$（<strong>没有 Predictor</strong>）</li>
+</ul>
+<h3 id="1-2-损失函数"><a href="#1-2-损失函数" class="headerlink" title="1.2 损失函数"></a>1.2 损失函数</h3><p>视图 $v$ 经过 Online，$v’$ 经过 Target。L2 归一化后计算 MSE：</p>
+<script type="math/tex; mode=display">L = \|\bar{q_\theta(g_\theta(f_\theta(v)))} - \bar{g_\xi(f_\xi(v'))}\|_2^2</script><p><strong>MSE 与余弦的等价性</strong>（呼应 Ch1 §2）：</p>
+<script type="math/tex; mode=display">\|\bar{a} - \bar{b}\|^2 = 2 - 2\bar{a}^T\bar{b} = 2(1 - \cos\theta)</script><p>最小化归一化 MSE = 最大化余弦相似度。</p>
+<h3 id="1-3-参数更新"><a href="#1-3-参数更新" class="headerlink" title="1.3 参数更新"></a>1.3 参数更新</h3><ul>
+<li><strong>Online</strong>：标准梯度下降 $\theta \leftarrow \theta - \eta \nabla_\theta L$</li>
+<li><strong>Target</strong>：动量更新（不传梯度）<script type="math/tex; mode=display">\xi \leftarrow m \xi + (1-m) \theta, \quad m \approx 0.99\sim 0.999</script></li>
+</ul>
+<h3 id="1-4-为什么不会塌缩？"><a href="#1-4-为什么不会塌缩？" class="headerlink" title="1.4 为什么不会塌缩？"></a>1.4 为什么不会塌缩？</h3><p>设想塌缩解：所有输入 $\to$ 同一向量 $c$。则 $L = 0$，但模型无意义。BYOL 用三重机制避免此解：</p>
+<ol>
+<li><strong>Predictor $q_\theta$ 引入非线性</strong>：Online 必须”预测”Target 的输出，而非简单复制</li>
+<li><strong>Stop-gradient 切断 Target 梯度</strong>：Target 不会主动向常数解漂移</li>
+<li><strong>EMA 滞后性</strong>：Target 是 Online 的”过去自己”，时间不一致性打破同步塌缩</li>
+</ol>
+<hr>
+<h2 id="2-SimSiam-的极简化：连-EMA-都不需要"><a href="#2-SimSiam-的极简化：连-EMA-都不需要" class="headerlink" title="2. SimSiam 的极简化：连 EMA 都不需要"></a>2. SimSiam 的极简化：连 EMA 都不需要</h2><p>SimSiam（何恺明 2021）证明：<strong>Stop-gradient + Predictor 已是充要条件，EMA 可去掉</strong>。</p>
+<blockquote>
+<p><strong>关键实验数字</strong>：SimSiam ImageNet linear probe <strong>71.3%</strong>，仅略低于 BYOL，但训练成本远低（无 EMA 双网络）。</p>
+</blockquote>
+<h3 id="2-1-架构与流程"><a href="#2-1-架构与流程" class="headerlink" title="2.1 架构与流程"></a>2.1 架构与流程</h3><p>完全共享权重的孪生网络：</p>
+<ul>
+<li>Encoder $f$、Projector $g$、Predictor $h$ 都共享</li>
+<li>两路输入 $x_1, x_2$ 都经过 $f$ 和 $g$，得到 $z_1, z_2$</li>
+<li><strong>只对 $z_1$ 用 Predictor</strong>：$p_1 = h(z_1)$</li>
+<li><strong>对称损失</strong>：<script type="math/tex; mode=display">L = \frac{1}{2} D(p_1, \text{stop\_grad}(z_2)) + \frac{1}{2} D(p_2, \text{stop\_grad}(z_1))</script>其中 $D(p, z) = -\frac{p^T z}{|p| |z|}$ 是负余弦相似度。</li>
+</ul>
+<h3 id="2-2-EM-推导（紧凑版）"><a href="#2-2-EM-推导（紧凑版）" class="headerlink" title="2.2 EM 推导（紧凑版）"></a>2.2 EM 推导（紧凑版）</h3><p>何恺明在论文中给出”为什么不塌缩”的数学解释：SimSiam 实际是 <strong>EM 算法</strong>。</p>
+<p><strong>目标函数</strong>：假设每张图 $x$ 有”理想表示” $\eta_x$（隐变量），损失为</p>
+<script type="math/tex; mode=display">E(\theta, \eta) = \mathbb{E}_{x, T}\left[\|\mathcal{F}_\theta(T(x)) - \eta_x\|^2\right]</script><p>直接同时优化 $\theta$ 和 $\eta$ → 必然塌缩（$\eta_x \equiv c$）。SimSiam 通过<strong>交替优化</strong>避免：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">步骤</th>
+<th style="text-align:left">操作</th>
+<th style="text-align:left">SimSiam 中的实现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>E-step</strong>（固定 $\theta$，求 $\eta$）</td>
+<td style="text-align:left">$\eta<em>x^* = \mathbb{E}_T[\mathcal{F}</em>\theta(T(x))]$</td>
+<td style="text-align:left">期望不可算 → <strong>用单样本 $\mathcal{F}_\theta(T’(x))$ 近似</strong>（即另一路 + stop-grad）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>M-step</strong>（固定 $\eta$，更新 $\theta$）</td>
+<td style="text-align:left">$\theta \leftarrow \arg\min_\theta L(\theta, \eta)$</td>
+<td style="text-align:left">标准梯度下降</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="2-3-Predictor-的真正作用-学习条件期望"><a href="#2-3-Predictor-的真正作用-学习条件期望" class="headerlink" title="2.3 Predictor 的真正作用 = 学习条件期望"></a>2.3 Predictor 的真正作用 = 学习条件期望</h3><p>E-step 用单样本替代真期望，引入巨大噪声。Predictor $h$ 的作用是<strong>为这种噪声”去噪”</strong>：</p>
+<script type="math/tex; mode=display">h^*(z_1) = \mathbb{E}_{T_2}[z_2 \mid z_1]</script><p>即 Predictor 学到的是<strong>条件期望</strong>——给定 $z_1$，最优预测是 $z_2$ 的期望。这就是为什么：</p>
+<ul>
+<li>❌ 没有 Predictor → 模型直接对齐两个噪声样本 → 塌缩</li>
+<li>✅ 有 Predictor → 模型对齐”去噪后的 $z_1$”和”原始 $z_2$” → 隐式估计条件期望，避免塌缩</li>
+</ul>
+<hr>
+<h2 id="3-DINO：自蒸馏-中心化-锐化"><a href="#3-DINO：自蒸馏-中心化-锐化" class="headerlink" title="3. DINO：自蒸馏 + 中心化 + 锐化"></a>3. DINO：自蒸馏 + 中心化 + 锐化</h2><p>DINO（<strong>Di</strong>stillation with <strong>NO</strong> labels，Caron et al. 2021）：BYOL 的”亲表兄”，但用了<strong>软标签蒸馏 + 防塌缩 trick</strong>而非 MSE。</p>
+<h3 id="3-1-架构"><a href="#3-1-架构" class="headerlink" title="3.1 架构"></a>3.1 架构</h3><p>Student $f<em>{\theta_s}$ + Teacher $f</em>{\theta_t}$（EMA）。两者都输出 $K$ 维 logits（不是 d 维向量），然后 softmax 得到分布。</p>
+<h3 id="3-2-损失：交叉熵（而非-MSE）"><a href="#3-2-损失：交叉熵（而非-MSE）" class="headerlink" title="3.2 损失：交叉熵（而非 MSE）"></a>3.2 损失：交叉熵（而非 MSE）</h3><script type="math/tex; mode=display">L = -\sum_K p_t(x)^{(K)} \log p_s(x)^{(K)}</script><p>其中 $p_s, p_t$ 是 student/teacher 的 softmax 输出。</p>
+<h3 id="3-3-防塌缩两件套"><a href="#3-3-防塌缩两件套" class="headerlink" title="3.3 防塌缩两件套"></a>3.3 防塌缩两件套</h3><p>DINO 不靠 Predictor，而是靠两个 trick：</p>
+<p><strong>Centering</strong>：对 teacher 输出维护一个 EMA 中心 $C$，每次输出前减去：</p>
+<script type="math/tex; mode=display">p_t = \text{softmax}((g_{\theta_t}(x) - C) / \tau_t)</script><script type="math/tex; mode=display">C \leftarrow m_C \cdot C + (1 - m_C) \cdot \frac{1}{B}\sum_b g_{\theta_t}(x_b)</script><p><strong>Sharpening</strong>：teacher 用更小的温度 $\tau_t$（如 0.04），student 用更大的温度 $\tau_s$（如 0.1）。</p>
+<ul>
+<li>Sharpening：让 teacher 输出尖锐（接近 one-hot），强迫 student 学到”决断的”分类</li>
+<li>Centering：防止 teacher 总是偏向某些维度（避免另一种塌缩形式）</li>
+</ul>
+<blockquote>
+<p>两者<strong>互相牵制</strong>：Sharpening 倾向于让某些维度主导（一种塌缩），Centering 把它们拉平。组合在一起达成动态平衡。</p>
+</blockquote>
+<hr>
+<h1 id="§B-模型结构（PyTorch-实现）"><a href="#§B-模型结构（PyTorch-实现）" class="headerlink" title="§B 模型结构（PyTorch 实现）"></a>§B 模型结构（PyTorch 实现）</h1><h2 id="B-1-BYOL-完整实现"><a href="#B-1-BYOL-完整实现" class="headerlink" title="B.1 BYOL 完整实现"></a>B.1 BYOL 完整实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> copy</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BYOL</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, encoder, hidden_dim=<span class="number">4096</span>, proj_dim=<span class="number">256</span>, m=<span class="number">0.996</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        feat_dim = encoder.fc.in_features</span><br><span class="line">        encoder.fc = nn.Identity()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Online: Encoder + Projector + Predictor</span></span><br><span class="line">        <span class="variable language_">self</span>.online_encoder = encoder</span><br><span class="line">        <span class="variable language_">self</span>.online_projector = <span class="variable language_">self</span>._make_mlp(feat_dim, hidden_dim, proj_dim)</span><br><span class="line">        <span class="variable language_">self</span>.online_predictor = <span class="variable language_">self</span>._make_mlp(proj_dim, hidden_dim, proj_dim)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Target: 深拷贝 Online（无 Predictor）</span></span><br><span class="line">        <span class="variable language_">self</span>.target_encoder = copy.deepcopy(encoder)</span><br><span class="line">        <span class="variable language_">self</span>.target_projector = copy.deepcopy(<span class="variable language_">self</span>.online_projector)</span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> <span class="variable language_">self</span>.target_encoder.parameters():</span><br><span class="line">            p.requires_grad = <span class="literal">False</span>                                  <span class="comment"># ⭐ 不参与反传</span></span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> <span class="variable language_">self</span>.target_projector.parameters():</span><br><span class="line">            p.requires_grad = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.m = m</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_make_mlp</span>(<span class="params">self, in_dim, hidden_dim, out_dim</span>):</span><br><span class="line">        <span class="keyword">return</span> nn.Sequential(</span><br><span class="line">            nn.Linear(in_dim, hidden_dim), nn.BatchNorm1d(hidden_dim), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden_dim, out_dim),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"><span class="meta">    @torch.no_grad()</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">update_target</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;EMA 更新 Target 网络&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">for</span> online_p, target_p <span class="keyword">in</span> <span class="built_in">zip</span>(</span><br><span class="line">            <span class="built_in">list</span>(<span class="variable language_">self</span>.online_encoder.parameters()) + <span class="built_in">list</span>(<span class="variable language_">self</span>.online_projector.parameters()),</span><br><span class="line">            <span class="built_in">list</span>(<span class="variable language_">self</span>.target_encoder.parameters()) + <span class="built_in">list</span>(<span class="variable language_">self</span>.target_projector.parameters()),</span><br><span class="line">        ):</span><br><span class="line">            target_p.data = <span class="variable language_">self</span>.m * target_p.data + (<span class="number">1</span> - <span class="variable language_">self</span>.m) * online_p.data</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, v1, v2</span>):</span><br><span class="line">        <span class="comment"># Online 路径：含 Predictor</span></span><br><span class="line">        p1 = <span class="variable language_">self</span>.online_predictor(<span class="variable language_">self</span>.online_projector(<span class="variable language_">self</span>.online_encoder(v1)))</span><br><span class="line">        p2 = <span class="variable language_">self</span>.online_predictor(<span class="variable language_">self</span>.online_projector(<span class="variable language_">self</span>.online_encoder(v2)))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Target 路径：无 Predictor，无梯度</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            z1 = <span class="variable language_">self</span>.target_projector(<span class="variable language_">self</span>.target_encoder(v1))</span><br><span class="line">            z2 = <span class="variable language_">self</span>.target_projector(<span class="variable language_">self</span>.target_encoder(v2))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 对称损失：归一化 MSE = -2·cos</span></span><br><span class="line">        loss = byol_loss(p1, z2.detach()) + byol_loss(p2, z1.detach())</span><br><span class="line">        <span class="keyword">return</span> loss.mean()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">byol_loss</span>(<span class="params">p, z</span>):</span><br><span class="line">    p = F.normalize(p, dim=-<span class="number">1</span>)</span><br><span class="line">    z = F.normalize(z, dim=-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span> - <span class="number">2</span> * (p * z).<span class="built_in">sum</span>(dim=-<span class="number">1</span>)                               <span class="comment"># 即 ||p-z||^2</span></span><br></pre></td></tr></table></figure>
+<h2 id="B-2-SimSiam-完整实现"><a href="#B-2-SimSiam-完整实现" class="headerlink" title="B.2 SimSiam 完整实现"></a>B.2 SimSiam 完整实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SimSiam</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;SimSiam = BYOL 去掉 EMA 和 Target 网络&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, encoder, proj_dim=<span class="number">2048</span>, pred_dim=<span class="number">512</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        feat_dim = encoder.fc.in_features</span><br><span class="line">        encoder.fc = nn.Identity()</span><br><span class="line">        <span class="variable language_">self</span>.encoder = encoder</span><br><span class="line">        <span class="variable language_">self</span>.projector = <span class="variable language_">self</span>._make_proj(feat_dim, proj_dim)</span><br><span class="line">        <span class="variable language_">self</span>.predictor = <span class="variable language_">self</span>._make_pred(proj_dim, pred_dim)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_make_proj</span>(<span class="params">self, in_dim, out_dim</span>):</span><br><span class="line">        <span class="keyword">return</span> nn.Sequential(</span><br><span class="line">            nn.Linear(in_dim, in_dim, bias=<span class="literal">False</span>), nn.BatchNorm1d(in_dim), nn.ReLU(),</span><br><span class="line">            nn.Linear(in_dim, in_dim, bias=<span class="literal">False</span>), nn.BatchNorm1d(in_dim), nn.ReLU(),</span><br><span class="line">            nn.Linear(in_dim, out_dim, bias=<span class="literal">False</span>), nn.BatchNorm1d(out_dim, affine=<span class="literal">False</span>),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_make_pred</span>(<span class="params">self, in_dim, hidden_dim</span>):</span><br><span class="line">        <span class="keyword">return</span> nn.Sequential(</span><br><span class="line">            nn.Linear(in_dim, hidden_dim, bias=<span class="literal">False</span>), nn.BatchNorm1d(hidden_dim), nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden_dim, in_dim),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x1, x2</span>):</span><br><span class="line">        z1 = <span class="variable language_">self</span>.projector(<span class="variable language_">self</span>.encoder(x1))</span><br><span class="line">        z2 = <span class="variable language_">self</span>.projector(<span class="variable language_">self</span>.encoder(x2))</span><br><span class="line">        p1 = <span class="variable language_">self</span>.predictor(z1)</span><br><span class="line">        p2 = <span class="variable language_">self</span>.predictor(z2)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ⭐ 关键：z 上加 detach() 实现 stop-gradient</span></span><br><span class="line">        loss = -(F.cosine_similarity(p1, z2.detach(), dim=-<span class="number">1</span>).mean() +</span><br><span class="line">                 F.cosine_similarity(p2, z1.detach(), dim=-<span class="number">1</span>).mean()) * <span class="number">0.5</span></span><br><span class="line">        <span class="keyword">return</span> loss</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>面试考点</strong>：去掉 <code>z.detach()</code> 立即塌缩。原因见 §A.2 EM 推导——E-step 必须固定 $\eta$ 才能避免 $\eta = $ 常数的退化解。</p>
+</blockquote>
+<h2 id="B-3-DINO-关键模块"><a href="#B-3-DINO-关键模块" class="headerlink" title="B.3 DINO 关键模块"></a>B.3 DINO 关键模块</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DINOLoss</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;DINO 的 centering + sharpening loss&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, out_dim, teacher_temp=<span class="number">0.04</span>, student_temp=<span class="number">0.1</span>, center_momentum=<span class="number">0.9</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.teacher_temp = teacher_temp</span><br><span class="line">        <span class="variable language_">self</span>.student_temp = student_temp</span><br><span class="line">        <span class="variable language_">self</span>.center_momentum = center_momentum</span><br><span class="line">        <span class="variable language_">self</span>.register_buffer(<span class="string">&quot;center&quot;</span>, torch.zeros(<span class="number">1</span>, out_dim))      <span class="comment"># ⭐ 中心向量</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, student_output, teacher_output</span>):</span><br><span class="line">        student_out = student_output / <span class="variable language_">self</span>.student_temp</span><br><span class="line">        <span class="comment"># ⭐ Teacher 输出：先减 center，再除小温度（更尖锐）</span></span><br><span class="line">        teacher_out = F.softmax((teacher_output - <span class="variable language_">self</span>.center) / <span class="variable language_">self</span>.teacher_temp, dim=-<span class="number">1</span>)</span><br><span class="line">        teacher_out = teacher_out.detach()                           <span class="comment"># stop-grad</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 交叉熵</span></span><br><span class="line">        loss = -(teacher_out * F.log_softmax(student_out, dim=-<span class="number">1</span>)).<span class="built_in">sum</span>(dim=-<span class="number">1</span>).mean()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ⭐ EMA 更新 center</span></span><br><span class="line">        <span class="variable language_">self</span>.update_center(teacher_output)</span><br><span class="line">        <span class="keyword">return</span> loss</span><br><span class="line"></span><br><span class="line"><span class="meta">    @torch.no_grad()</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">update_center</span>(<span class="params">self, teacher_output</span>):</span><br><span class="line">        batch_center = teacher_output.mean(dim=<span class="number">0</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">        <span class="variable language_">self</span>.center = <span class="variable language_">self</span>.center * <span class="variable language_">self</span>.center_momentum + batch_center * (<span class="number">1</span> - <span class="variable language_">self</span>.center_momentum)</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="§C-训练与推理"><a href="#§C-训练与推理" class="headerlink" title="§C 训练与推理"></a>§C 训练与推理</h1><h2 id="C-1-训练循环：通用模板"><a href="#C-1-训练循环：通用模板" class="headerlink" title="C.1 训练循环：通用模板"></a>C.1 训练循环：通用模板</h2><p>无负样本自监督的训练循环都长这样（以 BYOL 为例）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">train_byol</span>(<span class="params">model, loader, optimizer, augment, epochs</span>):</span><br><span class="line">    <span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> loader:</span><br><span class="line">            <span class="comment"># 1. 双路增强</span></span><br><span class="line">            v1 = augment(x)</span><br><span class="line">            v2 = augment(x)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 2. 前向 + 损失</span></span><br><span class="line">            loss = model(v1, v2)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 3. 反向 + Online 网络更新</span></span><br><span class="line">            optimizer.zero_grad()</span><br><span class="line">            loss.backward()</span><br><span class="line">            optimizer.step()</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 4. ⭐ EMA 更新 Target（关键步骤）</span></span><br><span class="line">            model.update_target()</span><br></pre></td></tr></table></figure>
+<p><strong>SimSiam</strong> 没有第 4 步（不需要 EMA），其他完全一致。<br><strong>DINO</strong> 第 4 步包含 Teacher EMA 更新和 Center EMA 更新。</p>
+<h2 id="C-2-训练-vs-推理：模型状态的差异"><a href="#C-2-训练-vs-推理：模型状态的差异" class="headerlink" title="C.2 训练 vs 推理：模型状态的差异"></a>C.2 训练 vs 推理：模型状态的差异</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">阶段</th>
+<th style="text-align:left">Online / Student</th>
+<th style="text-align:left">Target / Teacher</th>
+<th style="text-align:left">Predictor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>训练</strong></td>
+<td style="text-align:left">梯度更新</td>
+<td style="text-align:left">EMA 跟随（或 detach 共享）</td>
+<td style="text-align:left">训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理</strong></td>
+<td style="text-align:left"><strong>只用 Encoder $f_\theta$</strong></td>
+<td style="text-align:left">丢弃</td>
+<td style="text-align:left">丢弃</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>关键</strong>：所有 Projector / Predictor / Target 网络在推理时都<strong>丢弃</strong>——只保留主干 Encoder $f_\theta$ 用于下游任务。</p>
+</blockquote>
+<h2 id="C-3-评测协议：Linear-Probe-KNN"><a href="#C-3-评测协议：Linear-Probe-KNN" class="headerlink" title="C.3 评测协议：Linear Probe / KNN"></a>C.3 评测协议：Linear Probe / KNN</h2><p>无监督方法训完怎么评估？两个标准协议：</p>
+<p><strong>Linear Probe</strong>（详见 Ch2 §C.3）：冻结 encoder，加线性头做监督训练。</p>
+<p><strong>KNN Classification</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 全训练集 forward 得到特征库</span></span><br><span class="line">features_train = model.encoder(x_train)                              <span class="comment"># [N_train, D]</span></span><br><span class="line">features_train = F.normalize(features_train, dim=-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 测试样本检索 K 个最近邻</span></span><br><span class="line">features_test = F.normalize(model.encoder(x_test), dim=-<span class="number">1</span>)</span><br><span class="line">sim = features_test @ features_train.T                                <span class="comment"># [N_test, N_train]</span></span><br><span class="line">topk_indices = sim.topk(k=<span class="number">20</span>, dim=-<span class="number">1</span>).indices</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 投票</span></span><br><span class="line">predictions = labels_train[topk_indices].mode(dim=-<span class="number">1</span>).values</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p><strong>关键数字</strong>（ImageNet linear probe / KNN top-1）：</p>
+<ul>
+<li>SimCLR：69.3% / 64.5%</li>
+<li>MoCo v2：71.1% / 67.5%</li>
+<li><strong>BYOL：74.3% / 69.6%</strong></li>
+<li><strong>SimSiam：71.3% / 67.0%</strong></li>
+<li><strong>DINO (ViT-B/16)：78.2% / 76.1%</strong> —— ViT 上效果惊人</li>
+</ul>
+</blockquote>
+<h2 id="C-4-推理视角：DINOv2-在多模态-LLM-中的应用"><a href="#C-4-推理视角：DINOv2-在多模态-LLM-中的应用" class="headerlink" title="C.4 推理视角：DINOv2 在多模态 LLM 中的应用"></a>C.4 推理视角：DINOv2 在多模态 LLM 中的应用</h2><p>DINOv2（Meta 2023）是 DINO 在 ViT-g 上的工程加强版，已成为 <strong>CLIP 之外的另一主流视觉骨干</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">视觉骨干</th>
+<th style="text-align:left">代表 VLM</th>
+<th style="text-align:left">优势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>CLIP</strong>（Ch3）</td>
+<td style="text-align:left">LLaVA, Qwen-VL, GPT-4V</td>
+<td style="text-align:left">与语言对齐，”看图说话”自然</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DINOv2</strong></td>
+<td style="text-align:left">Llama 3.2 Vision, 部分 Qwen-VL 变体</td>
+<td style="text-align:left"><strong>密集预测任务（分割、深度）更优</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>混合</strong>（CLIP + DINOv2）</td>
+<td style="text-align:left">一些 SOTA VLM</td>
+<td style="text-align:left">两者特征拼接，兼顾</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>为什么 DINOv2 在密集任务上更强？</strong></p>
+<ul>
+<li>DINOv2 用纯视觉自监督，特征更”忠实于像素”</li>
+<li>CLIP 用图文对，倾向于”对象级别语义”，对像素级细节没那么敏感</li>
+</ul>
+<hr>
+<h1 id="§D-落地-LLM：Stop-gradient-EMA-在大模型训练中的真实身影"><a href="#§D-落地-LLM：Stop-gradient-EMA-在大模型训练中的真实身影" class="headerlink" title="§D 落地 LLM：Stop-gradient + EMA 在大模型训练中的真实身影"></a>§D 落地 LLM：Stop-gradient + EMA 在大模型训练中的真实身影</h1><p>这是本章最重要的一节。BYOL/SimSiam 看似 CV 技术，但其<strong>核心机制在 LLM 训练流程中无处不在</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">BYOL/SimSiam 概念</th>
+<th style="text-align:left">LLM 训练中的对应</th>
+<th style="text-align:left">详见</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Target Network</strong></td>
+<td style="text-align:left"><strong>Reference Policy $\pi_{\text{ref}}$</strong>（PPO/DPO/GRPO 的参考模型）</td>
+<td style="text-align:left">Ch6, Ch7</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Stop-gradient on Target</strong></td>
+<td style="text-align:left">$\pi_{\text{ref}}$ 不参与反向传播</td>
+<td style="text-align:left">Ch6 §B</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>EMA 更新 Target</strong></td>
+<td style="text-align:left"><strong>Online DPO / SPIN / Self-Rewarding LM</strong> 中的周期性 reference 更新</td>
+<td style="text-align:left">Ch7 §C</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Predictor 打破对称</strong></td>
+<td style="text-align:left">知识蒸馏中 student 用额外结构匹配 teacher</td>
+<td style="text-align:left">Ch5</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>避免塌缩</strong></td>
+<td style="text-align:left">RLHF KL 惩罚防止策略塌缩到 reward-hacking 单点</td>
+<td style="text-align:left">Ch6 §C</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="案例预告：DPO-损失中的-Stop-gradient（详见-Ch7）"><a href="#案例预告：DPO-损失中的-Stop-gradient（详见-Ch7）" class="headerlink" title="案例预告：DPO 损失中的 Stop-gradient（详见 Ch7）"></a>案例预告：DPO 损失中的 Stop-gradient（详见 Ch7）</h3><p>DPO 损失：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{DPO}} = -\mathbb{E}\left[\log \sigma\left(\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)\right]</script><ul>
+<li>$\pi_\theta$（policy）= <strong>Online network</strong>：被梯度更新</li>
+<li>$\pi_{\text{ref}}$（reference）= <strong>Target network</strong>：通常是 SFT 模型的冻结快照</li>
+</ul>
+<p>这就是 BYOL 的精神在 LLM 上的直接应用。</p>
+<hr>
+<h1 id="§E-横向对比：四大对比学习方法"><a href="#§E-横向对比：四大对比学习方法" class="headerlink" title="§E 横向对比：四大对比学习方法"></a>§E 横向对比：四大对比学习方法</h1><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:center">负样本</th>
+<th style="text-align:center">EMA Target</th>
+<th style="text-align:center">Predictor</th>
+<th style="text-align:center">Stop-grad</th>
+<th style="text-align:left">关键贡献</th>
+<th style="text-align:center">章节</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>SimCLR</strong></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:left">大 batch + 投影头</td>
+<td style="text-align:center">Ch2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MoCo</strong></td>
+<td style="text-align:center">✓ (队列)</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">队列解耦显存与负样本数</td>
+<td style="text-align:center">Ch2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>BYOL</strong></td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">证明无负样本可行</td>
+<td style="text-align:center"><strong>Ch4</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SimSiam</strong></td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">证明 EMA 也非必需</td>
+<td style="text-align:center"><strong>Ch4</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DINO</strong></td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✗</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Centering + Sharpening 防塌缩</td>
+<td style="text-align:center"><strong>Ch4</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>演进逻辑</strong>：从”显式负样本排斥” → “时间不对称（EMA）” → “结构不对称（Predictor + Stop-grad）” → “概率分布动态平衡（Centering + Sharpening）”。每一步都在剥离防塌缩的依赖项。</p>
+</blockquote>
+<hr>
+<h2 id="承上启下"><a href="#承上启下" class="headerlink" title="承上启下"></a>承上启下</h2><p>至此（Ch1–Ch4），笔记的”<strong>表示学习</strong>“部分完整结束：</p>
+<ul>
+<li>Ch1：数学工具（点积、KL、CE）</li>
+<li>Ch2：视觉对比学习（SimCLR/MoCo）</li>
+<li>Ch3：跨模态/文本对比（CLIP/SimCSE/BGE）</li>
+<li>Ch4：无负样本自监督（BYOL/SimSiam/DINO）</li>
+</ul>
+<p>从下一章 <strong>Ch5</strong> 起，笔记进入”<strong>生成模型对齐</strong>“部分：</p>
+<ul>
+<li><strong>Ch5</strong>：SFT + LoRA（让 Base Model 学会”听话”）</li>
+<li><strong>Ch6</strong>：经典 RLHF（RM + PPO，把 Ch4 的 Stop-grad + EMA 思想用到对齐上）</li>
+<li><strong>Ch7</strong>：DPO 家族（用闭式解砍掉 RM 和 Critic）</li>
+<li><strong>Ch8</strong>：推理时代（GRPO + PRM + RLAIF）</li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">YANG</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://SGDBS.github.io/LLM_Foundation/Chapter4/">https://SGDBS.github.io/LLM_Foundation/Chapter4/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="/about" target="_blank">YANG</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/AI/">
+                                    <span class="chip bg-color">AI</span>
+                                </a>
+                            
+                                <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                                    <span class="chip bg-color">AI面试知识</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/LLM_Foundation/Chapter5/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/1.jpg" class="responsive-img" alt="Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA">
+                        
+                        <span class="card-title">Chapter5 SFT 与参数高效微调：MLE、LoRA、QLoRA</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2026-03-30
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                    学习笔记-大模型
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/LLM_Foundation/Chapter3/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器">
+                        
+                        <span class="card-title">Chapter3 多模态与文本对比学习：CLIP、SimCSE、BGE 与 RAG 检索器</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2026-03-28
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="post-category">
+                                    学习笔记-大模型
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/AI/">
+                        <span class="chip bg-color">AI</span>
+                    </a>
+                    
+                    <a href="/tags/AI%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86/">
+                        <span class="chip bg-color">AI面试知识</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        // 跳过折叠框 (<details>) 内的标题:不在 TOC 里出现
+        // tocbot 把 ignoreSelector 接到 :not() 里,即 "headingSelector:not(ignoreSelector)"
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4',
+            ignoreSelector: 'details *'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        // .children() 只取直接子元素,自然就不会拿到 <details> 里嵌套的 heading,
+        // 和 tocbot 的 ignoreSelector 行为对齐
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+</div>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], processEscapes: true }
+    });
+</script>
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+    
+    <div class="container row center-align" style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2026</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">YANG</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/SGDBS" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
