@@ -434,33 +434,6 @@
             </article>
             
             <article class="latest-item">
-                <a class="latest-title" href="/AI_Infra/1.DataParallel/ZeRO/">5. ZeRO 与 FSDP</a>
-                <div class="latest-meta">
-                    <span><i class="far fa-calendar"></i>2026-04-28</span>
-                    
-                    <span>
-                        <i class="fas fa-bookmark"></i>
-                        
-                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
-                        
-                    </span>
-                    
-                </div>
-                <p class="latest-summary">
-                    ZeRO 是 DeepSpeed 团队在 2019 年提出的显存优化方案,核心思想是消除数据并行中的显存冗余。DDP 让每张卡都存完整的模型参数、梯度、优化器状态,这些是冗余的——ZeRO 把它们分片到不同卡上,大幅降低单卡显存占用,让训练超大模型成为可能。PyTorch 原生的 FSDP (Ful
-                </p>
-                
-                <div class="latest-tags">
-                    
-                    <a href="/tags/AI/">AI</a>
-                    
-                    <a href="/tags/AI-Infra/">AI Infra</a>
-                    
-                </div>
-                
-            </article>
-            
-            <article class="latest-item">
                 <a class="latest-title" href="/AI_Infra/1.DataParallel/DDP/">2. Distributed Data Parallel</a>
                 <div class="latest-meta">
                     <span><i class="far fa-calendar"></i>2026-04-28</span>
@@ -475,6 +448,33 @@
                 </div>
                 <p class="latest-summary">
                     一、从 DP 到 DDP:数据并行的演进数据并行能成立的数学根基只有一行:把 batch 切给 N 张卡分别算梯度再平均,等价于单卡跑完整 batch。 \nabla L(\theta) = \frac{1}{B}\sum_{i=1}^B \nabla \ell(x_i,\theta) = \fra
+                </p>
+                
+                <div class="latest-tags">
+                    
+                    <a href="/tags/AI/">AI</a>
+                    
+                    <a href="/tags/AI-Infra/">AI Infra</a>
+                    
+                </div>
+                
+            </article>
+            
+            <article class="latest-item">
+                <a class="latest-title" href="/AI_Infra/1.DataParallel/ZeRO/">5. ZeRO 与 FSDP</a>
+                <div class="latest-meta">
+                    <span><i class="far fa-calendar"></i>2026-04-28</span>
+                    
+                    <span>
+                        <i class="fas fa-bookmark"></i>
+                        
+                        <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-AI-Infra/">学习笔记- AI Infra</a>
+                        
+                    </span>
+                    
+                </div>
+                <p class="latest-summary">
+                    ZeRO 是 DeepSpeed 团队在 2019 年提出的显存优化方案,核心思想是消除数据并行中的显存冗余。DDP 让每张卡都存完整的模型参数、梯度、优化器状态,这些是冗余的——ZeRO 把它们分片到不同卡上,大幅降低单卡显存占用,让训练超大模型成为可能。PyTorch 原生的 FSDP (Ful
                 </p>
                 
                 <div class="latest-tags">
