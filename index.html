@@ -668,7 +668,7 @@
         <div class="latest-feed">
             
             <article class="latest-item">
-                <a class="latest-title" href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/">Chapter0 LLM 量化总览</a>
+                <a class="latest-title" href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/">Chapter1 Linear 量化全景</a>
                 <div class="latest-meta">
                     <span><i class="far fa-calendar"></i>2026-06-17</span>
                     
@@ -681,7 +681,7 @@
                     
                 </div>
                 <p class="latest-summary">
-                    LLM 量化要把推理系统里最贵的显存、HBM 带宽和矩阵计算，转化成一套可控的数值近似问题。 在大模型推理里，参数要从 HBM 读，activation 要在层之间流动，decode 阶段还要持续维护 KV cache。模型越大、上下文越长、batch 越高，瓶颈越不像“算不过来”，而更像“数据搬不
+                    理解 LLM 量化需要盯住 Linear 层。 大部分参数在这里，大部分 GEMM 在这里，大部分低比特 kernel 的收益和风险也在这里。 Transformer 里反复消耗显存带宽和算力的，主要是 attention 里的 q_proj、k_proj、v_proj、o_proj，MLP 里的 
                 </p>
                 
                 <div class="latest-tags">
@@ -697,7 +697,7 @@
             </article>
             
             <article class="latest-item">
-                <a class="latest-title" href="/AI_Infra/9.Inference/InferenceQuantization/Chapter1/">Chapter1 Linear 量化全景</a>
+                <a class="latest-title" href="/AI_Infra/9.Inference/InferenceQuantization/Chapter0/">Chapter0 LLM 量化总览</a>
                 <div class="latest-meta">
                     <span><i class="far fa-calendar"></i>2026-06-17</span>
                     
@@ -710,7 +710,7 @@
                     
                 </div>
                 <p class="latest-summary">
-                    理解 LLM 量化需要盯住 Linear 层。 大部分参数在这里，大部分 GEMM 在这里，大部分低比特 kernel 的收益和风险也在这里。 Transformer 里反复消耗显存带宽和算力的，主要是 attention 里的 q_proj、k_proj、v_proj、o_proj，MLP 里的 
+                    LLM 量化要把推理系统里最贵的显存、HBM 带宽和矩阵计算，转化成一套可控的数值近似问题。 在大模型推理里，参数要从 HBM 读，activation 要在层之间流动，decode 阶段还要持续维护 KV cache。模型越大、上下文越长、batch 越高，瓶颈越不像“算不过来”，而更像“数据搬不
                 </p>
                 
                 <div class="latest-tags">
